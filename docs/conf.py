@@ -126,7 +126,7 @@ html_theme = 'alabaster'
 html_theme_options = {
         'logo': 'BloomLogo.jpg',
         'logo_name': 'true',
-        'description': 'Analyze deep mutational scanning of barcoded variants.',
+        'description': 'Analyze deep mutational scanning of barcoded variants',
         'github_button': 'true',
         'github_user': 'jbloomlab',
         'github_repo': 'dms_variants',
@@ -208,6 +208,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'dms_variants', u'dms_variants Documentation',
-     author, 'dms_variants', 'Analyze deep mutational scanning of barcoded variants.',
+     author, 'dms_variants',
+     'Analyze deep mutational scanning of barcoded variants',
      'Miscellaneous'),
     ]

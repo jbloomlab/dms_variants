@@ -44,7 +44,11 @@ setup(
     long_description=readme,
     license='GPLv3',
     install_requires=[
-                      ],
+            'biopython>=1.73',
+            'pandas>=0.24.2',
+            'plotnine>=0.5.1',
+            'scipy>=1.1.0',
+            ],
     platforms='Linux and Mac OS X.',
     packages=['dms_variants'],
     package_dir={'dms_variants': 'dms_variants'},
