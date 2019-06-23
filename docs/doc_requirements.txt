@@ -4,4 +4,4 @@ sphinx_gallery>=0.3.1
 matplotlib>=3.0.2
 nbsphinx>=0.4.2
 nbsphinx-link>=1.2.0
-ipykernel>=5.10
+ipykernel>=5.1.0
