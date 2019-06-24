@@ -10,7 +10,6 @@ Simulate data.
 import collections
 import itertools
 import math
-import os
 import random
 import re
 import tempfile
@@ -22,24 +21,22 @@ import plotnine as p9
 import scipy
 
 import dms_variants.codonvarianttable
-import dms_variants.utils
 from dms_variants.constants import (AAS_WITHSTOP,
-                                    AA_TO_CODONS,
                                     CBPALETTE,
-                                    CODON_TO_AA,
                                     CODONS,
+                                    CODON_TO_AA,
                                     NTS,
                                     )
 
+
 def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
                                seed=1, variant_call_support=1):
-    """Get a simulated :class:`codonvarianttable.CodonVariantTable`.
+    """Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.
 
     Note
     ----
-    Note that it only simulates the variants, not counts for samples.
-    To simulate counts, use :func:`simulateSampleCounts` and
-    :meth:`codonvarianttable.CodonVariantTable.addSampleCounts`.
+    Only simulates the variants, not counts for samples. To simulate counts,
+    use :func:`simulateSampleCounts`.
 
     Parameters
     -----------
@@ -54,13 +51,12 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
     seed : int or None
         Random number seed or `None` to set no seed.
     variant_call_support : int or 2-tuple
-        If an integer, all variant call supports are set to this.
-        If a 2-tuple, variant call support is drawn as a random
-        integer uniformly from this range (inclusive).
+        If integer, all supports are set to this. If 2-tuple, support is
+        drawn as random integer uniformly from this range (inclusive).
 
     Returns
     -------
-    :class:`codonvarianttable.CodonVariantTable`
+    :class:`dms_variants.codonvarianttable.CodonVariantTable`
 
     """
     if seed is not None:
@@ -84,9 +80,9 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
         avgmuts = specs_dict['avgmuts']
         if 10 * nvariants > (len(NTS))**bclen:  # safety factor 10
             raise ValueError('barcode too short for nvariants')
-        existing_barcodes = set([])
+        existing_barcodes = set()
 
-        for ivariant in range(nvariants):
+        for _ivariant in range(nvariants):
 
             barcode = ''.join(random.choices(NTS, k=bclen))
             while barcode in existing_barcodes:
@@ -134,92 +130,53 @@ def simulateSampleCounts(*,
                          seed=1):
     """Simulate pre- and post-selection variant counts.
 
-    Simulate variant counts for experiment where barcodes
-    are sequenced pre- and post-selection.
+    Note
+    ----
+    Add to :class:`dms_variants.codonvarianttable.CodonVariantTable` using
+    :meth:`dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts`
 
-    Args:
-        `variants` (:class:`CodonVariantTable`)
-           Holds variants used in simulation.
-        `phenotype_func` (function)
-            Takes a row from `variants.barcode_variant_df`
-            and returns the phenotype. Typically this is
-            calculated from the "aa_substitutions" or
-            "codon_substitutions" column. The phenotype is a
-            number >= 0, and represents the expected enrichment of
-            the variant relative to wildtype post-selection (values
-            > 1 indicate beneficial). For instance, you could pass
-            :meth:`PhenotypeSimulator.observedPhenotype`.
-        `variant_error_rate` (float)
-            Rate at which variants in `variants` are
-            mis-called. Provide the probability that a
-            variant has a spuriously called (or missing)
-            codon mutation: with this probability, each
-            variant then has a random codon mutation added
-            or taken away before being passed to
-            `phenotype_func`. Designed to simulate the fact
-            that the method used to link barcodes to variants
-            is probably not perfect.
-        `pre_sample` (pandas DataFrame or dict)
-            The counts of each variant pre-selection. You can
-            specify counts or have them simulated:
+    Parameters
+    ----------
+    variants : class:`dms_variants.codonvarianttable.CodonVariantTable`
+        Holds variants used in simulation.
+    phenotype_func : function
+        Takes row from `variants.barcode_variant_df` and returns phenotype
+        as number giving enrichment of variant relative to wildtype. For
+        instance, :meth:`SigmoidPhenotypeSimulator.observedPhenotype`.
+    variant_error_rate : float
+        Rate at which variants mis-called. Provide the probability that a
+        variant has a spuriously called (or missing) codon mutation; each
+        variant then has a random codon mutation added or removed with this
+        probability before being passed to `phenotype_func`.
+    pre_sample : pandas.DataFrame or dict
+        Counts of each variant pre-selection. To specify counts, provide
+        data frame with columns "library", "barcode", and "count". To
+        simulate, provide dict with keys "total_count" and "uniformity",
+        and for each library, we simulate pre-selection counts as a draw
+        of "total_count" counts from a multinomial parameterized by pre-
+        selection frequencies drawn from a Dirichlet distribution with
+        concentration parameter of "uniformity" (5 is reasonable value).
+    post_samples : dict
+        Keyed by name of each sample with value another dict keyed by
+        'total_count', 'noise', and 'bottleneck'. Counts drawn from
+        multinomial parameterized by pre-selection frerquencies after
+        passing through bottleneck of indicated size, and adding noise
+        by mutiplying phenotype by a random variable with mean 1 and
+        standard deviation specified by 'noise' (0 is no noise).
+    pre_sample_name : str
+        Name used for the pre-selection sample.
+    seed : None or int
+        If not `None`, random number seed.
 
-                - To specify counts, provide a data frame with
-                  columns "library", "barcode", and "count"
-                  where "count" is the pre-selection counts.
-
-                - To simulate, provide dict with keys "total_count"
-                  and "uniformity". For each library, we simulate
-                  pre-selection counts as a draw of "total_count"
-                  counts from a multinomial parameterized by
-                  pre-selection frequences drawn from a Dirichlet
-                  distribution with a concentration parameter of
-                  of "uniformity" (larger uniformity values mean
-                  more even libraries; 5 is reasonable value).
-
-        `post_samples` (dict)
-            Nested dict indicating post-selection samples.
-            Keyed by name of each post-selection sample, with
-            value being another dict. The post-selection counts
-            are drawn from a multinomial parameterized
-            by the pre-selection frequencies (frequencies calculated from
-            counts if `pre_sample` gives counts, Dirichlet frequencies
-            if `pre_sample` is simulated). Add noise by the
-            following parameters provided in the dict for each sample:
-
-                - "total_count": total overall counts per library.
-
-                - "noise": add additional noise to selection by
-                  multiplying phenotype times a random variable
-                  drawn from a normal distribution with mean 1
-                  and this standard deviation (truncated at lower
-                  end to zero). Set noise to 0 for no noise.
-
-                - "bottleneck": put the pre-selection frequencies
-                  through a bottleneck of this size, then re-calcuate
-                  initial frequencies that selection acts upon. Set
-                  to `None` for no bottleneck.
-
-        `pre_sample_name` (str)
-            Name used for the pre-selection sample.
-        `seed` (None or int)
-            If not `None`, random number seed set before executing
-            function (sets `scipy.random.seed`).
-
-    Returns:
-        A pandas DataFrame with the following columns:
-
+    Returns
+    -------
+    pandas.DataFrame
+        Data frame with the following columns:
             - "library"
-
             - "barcode"
-
             - "sample"
-
             - "count"
 
-        The first two columns indicate the library and barcode
-        for each variant as in the `barcode_variant_df` attribute
-        of `variants`, the "sample" and "count" columns give counts
-        for each sample.
     """
     if seed is not None:
         scipy.random.seed(seed)
@@ -227,7 +184,7 @@ def simulateSampleCounts(*,
     if pre_sample_name in post_samples:
         raise ValueError('`pre_sample_name` is in `post_samples`')
 
-    #-----------------------------------------
+    # -----------------------------------------
     # internal function
     def _add_variant_errors(codon_substitutions):
         """Add errors to variant according to `variant_error_rate`."""
@@ -235,12 +192,12 @@ def simulateSampleCounts(*,
             muts = codon_substitutions.split()
             if len(muts) == 0 or scipy.random.random() < 0.5:
                 # add mutation
-                mutatedsites = set(map(
-                        int,
-                        [re.match('^[ATGC]{3}(?P<site>\d+)[ATGC]{3}$',
-                                  mut).group('site')
-                         for mut in muts]
-                        ))
+                mutatedsites = set(map(int,
+                                       [re.match(f"^({'|'.join(CODONS)})"
+                                                 r'(?P<r>\d+)'
+                                                 f"({'|'.join(CODONS)})$",
+                                                 mut).group('r')
+                                        for mut in muts]))
                 unmutatedsites = [r for r in variants.sites
                                   if r not in mutatedsites]
                 if not unmutatedsites:
@@ -257,16 +214,17 @@ def simulateSampleCounts(*,
                 return muts
         else:
             return codon_substitutions
-    #-----------------------------------------
+    # -----------------------------------------
 
     barcode_variant_df = (
         variants.barcode_variant_df
         [['library', 'barcode', 'codon_substitutions']]
         .assign(
-            codon_substitutions=lambda x: x.codon_substitutions
-                                .apply(_add_variant_errors),
-            aa_substitutions=lambda x: x.codon_substitutions
-                             .apply(CodonVariantTable.codonToAAMuts),
+            codon_substitutions=(lambda x: x.codon_substitutions
+                                 .apply(_add_variant_errors)),
+            aa_substitutions=(lambda x: x.codon_substitutions
+                              .apply(dms_variants.codonvarianttable
+                                     .CodonVariantTable.codonToAAMuts)),
             phenotype=lambda x: x.apply(phenotype_func, axis=1)
             )
         [['library', 'barcode', 'phenotype']]
@@ -281,15 +239,14 @@ def simulateSampleCounts(*,
             raise ValueError(f"pre_sample lacks cols {req_cols}:"
                              f"\n{pre_sample}")
         cols = ['library', 'barcode']
-        if (pre_sample[cols].sort_values(cols).reset_index() !=
-            barcode_variant_df[cols].sort_values(cols).reset_index()
-            ).any():
+        if any(pre_sample[cols].sort_values(cols).reset_index() !=
+               barcode_variant_df[cols].sort_values(cols).reset_index()):
             raise ValueError("pre_sample DataFrame lacks required "
                              "library and barcode columns")
         barcode_variant_df = (
                 barcode_variant_df
                 .merge(pre_sample[req_cols], on=['library', 'barcode'])
-                .rename(columns={'count':pre_sample_name})
+                .rename(columns={'count': pre_sample_name})
                 )
         # "true" pre-selection freqs are just input counts
         nperlib = (barcode_variant_df
@@ -300,8 +257,7 @@ def simulateSampleCounts(*,
         barcode_variant_df = (
                 barcode_variant_df
                 .merge(nperlib, on='library')
-                .assign(pre_freqs=lambda x: x[pre_sample_name] /
-                                            x.total_count)
+                .assign(pre_freqs=lambda x: x[pre_sample_name] / x.total_count)
                 .drop(columns='total_count')
                 )
 
@@ -311,7 +267,7 @@ def simulateSampleCounts(*,
             raise ValueError(f"pre_sample lacks required keys {pre_req_keys}")
 
         pre_df_list = []
-        for lib in libraries:
+        for lib in libraries:  # noqa: B007
             df = (
                 barcode_variant_df
                 .query('library == @lib')
@@ -341,7 +297,7 @@ def simulateSampleCounts(*,
             raise ValueError(f"post_samples can't have key {col}; "
                              "choose another sample name")
 
-    df_list = [barcode_variant_df[cols[ : 4]]]
+    df_list = [barcode_variant_df[cols[: 4]]]
 
     def _bottleneck_freqs(pre_freq, bottleneck):
         if bottleneck is None:
@@ -350,32 +306,33 @@ def simulateSampleCounts(*,
             return scipy.random.multinomial(bottleneck, pre_freq) / bottleneck
 
     post_req_keys = {'bottleneck', 'noise', 'total_count'}
-    for lib, (sample, sample_dict) in itertools.product(
+    for lib, (sample, sample_dict) in itertools.product(  # noqa: B007
             libraries, sorted(post_samples.items())):
 
         if set(sample_dict.keys()) != post_req_keys:
-            raise ValueError(f"post_samples {sample} lacks keys {post_req_keys}")
+            raise ValueError(f"post_samples {sample} lacks {post_req_keys}")
 
         lib_df = (
             barcode_variant_df.query('library == @lib')
             .assign(
                 sample=sample,
                 # simulated pre-selection freqs after bottleneck
-                bottleneck_freq=lambda x:
-                                _bottleneck_freqs(x.pre_freq,
-                                                  sample_dict['bottleneck']),
+                bottleneck_freq=(lambda x:
+                                 _bottleneck_freqs(x.pre_freq,
+                                                   sample_dict['bottleneck'])),
                 # post-selection freqs with noise
                 noise=scipy.clip(scipy.random.normal(1, sample_dict['noise']),
                                  0, None),
-                post_freq_nonorm=lambda x:
-                            x.bottleneck_freq * x.phenotype * x.noise,
-                post_freq=lambda x: x.post_freq_nonorm /
-                            x.post_freq_nonorm.sum(),
+                post_freq_nonorm=lambda x: (x.bottleneck_freq *
+                                            x.phenotype * x.noise),
+                post_freq=lambda x: (x.post_freq_nonorm /
+                                     x.post_freq_nonorm.sum()),
                 # post-selection counts simulated from frequencies
-                count=lambda x: scipy.random.multinomial(
-                            sample_dict['total_count'], x.post_freq)
+                count=(lambda x:
+                       scipy.random.multinomial(sample_dict['total_count'],
+                                                x.post_freq))
                 )
-            .rename(columns={'post_counts':sample})
+            .rename(columns={'post_counts': sample})
             [['library', 'barcode', 'sample', 'count']]
             )
 
@@ -384,9 +341,11 @@ def simulateSampleCounts(*,
     return pd.concat(df_list)
 
 
-class PhenotypeSimulator:
-    """Simulates phenotypes of variants under plausible model.
+class SigmoidPhenotypeSimulator:
+    """Simulate phenotypes under sigmoid global epistasis model.
 
+    Note
+    ----
     Mutational effects on latent phenotype are simulated to follow
     compound normal distribution; latent phenotype maps to observed
     phenotype via sigmoid. This distinction between latent and
@@ -394,50 +353,46 @@ class PhenotypeSimulator:
     `Otwinoski et al <https://doi.org/10.1073/pnas.1804015115>`_ and
     `Sailer and Harms <http://www.genetics.org/content/205/3/1079>`_.
 
-    Initialize with a codon sequence and random number seed.
-    The effects of mutations on the latent phenotype are then drawn
-    from a compound normal distribution biased to negative values.
+    The exact sigmoid used is defined in
+    :meth:`SigmoidPhenotypeSimulator.latentToObserved`.
 
-    To calculate latent and observed phenotypes, pass rows of a
-    :meth:`CodonVariantTable.barcode_variant_df` to
-    :meth:`PhenotypeSimulator.latentPhenotype` or
-    :meth:`PhenotypeSimulator.observedPhenotype`.
+    Parameters
+    ----------
+    geneseq : str
+        Codon sequence of wild-type gene.
+    seed : int or None
+        Random number seed.
+    wt_latent : float
+        Latent phenotype of wildtype.
+    norm_weights : list or tuple of tuples
+        Specify compound normal distribution of mutational effects on
+        latent phenotype as `(weight, mean, sd)` for each Gaussian.
+    stop_effect : float
+        Effect of stop codon at any position.
 
-    Args:
-        `geneseq` (str)
-            Codon sequence of wild-type gene.
-        `seed` (int)
-            Random number seed.
-        `wt_latent` (float)
-            Latent phenotype of wildtype.
-        `norm_weights` (list of tuples)
-            Specifies compound normal distribution of mutational
-            effects on latent phenotype. Each tuple is
-            `(weight, mean, sd)`, giving weight, mean, and standard
-            deviation of each Gaussian in compound normal.
-        `stop_effect` (float)
-            Effect of stop codon at any position.
+    Attributes
+    ----------
+    wt_latent : float
+        Wildtype latent phenotype.
+    muteffects : dict
+        Effect on latent phenotype of each amino-acid mutation.
 
-    Attributes:
-        `wt_latent` (float)
-            Value for wildtype latent phenotype.
-        `muteffects` (dict)
-            Effects on latent phenotype of each amino-acid mutation.
     """
 
-    def __init__(self, geneseq, *, seed=1, wt_latent=1,
-                 norm_weights=[(0.4, -0.5, 1), (0.6, -5, 2.5)],
+    def __init__(self, geneseq, *, seed=1, wt_latent=4,
+                 norm_weights=((0.4, -0.5, 1), (0.6, -5, 2.5)),
                  stop_effect=-10):
         """See main class docstring for how to initialize."""
         self.wt_latent = wt_latent
 
         # simulate muteffects from compound normal distribution
         self.muteffects = {}
-        scipy.random.seed(seed)
+        if seed is not None:
+            scipy.random.seed(seed)
         weights, means, sds = zip(*norm_weights)
         cumweights = scipy.cumsum(weights)
         for icodon in range(len(geneseq) // 3):
-            wt_aa = CODON_TO_AA[geneseq[3 * icodon : 3 * icodon + 3]]
+            wt_aa = CODON_TO_AA[geneseq[3 * icodon: 3 * icodon + 3]]
             for mut_aa in AAS_WITHSTOP:
                 if mut_aa != wt_aa:
                     if mut_aa == '*':
@@ -447,99 +402,160 @@ class PhenotypeSimulator:
                         i = scipy.argmin(cumweights < scipy.random.rand())
                         # draw mutational effect from chosen Gaussian
                         muteffect = scipy.random.normal(means[i], sds[i])
-                    self.muteffects[f'{wt_aa}{icodon + 1}{mut_aa}'] = muteffect
+                    self.muteffects[f"{wt_aa}{icodon + 1}{mut_aa}"] = muteffect
 
     def latentPhenotype(self, v):
-        """Returns latent phenotype of a variant.
+        """Latent phenotype of a variant.
 
-        Args:
-            `v` (dict or row of pandas DataFrame)
-                Must have key 'aa_substitutions' that gives
-                space de-limited list of amino-acid mutations.
+        Parameters
+        ----------
+        v : dict or row of pandas.DataFrame
+            Must have key 'aa_substitutions' that gives space-delimited
+            amino-acid mutations.
+
+        Returns
+        -------
+        float
+            Latent phenotype of variant.
+
         """
-        return self.wt_latent + sum([self.muteffects[m] for m in
-                                     v['aa_substitutions'].split()])
+        return self.wt_latent + sum(self.muteffects[m] for m in
+                                    v['aa_substitutions'].split())
 
     def observedPhenotype(self, v):
-        """Like `latentPhenotype` but returns observed phenotype."""
-        return self.latentToObservedPhenotype(self.latentPhenotype(v))
+        """Observed phenotype of a variant.
+
+        Parameters
+        ----------
+        v : dict or row of pandas.DataFrame
+            Must have key 'aa_substitutions' that gives space-delimited
+            amino-acid mutations.
+
+        Returns
+        -------
+        float
+            Observed phenotype of variant.
+
+        """
+        return self.latentToObserved(self.latentPhenotype(v))
 
     @staticmethod
-    def latentToObservedPhenotype(latent):
-        """Returns observed phenotype from latent phenotype."""
+    def latentToObserved(latent):
+        r"""Observed phenotype from latent phenotype.
+
+        Note
+        ----
+        The observed phenotype :math:`p_{obs}` is calculated from the
+        latent phenotype :math:`p_{latent}` as:
+
+        .. math::
+
+            p_{obs} = \frac{1}{1 + e^{-p_{latent}}}
+
+        Parameters
+        ----------
+        latent : float
+            Latent phenotype.
+
+        Returns
+        -------
+        float
+            Observed phenotype.
+
+        """
         return 1 / (1 + math.exp(-latent - 3))
 
-    def plotLatentVersusObservedPhenotype(self, *,
-            latent_min=-15, latent_max=5, npoints=200):
-        """Plots observed phenotype as function of latent phenotype.
+    def plotLatentVsObservedPhenotype(self, *, latent_min=-15,
+                                      latent_max=5, npoints=200,
+                                      wt_vline=True):
+        """Plot observed phenotype as function of latent phenotype.
 
-        Plot includes a vertical line at wildtype latent phenotype.
+        Parameters
+        ----------
+        latent_min : float
+            Smallest value of latent phenotype on plot.
+        latent_max : float
+            Largest value of latent phenotype on plot.
+        npoints : int
+            Plot a line fit to this many points.
+        wt_vline : bool
+            Draw a vertical line at the wildtype latent phenotype.
 
-        Args:
-            `latent_min` (float)
-                Smallest value of latent phenotype on plot.
-            `latent_max` (float)
-                Largest value of latent phenotype on plot.
-            `npoints` (int)
-                Plot a line fit to this many points.
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+            Plot of observed phenotype as function of latent phenotype.
 
-        Returns:
-            A `plotnine <https://plotnine.readthedocs.io>`_
-            plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         latent = scipy.linspace(latent_min, latent_max, npoints)
-        p = (p9.ggplot(pd.DataFrame(dict(latent=latent))
-                       .assign(observed=lambda x: x.latent.apply(
-                                        self.latentToObservedPhenotype)),
-                    p9.aes('latent', 'observed')
-                    ) +
+
+        p = (p9.ggplot(pd.DataFrame(
+                            {'latent': latent,
+                             'observed': map(latent, self.latentToObserved)}),
+                       p9.aes('latent', 'observed')
+                       ) +
              p9.geom_line() +
-             p9.geom_vline(xintercept=self.wt_latent, color=CBPALETTE[1],
-                        linetype='dashed') +
-            p9.theme(figure_size=(3.5, 2.5)) +
-            p9.xlab('latent phenotype') +
-            p9.ylab('observed phenotype')
-            )
+             p9.theme(figure_size=(3.5, 2.5)) +
+             p9.xlab('latent phenotype') +
+             p9.ylab('observed phenotype')
+             )
+
+        if wt_vline:
+            p = p + p9.geom_vline(xintercept=self.wt_latent,
+                                  color=CBPALETTE[1],
+                                  linetype='dashed')
+
         return p
 
     def plotMutsHistogram(self, latent_or_observed, *,
-            mutant_order=1, bins=30):
-        """Plots distribution of phenotype for all mutants.
+                          mutant_order=1, bins=30, wt_vline=True):
+        """Plot distribution of phenotype for all mutants.
 
-        Plot includes a vertical line at wildtype phenotype.
+        Parameters
+        ----------
+        latent_or_observed : {'latent', 'observed'}
+            Which type of phenotype to plot.
+        mutant_order : int
+            Plot mutations of this order. Currently only works for 1
+            (single mutants).
+        bins : int
+            Number of bins in histogram.
+        wt_vline : bool
+            Draw a vertical line at the wildtype latent phenotype.
 
-        Args:
-            `latent_or_observed` ("latent" or "observed")
-                Which type of phenotype to plot.
-            `mutant_order` (int)
-                Plot mutations of this order. Currently only works
-                for 1 (single mutants).
-            `bins` (int)
-                Number of bins in histogram.
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+            Histogram of phenotype for all mutants.
 
-        Returns:
-            A `plotnine <https://plotnine.readthedocs.io>`_
-            plot; can be displayed in a Jupyter notebook with `p.draw()`.
         """
         if mutant_order != 1:
             raise ValueError('only implemented for `mutant_order` of 1')
+
         if latent_or_observed == 'latent':
             phenoFunc = self.latentPhenotype
         elif latent_or_observed == 'observed':
             phenoFunc = self.observedPhenotype
         else:
             raise ValueError('invalid value of `latent_or_observed`')
-        phenotypes = [phenoFunc({'aa_substitutions':m}) for m in
+
+        phenotypes = [phenoFunc({'aa_substitutions': m}) for m in
                       self.muteffects.keys()]
-        p = (p9.ggplot(pd.DataFrame({'phenotype':phenotypes}),
-                    p9.aes('phenotype')) +
+
+        p = (p9.ggplot(pd.DataFrame({'phenotype': phenotypes}),
+                       p9.aes('phenotype')) +
              p9.geom_histogram(bins=bins) +
              p9.theme(figure_size=(3.5, 2.5)) +
              p9.ylab(f"number of {mutant_order}-mutants") +
-             p9.xlab(f"{latent_or_observed} phenotype") +
-             p9.geom_vline(xintercept=phenoFunc({'aa_substitutions':''}),
-                        color=CBPALETTE[1], linetype='dashed')
+             p9.xlab(f"{latent_or_observed} phenotype")
              )
+
+        if wt_vline:
+            p = p + p9.geom_vline(
+                        xintercept=phenoFunc({'aa_substitutions': ''}),
+                        color=CBPALETTE[1],
+                        linetype='dashed')
+
         return p
 
 
