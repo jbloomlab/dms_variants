@@ -16,7 +16,7 @@ Contents
    :maxdepth: 2
 
    installation
-   dms_variants
    examples
+   dms_variants
    package_index
    acknowledgments

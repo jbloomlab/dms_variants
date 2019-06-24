@@ -3,6 +3,9 @@
 dms_variants
 ================================
 
+Python package for analyzing deep mutational scanning of barcoded
+variants of genes.
+
 """
 
 __author__ = '`the Bloom lab <https://research.fhcrc.org/bloom/en.html>`_'
