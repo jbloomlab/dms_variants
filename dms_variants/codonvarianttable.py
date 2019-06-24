@@ -4,15 +4,13 @@ codonvarianttable
 =================
 
 Defines :class:`CodonVariantTable` objects for storing and
-for storing and handling codon variants of a gene.
+handling codon variants of a gene.
 
 """
 
 import collections
 import itertools
-import math
 import os
-import random
 import re
 import tempfile
 
@@ -25,11 +23,12 @@ import plotnine as p9
 import scipy
 
 import dms_variants.utils
-from dms_variants.constants import (AAS_WITHSTOP,
+from dms_variants.constants import (AAS_NOSTOP,
+                                    AAS_WITHSTOP,
                                     AA_TO_CODONS,
                                     CBPALETTE,
-                                    CODON_TO_AA,
                                     CODONS,
+                                    CODON_TO_AA,
                                     NTS,
                                     )
 
@@ -79,23 +78,23 @@ class CodonVariantTable:
     """
 
     _CODON_SUB_RE = re.compile(f"^(?P<wt>{'|'.join(CODONS)})"
-                               '(?P<r>\d+)'
+                               r'(?P<r>\d+)'
                                f"(?P<mut>{'|'.join(CODONS)})$")
     """re Pattern : Match codon substitution; groups 'wt', 'r', 'mut'."""
 
     _AA_SUB_RE = re.compile((f"^(?P<wt>{'|'.join(AAS_WITHSTOP)})"
-                             '(?P<r>\d+)'
-                             f"(?P<mut>{'|'.join(AAS_WITHSTOP)})$")
-                             .replace('*', '\*'))
+                             r'(?P<r>\d+)'
+                             f"(?P<mut>{'|'.join(AAS_WITHSTOP)})$"
+                             ).replace('*', r'\*'))
     """re Pattern : Match amino-acid substitution; groups 'wt', 'r', 'mut'."""
 
     _NT_SUB_RE = re.compile(f"^(?P<wt>{'|'.join(NTS)})"
-                               '(?P<r>\d+)'
-                               f"(?P<mut>{'|'.join(NTS)})$")
+                            r'(?P<r>\d+)'
+                            f"(?P<mut>{'|'.join(NTS)})$")
     """re Pattern : Match nucleotide substitution; groups 'wt', 'r', 'mut'."""
 
     def __eq__(self, other):
-        """Tests if equal to object `other`."""
+        """Test if equal to object `other`."""
         # following here: https://stackoverflow.com/a/390640
         if type(other) is not type(self):
             return False
@@ -114,7 +113,7 @@ class CodonVariantTable:
 
     @classmethod
     def from_variant_count_df(cls, *, variant_count_df_file, geneseq,
-            drop_all_libs=True):
+                              drop_all_libs=True):
         """:class:`CodonVariantTable` from CSV of `variant_count_df`.
 
         Note
@@ -132,7 +131,7 @@ class CodonVariantTable:
             Sequence of wildtype protein-coding gene.
         drop_all_libs : bool
             If there is a library named "all libraries", drop it as it probably
-            added by :meth:`CodonVariantTable.addMergedLibraries` and 
+            added by :meth:`CodonVariantTable.addMergedLibraries` and
             duplicates information for the individual libraries.
 
         Returns
@@ -145,7 +144,7 @@ class CodonVariantTable:
         req_cols = ['barcode', 'library', 'variant_call_support',
                     'codon_substitutions', 'sample', 'count']
         if not (set(req_cols) < set(df.columns)):
-            raise ValueError(f"{variant_count_df} lacks required "
+            raise ValueError(f"{variant_count_df_file} lacks required "
                              f"columns {req_cols}")
         else:
             df = df[req_cols]
@@ -157,11 +156,11 @@ class CodonVariantTable:
 
         with tempfile.NamedTemporaryFile(mode='w') as f:
             (df
-                .drop(columns=['sample', 'count'])
-                .rename(columns={'codon_substitutions':'substitutions'})
-                .drop_duplicates()
-                .to_csv(f, index=False)
-                )
+             .drop(columns=['sample', 'count'])
+             .rename(columns={'codon_substitutions': 'substitutions'})
+             .drop_duplicates()
+             .to_csv(f, index=False)
+             )
             f.flush()
             cvt = cls(barcode_variant_file=f.name,
                       geneseq=geneseq,
@@ -178,19 +177,17 @@ class CodonVariantTable:
 
         return cvt
 
-
     def __init__(self, *, barcode_variant_file, geneseq,
-                 substitutions_are_codon=False, extra_cols=[]):
+                 substitutions_are_codon=False, extra_cols=None):
         """See main class doc string."""
-
         self.geneseq = geneseq.upper()
         if not re.match(f"^[{''.join(NTS)}]+$", self.geneseq):
             raise ValueError(f"invalid nucleotides in {self.geneseq}")
         if ((len(geneseq) % 3) != 0) or len(geneseq) == 0:
-            raise ValueError(f"`geneseq` of invalid length {len(self.geneseq)}")
+            raise ValueError(f"`geneseq` invalid length {len(self.geneseq)}")
         self.sites = list(range(1, len(self.geneseq) // 3 + 1))
         self.codons = collections.OrderedDict([
-                (r, self.geneseq[3 * (r - 1) : 3 * r]) for r in self.sites])
+                (r, self.geneseq[3 * (r - 1): 3 * r]) for r in self.sites])
         self.aas = collections.OrderedDict([
                 (r, CODON_TO_AA[codon]) for r, codon in self.codons.items()])
 
@@ -201,9 +198,11 @@ class CodonVariantTable:
             raise ValueError("`variantfile` does not have "
                              f"required columns {required_cols}")
         if extra_cols and not set(df.columns).issuperset(set(extra_cols)):
-            raise ValueError("`variantfile` does not have "
-                             f"`extra_cols` {extra_cols}")
-        df = df[required_cols + extra_cols]
+            raise ValueError(f"`variantfile` lacks `extra_cols` {extra_cols}")
+        if extra_cols:
+            df = df[required_cols + extra_cols]
+        else:
+            df = df[required_cols]
 
         self.libraries = sorted(df.library.unique().tolist())
         self._valid_barcodes = {}
@@ -213,7 +212,7 @@ class CodonVariantTable:
                 raise ValueError(f"duplicated barcodes for {lib}")
             self._valid_barcodes[lib] = set(barcodes)
 
-        self._samples = {lib:[] for lib in self.libraries}
+        self._samples = {lib: [] for lib in self.libraries}
         self.variant_count_df = None
 
         if substitutions_are_codon:
@@ -224,33 +223,24 @@ class CodonVariantTable:
         self.barcode_variant_df = (
                 df
                 # info about codon and amino-acid substitutions
-                .assign(codon_substitutions=
-                            lambda x: x.substitutions
-                                       .fillna('')
-                                       .apply(codonSubsFunc),
-                        aa_substitutions=
-                            lambda x: x.codon_substitutions
-                                       .apply(self.codonToAAMuts),
-                        n_codon_substitutions=
-                            lambda x: x.codon_substitutions
-                                       .str
-                                       .split()
-                                       .apply(len),
-                        n_aa_substitutions=
-                            lambda x: x.aa_substitutions
-                                       .str
-                                       .split()
-                                       .apply(len)
+                .assign(codon_substitutions=lambda x: (x['substitutions']
+                                                       .fillna('')
+                                                       .apply(codonSubsFunc)),
+                        aa_substitutions=lambda x: (x.codon_substitutions
+                                                    .apply(self.codonToAAMuts)
+                                                    ),
+                        n_codon_substitutions=lambda x: (x.codon_substitutions
+                                                         .str.split()
+                                                         .apply(len)),
+                        n_aa_substitutions=lambda x: (x['aa_substitutions']
+                                                      .str.split().apply(len))
                         )
                 # we no longer need initial `substitutions` column
                 .drop('substitutions', axis='columns')
                 # sort to ensure consistent order
-                .assign(library=lambda x:
-                                pd.Categorical(
-                                    x.library,
-                                    categories=self.libraries,
-                                    ordered=True
-                                    )
+                .assign(library=lambda x: pd.Categorical(x['library'],
+                                                         self.libraries,
+                                                         ordered=True)
                         )
                 .sort_values(['library', 'barcode'])
                 .reset_index(drop=True)
@@ -259,7 +249,7 @@ class CodonVariantTable:
         # check validity of codon substitutions given `geneseq`
         for codonmut in itertools.chain.from_iterable(
                         self.barcode_variant_df
-                          .codon_substitutions.str.split()):
+                        .codon_substitutions.str.split()):
             m = self._CODON_SUB_RE.match(codonmut)
             if m is None:
                 raise ValueError(f"invalid mutation {codonmut}")
@@ -267,20 +257,19 @@ class CodonVariantTable:
             r = int(m.group('r'))
             mut = m.group('mut')
             if r not in self.sites:
-                raise ValueError(f"invalid site {r} in codon mutation {codonmut}")
+                raise ValueError(f"invalid site {r} in mutation {codonmut}")
             if self.codons[r] != wt:
                 raise ValueError(f"Wrong wildtype codon in {codonmut}. "
-                                 f"Expected wildtype of {codons[r]}.")
+                                 f"Expected wildtype of {self.codons[r]}.")
             if wt == mut:
                 raise ValueError(f"invalid mutation {codonmut}")
 
         # define some colors for plotting
         self._mutation_type_colors = {
-                'nonsynonymous':CBPALETTE[1],
-                'synonymous':CBPALETTE[2],
-                'stop':CBPALETTE[3]
+                'nonsynonymous': CBPALETTE[1],
+                'synonymous': CBPALETTE[2],
+                'stop': CBPALETTE[3]
                 }
-
 
     def samples(self, library):
         """List of all samples for `library`.
@@ -300,7 +289,6 @@ class CodonVariantTable:
             return self._samples[library]
         except KeyError:
             raise ValueError(f"invalid `library` {library}")
-
 
     def addSampleCounts(self, library, sample, barcodecounts):
         """Add variant counts for a sample to `variant_count_df`.
@@ -368,28 +356,21 @@ class CodonVariantTable:
         # make library and sample categorical and sort
         self.variant_count_df = (
                 self.variant_count_df
-                .assign(library=lambda x:
-                                pd.Categorical(
-                                    x.library,
-                                    categories=self.libraries,
-                                    ordered=True
-                                    ),
-                        sample=lambda x:
-                               pd.Categorical(
-                                    x['sample'],
-                                    categories=unique_samples,
-                                    ordered=True
-                                    )
-                         )
+                .assign(library=lambda x: pd.Categorical(x['library'],
+                                                         self.libraries,
+                                                         ordered=True),
+                        sample=lambda x: pd.Categorical(x['sample'],
+                                                        unique_samples,
+                                                        ordered=True),
+                        )
                 .sort_values(['library', 'sample', 'count'],
                              ascending=[True, True, False])
                 .reset_index(drop=True)
                 )
 
-
     def valid_barcodes(self, library):
         """Set of valid barcodes for `library`.
-       
+
         Parameters
         ----------
         library : str
@@ -398,7 +379,7 @@ class CodonVariantTable:
         Returns
         -------
         set
-        
+
         """
         if library not in self.libraries:
             raise ValueError(f"invalid `library` {library}; "
@@ -406,27 +387,41 @@ class CodonVariantTable:
         else:
             return self._valid_barcodes[library]
 
-
     def func_scores(self, preselection, *,
                     pseudocount=0.5, by="barcode",
                     combine_libs=False, syn_as_wt=False, logbase=2,
                     permit_zero_wt=False, permit_self_comp=False):
         r"""Get data frame with functional scores for variants.
 
-        Notes
-        -----
+        Note
+        ----
         The functional score is calculated from the change in counts
         for a variant pre- and post-selection using the formula in
         `Otwinoski et al (2018) <https://doi.org/10.1073/pnas.1804015115>`_.
-        Specifically, if :math:`n^v_{pre}` and :math:`n^v_{post}` are
+
+        Specifically, let :math:`n^v_{pre}` and :math:`n^v_{post}` be
         the counts of variant :math:`v` pre- and post-selection, and
-        if :math:`n^{wt}_{pre}` and :math:`n^{wt}_{post}` are
+        let :math:`n^{wt}_{pre}` and :math:`n^{wt}_{post}` be
         the summed counts of **all** wildtype variants pre- and post-
-        selection, then the functional score of the variant is
-        :math:`f_v = \log_b\left(\frac{n^v_{post} / n^{wt}_{post}}{n^v_{pre} / n^{wt}_{pre}}\right)`
-        and the variance due to Poisson sampling statistics is
-        :math:`\frac{1}{\left(\ln b\right)^2}\left(\sigma^2_v = \frac{1}{n^v_{post}} + \frac{1}{n^{wt}_{post}} + \frac{1}{n^v_{pre}} + \frac{1}{n^{wt}_{pre}}\right)`
+        selection.
+
+        Then the functional score of the variant is:
+
+        .. math::
+
+            f_v = \log_b\left(\frac{n^v_{post} /
+            n^{wt}_{post}}{n^v_{pre} / n^{wt}_{pre}}\right).
+
+        The variance due to Poisson sampling statistics is:
+
+        .. math::
+
+            \sigma^2_v = \frac{1}{\left(\ln b\right)^2}
+            \left(\frac{1}{n^v_{post}} + \frac{1}{n^{wt}_{post}} +
+            \frac{1}{n^v_{pre}} + \frac{1}{n^{wt}_{pre}}\right)
+
         where :math:`b` is logarithm base (see `logbase` parameter).
+
         For both calculations, a pseudocount (see `pseudocount` parameter)
         is added to each count first. The wildtype counts are computed
         across all **fully wildtype** variants (see `syn_as_wt` for
@@ -485,7 +480,7 @@ class CodonVariantTable:
         ordered_samples = self.variant_count_df['sample'].unique()
         if isinstance(preselection, str):
             # make `preselection` into dict
-            preselection = {s:preselection for s in ordered_samples
+            preselection = {s: preselection for s in ordered_samples
                             if s != preselection or permit_self_comp}
         elif not isinstance(preselection, dict):
             raise ValueError('`preselection` not str or dict')
@@ -509,7 +504,7 @@ class CodonVariantTable:
 
         if combine_libs and (len(self.libraries) > 1):
             if any(s not in self.samples(lib) for lib in self.libraries
-                                              for s in samples):
+                   for s in samples):
                 raise ValueError('cannot use `combine_libs`, not every '
                                  f"library has every sample: {samples}")
             df = (self.addMergedLibraries(df)
@@ -523,10 +518,10 @@ class CodonVariantTable:
             wt_col = 'n_codon_substitutions'
         wt_counts = (
                 df
-                .assign(count=lambda x: x['count'] * (0 == x[wt_col])
-                                        .astype('int'))
+                .assign(count=lambda x: (x['count'] *
+                                         (0 == x[wt_col]).astype('int')))
                 .groupby(['library', 'sample'])
-                .aggregate({'count':'sum'})
+                .aggregate({'count': 'sum'})
                 .reset_index()
                 )
         if (wt_counts['count'] <= 0).any() and not permit_zero_wt:
@@ -536,12 +531,12 @@ class CodonVariantTable:
         group_cols = ['codon_substitutions', 'n_codon_substitutions',
                       'aa_substitutions', 'n_aa_substitutions']
         if by in {'aa_substitutions', 'codon_substitutions'}:
-            group_cols = group_cols[group_cols.index(by) + 1 : ]
+            group_cols = group_cols[group_cols.index(by) + 1:]
         elif by != 'barcode':
             raise ValueError(f"invalid `by` of {by}")
         df = (df
               .groupby(['library', 'sample', by] + group_cols)
-              .aggregate({'count':'sum'})
+              .aggregate({'count': 'sum'})
               .reset_index()
               )
 
@@ -552,16 +547,17 @@ class CodonVariantTable:
                 continue
             pre_sample = preselection[post_sample]
             sample_dfs = []
-            for stype, s in [('pre', pre_sample), ('post', post_sample)]:
+            for stype, s in [('pre', pre_sample),  # noqa: B007
+                             ('post', post_sample)]:
                 sample_dfs.append(
                         df
                         .query('sample == @s')
-                        .rename(columns={'count':f"{stype}_count"})
+                        .rename(columns={'count': f"{stype}_count"})
                         .merge(wt_counts
-                               .rename(columns={'count':f"{stype}_count_wt"}),
+                               .rename(columns={'count': f"{stype}_count_wt"}),
                                how='inner', validate='many_to_one'
                                )
-                        .rename(columns={'sample':f"{stype}_sample"})
+                        .rename(columns={'sample': f"{stype}_sample"})
                         )
             df_func_scores.append(
                     pd.merge(sample_dfs[0], sample_dfs[1],
@@ -573,9 +569,9 @@ class CodonVariantTable:
         # check pseudocount
         if pseudocount < 0:
             raise ValueError(f"`pseudocount` is < 0: {pseudocount}")
-        elif (pseudocount == 0) and any((df_func_scores[c] <= 0).any()
-                                    for c in ['pre_count', 'post_count',
-                                    'pre_count_wt', 'post_count_wt']):
+        elif (pseudocount == 0) and any((df_func_scores[c] <= 0).any() for c
+                                        in ['pre_count', 'post_count',
+                                            'pre_count_wt', 'post_count_wt']):
             raise ValueError('some counts are zero, you must use '
                              '`pseudocount` > 0')
 
@@ -584,19 +580,18 @@ class CodonVariantTable:
                 df_func_scores
                 .assign(
                     pseudocount=pseudocount,
-                    func_score=lambda x:
-                               scipy.log(
-                                    ((x.post_count + x.pseudocount) /
-                                     (x.post_count_wt + x.pseudocount)) /
-                                    ((x.pre_count + x.pseudocount) /
-                                     (x.pre_count_wt + x.pseudocount))
-                               ) / scipy.log(logbase),
-                    func_score_var=lambda x:
-                               (1 / (x.post_count + x.pseudocount) +
+                    func_score=lambda x: scipy.log(
+                                         ((x.post_count + x.pseudocount) /
+                                          (x.post_count_wt + x.pseudocount)) /
+                                         ((x.pre_count + x.pseudocount) /
+                                          (x.pre_count_wt + x.pseudocount))
+                                         ) / scipy.log(logbase),
+                    func_score_var=lambda x: (
+                                1 / (x.post_count + x.pseudocount) +
                                 1 / (x.post_count_wt + x.pseudocount) +
                                 1 / (x.pre_count + x.pseudocount) +
                                 1 / (x.pre_count_wt + x.pseudocount)
-                               ) / (scipy.log(logbase)**2)
+                                ) / (scipy.log(logbase)**2)
                     )
                 # set column order in data frame
                 [['library', 'pre_sample', 'post_sample', by,
@@ -607,11 +602,10 @@ class CodonVariantTable:
 
         return df_func_scores
 
-
     def n_variants_df(self, *, libraries='all', samples='all',
                       min_support=1, variant_type='all',
                       mut_type=None):
-        """Number of variants per library / sample.
+        """Get number of variants per library / sample.
 
         Parameters
         ----------
@@ -642,13 +636,12 @@ class CodonVariantTable:
 
         return (df
                 .groupby(['library', 'sample'])
-                .aggregate({'count':'sum'})
+                .aggregate({'count': 'sum'})
                 .reset_index()
                 )
 
-
     def mutCounts(self, variant_type, mut_type, *,
-            libraries='all', samples='all', min_support=1):
+                  libraries='all', samples='all', min_support=1):
         """Get counts of each individual mutation.
 
         Parameters
@@ -690,10 +683,10 @@ class CodonVariantTable:
                 if mut != wt:
                     mut_list.append(f'{wt}{r}{mut}')
         all_muts = pd.concat([
-                    pd.DataFrame({'mutation':mut_list,
-                                     'library':library,
-                                     'sample':sample,
-                                     'count':0})
+                    pd.DataFrame({'mutation': mut_list,
+                                  'library': library,
+                                  'sample': sample,
+                                  'count': 0})
                     for library, sample in
                     itertools.product(librarylist, samplelist)])
 
@@ -730,33 +723,25 @@ class CodonVariantTable:
             return site
 
         df = (df
-              .rename(columns=
-                  {f"{mut_type}_substitutions":"mutation"}
-                  )
+              .rename(columns={f"{mut_type}_substitutions": 'mutation'})
               [['library', 'sample', 'mutation', 'count']]
               .pipe(dms_variants.utils.tidy_split, column='mutation')
               .merge(all_muts, how='outer')
               .groupby(['library', 'sample', 'mutation'])
-              .aggregate({'count':'sum'})
+              .aggregate({'count': 'sum'})
               .reset_index()
-              .assign(
-                library=lambda x:
-                         pd.Categorical(
-                          x['library'],
-                          librarylist,
-                          ordered=True),
-                sample=lambda x:
-                         pd.Categorical(
-                          x['sample'],
-                          samplelist,
-                          ordered=True),
-                mutation_type=lambda x:
-                         pd.Categorical(
-                          x['mutation'].apply(_classify_mutation),
-                          mutation_types,
-                          ordered=True),
-                site=lambda x: x['mutation'].apply(_get_site),
-                )
+              .assign(library=lambda x: pd.Categorical(x['library'],
+                                                       librarylist,
+                                                       ordered=True),
+                      sample=lambda x: pd.Categorical(x['sample'],
+                                                      samplelist,
+                                                      ordered=True),
+                      mutation_type=lambda x:
+                      pd.Categorical(x['mutation'].apply(_classify_mutation),
+                                     mutation_types,
+                                     ordered=True),
+                      site=lambda x: x['mutation'].apply(_get_site),
+                      )
               .sort_values(
                 ['library', 'sample', 'count', 'mutation'],
                 ascending=[True, True, False, True])
@@ -765,12 +750,11 @@ class CodonVariantTable:
 
         return df
 
-
     def plotMutHeatmap(self, variant_type, mut_type, *,
-            count_or_frequency='frequency',
-            libraries='all', samples='all', plotfile=None,
-            orientation='h', widthscale=1, heightscale=1,
-            min_support=1):
+                       count_or_frequency='frequency',
+                       libraries='all', samples='all', plotfile=None,
+                       orientation='h', widthscale=1, heightscale=1,
+                       min_support=1):
         """Heatmap of mutation counts or frequencies.
 
         Parameters
@@ -782,10 +766,9 @@ class CodonVariantTable:
 
         Returns
         -------
-        `plotnine <https://plotnine.readthedocs.io>`_ plot
+        plotnine.ggplot.ggplot
 
         """
-
         df = self.mutCounts(variant_type, mut_type, samples=samples,
                             libraries=libraries, min_support=min_support)
 
@@ -794,28 +777,36 @@ class CodonVariantTable:
                                          min_support=min_support,
                                          variant_type=variant_type,
                                          mut_type=mut_type)
-                      .rename(columns={'count':'nseqs'})
+                      .rename(columns={'count': 'nseqs'})
                       )
 
         # order amino acids by Kyte-Doolittle hydrophobicity,
-        # codons by the amino acid they encode
         aa_order = [tup[0] for tup in sorted(
                     Bio.SeqUtils.ProtParamData.kd.items(),
                     key=lambda tup: tup[1])] + ['*']
-        codon_order = list(itertools.chain.from_iterable(
-                        [AA_TO_CODONS[aa] for aa in aa_order]))
+        if mut_type == 'codon':
+            height_per = 5.5
+            mut_desc = 'codon'
+            # order codons by the amino acid they encode
+            order = list(itertools.chain.from_iterable(
+                         [AA_TO_CODONS[aa] for aa in aa_order]))
+            pattern = self._CODON_SUB_RE.pattern
+        elif mut_type == 'aa':
+            height_per = 1.7
+            mut_desc = 'amino acid'
+            order = aa_order
+            pattern = self._AA_SUB_RE.pattern
+        else:
+            raise ValueError(f"invalid `mut_type` {mut_type}")
 
         df = (df
               [['library', 'sample', 'mutation', 'site', 'count']]
               .merge(n_variants, on=['library', 'sample'])
               .assign(frequency=lambda x: x['count'] / x['nseqs'],
-                      mut_char=lambda x:
-                        pd.Categorical(
-                         x.mutation.str.extract(
-                            '^[A-Z\*]+\d+(?P<mut_char>[A-Z\*]+)$')
-                            .mut_char,
-                         {'aa':aa_order, 'codon':codon_order}[mut_type],
-                         ordered=True)
+                      mut_char=lambda x: pd.Categorical(x['mutation'].str
+                                                        .extract(pattern).mut,
+                                                        order,
+                                                        ordered=True)
                       )
               )
 
@@ -825,15 +816,6 @@ class CodonVariantTable:
 
         nlibraries = len(df['library'].unique())
         nsamples = len(df['sample'].unique())
-
-        if mut_type == 'codon':
-            height_per = 5.5
-            mut_desc = 'codon'
-        elif mut_type == 'aa':
-            height_per = 1.7
-            mut_desc = 'amino acid'
-        else:
-            raise ValueError(f"invalid mut_type {mut_type}")
 
         if orientation == 'h':
             facet_str = 'sample ~ library'
@@ -847,13 +829,13 @@ class CodonVariantTable:
             raise ValueError(f"invalid `orientation` {orientation}")
 
         p = (p9.ggplot(df, p9.aes('site', 'mut_char',
-                            fill=count_or_frequency)) +
+                                  fill=count_or_frequency)) +
              p9.geom_tile() +
              p9.facet_grid(facet_str) +
              p9.theme(figure_size=(width, height),
-                   legend_key=p9.element_blank(),
-                   axis_text_y=p9.element_text(size=6)
-                   ) +
+                      legend_key=p9.element_blank(),
+                      axis_text_y=p9.element_text(size=6)
+                      ) +
              p9.scale_x_continuous(
                 name=f'{mut_desc} site',
                 limits=(min(self.sites) - 1, max(self.sites) + 1),
@@ -863,13 +845,11 @@ class CodonVariantTable:
              p9.scale_fill_cmap('gnuplot')
              )
 
-
         if plotfile:
             p.save(plotfile, height=height, width=width,
                    verbose=False, limitsize=False)
 
         return p
-
 
     def plotMutFreqs(self, variant_type, mut_type, *,
                      libraries='all', samples='all', plotfile=None,
@@ -884,10 +864,9 @@ class CodonVariantTable:
 
         Returns
         -------
-        `plotnine <https://plotnine.readthedocs.io>`_ plot
+        plotnine.ggplot.ggplot
 
         """
-
         df = self.mutCounts(variant_type, mut_type, samples=samples,
                             libraries=libraries, min_support=min_support)
 
@@ -896,12 +875,12 @@ class CodonVariantTable:
                                          min_support=min_support,
                                          variant_type=variant_type,
                                          mut_type=mut_type)
-                      .rename(columns={'count':'nseqs'})
+                      .rename(columns={'count': 'nseqs'})
                       )
 
         df = (df
               .groupby(['library', 'sample', 'mutation_type', 'site'])
-              .aggregate({'count':'sum'})
+              .aggregate({'count': 'sum'})
               .reset_index()
               .merge(n_variants, on=['library', 'sample'])
               .assign(freq=lambda x: x['count'] / x['nseqs'])
@@ -947,16 +926,15 @@ class CodonVariantTable:
              p9.ylab(ylabel) +
              p9.facet_grid(facet_str) +
              p9.theme(figure_size=(width, height),
-                   legend_key=p9.element_blank(),
-                   legend_text=p9.element_text(size=11)
-                   )
+                      legend_key=p9.element_blank(),
+                      legend_text=p9.element_text(size=11)
+                      )
              )
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
 
         return p
-
 
     def plotCumulVariantCounts(self, *, variant_type='all',
                                libraries='all', samples='all', plotfile=None,
@@ -976,7 +954,7 @@ class CodonVariantTable:
 
         Returns
         -------
-        `plotnine <https://plotnine.readthedocs.io>`_ plot
+        plotnine.ggplot.ggplot
 
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1027,14 +1005,13 @@ class CodonVariantTable:
              )
 
         if tot_variants_hline:
-            p = p + geom_hline(aes(yintercept='total_variants'),
-                               linetype='dashed', color=CBPALETTE[1])
+            p = p + p9.geom_hline(p9.aes(yintercept='total_variants'),
+                                  linetype='dashed', color=CBPALETTE[1])
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
 
         return p
-
 
     def plotCumulMutCoverage(self, variant_type, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
@@ -1054,10 +1031,9 @@ class CodonVariantTable:
 
         Returns
         -------
-        `plotnine <https://plotnine.readthedocs.io>`_ plot
+        plotnine.ggplot.ggplot
 
         """
-
         df = self.mutCounts(variant_type, mut_type, samples=samples,
                             libraries=libraries, min_support=min_support)
 
@@ -1087,7 +1063,7 @@ class CodonVariantTable:
         else:
             xlabel = f'counts among\n{variant_type} mutants'
 
-        mut_desc = {'aa':'amino-acid', 'codon':'codon'}[mut_type]
+        mut_desc = {'aa': 'amino-acid', 'codon': 'codon'}[mut_type]
         if height > 3:
             ylabel = f'frac {mut_desc} mutations found < this many times'
         else:
@@ -1105,17 +1081,16 @@ class CodonVariantTable:
              p9.ylab(ylabel) +
              p9.facet_grid(facet_str) +
              p9.theme(figure_size=(width, height),
-                   legend_key=p9.element_blank(),
-                   legend_text=p9.element_text(size=11),
-                   axis_text_x=p9.element_text(angle=90),
-                   )
+                      legend_key=p9.element_blank(),
+                      legend_text=p9.element_text(size=11),
+                      axis_text_x=p9.element_text(angle=90),
+                      )
              )
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
 
         return p
-
 
     def plotNumCodonMutsByType(self, variant_type, *,
                                libraries='all', samples='all', plotfile=None,
@@ -1132,7 +1107,7 @@ class CodonVariantTable:
 
         Returns
         -------
-        `plotnine <https://plotnine.readthedocs.io>`_ plot
+        plotnine.ggplot.ggplot
 
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1165,53 +1140,50 @@ class CodonVariantTable:
         # mutations from stop to another amino-acid counted as nonsyn
         df = (df
               .assign(
-                synonymous=lambda x: x.n_codon_substitutions -
-                                     x.n_aa_substitutions,
-                stop=lambda x: x.aa_substitutions.str
-                               .findall('[A-Z]\d+\*').apply(len),
-                nonsynonymous=lambda x: x.n_codon_substitutions -
-                                        x.synonymous - x.stop
+                synonymous=lambda x: (x.n_codon_substitutions -
+                                      x.n_aa_substitutions),
+                stop=lambda x: (x.aa_substitutions.str
+                                .findall(rf"[{AAS_NOSTOP}]\d+\*").apply(len)),
+                nonsynonymous=lambda x: (x.n_codon_substitutions -
+                                         x.synonymous - x.stop),
                 )
               .melt(id_vars=['library', 'sample', 'count'],
                     value_vars=codon_mut_types,
                     var_name='mutation_type',
                     value_name='num_muts')
               .assign(
-                  mutation_type=lambda x:
-                                pd.Categorical(
-                                 x.mutation_type,
-                                 categories=codon_mut_types,
-                                 ordered=True),
+                  mutation_type=lambda x: pd.Categorical(x['mutation_type'],
+                                                         codon_mut_types,
+                                                         ordered=True),
                   num_muts_count=lambda x: x.num_muts * x['count']
                   )
               .groupby(['library', 'sample', 'mutation_type'])
-              .aggregate({'num_muts_count':'sum', 'count':'sum'})
+              .aggregate({'num_muts_count': 'sum', 'count': 'sum'})
               .reset_index()
               .assign(number=lambda x: x.num_muts_count / x['count'])
               )
 
         p = (p9.ggplot(df, p9.aes('mutation_type', 'number',
-                            fill='mutation_type', label='number')) +
+                                  fill='mutation_type', label='number')) +
              p9.geom_bar(stat='identity') +
              p9.geom_text(size=8, va='bottom', format_string='{0:.3f}') +
              p9.facet_grid(facet_str) +
              p9.scale_y_continuous(name=ylabel,
-                                expand=(0.03, 0, 0.12, 0)) +
+                                   expand=(0.03, 0, 0.12, 0)) +
              p9.scale_fill_manual(
                 [self._mutation_type_colors[m] for m in
                  df.mutation_type.unique().sort_values().tolist()]
                 ) +
              p9.theme(figure_size=(width, height),
-                   axis_title_x=p9.element_blank(),
-                   axis_text_x=p9.element_text(angle=90, size=11),
-                   legend_position='none')
+                      axis_title_x=p9.element_blank(),
+                      axis_text_x=p9.element_text(angle=90, size=11),
+                      legend_position='none')
              )
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
 
         return p
-
 
     def plotNumMutsHistogram(self, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
@@ -1222,6 +1194,7 @@ class CodonVariantTable:
         Parameters
         ----------
         mut_type : {'codon' or 'aa'}
+            Mutation type.
         libraries :  {'all', 'all_only', list}
             Include all libraries including a marge, only a merge of all
             libraries, or a list of libraries.
@@ -1243,7 +1216,7 @@ class CodonVariantTable:
 
         Returns
         -------
-        `plotnine <https://plotnine.readthedocs.io>`_ plot
+        plotnine.ggplot.ggplot
 
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
@@ -1274,7 +1247,7 @@ class CodonVariantTable:
 
         df = (df
               .groupby(['library', 'sample', mut_col])
-              .aggregate({'count':'sum'})
+              .aggregate({'count': 'sum'})
               .reset_index()
               )
 
@@ -1291,14 +1264,13 @@ class CodonVariantTable:
 
         return p
 
-
     def writeCodonCounts(self, single_or_all, *,
                          outdir=None, include_all_libs=False):
-        """Writes codon counts files for all libraries and samples.
+        """Write codon counts files for all libraries and samples.
 
-        Notes
-        -----
-        Write these files to analyze individual mutations using
+        Note
+        ----
+        Useful if you want to analyze individual mutations using
         `dms_tools2 <https://jbloomlab.github.io/dms_tools2/>`_. File format:
         https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html#counts-file
 
@@ -1328,7 +1300,6 @@ class CodonVariantTable:
             created CSV file, ``<library>_<sample>_codoncounts.csv``.
 
         """
-
         def _parseCodonMut(mutstr):
             m = self._CODON_SUB_RE.match(mutstr)
             return (m.group('wt'), int(m.group('r')), m.group('mut'))
@@ -1361,16 +1332,14 @@ class CodonVariantTable:
 
             i_df = df.query('library == @lib & sample == @sample')
             if len(i_df) == 0:
-                continue # no data for this library and sample
+                continue  # no data for this library and sample
 
-            countfile = os.path.join(outdir,
-                            f'{lib}_{sample}_codoncounts.csv')
+            countfile = os.path.join(outdir, f"{lib}_{sample}_codoncounts.csv")
             countfiles.append(countfile)
             liblist.append(lib)
             samplelist.append(sample)
 
-            codoncounts = {codon:[0] * len(self.sites) for codon
-                           in CODONS}
+            codoncounts = {codon: [0] * len(self.sites) for codon in CODONS}
 
             if single_or_all == 'single':
                 n_wt = (i_df
@@ -1393,10 +1362,10 @@ class CodonVariantTable:
                 for isite, site in enumerate(self.sites):
                     codoncounts[self.codons[site]][isite] += n_wt
                 for muts, count in (i_df
-                                   .query('n_codon_substitutions > 0')
-                                   [['codon_substitutions', 'count']]
-                                   .itertuples(index=False, name=None)
-                                   ):
+                                    .query('n_codon_substitutions > 0')
+                                    [['codon_substitutions', 'count']]
+                                    .itertuples(index=False, name=None)
+                                    ):
                     for mut in muts.split():
                         wtcodon, r, mutcodon = _parseCodonMut(mut)
                         codoncounts[mutcodon][r - 1] += count
@@ -1414,9 +1383,9 @@ class CodonVariantTable:
 
         assert all(map(os.path.isfile, countfiles))
 
-        return pd.DataFrame({'library':liblist,
-                             'sample':samplelist,
-                             'countfile':countfiles})
+        return pd.DataFrame({'library': liblist,
+                             'sample': samplelist,
+                             'countfile': countfiles})
 
     @staticmethod
     def classifyVariants(df,
@@ -1465,7 +1434,8 @@ class CodonVariantTable:
         >>> df_classify = CodonVariantTable.classifyVariants(df)
         >>> all(df_classify.columns == ['barcode', 'aa_substitutions',
         ...                             'n_aa_substitutions',
-        ...                             'n_codon_substitutions', 'variant_class'])
+        ...                             'n_codon_substitutions',
+        ...                             'variant_class'])
         True
         >>> df_classify[['barcode', 'variant_class']]
           barcode      variant_class
@@ -1494,11 +1464,9 @@ class CodonVariantTable:
             else:
                 return f">={max_aa} nonsynonymous"
 
-        return df.assign(**{variant_class_col: lambda x:
-                                               x.apply(_classify_func,
-                                                       axis=1)
-                            })
-
+        df = df.copy(deep=True)
+        df[variant_class_col] = df.apply(_classify_func, axis=1)
+        return df
 
     @staticmethod
     def addMergedLibraries(df, *, all_lib='all libraries'):
@@ -1528,29 +1496,23 @@ class CodonVariantTable:
         if all_lib in libs:
             raise ValueError(f"library {all_lib} already exists")
 
-        df = (pd.concat([df,
-                             df.assign(
-                                barcode=lambda x:
-                                    x.library.str
-                                     .cat(x.barcode, sep='-'),
-                                library=all_lib)
-                             ],
-                            axis='index',
-                            ignore_index=True,
-                            sort=False)
-              .assign(library=lambda x:
-                              pd.Categorical(
-                               x['library'],
-                               categories=libs + [all_lib],
-                               ordered=True)
+        df = (pd.concat([df, df.assign(barcode=(lambda x: x.library.str
+                                                .cat(x.barcode, sep='-')),
+                                       library=all_lib
+                                       )],
+                        axis='index',
+                        ignore_index=True,
+                        sort=False)
+              .assign(library=lambda x: pd.Categorical(x['library'],
+                                                       libs + [all_lib],
+                                                       ordered=True)
                       )
               )
 
         return df
 
-
     def _getPlotData(self, libraries, samples, min_support):
-        """Gets data to plot from library and sample filters.
+        """Get data to plot from library and sample filters.
 
         Parameters
         ----------
@@ -1614,10 +1576,9 @@ class CodonVariantTable:
 
         return (df, nlibraries, nsamples)
 
-
     @classmethod
     def codonToAAMuts(self, codon_mut_str):
-        """Converts string of codon mutations to amino-acid mutations.
+        """Convert string of codon mutations to amino-acid mutations.
 
         Parameters
         ----------
@@ -1633,6 +1594,7 @@ class CodonVariantTable:
         -------
         >>> CodonVariantTable.codonToAAMuts('ATG1GTG GGA2GGC TGA3AGA')
         'M1V *3R'
+
         """
         aa_muts = {}
         for mut in codon_mut_str.upper().split():
@@ -1653,7 +1615,6 @@ class CodonVariantTable:
 
         return ' '.join([mut_str for r, mut_str in sorted(aa_muts.items())])
 
-
     def _sortCodonMuts(self, mut_str):
         """Sort space-delimited codon mutations and make uppercase.
 
@@ -1661,7 +1622,8 @@ class CodonVariantTable:
         -------
         >>> geneseq = 'ATGGGATGA'
         >>> with tempfile.NamedTemporaryFile(mode='w') as f:
-        ...     _ = f.write('library,barcode,substitutions,variant_call_support')
+        ...     _ = f.write('library,barcode,substitutions,'
+        ...                 'variant_call_support')
         ...     f.flush()
         ...     variants = CodonVariantTable(
         ...                 barcode_variant_file=f.name,
@@ -1689,9 +1651,8 @@ class CodonVariantTable:
             muts[r] = mut
         return ' '.join(mut for r, mut in sorted(muts.items()))
 
-
     def _ntToCodonMuts(self, nt_mut_str):
-        """Converts string of nucleotide mutations to codon mutations.
+        """Convert string of nucleotide mutations to codon mutations.
 
         Parameters
         ----------
@@ -1707,7 +1668,8 @@ class CodonVariantTable:
         -------
         >>> geneseq = 'ATGGGATGA'
         >>> with tempfile.NamedTemporaryFile(mode='w') as f:
-        ...     _ = f.write('library,barcode,substitutions,variant_call_support')
+        ...     _ = f.write('library,barcode,substitutions,'
+        ...                 'variant_call_support')
         ...     f.flush()
         ...     variants = CodonVariantTable(
         ...                 barcode_variant_file=f.name,
@@ -1721,6 +1683,7 @@ class CodonVariantTable:
         Traceback (most recent call last):
         ...
         ValueError: nucleotide 6 should be A not G
+
         """
         mut_codons = collections.defaultdict(set)
         for mut in nt_mut_str.upper().split():
@@ -1785,6 +1748,7 @@ class CodonVariantTable:
         'GTGCGTTGA'
         >>> variants.subs_to_seq('*3W M1C', subs_type='aa')
         'CGW'
+
         """
         if subs_type == 'codon':
             submatcher = self._CODON_SUB_RE
@@ -1795,7 +1759,7 @@ class CodonVariantTable:
         else:
             raise ValueError(f"invalid `subs_type` of {subs_type}")
 
-        mutated_sites = set([])
+        mutated_sites = set()
         for sub in subs.split():
             m = submatcher.match(sub)
             if not m:

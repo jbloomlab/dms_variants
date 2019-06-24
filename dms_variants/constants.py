@@ -19,11 +19,11 @@ CBPALETTE = ('#999999', '#E69F00', '#56B4E9', '#009E73',
 From http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/
 """
 
-AAS_NO_STOP = tuple(sorted(_aa.upper() for _aa in
-                           Bio.Alphabet.IUPAC.IUPACProtein.letters))
+AAS_NOSTOP = tuple(sorted(_aa.upper() for _aa in
+                          Bio.Alphabet.IUPAC.IUPACProtein.letters))
 """tuple: Amino-acid one-letter codes alphabetized, doesn't include stop."""
 
-AAS_WITHSTOP = tuple(list(AAS_NO_STOP) + ['*'])
+AAS_WITHSTOP = tuple(list(AAS_NOSTOP) + ['*'])
 """tuple: Amino-acid one-letter codes alphabetized plus stop as ``*``."""
 
 NTS = tuple(sorted(_nt.upper() for _nt in
