@@ -303,9 +303,7 @@ class CodonVariantTable:
         barcodecounts : pandas.DataFrame
             Counts for each variant by barcode. Must have columns "barcode"
             and "count". The "barcode" column must contain all barcodes in
-            :class:`CodonVariantTable.valid_barcodes` for `library`. Such data
-            frames are returned by
-            :class:`dms_variants.barcodes.IlluminaBarcodeParser.parse`.
+            :class:`CodonVariantTable.valid_barcodes` for `library`.
 
         """
         if library not in self.libraries:
