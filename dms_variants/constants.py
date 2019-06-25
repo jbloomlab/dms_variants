@@ -39,3 +39,6 @@ CODON_TO_AA = {_c: str(Bio.Seq.Seq(_c).translate()) for _c in CODONS}
 AA_TO_CODONS = {_aa: [_c for _c in CODONS if CODON_TO_AA[_c] == _aa]
                 for _aa in AAS_WITHSTOP}
 """dict: Reverse translate amino acid to list of encoding codons."""
+
+CODONS_NOSTOP = tuple(_c for _c in CODONS if CODON_TO_AA[_c] != '*')
+"""tuple: DNA codons except for stop codons, alphabetized."""

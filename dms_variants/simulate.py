@@ -379,7 +379,7 @@ class SigmoidPhenotypeSimulator:
 
     """
 
-    def __init__(self, geneseq, *, seed=1, wt_latent=4,
+    def __init__(self, geneseq, *, seed=1, wt_latent=5,
                  norm_weights=((0.4, -0.5, 1), (0.6, -5, 2.5)),
                  stop_effect=-10):
         """See main class docstring for how to initialize."""
@@ -463,11 +463,11 @@ class SigmoidPhenotypeSimulator:
             Observed phenotype.
 
         """
-        return 1 / (1 + math.exp(-latent - 3))
+        return 1 / (1 + math.exp(-latent))
 
-    def plotLatentVsObservedPhenotype(self, *, latent_min=-15,
-                                      latent_max=5, npoints=200,
-                                      wt_vline=True):
+    def plotLatentVsObserved(self, *, latent_min=-15,
+                             latent_max=10, npoints=200,
+                             wt_vline=True):
         """Plot observed phenotype as function of latent phenotype.
 
         Parameters
@@ -491,7 +491,9 @@ class SigmoidPhenotypeSimulator:
 
         p = (p9.ggplot(pd.DataFrame(
                             {'latent': latent,
-                             'observed': map(latent, self.latentToObserved)}),
+                             'observed': [self.latentToObserved(x)
+                                          for x in latent]
+                             }),
                        p9.aes('latent', 'observed')
                        ) +
              p9.geom_line() +
