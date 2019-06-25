@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.barcodes &#8212; dms_variants 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.barcodes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">========</span>
+<span class="sd">barcodes</span>
+<span class="sd">========</span>
+
+<span class="sd">Process and analyze barcodes.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">scipy.special</span>
+
+
+<div class="viewcode-block" id="rarefyBarcodes"><a class="viewcode-back" href="../../dms_variants.barcodes.html#dms_variants.barcodes.rarefyBarcodes">[docs]</a><span class="k">def</span> <span class="nf">rarefyBarcodes</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                   <span class="n">barcodecol</span><span class="o">=</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="n">countcol</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
+                   <span class="n">maxpoints</span><span class="o">=</span><span class="mf">1e5</span><span class="p">,</span> <span class="n">logspace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Rarefaction curve of barcode observations.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Uses analytical formula for rarefaction defined here:</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    barcodecounts :pandas.DataFrame</span>
+<span class="sd">        Data frame with counts to rarefy.</span>
+<span class="sd">    barcodecol : str</span>
+<span class="sd">        Column in `barcodecounts` listing all unique barcodes.</span>
+<span class="sd">    countcol : str</span>
+<span class="sd">        Column in `barcodecounts` with observed counts of each barcode.</span>
+<span class="sd">    maxpoints : int</span>
+<span class="sd">        Only calculate rarefaction curve at this many points. Benefit</span>
+<span class="sd">        is that it is costly to calculate the curve for many points.</span>
+<span class="sd">    logspace : bool</span>
+<span class="sd">        Logarithmically space the points. If `False`, space linearly.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        A data frame with columns &#39;ncounts&#39; and &#39;nbarcodes&#39; giving number</span>
+<span class="sd">        of unique barcodes observed for each total number of observed counts.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; barcodecounts = pd.DataFrame({&#39;barcode&#39;: [&#39;A&#39;, &#39;G&#39;, &#39;C&#39;, &#39;T&#39;],</span>
+<span class="sd">    ...                               &#39;count&#39;: [4, 2, 1, 0]})</span>
+<span class="sd">    &gt;&gt;&gt; rarefaction_curve = rarefyBarcodes(barcodecounts)</span>
+<span class="sd">    &gt;&gt;&gt; rarefaction_curve</span>
+<span class="sd">       ncounts  nbarcodes</span>
+<span class="sd">    0        1   1.000000</span>
+<span class="sd">    1        2   1.666667</span>
+<span class="sd">    2        3   2.114286</span>
+<span class="sd">    3        4   2.428571</span>
+<span class="sd">    4        5   2.666667</span>
+<span class="sd">    5        6   2.857143</span>
+<span class="sd">    6        7   3.000000</span>
+
+<span class="sd">    Verify this result matches what is obtained by random sampling:</span>
+
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; barcodelist = []</span>
+<span class="sd">    &gt;&gt;&gt; for tup in barcodecounts.itertuples(index=False):</span>
+<span class="sd">    ...     barcodelist += [tup.barcode] * tup.count</span>
+<span class="sd">    &gt;&gt;&gt; nrand = 10000</span>
+<span class="sd">    &gt;&gt;&gt; ncounts = list(range(1, barcodecounts[&#39;count&#39;].sum() + 1))</span>
+<span class="sd">    &gt;&gt;&gt; nbarcodes = []</span>
+<span class="sd">    &gt;&gt;&gt; for ncount in ncounts:</span>
+<span class="sd">    ...     nbarcodes.append(sum(len(set(random.sample(barcodelist, ncount)))</span>
+<span class="sd">    ...                      for _ in range(nrand)) / nrand)</span>
+<span class="sd">    &gt;&gt;&gt; sim_rarefaction_curve = pd.DataFrame({&#39;ncounts&#39;: ncounts,</span>
+<span class="sd">    ...                                       &#39;nbarcodes&#39;: nbarcodes})</span>
+<span class="sd">    &gt;&gt;&gt; scipy.allclose(rarefaction_curve, sim_rarefaction_curve, atol=1e-2)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">[</span><span class="n">barcodecol</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;non-unique barcodes in `barcodecounts`&#39;</span><span class="p">)</span>
+
+    <span class="c1"># follow nomenclature at</span>
+    <span class="c1"># https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation</span>
+    <span class="n">Ni</span> <span class="o">=</span> <span class="n">barcodecounts</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">barcodecol</span><span class="p">)[</span><span class="n">countcol</span><span class="p">]</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">Ni</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">)</span>
+    <span class="n">Mj</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">Ni</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+    <span class="n">Nk</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">Mj</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+    <span class="c1"># use simplification that (N - Ni)Cr(n) / (N)Cr(n) =</span>
+    <span class="c1"># [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]</span>
+    <span class="c1">#</span>
+    <span class="c1"># Also use fact that gamma(x + 1) = x!</span>
+    <span class="n">nbarcodes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">lnFactorial_N</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logspace</span> <span class="ow">and</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">maxpoints</span><span class="p">:</span>
+        <span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+                       <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">N</span><span class="p">),</span>
+                       <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+                       <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">ncounts</span><span class="p">:</span>
+        <span class="n">lnFactorial_N_minus_n</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span> <span class="o">-</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># indices where this is true</span>
+        <span class="n">nbarcodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">K</span> <span class="o">-</span> <span class="p">(</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                            <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                            <span class="n">lnFactorial_N_minus_n</span> <span class="o">-</span>
+                            <span class="n">lnFactorial_N</span> <span class="o">-</span>
+                            <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                     <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="p">)</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;ncounts&#39;</span><span class="p">:</span> <span class="n">ncounts</span><span class="p">,</span> <span class="s1">&#39;nbarcodes&#39;</span><span class="p">:</span> <span class="n">nbarcodes</span><span class="p">})</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

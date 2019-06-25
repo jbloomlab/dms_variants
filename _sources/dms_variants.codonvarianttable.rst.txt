@@ -1,0 +1,4 @@
+.. automodule:: dms_variants.codonvarianttable
+    :members:
+    :undoc-members:
+    :show-inheritance:

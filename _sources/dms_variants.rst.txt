@@ -1,0 +1,19 @@
+dms\_variants package
+=====================
+
+.. automodule:: dms_variants
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+.. toctree::
+
+   dms_variants.barcodes
+   dms_variants.codonvarianttable
+   dms_variants.constants
+   dms_variants.simulate
+   dms_variants.utils
+

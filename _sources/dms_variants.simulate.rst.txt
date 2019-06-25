@@ -1,0 +1,4 @@
+.. automodule:: dms_variants.simulate
+    :members:
+    :undoc-members:
+    :show-inheritance:

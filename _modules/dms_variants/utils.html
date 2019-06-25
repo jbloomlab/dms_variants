@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.utils &#8212; dms_variants 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===========</span>
+<span class="sd">utils</span>
+<span class="sd">===========</span>
+
+<span class="sd">Miscellaneous utility functions.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span>
+
+
+<div class="viewcode-block" id="translate"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.translate">[docs]</a><span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">codonseq</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Translate codon sequence.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    codonseq : str</span>
+<span class="sd">        Codon sequence. Gaps currently not allowed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Amino-acid sequence.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; translate(&#39;ATGGGATAA&#39;)</span>
+<span class="sd">    &#39;MG*&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">codonseq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;length of `codonseq` not multiple of 3&#39;</span><span class="p">)</span>
+
+    <span class="n">aaseq</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">icodon</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">codonseq</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="n">codon</span> <span class="o">=</span> <span class="n">codonseq</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">icodon</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">icodon</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+        <span class="n">aaseq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aaseq</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="latex_sci_not"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.latex_sci_not">[docs]</a><span class="k">def</span> <span class="nf">latex_sci_not</span><span class="p">(</span><span class="n">xs</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert list of numbers to LaTex scientific notation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xs : list</span>
+<span class="sd">        Numbers to format.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        Formatted strings for numbers.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    ----------</span>
+<span class="sd">    &gt;&gt;&gt; latex_sci_not([0, 3, 3120, -0.0000927])</span>
+<span class="sd">    [&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$-9.3 \\times 10^{-5}$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latex_sci_not([0.001, 1, 1000, 1e6])</span>
+<span class="sd">    [&#39;$0.001$&#39;, &#39;$1$&#39;, &#39;$10^{3}$&#39;, &#39;$10^{6}$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latex_sci_not([-0.002, 0.003, 0.000011])</span>
+<span class="sd">    [&#39;$-0.002$&#39;, &#39;$0.003$&#39;, &#39;$1.1 \\times 10^{-5}$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latex_sci_not([-0.1, 0.0, 0.1, 0.2])</span>
+<span class="sd">    [&#39;$-0.1$&#39;, &#39;$0$&#39;, &#39;$0.1$&#39;, &#39;$0.2$&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; latex_sci_not([0, 1, 2])</span>
+<span class="sd">    [&#39;$0$&#39;, &#39;$1$&#39;, &#39;$2$&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">formatlist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">:</span>
+        <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{x:.2g}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">xf</span><span class="p">[:</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;1e&#39;</span><span class="p">:</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$10^{{{int(xf[2 : ])}}}$&quot;</span>
+        <span class="k">elif</span> <span class="n">xf</span><span class="p">[:</span> <span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;-1e&#39;</span><span class="p">:</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$-10^{{{int(xf[3 : ])}}}$&quot;</span>
+        <span class="k">elif</span> <span class="s1">&#39;e&#39;</span> <span class="ow">in</span> <span class="n">xf</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">,</span> <span class="n">exp</span> <span class="o">=</span> <span class="n">xf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$</span><span class="si">{d}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">times 10^{{{int(exp)}}}$&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$</span><span class="si">{xf}</span><span class="s2">$&quot;</span>
+        <span class="n">formatlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">formatlist</span></div>
+
+
+<div class="viewcode-block" id="cumul_rows_by_count"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.cumul_rows_by_count">[docs]</a><span class="k">def</span> <span class="nf">cumul_rows_by_count</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">count_col</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="n">n_col</span><span class="o">=</span><span class="s1">&#39;n_rows&#39;</span><span class="p">,</span>
+                        <span class="n">tot_col</span><span class="o">=</span><span class="s1">&#39;total_rows&#39;</span><span class="p">,</span> <span class="n">group_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">group_cols_as_str</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cumulative number of rows with &gt;= each count.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Data frame with rows to analyze.</span>
+<span class="sd">    count_col : str</span>
+<span class="sd">        Column in `df` with count for row.</span>
+<span class="sd">    n_col : str</span>
+<span class="sd">        Name of column in result giving cumulative count threshold.</span>
+<span class="sd">    tot_col : str</span>
+<span class="sd">        Name of column in result giving total number of rows.</span>
+<span class="sd">    group_cols : None or list</span>
+<span class="sd">        Group by these columns and analyze each group separately.</span>
+<span class="sd">    group_cols_as_str : bool</span>
+<span class="sd">        Convert any `group_cols` columns to str. This is needed if calling</span>
+<span class="sd">        in ``R`` using `reticulate &lt;https://rstudio.github.io/reticulate/&gt;`_.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Give cumulative counts. For each count in `count_col`, column</span>
+<span class="sd">        `n_col` gives number of rows with &gt;= that many counts, and</span>
+<span class="sd">        `tot_col` gives total number of counts.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({&#39;sample&#39;: [&#39;a&#39;, &#39;a&#39;, &#39;b&#39;, &#39;b&#39;, &#39;a&#39;, &#39;a&#39;],</span>
+<span class="sd">    ...                    &#39;count&#39;: [9, 0, 1, 4, 3, 3]})</span>
+<span class="sd">    &gt;&gt;&gt; cumul_rows_by_count(df)</span>
+<span class="sd">       count  n_rows  total_rows</span>
+<span class="sd">    0      9       1           6</span>
+<span class="sd">    1      4       2           6</span>
+<span class="sd">    2      3       4           6</span>
+<span class="sd">    3      1       5           6</span>
+<span class="sd">    4      0       6           6</span>
+<span class="sd">    &gt;&gt;&gt; cumul_rows_by_count(df, group_cols=[&#39;sample&#39;])</span>
+<span class="sd">      sample  count  n_rows  total_rows</span>
+<span class="sd">    0      a      9       1           4</span>
+<span class="sd">    1      a      3       3           4</span>
+<span class="sd">    2      a      0       4           4</span>
+<span class="sd">    3      b      4       1           2</span>
+<span class="sd">    4      b      1       2           2</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">count_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;df does not have column </span><span class="si">{count_col}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">group_cols</span><span class="p">:</span>
+        <span class="n">drop_group_cols</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dummy_col&#39;</span><span class="p">]</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">group_cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">drop_group_cols</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_cols</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_cols</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `group_cols` </span><span class="si">{group_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="n">count_col</span><span class="p">,</span> <span class="n">n_col</span><span class="p">,</span> <span class="n">tot_col</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">group_cols</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`group_cols` cannot contain </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+         <span class="n">df</span>
+
+         <span class="c1"># get number of rows with each count</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">n_col</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+         <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group_cols</span> <span class="o">+</span> <span class="p">[</span><span class="n">count_col</span><span class="p">])</span>
+         <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="n">n_col</span><span class="p">:</span> <span class="s1">&#39;count&#39;</span><span class="p">})</span>
+         <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+         <span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">group_cols</span> <span class="o">+</span> <span class="p">[</span><span class="n">count_col</span><span class="p">],</span>
+                      <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="kc">False</span><span class="p">])</span>
+         <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+         <span class="c1"># get cumulative number with &lt;= number of counts</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">n_col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)[</span><span class="n">n_col</span><span class="p">]</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()})</span>
+
+         <span class="c1"># add new column that is total number of rows</span>
+         <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">tot_col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)[</span><span class="n">n_col</span><span class="p">]</span>
+                                        <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;max&#39;</span><span class="p">))})</span>
+         <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">drop_group_cols</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">group_cols</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">group_cols_as_str</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">group_cols</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;str&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="tidy_split"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.tidy_split">[docs]</a><span class="k">def</span> <span class="nf">tidy_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Split values of column and expand into new rows.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Taken from https://stackoverflow.com/a/39946744</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Data frame with the column to split and expand.</span>
+<span class="sd">    column : str</span>
+<span class="sd">        Name of column to split and expand.</span>
+<span class="sd">    sep : str</span>
+<span class="sd">        The string used to split the column&#39;s values.</span>
+<span class="sd">    keep : bool</span>
+<span class="sd">        Retain the presplit value as it&#39;s own row.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame with the same columns as `df`. Rows lacking</span>
+<span class="sd">        `column` are filtered.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({&#39;col1&#39;: [&#39;A&#39;, &#39;B&#39;, &#39;C&#39;],</span>
+<span class="sd">    ...                    &#39;col2&#39;: [&#39;d e&#39;, float(&#39;nan&#39;), &#39;f&#39;]})</span>
+<span class="sd">    &gt;&gt;&gt; tidy_split(df, &#39;col2&#39;)</span>
+<span class="sd">      col1 col2</span>
+<span class="sd">    0    A    d</span>
+<span class="sd">    0    A    e</span>
+<span class="sd">    2    C    f</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">indexes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">new_values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">presplit</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)):</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="n">presplit</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">keep</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">new_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">presplit</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">values</span><span class="p">:</span>
+            <span class="n">indexes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="n">new_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">new_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">indexes</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">new_df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_values</span>
+    <span class="k">return</span> <span class="n">new_df</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

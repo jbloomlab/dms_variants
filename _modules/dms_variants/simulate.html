@@ -1,0 +1,696 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.simulate &#8212; dms_variants 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.simulate</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">========</span>
+<span class="sd">simulate</span>
+<span class="sd">========</span>
+
+<span class="sd">Simulate data.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">plotnine</span> <span class="k">as</span> <span class="nn">p9</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="p">(</span><span class="n">AAS_WITHSTOP</span><span class="p">,</span>
+                                    <span class="n">CBPALETTE</span><span class="p">,</span>
+                                    <span class="n">CODONS</span><span class="p">,</span>
+                                    <span class="n">CODON_TO_AA</span><span class="p">,</span>
+                                    <span class="n">NTS</span><span class="p">,</span>
+                                    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="simulate_CodonVariantTable"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">[docs]</a><span class="k">def</span> <span class="nf">simulate_CodonVariantTable</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="n">bclen</span><span class="p">,</span> <span class="n">library_specs</span><span class="p">,</span>
+                               <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">variant_call_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Only simulates the variants, not counts for samples. To simulate counts,</span>
+<span class="sd">    use :func:`simulateSampleCounts`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    geneseq : str</span>
+<span class="sd">        Sequence of wildtype protein-coding gene.</span>
+<span class="sd">    bclen : int</span>
+<span class="sd">        Length of the barcodes; must enable complexity at least</span>
+<span class="sd">        10-fold greater than max number of variants.</span>
+<span class="sd">    library_specs : dict</span>
+<span class="sd">        Specifications for each simulated library. Keys are &#39;avgmuts&#39;</span>
+<span class="sd">        and &#39;nvariants&#39;. Mutations per variant are Poisson distributed.</span>
+<span class="sd">    seed : int or None</span>
+<span class="sd">        Random number seed or `None` to set no seed.</span>
+<span class="sd">    variant_call_support : int or 2-tuple</span>
+<span class="sd">        If integer, all supports are set to this. If 2-tuple, support is</span>
+<span class="sd">        drawn as random integer uniformly from this range (inclusive).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    :class:`dms_variants.codonvarianttable.CodonVariantTable`</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">library_specs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty `library_specs`&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variant_call_support</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">variant_call_support</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">variant_call_support</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;length of `geneseq` not multiple of 3&#39;</span><span class="p">)</span>
+    <span class="n">genelength</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span>
+
+    <span class="n">barcode_variant_dict</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">lib</span><span class="p">,</span> <span class="n">specs_dict</span> <span class="ow">in</span> <span class="n">library_specs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+        <span class="n">nvariants</span> <span class="o">=</span> <span class="n">specs_dict</span><span class="p">[</span><span class="s1">&#39;nvariants&#39;</span><span class="p">]</span>
+        <span class="n">avgmuts</span> <span class="o">=</span> <span class="n">specs_dict</span><span class="p">[</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">nvariants</span> <span class="o">&gt;</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">NTS</span><span class="p">))</span><span class="o">**</span><span class="n">bclen</span><span class="p">:</span>  <span class="c1"># safety factor 10</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;barcode too short for nvariants&#39;</span><span class="p">)</span>
+        <span class="n">existing_barcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">_ivariant</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nvariants</span><span class="p">):</span>
+
+            <span class="n">barcode</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">NTS</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">bclen</span><span class="p">))</span>
+            <span class="k">while</span> <span class="n">barcode</span> <span class="ow">in</span> <span class="n">existing_barcodes</span><span class="p">:</span>
+                <span class="n">barcode</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">NTS</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">bclen</span><span class="p">))</span>
+            <span class="n">existing_barcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span>
+
+            <span class="n">support</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">*</span><span class="n">variant_call_support</span><span class="p">)</span>
+
+            <span class="c1"># get mutations</span>
+            <span class="n">substitutions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">nmuts</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgmuts</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">icodon</span> <span class="ow">in</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">genelength</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">nmuts</span><span class="p">):</span>
+                <span class="n">wtcodon</span> <span class="o">=</span> <span class="n">geneseq</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">icodon</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">icodon</span><span class="p">]</span>
+                <span class="n">mutcodon</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">CODONS</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">wtcodon</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">i_nt</span><span class="p">,</span> <span class="p">(</span><span class="n">wt_nt</span><span class="p">,</span> <span class="n">mut_nt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">wtcodon</span><span class="p">,</span> <span class="n">mutcodon</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="n">wt_nt</span> <span class="o">!=</span> <span class="n">mut_nt</span><span class="p">:</span>
+                        <span class="n">igene</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="p">(</span><span class="n">icodon</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">i_nt</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">substitutions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt_nt}{igene}{mut_nt}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">substitutions</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">substitutions</span><span class="p">)</span>
+
+            <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span>
+            <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">substitutions</span><span class="p">)</span>
+            <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
+            <span class="n">barcode_variant_dict</span><span class="p">[</span><span class="s1">&#39;variant_call_support&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">support</span><span class="p">)</span>
+
+    <span class="n">barcode_variants</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">barcode_variant_dict</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">barcode_variants</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">cvt</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="p">(</span>
+                        <span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                        <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cvt</span></div>
+
+
+<div class="viewcode-block" id="simulateSampleCounts"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.simulateSampleCounts">[docs]</a><span class="k">def</span> <span class="nf">simulateSampleCounts</span><span class="p">(</span><span class="o">*</span><span class="p">,</span>
+                         <span class="n">variants</span><span class="p">,</span>
+                         <span class="n">phenotype_func</span><span class="p">,</span>
+                         <span class="n">variant_error_rate</span><span class="p">,</span>
+                         <span class="n">pre_sample</span><span class="p">,</span>
+                         <span class="n">post_samples</span><span class="p">,</span>
+                         <span class="n">pre_sample_name</span><span class="o">=</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+                         <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simulate pre- and post-selection variant counts.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Add to :class:`dms_variants.codonvarianttable.CodonVariantTable` using</span>
+<span class="sd">    :meth:`dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts`</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    variants : class:`dms_variants.codonvarianttable.CodonVariantTable`</span>
+<span class="sd">        Holds variants used in simulation.</span>
+<span class="sd">    phenotype_func : function</span>
+<span class="sd">        Takes row from `variants.barcode_variant_df` and returns phenotype</span>
+<span class="sd">        as number giving enrichment of variant relative to wildtype. For</span>
+<span class="sd">        instance, :meth:`SigmoidPhenotypeSimulator.observedPhenotype`.</span>
+<span class="sd">    variant_error_rate : float</span>
+<span class="sd">        Rate at which variants mis-called. Provide the probability that a</span>
+<span class="sd">        variant has a spuriously called (or missing) codon mutation; each</span>
+<span class="sd">        variant then has a random codon mutation added or removed with this</span>
+<span class="sd">        probability before being passed to `phenotype_func`.</span>
+<span class="sd">    pre_sample : pandas.DataFrame or dict</span>
+<span class="sd">        Counts of each variant pre-selection. To specify counts, provide</span>
+<span class="sd">        data frame with columns &quot;library&quot;, &quot;barcode&quot;, and &quot;count&quot;. To</span>
+<span class="sd">        simulate, provide dict with keys &quot;total_count&quot; and &quot;uniformity&quot;,</span>
+<span class="sd">        and for each library, we simulate pre-selection counts as a draw</span>
+<span class="sd">        of &quot;total_count&quot; counts from a multinomial parameterized by pre-</span>
+<span class="sd">        selection frequencies drawn from a Dirichlet distribution with</span>
+<span class="sd">        concentration parameter of &quot;uniformity&quot; (5 is reasonable value).</span>
+<span class="sd">    post_samples : dict</span>
+<span class="sd">        Keyed by name of each sample with value another dict keyed by</span>
+<span class="sd">        &#39;total_count&#39;, &#39;noise&#39;, and &#39;bottleneck&#39;. Counts drawn from</span>
+<span class="sd">        multinomial parameterized by pre-selection frerquencies after</span>
+<span class="sd">        passing through bottleneck of indicated size, and adding noise</span>
+<span class="sd">        by mutiplying phenotype by a random variable with mean 1 and</span>
+<span class="sd">        standard deviation specified by &#39;noise&#39; (0 is no noise).</span>
+<span class="sd">    pre_sample_name : str</span>
+<span class="sd">        Name used for the pre-selection sample.</span>
+<span class="sd">    seed : None or int</span>
+<span class="sd">        If not `None`, random number seed.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame with the following columns:</span>
+<span class="sd">            - &quot;library&quot;</span>
+<span class="sd">            - &quot;barcode&quot;</span>
+<span class="sd">            - &quot;sample&quot;</span>
+<span class="sd">            - &quot;count&quot;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pre_sample_name</span> <span class="ow">in</span> <span class="n">post_samples</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`pre_sample_name` is in `post_samples`&#39;</span><span class="p">)</span>
+
+    <span class="c1"># -----------------------------------------</span>
+    <span class="c1"># internal function</span>
+    <span class="k">def</span> <span class="nf">_add_variant_errors</span><span class="p">(</span><span class="n">codon_substitutions</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add errors to variant according to `variant_error_rate`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">variant_error_rate</span><span class="p">:</span>
+            <span class="n">muts</span> <span class="o">=</span> <span class="n">codon_substitutions</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+                <span class="c1"># add mutation</span>
+                <span class="n">mutatedsites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span>
+                                       <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;^({&#39;|&#39;.join(CODONS)})&quot;</span>
+                                                 <span class="sa">r</span><span class="s1">&#39;(?P&lt;r&gt;\d+)&#39;</span>
+                                                 <span class="n">f</span><span class="s2">&quot;({&#39;|&#39;.join(CODONS)})$&quot;</span><span class="p">,</span>
+                                                 <span class="n">mut</span><span class="p">)</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+                                        <span class="k">for</span> <span class="n">mut</span> <span class="ow">in</span> <span class="n">muts</span><span class="p">]))</span>
+                <span class="n">unmutatedsites</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span>
+                                  <span class="k">if</span> <span class="n">r</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mutatedsites</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">unmutatedsites</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;variant already has all mutations&quot;</span><span class="p">)</span>
+                <span class="n">errorsite</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">unmutatedsites</span><span class="p">)</span>
+                <span class="n">wtcodon</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">errorsite</span><span class="p">]</span>
+                <span class="n">mutcodon</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">CODONS</span>
+                                                <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">wtcodon</span><span class="p">])</span>
+                <span class="n">muts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{wtcodon}{errorsite}{mutcodon}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">muts</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># remove mutation</span>
+                <span class="n">muts</span> <span class="o">=</span> <span class="n">muts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">muts</span><span class="p">)))</span>
+                <span class="k">return</span> <span class="n">muts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">codon_substitutions</span>
+    <span class="c1"># -----------------------------------------</span>
+
+    <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+        <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]]</span>
+        <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">codon_substitutions</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">codon_substitutions</span>
+                                 <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_add_variant_errors</span><span class="p">)),</span>
+            <span class="n">aa_substitutions</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">codon_substitutions</span>
+                              <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span>
+                                     <span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">codonToAAMuts</span><span class="p">)),</span>
+            <span class="n">phenotype</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">phenotype_func</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]]</span>
+        <span class="p">)</span>
+
+    <span class="n">libraries</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pre_sample</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+        <span class="c1"># pre-sample counts specified</span>
+        <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">pre_sample</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;pre_sample lacks cols </span><span class="si">{req_cols}</span><span class="s2">:&quot;</span>
+                             <span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{pre_sample}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">pre_sample</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span> <span class="o">!=</span>
+               <span class="n">barcode_variant_df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pre_sample DataFrame lacks required &quot;</span>
+                             <span class="s2">&quot;library and barcode columns&quot;</span><span class="p">)</span>
+        <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">barcode_variant_df</span>
+                <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">pre_sample</span><span class="p">[</span><span class="n">req_cols</span><span class="p">],</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">pre_sample_name</span><span class="p">})</span>
+                <span class="p">)</span>
+        <span class="c1"># &quot;true&quot; pre-selection freqs are just input counts</span>
+        <span class="n">nperlib</span> <span class="o">=</span> <span class="p">(</span><span class="n">barcode_variant_df</span>
+                   <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;library&#39;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;total_count&#39;</span><span class="p">)</span>
+                   <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                   <span class="p">)</span>
+        <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">barcode_variant_df</span>
+                <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">nperlib</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">pre_freqs</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">pre_sample_name</span><span class="p">]</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">total_count</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="s1">&#39;total_count&#39;</span><span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pre_sample</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">pre_req_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;uniformity&#39;</span><span class="p">,</span> <span class="s1">&#39;total_count&#39;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">pre_sample</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="n">pre_req_keys</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;pre_sample lacks required keys </span><span class="si">{pre_req_keys}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">pre_df_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>  <span class="c1"># noqa: B007</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">barcode_variant_df</span>
+                <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == @lib&#39;</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+                    <span class="n">pre_freq</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span>
+                             <span class="n">pre_sample</span><span class="p">[</span><span class="s1">&#39;uniformity&#39;</span><span class="p">]</span> <span class="o">*</span>
+                             <span class="n">scipy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))),</span>
+                    <span class="n">count</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span>
+                            <span class="n">pre_sample</span><span class="p">[</span><span class="s1">&#39;total_count&#39;</span><span class="p">],</span> <span class="n">x</span><span class="o">.</span><span class="n">pre_freq</span><span class="p">),</span>
+                    <span class="n">sample</span><span class="o">=</span><span class="n">pre_sample_name</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">pre_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">pre_df_list</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;pre_sample not DataFrame / dict: &quot;</span>
+                         <span class="n">f</span><span class="s2">&quot;</span><span class="si">{pre_sample}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;pre_freq&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">),</span> <span class="p">(</span>
+            <span class="n">f</span><span class="s2">&quot;cols = {set(cols)}</span><span class="se">\n</span><span class="s2">barcode_variant_df.columns = &quot;</span>
+            <span class="n">f</span><span class="s2">&quot;{set(barcode_variant_df.columns)}&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">post_samples</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;post_samples can&#39;t have key </span><span class="si">{col}</span><span class="s2">; &quot;</span>
+                             <span class="s2">&quot;choose another sample name&quot;</span><span class="p">)</span>
+
+    <span class="n">df_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">barcode_variant_df</span><span class="p">[</span><span class="n">cols</span><span class="p">[:</span> <span class="mi">4</span><span class="p">]]]</span>
+
+    <span class="k">def</span> <span class="nf">_bottleneck_freqs</span><span class="p">(</span><span class="n">pre_freq</span><span class="p">,</span> <span class="n">bottleneck</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">bottleneck</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pre_freq</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">bottleneck</span><span class="p">,</span> <span class="n">pre_freq</span><span class="p">)</span> <span class="o">/</span> <span class="n">bottleneck</span>
+
+    <span class="n">post_req_keys</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bottleneck&#39;</span><span class="p">,</span> <span class="s1">&#39;noise&#39;</span><span class="p">,</span> <span class="s1">&#39;total_count&#39;</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">lib</span><span class="p">,</span> <span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">sample_dict</span><span class="p">)</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span>  <span class="c1"># noqa: B007</span>
+            <span class="n">libraries</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">post_samples</span><span class="o">.</span><span class="n">items</span><span class="p">())):</span>
+
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">sample_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="n">post_req_keys</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;post_samples </span><span class="si">{sample}</span><span class="s2"> lacks </span><span class="si">{post_req_keys}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">lib_df</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == @lib&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+                <span class="n">sample</span><span class="o">=</span><span class="n">sample</span><span class="p">,</span>
+                <span class="c1"># simulated pre-selection freqs after bottleneck</span>
+                <span class="n">bottleneck_freq</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+                                 <span class="n">_bottleneck_freqs</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">pre_freq</span><span class="p">,</span>
+                                                   <span class="n">sample_dict</span><span class="p">[</span><span class="s1">&#39;bottleneck&#39;</span><span class="p">])),</span>
+                <span class="c1"># post-selection freqs with noise</span>
+                <span class="n">noise</span><span class="o">=</span><span class="n">scipy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_dict</span><span class="p">[</span><span class="s1">&#39;noise&#39;</span><span class="p">]),</span>
+                                 <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">post_freq_nonorm</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">bottleneck_freq</span> <span class="o">*</span>
+                                            <span class="n">x</span><span class="o">.</span><span class="n">phenotype</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">noise</span><span class="p">),</span>
+                <span class="n">post_freq</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">post_freq_nonorm</span> <span class="o">/</span>
+                                     <span class="n">x</span><span class="o">.</span><span class="n">post_freq_nonorm</span><span class="o">.</span><span class="n">sum</span><span class="p">()),</span>
+                <span class="c1"># post-selection counts simulated from frequencies</span>
+                <span class="n">count</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+                       <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">sample_dict</span><span class="p">[</span><span class="s1">&#39;total_count&#39;</span><span class="p">],</span>
+                                                <span class="n">x</span><span class="o">.</span><span class="n">post_freq</span><span class="p">))</span>
+                <span class="p">)</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;post_counts&#39;</span><span class="p">:</span> <span class="n">sample</span><span class="p">})</span>
+            <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]]</span>
+            <span class="p">)</span>
+
+        <span class="n">df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lib_df</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">df_list</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SigmoidPhenotypeSimulator"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">[docs]</a><span class="k">class</span> <span class="nc">SigmoidPhenotypeSimulator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Simulate phenotypes under sigmoid global epistasis model.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Mutational effects on latent phenotype are simulated to follow</span>
+<span class="sd">    compound normal distribution; latent phenotype maps to observed</span>
+<span class="sd">    phenotype via sigmoid. This distinction between latent and</span>
+<span class="sd">    observed phenotype parallel the &quot;global epistasis&quot; models of</span>
+<span class="sd">    `Otwinoski et al &lt;https://doi.org/10.1073/pnas.1804015115&gt;`_ and</span>
+<span class="sd">    `Sailer and Harms &lt;http://www.genetics.org/content/205/3/1079&gt;`_.</span>
+
+<span class="sd">    The exact sigmoid used is defined in</span>
+<span class="sd">    :meth:`SigmoidPhenotypeSimulator.latentToObserved`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geneseq : str</span>
+<span class="sd">        Codon sequence of wild-type gene.</span>
+<span class="sd">    seed : int or None</span>
+<span class="sd">        Random number seed.</span>
+<span class="sd">    wt_latent : float</span>
+<span class="sd">        Latent phenotype of wildtype.</span>
+<span class="sd">    norm_weights : list or tuple of tuples</span>
+<span class="sd">        Specify compound normal distribution of mutational effects on</span>
+<span class="sd">        latent phenotype as `(weight, mean, sd)` for each Gaussian.</span>
+<span class="sd">    stop_effect : float</span>
+<span class="sd">        Effect of stop codon at any position.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    wt_latent : float</span>
+<span class="sd">        Wildtype latent phenotype.</span>
+<span class="sd">    muteffects : dict</span>
+<span class="sd">        Effect on latent phenotype of each amino-acid mutation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">wt_latent</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                 <span class="n">norm_weights</span><span class="o">=</span><span class="p">((</span><span class="mf">0.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">)),</span>
+                 <span class="n">stop_effect</span><span class="o">=-</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docstring for how to initialize.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wt_latent</span> <span class="o">=</span> <span class="n">wt_latent</span>
+
+        <span class="c1"># simulate muteffects from compound normal distribution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">muteffects</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="n">weights</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">sds</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">norm_weights</span><span class="p">)</span>
+        <span class="n">cumweights</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">icodon</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="n">wt_aa</span> <span class="o">=</span> <span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">geneseq</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">icodon</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">icodon</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]]</span>
+            <span class="k">for</span> <span class="n">mut_aa</span> <span class="ow">in</span> <span class="n">AAS_WITHSTOP</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mut_aa</span> <span class="o">!=</span> <span class="n">wt_aa</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">mut_aa</span> <span class="o">==</span> <span class="s1">&#39;*&#39;</span><span class="p">:</span>
+                        <span class="n">muteffect</span> <span class="o">=</span> <span class="n">stop_effect</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># choose Gaussian from compound normal</span>
+                        <span class="n">i</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">cumweights</span> <span class="o">&lt;</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">())</span>
+                        <span class="c1"># draw mutational effect from chosen Gaussian</span>
+                        <span class="n">muteffect</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">means</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sds</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">muteffects</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt_aa}</span><span class="s2">{icodon + 1}</span><span class="si">{mut_aa}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">muteffect</span>
+
+<div class="viewcode-block" id="SigmoidPhenotypeSimulator.latentPhenotype"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype">[docs]</a>    <span class="k">def</span> <span class="nf">latentPhenotype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Latent phenotype of a variant.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        v : dict or row of pandas.DataFrame</span>
+<span class="sd">            Must have key &#39;aa_substitutions&#39; that gives space-delimited</span>
+<span class="sd">            amino-acid mutations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Latent phenotype of variant.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wt_latent</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">muteffects</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span>
+                                    <span class="n">v</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="SigmoidPhenotypeSimulator.observedPhenotype"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype">[docs]</a>    <span class="k">def</span> <span class="nf">observedPhenotype</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Observed phenotype of a variant.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        v : dict or row of pandas.DataFrame</span>
+<span class="sd">            Must have key &#39;aa_substitutions&#39; that gives space-delimited</span>
+<span class="sd">            amino-acid mutations.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Observed phenotype of variant.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">latentToObserved</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">latentPhenotype</span><span class="p">(</span><span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SigmoidPhenotypeSimulator.latentToObserved"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">latentToObserved</span><span class="p">(</span><span class="n">latent</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Observed phenotype from latent phenotype.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The observed phenotype :math:`p_{obs}` is calculated from the</span>
+<span class="sd">        latent phenotype :math:`p_{latent}` as:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            p_{obs} = \frac{1}{1 + e^{-p_{latent}}}</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        latent : float</span>
+<span class="sd">            Latent phenotype.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Observed phenotype.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">latent</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="SigmoidPhenotypeSimulator.plotLatentVsObserved"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved">[docs]</a>    <span class="k">def</span> <span class="nf">plotLatentVsObserved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">latent_min</span><span class="o">=-</span><span class="mi">15</span><span class="p">,</span>
+                             <span class="n">latent_max</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">npoints</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                             <span class="n">wt_vline</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot observed phenotype as function of latent phenotype.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        latent_min : float</span>
+<span class="sd">            Smallest value of latent phenotype on plot.</span>
+<span class="sd">        latent_max : float</span>
+<span class="sd">            Largest value of latent phenotype on plot.</span>
+<span class="sd">        npoints : int</span>
+<span class="sd">            Plot a line fit to this many points.</span>
+<span class="sd">        wt_vline : bool</span>
+<span class="sd">            Draw a vertical line at the wildtype latent phenotype.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        plotnine.ggplot.ggplot</span>
+<span class="sd">            Plot of observed phenotype as function of latent phenotype.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">latent</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">latent_min</span><span class="p">,</span> <span class="n">latent_max</span><span class="p">,</span> <span class="n">npoints</span><span class="p">)</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                            <span class="p">{</span><span class="s1">&#39;latent&#39;</span><span class="p">:</span> <span class="n">latent</span><span class="p">,</span>
+                             <span class="s1">&#39;observed&#39;</span><span class="p">:</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">latentToObserved</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+                                          <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">latent</span><span class="p">]</span>
+                             <span class="p">}),</span>
+                       <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;latent&#39;</span><span class="p">,</span> <span class="s1">&#39;observed&#39;</span><span class="p">)</span>
+                       <span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">geom_line</span><span class="p">()</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;latent phenotype&#39;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;observed phenotype&#39;</span><span class="p">)</span>
+             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wt_vline</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">geom_vline</span><span class="p">(</span><span class="n">xintercept</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wt_latent</span><span class="p">,</span>
+                                  <span class="n">color</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                  <span class="n">linetype</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">p</span></div>
+
+<div class="viewcode-block" id="SigmoidPhenotypeSimulator.plotMutsHistogram"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram">[docs]</a>    <span class="k">def</span> <span class="nf">plotMutsHistogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_or_observed</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                          <span class="n">mutant_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">wt_vline</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot distribution of phenotype for all mutants.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        latent_or_observed : {&#39;latent&#39;, &#39;observed&#39;}</span>
+<span class="sd">            Which type of phenotype to plot.</span>
+<span class="sd">        mutant_order : int</span>
+<span class="sd">            Plot mutations of this order. Currently only works for 1</span>
+<span class="sd">            (single mutants).</span>
+<span class="sd">        bins : int</span>
+<span class="sd">            Number of bins in histogram.</span>
+<span class="sd">        wt_vline : bool</span>
+<span class="sd">            Draw a vertical line at the wildtype latent phenotype.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        plotnine.ggplot.ggplot</span>
+<span class="sd">            Histogram of phenotype for all mutants.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">mutant_order</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;only implemented for `mutant_order` of 1&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">latent_or_observed</span> <span class="o">==</span> <span class="s1">&#39;latent&#39;</span><span class="p">:</span>
+            <span class="n">phenoFunc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">latentPhenotype</span>
+        <span class="k">elif</span> <span class="n">latent_or_observed</span> <span class="o">==</span> <span class="s1">&#39;observed&#39;</span><span class="p">:</span>
+            <span class="n">phenoFunc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observedPhenotype</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid value of `latent_or_observed`&#39;</span><span class="p">)</span>
+
+        <span class="n">phenotypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">phenoFunc</span><span class="p">({</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">:</span> <span class="n">m</span><span class="p">})</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">muteffects</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;phenotype&#39;</span><span class="p">:</span> <span class="n">phenotypes</span><span class="p">}),</span>
+                       <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;phenotype&#39;</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">geom_histogram</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;number of </span><span class="si">{mutant_order}</span><span class="s2">-mutants&quot;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{latent_or_observed}</span><span class="s2"> phenotype&quot;</span><span class="p">)</span>
+             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">wt_vline</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">geom_vline</span><span class="p">(</span>
+                        <span class="n">xintercept</span><span class="o">=</span><span class="n">phenoFunc</span><span class="p">({</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">}),</span>
+                        <span class="n">color</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                        <span class="n">linetype</span><span class="o">=</span><span class="s1">&#39;dashed&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">p</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

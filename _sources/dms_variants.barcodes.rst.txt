@@ -1,0 +1,4 @@
+.. automodule:: dms_variants.barcodes
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,387 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>simulate &#8212; dms_variants 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils" href="dms_variants.utils.html" />
+    <link rel="prev" title="constants" href="dms_variants.constants.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_variants.simulate"></span><div class="section" id="simulate">
+<h1>simulate<a class="headerlink" href="#simulate" title="Permalink to this headline">¶</a></h1>
+<p>Simulate data.</p>
+<dl class="class">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator">
+<em class="property">class </em><code class="descclassname">dms_variants.simulate.</code><code class="descname">SigmoidPhenotypeSimulator</code><span class="sig-paren">(</span><em>geneseq</em>, <em>*</em>, <em>seed=1</em>, <em>wt_latent=5</em>, <em>norm_weights=((0.4</em>, <em>-0.5</em>, <em>1)</em>, <em>(0.6</em>, <em>-5</em>, <em>2.5))</em>, <em>stop_effect=-10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Simulate phenotypes under sigmoid global epistasis model.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Mutational effects on latent phenotype are simulated to follow
+compound normal distribution; latent phenotype maps to observed
+phenotype via sigmoid. This distinction between latent and
+observed phenotype parallel the “global epistasis” models of
+<a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and
+<a class="reference external" href="http://www.genetics.org/content/205/3/1079">Sailer and Harms</a>.</p>
+<p>The exact sigmoid used is defined in
+<a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.latentToObserved()</span></code></a>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geneseq</strong> (<em>str</em>) – Codon sequence of wild-type gene.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – Random number seed.</p></li>
+<li><p><strong>wt_latent</strong> (<em>float</em>) – Latent phenotype of wildtype.</p></li>
+<li><p><strong>norm_weights</strong> (<em>list</em><em> or </em><em>tuple of tuples</em>) – Specify compound normal distribution of mutational effects on
+latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
+<li><p><strong>stop_effect</strong> (<em>float</em>) – Effect of stop codon at any position.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent">
+<code class="descname">wt_latent</code><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wildtype latent phenotype.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects">
+<code class="descname">muteffects</code><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Effect on latent phenotype of each amino-acid mutation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype">
+<code class="descname">latentPhenotype</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Latent phenotype of a variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v</strong> (<em>dict</em><em> or </em><em>row of pandas.DataFrame</em>) – Must have key ‘aa_substitutions’ that gives space-delimited
+amino-acid mutations.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Latent phenotype of variant.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved">
+<em class="property">static </em><code class="descname">latentToObserved</code><span class="sig-paren">(</span><em>latent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentToObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observed phenotype from latent phenotype.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The observed phenotype <span class="math notranslate nohighlight">\(p_{obs}\)</span> is calculated from the
+latent phenotype <span class="math notranslate nohighlight">\(p_{latent}\)</span> as:</p>
+<div class="math notranslate nohighlight">
+\[p_{obs} = \frac{1}{1 + e^{-p_{latent}}}\]</div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>latent</strong> (<em>float</em>) – Latent phenotype.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Observed phenotype.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype">
+<code class="descname">observedPhenotype</code><span class="sig-paren">(</span><em>v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observed phenotype of a variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v</strong> (<em>dict</em><em> or </em><em>row of pandas.DataFrame</em>) – Must have key ‘aa_substitutions’ that gives space-delimited
+amino-acid mutations.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Observed phenotype of variant.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved">
+<code class="descname">plotLatentVsObserved</code><span class="sig-paren">(</span><em>*</em>, <em>latent_min=-15</em>, <em>latent_max=10</em>, <em>npoints=200</em>, <em>wt_vline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotLatentVsObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot observed phenotype as function of latent phenotype.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latent_min</strong> (<em>float</em>) – Smallest value of latent phenotype on plot.</p></li>
+<li><p><strong>latent_max</strong> (<em>float</em>) – Largest value of latent phenotype on plot.</p></li>
+<li><p><strong>npoints</strong> (<em>int</em>) – Plot a line fit to this many points.</p></li>
+<li><p><strong>wt_vline</strong> (<em>bool</em>) – Draw a vertical line at the wildtype latent phenotype.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Plot of observed phenotype as function of latent phenotype.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram">
+<code class="descname">plotMutsHistogram</code><span class="sig-paren">(</span><em>latent_or_observed</em>, <em>*</em>, <em>mutant_order=1</em>, <em>bins=30</em>, <em>wt_vline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot distribution of phenotype for all mutants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latent_or_observed</strong> (<em>{'latent'</em><em>, </em><em>'observed'}</em>) – Which type of phenotype to plot.</p></li>
+<li><p><strong>mutant_order</strong> (<em>int</em>) – Plot mutations of this order. Currently only works for 1
+(single mutants).</p></li>
+<li><p><strong>bins</strong> (<em>int</em>) – Number of bins in histogram.</p></li>
+<li><p><strong>wt_vline</strong> (<em>bool</em>) – Draw a vertical line at the wildtype latent phenotype.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Histogram of phenotype for all mutants.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_variants.simulate.simulateSampleCounts">
+<code class="descclassname">dms_variants.simulate.</code><code class="descname">simulateSampleCounts</code><span class="sig-paren">(</span><em>*</em>, <em>variants</em>, <em>phenotype_func</em>, <em>variant_error_rate</em>, <em>pre_sample</em>, <em>post_samples</em>, <em>pre_sample_name='pre-selection'</em>, <em>seed=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulateSampleCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.simulateSampleCounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate pre- and post-selection variant counts.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Add to <a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a> using
+<a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts" title="dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts()</span></code></a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variants</strong> (class:<cite>dms_variants.codonvarianttable.CodonVariantTable</cite>) – Holds variants used in simulation.</p></li>
+<li><p><strong>phenotype_func</strong> (<em>function</em>) – Takes row from <cite>variants.barcode_variant_df</cite> and returns phenotype
+as number giving enrichment of variant relative to wildtype. For
+instance, <a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedPhenotype()</span></code></a>.</p></li>
+<li><p><strong>variant_error_rate</strong> (<em>float</em>) – Rate at which variants mis-called. Provide the probability that a
+variant has a spuriously called (or missing) codon mutation; each
+variant then has a random codon mutation added or removed with this
+probability before being passed to <cite>phenotype_func</cite>.</p></li>
+<li><p><strong>pre_sample</strong> (<em>pandas.DataFrame</em><em> or </em><em>dict</em>) – Counts of each variant pre-selection. To specify counts, provide
+data frame with columns “library”, “barcode”, and “count”. To
+simulate, provide dict with keys “total_count” and “uniformity”,
+and for each library, we simulate pre-selection counts as a draw
+of “total_count” counts from a multinomial parameterized by pre-
+selection frequencies drawn from a Dirichlet distribution with
+concentration parameter of “uniformity” (5 is reasonable value).</p></li>
+<li><p><strong>post_samples</strong> (<em>dict</em>) – Keyed by name of each sample with value another dict keyed by
+‘total_count’, ‘noise’, and ‘bottleneck’. Counts drawn from
+multinomial parameterized by pre-selection frerquencies after
+passing through bottleneck of indicated size, and adding noise
+by mutiplying phenotype by a random variable with mean 1 and
+standard deviation specified by ‘noise’ (0 is no noise).</p></li>
+<li><p><strong>pre_sample_name</strong> (<em>str</em>) – Name used for the pre-selection sample.</p></li>
+<li><p><strong>seed</strong> (<em>None</em><em> or </em><em>int</em>) – If not <cite>None</cite>, random number seed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Data frame with the following columns:</dt><dd><ul class="simple">
+<li><p>”library”</p></li>
+<li><p>”barcode”</p></li>
+<li><p>”sample”</p></li>
+<li><p>”count”</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_variants.simulate.simulate_CodonVariantTable">
+<code class="descclassname">dms_variants.simulate.</code><code class="descname">simulate_CodonVariantTable</code><span class="sig-paren">(</span><em>*</em>, <em>geneseq</em>, <em>bclen</em>, <em>library_specs</em>, <em>seed=1</em>, <em>variant_call_support=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulate_CodonVariantTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.simulate_CodonVariantTable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simulate <a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only simulates the variants, not counts for samples. To simulate counts,
+use <a class="reference internal" href="#dms_variants.simulate.simulateSampleCounts" title="dms_variants.simulate.simulateSampleCounts"><code class="xref py py-func docutils literal notranslate"><span class="pre">simulateSampleCounts()</span></code></a>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geneseq</strong> (<em>str</em>) – Sequence of wildtype protein-coding gene.</p></li>
+<li><p><strong>bclen</strong> (<em>int</em>) – Length of the barcodes; must enable complexity at least
+10-fold greater than max number of variants.</p></li>
+<li><p><strong>library_specs</strong> (<em>dict</em>) – Specifications for each simulated library. Keys are ‘avgmuts’
+and ‘nvariants’. Mutations per variant are Poisson distributed.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – Random number seed or <cite>None</cite> to set no seed.</p></li>
+<li><p><strong>variant_call_support</strong> (<em>int</em><em> or </em><em>2-tuple</em>) – If integer, all supports are set to this. If 2-tuple, support is
+drawn as random integer uniformly from this range (inclusive).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dms_variants.html">dms_variants package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.html#dms-variants">dms_variants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dms_variants.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="dms_variants.html">dms_variants package</a><ul>
+      <li>Previous: <a href="dms_variants.constants.html" title="previous chapter">constants</a></li>
+      <li>Next: <a href="dms_variants.utils.html" title="next chapter">utils</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_variants.simulate.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

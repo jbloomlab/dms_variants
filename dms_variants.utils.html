@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>utils &#8212; dms_variants 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="package index" href="package_index.html" />
+    <link rel="prev" title="simulate" href="dms_variants.simulate.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_variants.utils"></span><div class="section" id="utils">
+<h1>utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
+<p>Miscellaneous utility functions.</p>
+<dl class="function">
+<dt id="dms_variants.utils.cumul_rows_by_count">
+<code class="descclassname">dms_variants.utils.</code><code class="descname">cumul_rows_by_count</code><span class="sig-paren">(</span><em>df</em>, <em>*</em>, <em>count_col='count'</em>, <em>n_col='n_rows'</em>, <em>tot_col='total_rows'</em>, <em>group_cols=None</em>, <em>group_cols_as_str=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/utils.html#cumul_rows_by_count"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.utils.cumul_rows_by_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cumulative number of rows with &gt;= each count.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame with rows to analyze.</p></li>
+<li><p><strong>count_col</strong> (<em>str</em>) – Column in <cite>df</cite> with count for row.</p></li>
+<li><p><strong>n_col</strong> (<em>str</em>) – Name of column in result giving cumulative count threshold.</p></li>
+<li><p><strong>tot_col</strong> (<em>str</em>) – Name of column in result giving total number of rows.</p></li>
+<li><p><strong>group_cols</strong> (<em>None</em><em> or </em><em>list</em>) – Group by these columns and analyze each group separately.</p></li>
+<li><p><strong>group_cols_as_str</strong> (<em>bool</em>) – Convert any <cite>group_cols</cite> columns to str. This is needed if calling
+in <code class="docutils literal notranslate"><span class="pre">R</span></code> using <a class="reference external" href="https://rstudio.github.io/reticulate/">reticulate</a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Give cumulative counts. For each count in <cite>count_col</cite>, column
+<cite>n_col</cite> gives number of rows with &gt;= that many counts, and
+<cite>tot_col</cite> gives total number of counts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                   <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cumul_rows_by_count</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="go">   count  n_rows  total_rows</span>
+<span class="go">0      9       1           6</span>
+<span class="go">1      4       2           6</span>
+<span class="go">2      3       4           6</span>
+<span class="go">3      1       5           6</span>
+<span class="go">4      0       6           6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cumul_rows_by_count</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">group_cols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">])</span>
+<span class="go">  sample  count  n_rows  total_rows</span>
+<span class="go">0      a      9       1           4</span>
+<span class="go">1      a      3       3           4</span>
+<span class="go">2      a      0       4           4</span>
+<span class="go">3      b      4       1           2</span>
+<span class="go">4      b      1       2           2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_variants.utils.latex_sci_not">
+<code class="descclassname">dms_variants.utils.</code><code class="descname">latex_sci_not</code><span class="sig-paren">(</span><em>xs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/utils.html#latex_sci_not"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.utils.latex_sci_not" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert list of numbers to LaTex scientific notation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>xs</strong> (<em>list</em>) – Numbers to format.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Formatted strings for numbers.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latex_sci_not</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3120</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0000927</span><span class="p">])</span>
+<span class="go">[&#39;$0$&#39;, &#39;$3$&#39;, &#39;$3.1 \\times 10^{3}$&#39;, &#39;$-9.3 \\times 10^{-5}$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latex_sci_not</span><span class="p">([</span><span class="mf">0.001</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">])</span>
+<span class="go">[&#39;$0.001$&#39;, &#39;$1$&#39;, &#39;$10^{3}$&#39;, &#39;$10^{6}$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latex_sci_not</span><span class="p">([</span><span class="o">-</span><span class="mf">0.002</span><span class="p">,</span> <span class="mf">0.003</span><span class="p">,</span> <span class="mf">0.000011</span><span class="p">])</span>
+<span class="go">[&#39;$-0.002$&#39;, &#39;$0.003$&#39;, &#39;$1.1 \\times 10^{-5}$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latex_sci_not</span><span class="p">([</span><span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">])</span>
+<span class="go">[&#39;$-0.1$&#39;, &#39;$0$&#39;, &#39;$0.1$&#39;, &#39;$0.2$&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">latex_sci_not</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">[&#39;$0$&#39;, &#39;$1$&#39;, &#39;$2$&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_variants.utils.tidy_split">
+<code class="descclassname">dms_variants.utils.</code><code class="descname">tidy_split</code><span class="sig-paren">(</span><em>df</em>, <em>column</em>, <em>sep=' '</em>, <em>keep=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/utils.html#tidy_split"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.utils.tidy_split" title="Permalink to this definition">¶</a></dt>
+<dd><p>Split values of column and expand into new rows.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Taken from <a class="reference external" href="https://stackoverflow.com/a/39946744">https://stackoverflow.com/a/39946744</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame with the column to split and expand.</p></li>
+<li><p><strong>column</strong> (<em>str</em>) – Name of column to split and expand.</p></li>
+<li><p><strong>sep</strong> (<em>str</em>) – The string used to split the column’s values.</p></li>
+<li><p><strong>keep</strong> (<em>bool</em>) – Retain the presplit value as it’s own row.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Data frame with the same columns as <cite>df</cite>. Rows lacking
+<cite>column</cite> are filtered.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;col1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                   <span class="s1">&#39;col2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;d e&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">),</span> <span class="s1">&#39;f&#39;</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tidy_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s1">&#39;col2&#39;</span><span class="p">)</span>
+<span class="go">  col1 col2</span>
+<span class="go">0    A    d</span>
+<span class="go">0    A    e</span>
+<span class="go">2    C    f</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="dms_variants.utils.translate">
+<code class="descclassname">dms_variants.utils.</code><code class="descname">translate</code><span class="sig-paren">(</span><em>codonseq</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/utils.html#translate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.utils.translate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate codon sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>codonseq</strong> (<em>str</em>) – Codon sequence. Gaps currently not allowed.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Amino-acid sequence.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">translate</span><span class="p">(</span><span class="s1">&#39;ATGGGATAA&#39;</span><span class="p">)</span>
+<span class="go">&#39;MG*&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dms_variants.html">dms_variants package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.html#dms-variants">dms_variants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dms_variants.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="dms_variants.html">dms_variants package</a><ul>
+      <li>Previous: <a href="dms_variants.simulate.html" title="previous chapter">simulate</a></li>
+      <li>Next: <a href="package_index.html" title="next chapter">package index</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/dms_variants.utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
