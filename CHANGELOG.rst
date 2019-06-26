@@ -9,6 +9,10 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 0.2.dev0
 --------
 
+Added
+-----
+- `CodonVariant.numCodonMutsByType` method to get numerical values for codon mutations per variant.
+
 Fixed
 -----
 - Docs /formatting in Jupyter notebooks.

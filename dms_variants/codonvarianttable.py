@@ -646,7 +646,7 @@ class CodonVariantTable:
         ----------
         variant_type : {'single', 'all'}
             Include just single mutants, or all mutants?
-        Other args
+        other_parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns
@@ -759,7 +759,7 @@ class CodonVariantTable:
         ----------
         count_or_frequency : {'count', 'frequency'}
             Plot mutation counts or frequencies?
-        All other args
+        other_parameters
             Same as for :meth:`CodonVariantTable.plotCumulMutCoverage`.
 
         Returns
@@ -947,7 +947,7 @@ class CodonVariantTable:
             Include all variants or just those with <=1 `mut_type` mutation.
         tot_variants_hline : bool
             Include dotted horizontal line indicating total number of variants.
-        Other parameters
+        other_parameters
             Same as for :meth:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns
@@ -1024,7 +1024,7 @@ class CodonVariantTable:
         max_count : None or int
             Plot cumulative fraction plot out to this number of observations.
             If `None`, a reasonable value is automatically determined.
-        Other parameters
+        other_parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns
@@ -1090,48 +1090,27 @@ class CodonVariantTable:
 
         return p
 
-    def plotNumCodonMutsByType(self, variant_type, *,
-                               libraries='all', samples='all', plotfile=None,
-                               orientation='h', widthscale=1, heightscale=1,
-                               min_support=1):
-        """Nonsynonymous, synonymous, stop mutations per variant.
+    def numCodonMutsByType(self, variant_type, *,
+                           libraries='all', samples='all', min_support=1):
+        """Get average nonsynonymous, synonymous, stop mutations per variant.
 
         Parameters
         ----------
-        variant_type : {'single', 'all'}
-            Include all variants or just those with <=1 `mut_type` mutation.
-        Other parameters
-            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+        all_parameters
+            Same as for :meth:`CodonVariantTable.plotNumCodonMutsByType`.
 
         Returns
         -------
-        plotnine.ggplot.ggplot
+        pandas.DataFrame
+            Data frame with average mutations of each type per variant.
 
         """
-        df, nlibraries, nsamples = self._getPlotData(libraries,
-                                                     samples,
-                                                     min_support)
+        df, _, _ = self._getPlotData(libraries, samples, min_support)
 
         if variant_type == 'single':
             df = df.query('n_codon_substitutions <= 1')
         elif variant_type != 'all':
             raise ValueError(f"invalid variant_type {variant_type}")
-
-        if orientation == 'h':
-            facet_str = 'sample ~ library'
-            width = widthscale * (1 + 1.4 * nlibraries)
-            height = heightscale * (1 + 1.3 * nsamples)
-        elif orientation == 'v':
-            facet_str = 'library ~ sample'
-            width = widthscale * (1 + 1.4 * nsamples)
-            height = heightscale * (1 + 1.3 * nlibraries)
-        else:
-            raise ValueError(f"invalid `orientation` {orientation}")
-
-        if height > 3:
-            ylabel = f'mutations per variant ({variant_type} mutants)'
-        else:
-            ylabel = f'mutations per variant\n({variant_type} mutants)'
 
         codon_mut_types = ['nonsynonymous', 'synonymous', 'stop']
 
@@ -1160,6 +1139,51 @@ class CodonVariantTable:
               .reset_index()
               .assign(number=lambda x: x.num_muts_count / x['count'])
               )
+
+        return df
+
+    def plotNumCodonMutsByType(self, variant_type, *,
+                               libraries='all', samples='all', plotfile=None,
+                               orientation='h', widthscale=1, heightscale=1,
+                               min_support=1):
+        """Plot average nonsynonymous, synonymous, stop mutations per variant.
+
+        Parameters
+        ----------
+        variant_type : {'single', 'all'}
+            Include all variants or just those with <=1 codon mutation.
+        other_parameters
+            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+
+        """
+        _, nlibraries, nsamples = self._getPlotData(libraries,
+                                                    samples,
+                                                    min_support)
+
+        df = self.numCodonMutsByType(variant_type=variant_type,
+                                     libraries=libraries,
+                                     samples=samples,
+                                     min_support=min_support)
+
+        if orientation == 'h':
+            facet_str = 'sample ~ library'
+            width = widthscale * (1 + 1.4 * nlibraries)
+            height = heightscale * (1 + 1.3 * nsamples)
+        elif orientation == 'v':
+            facet_str = 'library ~ sample'
+            width = widthscale * (1 + 1.4 * nsamples)
+            height = heightscale * (1 + 1.3 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        if height > 3:
+            ylabel = f'mutations per variant ({variant_type} mutants)'
+        else:
+            ylabel = f'mutations per variant\n({variant_type} mutants)'
 
         p = (p9.ggplot(df, p9.aes('mutation_type', 'number',
                                   fill='mutation_type', label='number')) +
