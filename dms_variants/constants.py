@@ -28,7 +28,15 @@ AAS_WITHSTOP = tuple(list(AAS_NOSTOP) + ['*'])
 
 NTS = tuple(sorted(_nt.upper() for _nt in
                    Bio.Alphabet.IUPAC.IUPACUnambiguousDNA.letters))
-"""tuple: DNA nucleotide one-letter codes, alphabetized."""
+"""tuple: DNA nucleotide one-letter codes."""
+
+NTS_AMBIGUOUS = tuple(sorted(_nt.upper() for _nt in
+                             Bio.Alphabet.IUPAC.IUPACAmbiguousDNA.letters))
+"""tuple: DNA nucleotide one-letter codes including ambiguous ones."""
+
+NT_COMPLEMENT = {_nt: str(Bio.Seq.Seq(_nt).reverse_complement()) for
+                 _nt in NTS_AMBIGUOUS}
+"""dict: Maps each nucleotide to its complement, including ambiguous ones."""
 
 CODONS = tuple(f"{_n1}{_n2}{_n3}" for _n1 in NTS for _n2 in NTS for _n3 in NTS)
 """tuple: DNA codons, alphabetized."""
