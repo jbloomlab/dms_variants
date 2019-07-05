@@ -38,6 +38,12 @@ NT_COMPLEMENT = {_nt: str(Bio.Seq.Seq(_nt).reverse_complement()) for
                  _nt in NTS_AMBIGUOUS}
 """dict: Maps each nucleotide to its complement, including ambiguous ones."""
 
+NT_TO_REGEXP = dict(map(lambda tup: ((tup[0], tup[1]) if len(tup[1]) == 1 else
+                                     (tup[0], '[' + ''.join(tup[1]) + ']')),
+                        Bio.Seq.IUPAC.IUPACData.ambiguous_dna_values.items()
+                        ))
+"""dict: Maps nucleotide code to regular expression expansion."""
+
 CODONS = tuple(f"{_n1}{_n2}{_n3}" for _n1 in NTS for _n2 in NTS for _n3 in NTS)
 """tuple: DNA codons, alphabetized."""
 

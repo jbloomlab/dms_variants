@@ -3,7 +3,7 @@
 barcodes
 ========
 
-Process and analyze barcodes.
+Utility functions to process and analyze barcodes.
 
 """
 
