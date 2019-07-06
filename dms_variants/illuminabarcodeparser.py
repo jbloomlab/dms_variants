@@ -1,9 +1,9 @@
 """
-=============
-barcodeparser
-=============
+=====================
+illuminabarcodeparser
+=====================
 
-Parse barcode reads.
+Defines :class:`IlluminaBarcodeParser` to parse barcodes from Illumina reads.
 
 """
 
@@ -17,6 +17,7 @@ import scipy
 
 from dms_variants.fastq import (iterate_fastq,
                                 iterate_fastq_pair,
+                                qual_str_to_array,
                                 )
 from dms_variants.utils import reverse_complement
 
@@ -56,7 +57,7 @@ class IlluminaBarcodeParser:
     rc_barcode : bool
         Get reverse complement of the barcode (orientation read by R1).
     minq : int
-        Require at least this quality score for all bases in barcode.
+        Require >= this Q score for all bases in barcode for at least one read.
     chastity_filter : bool
         Drop any reads that fail Illumina chastity filter.
     list_all_valid_barcodes :  bool
@@ -81,7 +82,7 @@ class IlluminaBarcodeParser:
     rc_barcode : bool
         Get reverse complement of the barcode (orientation read by R1).
     minq : int
-        Require at least this quality score for all bases in barcode.
+        Require >= this Q score for all bases in barcode for at least one read.
     chastity_filter : bool
         Drop any reads that fail Illumina chastity filter.
     list_all_valid_barcodes :  bool
@@ -187,13 +188,13 @@ class IlluminaBarcodeParser:
         # max length of interest for reads
         max_len = self.bclen + len(self.upstream) + len(self.downstream)
 
-        for filetup in zip(fileslist):
+        for filetup in zip(*fileslist):
             if r1only:
                 assert len(filetup) == 1
                 iterator = iterate_fastq(filetup[0], check_pair=1,
                                          trim=max_len)
             else:
-                assert len(filetup) == 2
+                assert len(filetup) == 2, f"{filetup}\n{fileslist}"
                 iterator = iterate_fastq_pair(filetup[0], filetup[1],
                                               r1trim=max_len, r2trim=max_len)
 
@@ -202,7 +203,7 @@ class IlluminaBarcodeParser:
                 if r1only:
                     readlist = [entry[1]]
                     qlist = [entry[2]]
-                    fail = entry[4]
+                    fail = entry[3]
 
                 else:
                     readlist = [entry[1], entry[2]]
@@ -256,9 +257,9 @@ class IlluminaBarcodeParser:
                     bc_q = {}
                     for read, q in zip(reads, qlist):
                         bc[read] = matches[read].group('bc')
-                        bc_q[read] = dms_variants.fastq.qual_str_to_array(
-                                 q[matches[read].start('bc'):
-                                   matches[read].end('bc')])
+                        bc_q[read] = qual_str_to_array(
+                                        q[matches[read].start('bc'):
+                                          matches[read].end('bc')])
                     if self.rc_barcode:
                         if not r1only:
                             bc['R2'] = reverse_complement(bc['R2'])
