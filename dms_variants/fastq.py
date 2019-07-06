@@ -10,6 +10,7 @@ Tools for processing FASTQ files.
 
 import collections
 import gzip
+import itertools
 import os
 import tempfile  # noqa: F401
 
@@ -39,6 +40,131 @@ def qual_str_to_array(q_str, *, offset=33):
     """
     return scipy.array([ord(q) - offset for q in q_str],
                        dtype='int')
+
+
+def iterate_fastq_pair(r1filename, r2filename, *,
+                       r1trim=None, r2trim=None, qual_format='str'):
+    r"""Iterate over paired R1 and R2 FASTQ files.
+
+    Parameters
+    ----------
+    r1filename : str
+        R1 FASTQ file name, can be gzipped (extension ``.gz``).
+    r2filename : str
+        R2 FASTQ file name, can be gzipped (extension ``.gz``).
+    r1trim : int or None
+        If not `None`, trim R1 reads and Q scores to be longer than this.
+    r2trim : int or None
+        If not `None`, trim R2 reads and Q scores to be longer than this.
+    qual_format : {'str', 'array'}
+        Return the quality scores as string of ASCII codes or array of numbers?
+
+    Yields
+    ------
+    namedtuple
+        The entries in the tuple are (in order):
+         - `id` : read id
+         - `r1_seq` : R1 read sequence
+         - `r2_seq` : R2 read sequence
+         - `r1_qs` : R1 Q scores (`qual_format` parameter determines format)
+         - `r2_qs` : R2 Q scores (`qual_format` parameter determines format)
+         - `fail` : did either read fail chastity filter? (`None` if no info)
+
+    Example
+    -------
+    >>> f1 = tempfile.NamedTemporaryFile(mode='w')
+    >>> _ = f1.write(
+    ...         '@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT\n'
+    ...         'ATGCAATTG\n'
+    ...         '+\n'
+    ...         'GGGGGIIII\n'
+    ...         '@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 1:Y:0:CGATGT\n'
+    ...         'ACGCTATTC\n'
+    ...         '+\n'
+    ...         'GHGGGIKII\n'
+    ...         )
+    >>> f1.flush()
+    >>> f2 = tempfile.NamedTemporaryFile(mode='w')
+    >>> _ = f2.write(
+    ...         '@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 2:N:0:CGATGT\n'
+    ...         'CAGCATA\n'
+    ...         '+\n'
+    ...         'AGGGGII\n'
+    ...         '@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 2:Y:0:CGATGT\n'
+    ...         'CTGAATA\n'
+    ...         '+\n'
+    ...         'GHBGGIK\n'
+    ...         )
+    >>> f2.flush()
+
+    >>> for tup in iterate_fastq_pair(f1.name, f2.name, r1trim=8, r2trim=5,
+    ...                               qual_format='array'):
+    ...     print(tup)
+    ... # doctest: +NORMALIZE_WHITESPACE
+    FastqPairEntry(id='DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984',
+                   r1_seq='ATGCAATT',
+                   r2_seq='CAGCA',
+                   r1_qs=array([38, 38, 38, 38, 38, 40, 40, 40]),
+                   r2_qs=array([32, 38, 38, 38, 38]),
+                   fail=False)
+    FastqPairEntry(id='DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985',
+                   r1_seq='ACGCTATT',
+                   r2_seq='CTGAA',
+                   r1_qs=array([38, 39, 38, 38, 38, 40, 42, 40]),
+                   r2_qs=array([38, 39, 33, 38, 38]),
+                   fail=True)
+
+    >>> for tup in iterate_fastq_pair(f1.name, f2.name, r1trim=8, r2trim=5):
+    ...     print(tup)
+    ... # doctest: +NORMALIZE_WHITESPACE
+    FastqPairEntry(id='DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984',
+                   r1_seq='ATGCAATT',
+                   r2_seq='CAGCA',
+                   r1_qs='GGGGGIII',
+                   r2_qs='AGGGG',
+                   fail=False)
+    FastqPairEntry(id='DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985',
+                   r1_seq='ACGCTATT',
+                   r2_seq='CTGAA',
+                   r1_qs='GHGGGIKI',
+                   r2_qs='GHBGG',
+                   fail=True)
+
+
+    >>> f1.close()
+    >>> f2.close()
+
+    """
+    FastqPairEntry = collections.namedtuple(
+                            'FastqPairEntry',
+                            'id r1_seq r2_seq r1_qs r2_qs fail')
+
+    r1_iterator = iterate_fastq(r1filename,
+                                trim=r1trim,
+                                check_pair=1,
+                                qual_format=qual_format)
+    r2_iterator = iterate_fastq(r2filename,
+                                trim=r2trim,
+                                check_pair=2,
+                                qual_format=qual_format)
+
+    for r1_entry, r2_entry in itertools.zip_longest(r1_iterator, r2_iterator):
+
+        if (r1_entry is None) or (r2_entry is None):
+            raise IOError(f"{r1filename} and {r2filename} have unequal "
+                          'number of entries')
+
+        if r1_entry[0] != r2_entry[0]:
+            raise IOError(f"{r1filename} and {r2filename} specify different "
+                          f"read IDs:\n{r1_entry[0]}\n{r2_entry[0]}")
+
+        yield FastqPairEntry(id=r1_entry[0],
+                             r1_seq=r1_entry[1],
+                             r2_seq=r2_entry[1],
+                             r1_qs=r1_entry[2],
+                             r2_qs=r2_entry[2],
+                             fail=(r1_entry[3] or r2_entry[3]),
+                             )
 
 
 def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
@@ -83,6 +209,7 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
     ...         'GHGGGIKII\n'
     ...         )
     >>> f.flush()
+
     >>> try:
     ...     for tup in iterate_fastq(f.name, trim=5, check_pair=1):
     ...         print(tup)
