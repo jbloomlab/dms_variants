@@ -15,6 +15,9 @@ import regex
 
 import scipy
 
+from dms_variants.fastq import (iterate_fastq,
+                                iterate_fastq_pair,
+                                )
 from dms_variants.utils import reverse_complement
 
 
@@ -157,11 +160,22 @@ class IlluminaBarcodeParser:
                   - "unparseable barcode": invalid flank sequence, N in barcode
 
         """
+        if isinstance(r1files, str):
+            r1files = [r1files]
+        if isinstance(r2files, str):
+            r2files = [r2files]
+
         if not r2files:
             reads = ['R1']
             r2files = None
+            fileslist = [r1files]
+            r1only = True
         else:
             reads = ['R1', 'R2']
+            if len(r1files) != len(r2files):
+                raise ValueError('`r1files` and `r2files` different length')
+            fileslist = [r1files, r2files]
+            r1only = False
 
         if self.valid_barcodes and self.list_all_valid_barcodes:
             barcodes = {bc: 0 for bc in self.valid_barcodes}
@@ -170,92 +184,114 @@ class IlluminaBarcodeParser:
 
         fates = collections.defaultdict(int)
 
-        for _, r1, r2, q1, q2, fail in \
-                dms_tools2.utils.iteratePairedFASTQ(r1files, r2files):
+        # max length of interest for reads
+        max_len = self.bclen + len(self.upstream) + len(self.downstream)
 
-            if fail and self.chastity_filter:
-                fates['failed chastity filter'] += 1
-                continue
+        for filetup in zip(fileslist):
+            if r1only:
+                assert len(filetup) == 1
+                iterator = iterate_fastq(filetup[0], check_pair=1,
+                                         trim=max_len)
+            else:
+                assert len(filetup) == 2
+                iterator = iterate_fastq_pair(filetup[0], filetup[1],
+                                              r1trim=max_len, r2trim=max_len)
 
-            matches = {}
-            for read, r in zip(reads, [r1, r2]):
-                rlen = len(r)
+            for entry in iterator:
 
-                # get or build matcher for read of this length
-                len_past_bc = rlen - self._bcend[read]
-                if len_past_bc < 0:
-                    raise ValueError(f"{read} too short: {rlen}")
-                elif rlen in self._matches[read]:
-                    matcher = self._matches[read][rlen]
+                if r1only:
+                    readlist = [entry[1]]
+                    qlist = [entry[2]]
+                    fail = entry[4]
+
                 else:
-                    if read == 'R1':
-                        match_str = (
-                                f"^({self._rcdownstream})"
-                                f"{{s<={self.downstream_mismatch}}}"
-                                f"(?P<bc>[ACTG]{{{self.bclen}}})"
-                                f"({self._rcupstream[: len_past_bc]})"
-                                f"{{s<={self.upstream_mismatch}}}"
-                                )
+                    readlist = [entry[1], entry[2]]
+                    qlist = [entry[3], entry[4]]
+                    fail = entry[5]
+
+                if fail and self.chastity_filter:
+                    fates['failed chastity filter'] += 1
+                    continue
+
+                matches = {}
+                for read, r in zip(reads, readlist):
+                    rlen = len(r)
+
+                    # get or build matcher for read of this length
+                    len_past_bc = rlen - self._bcend[read]
+                    if len_past_bc < 0:
+                        raise ValueError(f"{read} too short: {rlen}")
+                    elif rlen in self._matches[read]:
+                        matcher = self._matches[read][rlen]
                     else:
-                        assert read == 'R2'
-                        match_str = (
-                                f"^({self.upstream})"
-                                f"{{s<={self.upstream_mismatch}}}"
-                                f"(?P<bc>[ACTG]{{{self.bclen}}})"
-                                f"({self.downstream[: len_past_bc]})"
-                                f"{{s<={self.downstream_mismatch}}}"
-                                )
-                    matcher = regex.compile(match_str, flags=regex.BESTMATCH)
-                    self._matches[read][rlen] = matcher
-
-                m = matcher.match(r)
-                if m:
-                    matches[read] = m
-                else:
-                    break
-
-            if len(matches) == len(reads):
-                bc = {}
-                bc_q = {}
-                for read, q in zip(reads, [q1, q2]):
-                    bc[read] = matches[read].group('bc')
-                    bc_q[read] = scipy.array([
-                                 ord(qi) - 33 for qi in
-                                 q[matches[read].start('bc'):
-                                   matches[read].end('bc')]],
-                                 dtype='int')
-                if self.rc_barcode and 'R2' in reads:
-                    bc['R2'] = reverse_complement(bc['R2'])
-                    bc_q['R2'] = scipy.flip(bc_q['R2'], axis=0)
-                elif 'R2' in reads:
-                    bc['R1'] = reverse_complement(bc['R1'])
-                    bc_q['R1'] = scipy.flip(bc_q['R1'], axis=0)
-                if len(reads) == 1:
-                    if (bc_q['R1'] >= self.minq).all():
-                        if self.valid_barcodes and (
-                                bc['R1'] not in self.valid_barcodes):
-                            fates['invalid barcode'] += 1
+                        if read == 'R1':
+                            match_str = (
+                                    f"^({self._rcdownstream})"
+                                    f"{{s<={self.downstream_mismatch}}}"
+                                    f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                                    f"({self._rcupstream[: len_past_bc]})"
+                                    f"{{s<={self.upstream_mismatch}}}"
+                                    )
                         else:
-                            barcodes[bc['R1']] += 1
-                            fates['valid barcode'] += 1
+                            assert read == 'R2'
+                            match_str = (
+                                    f"^({self.upstream})"
+                                    f"{{s<={self.upstream_mismatch}}}"
+                                    f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                                    f"({self.downstream[: len_past_bc]})"
+                                    f"{{s<={self.downstream_mismatch}}}"
+                                    )
+                        matcher = regex.compile(match_str,
+                                                flags=regex.BESTMATCH)
+                        self._matches[read][rlen] = matcher
+
+                    m = matcher.match(r)
+                    if m:
+                        matches[read] = m
                     else:
-                        fates['low quality barcode'] += 1
-                else:
-                    if bc['R1'] == bc['R2']:
-                        if self.valid_barcodes and (
-                                bc['R1'] not in self.valid_barcodes):
-                            fates['invalid barcode'] += 1
-                        elif (scipy.maximum(bc_q['R1'], bc_q['R2'])
-                                >= self.minq).all():
-                            barcodes[bc['R1']] += 1
-                            fates['valid barcode'] += 1
+                        break
+
+                if len(matches) == len(reads):
+                    bc = {}
+                    bc_q = {}
+                    for read, q in zip(reads, qlist):
+                        bc[read] = matches[read].group('bc')
+                        bc_q[read] = dms_variants.fastq.qual_str_to_array(
+                                 q[matches[read].start('bc'):
+                                   matches[read].end('bc')])
+                    if self.rc_barcode:
+                        if not r1only:
+                            bc['R2'] = reverse_complement(bc['R2'])
+                            bc_q['R2'] = scipy.flip(bc_q['R2'], axis=0)
+                    else:
+                        bc['R1'] = reverse_complement(bc['R1'])
+                        bc_q['R1'] = scipy.flip(bc_q['R1'], axis=0)
+                    if r1only:
+                        if (bc_q['R1'] >= self.minq).all():
+                            if self.valid_barcodes and (
+                                    bc['R1'] not in self.valid_barcodes):
+                                fates['invalid barcode'] += 1
+                            else:
+                                barcodes[bc['R1']] += 1
+                                fates['valid barcode'] += 1
                         else:
                             fates['low quality barcode'] += 1
                     else:
-                        fates['R1 / R2 disagree'] += 1
-            else:
-                # invalid flanking sequence or N in barcode
-                fates['unparseable barcode'] += 1
+                        if bc['R1'] == bc['R2']:
+                            if self.valid_barcodes and (
+                                    bc['R1'] not in self.valid_barcodes):
+                                fates['invalid barcode'] += 1
+                            elif (scipy.maximum(bc_q['R1'], bc_q['R2'])
+                                    >= self.minq).all():
+                                barcodes[bc['R1']] += 1
+                                fates['valid barcode'] += 1
+                            else:
+                                fates['low quality barcode'] += 1
+                        else:
+                            fates['R1 / R2 disagree'] += 1
+                else:
+                    # invalid flanking sequence or N in barcode
+                    fates['unparseable barcode'] += 1
 
         barcodes = (pd.DataFrame(
                         list(barcodes.items()),
