@@ -60,4 +60,4 @@ setup(
             extra_compile_args=["-Wno-error=declaration-after-statement"]
             ),
         ],
-)
+    )

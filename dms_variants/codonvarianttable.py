@@ -533,7 +533,8 @@ class CodonVariantTable:
         elif by != 'barcode':
             raise ValueError(f"invalid `by` of {by}")
         df = (df
-              .groupby(['library', 'sample', by] + group_cols)
+              .groupby(['library', 'sample', by] + group_cols,
+                       observed=True)
               .aggregate({'count': 'sum'})
               .reset_index()
               )
@@ -633,7 +634,8 @@ class CodonVariantTable:
             raise ValueError(f"invalid `variant_type` {variant_type}")
 
         return (df
-                .groupby(['library', 'sample'])
+                .groupby(['library', 'sample'],
+                         observed=True)
                 .aggregate({'count': 'sum'})
                 .reset_index()
                 )
@@ -1134,7 +1136,8 @@ class CodonVariantTable:
                                                          ordered=True),
                   num_muts_count=lambda x: x.num_muts * x['count']
                   )
-              .groupby(['library', 'sample', 'mutation_type'])
+              .groupby(['library', 'sample', 'mutation_type'],
+                       observed=True)
               .aggregate({'num_muts_count': 'sum', 'count': 'sum'})
               .reset_index()
               .assign(number=lambda x: x.num_muts_count / x['count'])
@@ -1268,7 +1271,8 @@ class CodonVariantTable:
         df[mut_col] = scipy.clip(df[mut_col], None, max_muts)
 
         df = (df
-              .groupby(['library', 'sample', mut_col])
+              .groupby(['library', 'sample', mut_col],
+                       observed=True)
               .aggregate({'count': 'sum'})
               .reset_index()
               )
