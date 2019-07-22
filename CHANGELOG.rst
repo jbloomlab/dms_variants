@@ -17,6 +17,8 @@ Fixed
 -----
 - Docs /formatting in Jupyter notebooks.
 
+- Fixed bugs that arose when `pandas` updated to 0.25 (related to `groupby` no logner dropping empty categories).
+
 0.1.0
 -----
 Initial release. Ported code from `dms_tools2` and made some improvements.

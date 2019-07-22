@@ -52,4 +52,4 @@ setup(
     platforms='Linux and Mac OS X.',
     packages=['dms_variants'],
     package_dir={'dms_variants': 'dms_variants'},
-)
+    )
