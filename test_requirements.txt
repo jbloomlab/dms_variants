@@ -7,7 +7,5 @@ flake8-import-order
 flake8-comprehensions
 flake8-bugbear
 flake8-print
-# pin pydocstyle <4 untilt his bug fixed
-pydocstyle<4
 nbval
 ipython
