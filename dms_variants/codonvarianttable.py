@@ -1663,6 +1663,7 @@ class CodonVariantTable:
         ...                 )
         >>> variants._sortCodonMuts('GGA2CGT ATG1GTG')
         'ATG1GTG GGA2CGT'
+
         """
         muts = {}
         for mut in mut_str.upper().split():
