@@ -13,7 +13,9 @@ Added
 -----
 - Capabilities to parse barcodes from Illumina data: FASTQ readers and `IlluminaBarcodeParser`.
 
-- `CodonVariant.numCodonMutsByType` method to get numerical values for codon mutations per variant.
+- `CodonVariantTable.numCodonMutsByType` method to get numerical values for codon mutations per variant.
+
+- Can specify names of columns when initializing a `CodonVariantTable`.
 
 Fixed
 -----

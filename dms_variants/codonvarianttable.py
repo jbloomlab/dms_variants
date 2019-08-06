@@ -53,6 +53,9 @@ class CodonVariantTable:
     extra_cols : list
         Additional columns in `barcode_variant_file` to retain when creating
         `barcode_variant_df` and `variant_count_df` attributes.
+    substitutions_col : str
+        Name of substitutions column in `barcode_variant_file` (use if you
+        want it to be something other than "substitutions").
 
     Attributes
     ----------
@@ -178,7 +181,8 @@ class CodonVariantTable:
         return cvt
 
     def __init__(self, *, barcode_variant_file, geneseq,
-                 substitutions_are_codon=False, extra_cols=None):
+                 substitutions_are_codon=False, extra_cols=None,
+                 substitutions_col='substitutions'):
         """See main class doc string."""
         self.geneseq = geneseq.upper()
         if not re.match(f"^[{''.join(NTS)}]+$", self.geneseq):
@@ -191,7 +195,9 @@ class CodonVariantTable:
         self.aas = collections.OrderedDict([
                 (r, CODON_TO_AA[codon]) for r, codon in self.codons.items()])
 
-        df = pd.read_csv(barcode_variant_file)
+        df = (pd.read_csv(barcode_variant_file)
+              .rename(columns={substitutions_col: 'substitutions'})
+              )
         required_cols = ['library', 'barcode',
                          'substitutions', 'variant_call_support']
         if not set(df.columns).issuperset(set(required_cols)):
@@ -1657,6 +1663,7 @@ class CodonVariantTable:
         ...                 )
         >>> variants._sortCodonMuts('GGA2CGT ATG1GTG')
         'ATG1GTG GGA2CGT'
+
         """
         muts = {}
         for mut in mut_str.upper().split():

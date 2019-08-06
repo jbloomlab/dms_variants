@@ -8,6 +8,7 @@
 !.nojekyll
 
 *.pyc
+*.so
 docs/dms_variants.*
 docs/_build
 
