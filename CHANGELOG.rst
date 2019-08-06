@@ -11,7 +11,9 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Added
 -----
-- `CodonVariant.numCodonMutsByType` method to get numerical values for codon mutations per variant.
+- `CodonVariantTable.numCodonMutsByType` method to get numerical values for codon mutations per variant.
+
+- Can specify names of columns when initializing a `CodonVariantTable`.
 
 Fixed
 -----
