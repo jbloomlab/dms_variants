@@ -55,7 +55,7 @@ class IlluminaBarcodeParser:
         If not `None`, only retain barcodes listed here. Use if you know
         the possible valid barcodes ahead of time.
     rc_barcode : bool
-        Get reverse complement of the barcode (orientation read by R1).
+        Get reverse complement the barcode (i.e., get orientation read by R1).
     minq : int
         Require >= this Q score for all bases in barcode for at least one read.
     chastity_filter : bool

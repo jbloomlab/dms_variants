@@ -269,11 +269,11 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
     else:
         openfunc = open
 
-    with openfunc(filename) as f:
+    with openfunc(filename, mode='rt') as f:
         head = f.readline()
         while head:
             if head[0] != '@':
-                raise IOError(f"id doesn't start with @:\n{head}")
+                raise IOError(f"id starts with {head[0]}, not @:\n{head}")
             else:
                 head = head.rstrip()
                 headspl = head[1:].split()
