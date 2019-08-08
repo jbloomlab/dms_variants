@@ -136,7 +136,7 @@ class IlluminaBarcodeParser:
         self._rcupstream = reverse_complement(self.upstream)
         self._matches = {'R1': {}, 'R2': {}}  # match objects by read length
 
-    def parse(self, r1files, r2files=None):
+    def parse(self, r1files, *, r2files=None, add_cols=None):
         """Parse barcodes from files.
 
         Parameters
@@ -145,6 +145,9 @@ class IlluminaBarcodeParser:
             Name of R1 FASTQ file, or list of such files. Can be gzipped.
         r2files : None, str, or list
             `None` or empty list if not using R2, or like `r1files` for R2.
+        add_cols : None or dict
+            If dict, specify names and values (i.e., sample or library names)
+            to be aded to returned data frames.
 
         Returns
         -------
@@ -159,6 +162,9 @@ class IlluminaBarcodeParser:
                   - "R1 / R2 disagree"
                   - "low quality barcode": sequencing quality low
                   - "unparseable barcode": invalid flank sequence, N in barcode
+
+            Note that these data frames also include any columns specified by
+            `add_cols`.
 
         """
         if isinstance(r1files, str):
@@ -294,11 +300,18 @@ class IlluminaBarcodeParser:
                     # invalid flanking sequence or N in barcode
                     fates['unparseable barcode'] += 1
 
+        if add_cols is None:
+            add_cols = {}
+        existing_cols = {'barcode', 'count', 'fate'}
+        if set(add_cols).intersection(existing_cols):
+            raise ValueError(f"`add_cols` cannot contain {existing_cols}")
+
         barcodes = (pd.DataFrame(
                         list(barcodes.items()),
                         columns=['barcode', 'count'])
                     .sort_values(['count', 'barcode'],
                                  ascending=[False, True])
+                    .assign(**add_cols)
                     .reset_index(drop=True)
                     )
 
@@ -307,6 +320,7 @@ class IlluminaBarcodeParser:
                     columns=['fate', 'count'])
                  .sort_values(['count', 'fate'],
                               ascending=[False, True])
+                 .assign(**add_cols)
                  .reset_index(drop=True)
                  )
 
