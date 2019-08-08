@@ -157,9 +157,10 @@ class IlluminaBarcodeParser:
                   of each barcode (columns are "barcode" and "count").
                 - `fates` is pandas DataFrame giving total number of reads with
                   each fate (columns "fate" and "count"). Possible fates:
+                  - "failed chastity filter"
                   - "valid barcode"
                   - "invalid barcode": not in barcode whitelist
-                  - "R1 / R2 disagree"
+                  - "R1 / R2 disagree" (if using `r2files`)
                   - "low quality barcode": sequencing quality low
                   - "unparseable barcode": invalid flank sequence, N in barcode
 
@@ -189,7 +190,14 @@ class IlluminaBarcodeParser:
         else:
             barcodes = collections.defaultdict(int)
 
-        fates = collections.defaultdict(int)
+        fates = {'failed chastity filter': 0,
+                 'unparseable barcode': 0,
+                 'low quality barcode': 0,
+                 'invalid barcode': 0,
+                 'valid barcode': 0,
+                 }
+        if not r1only:
+            fates['R1 / R2 disagree'] = 0
 
         # max length of interest for reads
         max_len = self.bclen + len(self.upstream) + len(self.downstream)
