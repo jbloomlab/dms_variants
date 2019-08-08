@@ -1232,7 +1232,7 @@ class CodonVariantTable:
             Include all libraries including a marge, only a merge of all
             libraries, or a list of libraries.
         samples : {'all', None, list}
-            Include all samples, a list of simple, or `None` to just count
+            Include all samples, a list of samples, or `None` to just count
             each barcoded variant once.
         plotfile : None or str
             Name of file to which to save plot.
@@ -1607,6 +1607,17 @@ class CodonVariantTable:
             raise ValueError(f"no libraries {libraries}")
         else:
             nlibraries = len(df['library'].unique())
+
+        df = (df
+              .assign(
+                library=lambda x: pd.Categorical(x['library'],
+                                                 x['library'].unique(),
+                                                 ordered=True),
+                sample=lambda x: pd.Categorical(x['sample'],
+                                                x['sample'].unique(),
+                                                ordered=True),
+                )
+              )
 
         return (df, nlibraries, nsamples)
 

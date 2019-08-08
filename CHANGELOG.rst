@@ -21,7 +21,9 @@ Fixed
 -----
 - Docs /formatting in Jupyter notebooks.
 
-- Fixed bugs that arose when `pandas` updated to 0.25 (related to `groupby` no logner dropping empty categories).
+- Fixed bugs that arose when `pandas` updated to 0.25 (related to `groupby` no longer dropping empty categories).
+
+- Bugs in `CodonVariantTable` histogram plots when `samples` set.
 
 0.1.0
 -----
