@@ -4,7 +4,7 @@
 import re
 import sys
 
-from setuptools import setup
+from setuptools import Extension, setup
 
 
 if not (sys.version_info[0] == 3 and sys.version_info[1] >= 6):
@@ -47,9 +47,17 @@ setup(
             'biopython>=1.73',
             'pandas>=0.24.2',
             'plotnine>=0.5.1',
+            'regex>=2.4.153',
             'scipy>=1.1.0',
             ],
     platforms='Linux and Mac OS X.',
     packages=['dms_variants'],
     package_dir={'dms_variants': 'dms_variants'},
+    ext_modules=[
+        Extension(
+            'dms_variants._cutils',
+            ['dms_variants/_cutils.c'],
+            extra_compile_args=["-Wno-error=declaration-after-statement"]
+            ),
+        ],
     )

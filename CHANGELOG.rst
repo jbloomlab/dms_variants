@@ -11,6 +11,8 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Added
 -----
+- Capabilities to parse barcodes from Illumina data: FASTQ readers and `IlluminaBarcodeParser`.
+
 - `CodonVariantTable.numCodonMutsByType` method to get numerical values for codon mutations per variant.
 
 - Can specify names of columns when initializing a `CodonVariantTable`.

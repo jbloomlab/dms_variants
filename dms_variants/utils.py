@@ -10,7 +10,40 @@ Miscellaneous utility functions.
 
 import pandas as pd  # noqa: F401
 
-from dms_variants.constants import CODON_TO_AA
+import dms_variants._cutils
+from dms_variants.constants import (CODON_TO_AA,
+                                    NT_COMPLEMENT,
+                                    )
+
+
+def reverse_complement(s, *, use_cutils=True):
+    """Get reverse complement of DNA sequence.
+
+    Parameters
+    ----------
+    s : str
+        DNA sequence.
+    use_cutils : bool
+        Use faster C-extension implementation.
+
+    Returns
+    -------
+    str
+        Reverse complement of `s`.
+
+    Example
+    -------
+    >>> s = 'ATGCAAN'
+    >>> reverse_complement(s)
+    'NTTGCAT'
+    >>> reverse_complement(s, use_cutils=False) == reverse_complement(s)
+    True
+
+    """
+    if use_cutils:
+        return dms_variants._cutils.reverse_complement(s)
+    else:
+        return ''.join(reversed([NT_COMPLEMENT[nt] for nt in s]))
 
 
 def translate(codonseq):
