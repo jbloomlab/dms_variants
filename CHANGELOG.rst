@@ -17,6 +17,8 @@ Added
 
 - Can specify names of columns when initializing a `CodonVariantTable`.
 
+- `CodonVariantTable.func_scores` now takes `libraries` rather than `combine_libs` argument.
+
 Fixed
 -----
 - Docs /formatting in Jupyter notebooks.
