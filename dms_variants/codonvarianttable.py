@@ -395,7 +395,7 @@ class CodonVariantTable:
 
     def func_scores(self, preselection, *,
                     pseudocount=0.5, by="barcode",
-                    combine_libs=False, syn_as_wt=False, logbase=2,
+                    libraries='all', syn_as_wt=False, logbase=2,
                     permit_zero_wt=False, permit_self_comp=False):
         r"""Get data frame with functional scores for variants.
 
@@ -442,9 +442,9 @@ class CodonVariantTable:
             sample with the pre-selection sample being the value.
         pseudocount : float
             Pseudocount added to each count.
-        by : str
-            Compute effects for each "barcode", set of "aa_substitutions", or
-            set of "codon_substitutions". In the latter two cases, all barcodes
+        by : {'barcode', 'aa_substitutions', 'codon_substitutions'}
+            Compute effects for each barcode", set of amino-acid substitutions,
+            or set of codon substitutions. In the last two cases, all barcodes
             with each set of substitutions are combined (see `combine_libs`).
             If you use "aa_substitutions" then it may be more sensible to set
             `syn_as_wt` to `True`.
@@ -452,9 +452,11 @@ class CodonVariantTable:
             In formula for functional scores, consider variants with only
             synonymous mutations when determining wildtype counts? If `False`,
             only variants with **no** mutations of any type contribute.
-        combine_libs : bool
-            If `by` is "aa_substitutions" or "codon_substitutions", do we
-            combine across libraries as well as barcodes?
+        libraries : {'all', 'all_only', list}
+            Perform calculation for all libraries including a merge
+            (named "all libraries"), only for the merge of all libraries,
+            or for the libraries in the list. If `by` is 'barcode', then
+            the barcodes for the merge have the library name pre-pended.
         logbase : float
             Base for logarithm when calculating functional score.
         permit_zero_wt : bool
@@ -467,7 +469,7 @@ class CodonVariantTable:
         -------
         pandas.DataFrame
             Has the following columns:
-              - "library": the library ("all libraries" if `combine_libs`)
+              - "library": the library
               - "pre_sample": the pre-selection sample
               - "post_sample": the post-selection sample
               - value corresponding to grouping used to compute effects (`by`)
@@ -508,14 +510,18 @@ class CodonVariantTable:
               .query('sample in @samples')
               )
 
-        if combine_libs and (len(self.libraries) > 1):
-            if any(s not in self.samples(lib) for lib in self.libraries
-                   for s in samples):
-                raise ValueError('cannot use `combine_libs`, not every '
-                                 f"library has every sample: {samples}")
+        if libraries == 'all':
+            df = self.addMergedLibraries(df)
+        elif libraries == 'all_only':
             df = (self.addMergedLibraries(df)
                   .query('library == "all libraries"')
                   )
+        else:
+            if set(libraries) > set(self.libraries):
+                raise ValueError(f"invalid `libraries` of {libraries}. Must "
+                                 'be "all", "all_only", or a list containing '
+                                 f"some subset of {self.libraries}")
+            df = df.query('library in @libraries')
 
         # get wildtype counts for each sample and library
         if syn_as_wt:
