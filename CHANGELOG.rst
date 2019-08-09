@@ -19,6 +19,8 @@ Added
 
 - `CodonVariantTable.func_scores` now takes `libraries` rather than `combine_libs` argument.
 
+- added `CodonVariantTable.add_sample_counts_df` method
+
 Fixed
 -----
 - Docs /formatting in Jupyter notebooks.

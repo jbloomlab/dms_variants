@@ -148,35 +148,28 @@ class CodonVariantTable:
                     'codon_substitutions', 'sample', 'count']
         if not (set(req_cols) < set(df.columns)):
             raise ValueError(f"{variant_count_df_file} lacks required "
-                             f"columns {req_cols}")
+                             f"columns {req_cols}. It has: {set(df.columns)}")
         else:
             df = df[req_cols]
 
         if drop_all_libs:
-            dropcol = "all libraries"
+            dropcol = 'all libraries'
             if dropcol in df['library'].unique():
                 df = df.query('library != @dropcol')
 
         with tempfile.NamedTemporaryFile(mode='w') as f:
             (df
              .drop(columns=['sample', 'count'])
-             .rename(columns={'codon_substitutions': 'substitutions'})
              .drop_duplicates()
              .to_csv(f, index=False)
              )
             f.flush()
             cvt = cls(barcode_variant_file=f.name,
                       geneseq=geneseq,
-                      substitutions_are_codon=True)
+                      substitutions_are_codon=True,
+                      substitutions_col='codon_substitutions')
 
-        for sample in df['sample'].unique():
-            for lib in cvt.libraries:
-                idf = df.query('sample == @sample & library == @lib')
-                if len(idf):
-                    cvt.addSampleCounts(lib,
-                                        sample,
-                                        idf[['barcode', 'count']]
-                                        )
+        cvt.add_sample_counts_df(df[['library', 'sample', 'barcode', 'count']])
 
         return cvt
 
@@ -299,6 +292,12 @@ class CodonVariantTable:
     def addSampleCounts(self, library, sample, barcodecounts):
         """Add variant counts for a sample to `variant_count_df`.
 
+        Note
+        ----
+        If you have many samples to add at once, it is faster to use
+        :meth:`CodonVariantTable.add_sample_counts_df` rather than
+        repeatedly calling this method.
+
         Parameters
         ----------
         library : str
@@ -372,6 +371,81 @@ class CodonVariantTable:
                 .sort_values(['library', 'sample', 'count'],
                              ascending=[True, True, False])
                 .reset_index(drop=True)
+                )
+
+    def add_sample_counts_df(self, counts_df):
+        """Add variant counts for several samples to `variant_count_df`.
+
+        Parameters
+        ----------
+        counts_df : pandas.DataFrame
+            Must have columns 'library', 'sample', 'barcode', and 'count'.
+            The sample must **not** already be in `CodonVariantTable.samples`
+            for that library. The barcode columns must have all barcodes for
+            that library including zero-count ones.
+
+        """
+        req_cols = ['library', 'sample', 'barcode', 'count']
+        if not (set(counts_df.columns) >= set(req_cols)):
+            raise ValueError(f"`counts_df` lacks required columns {req_cols}")
+
+        for lib in counts_df['library'].unique():
+            if lib not in self.libraries:
+                raise ValueError(f"`counts_df` has unknown library {lib}")
+            for s in counts_df.query('library == @lib')['sample'].unique():
+                if s in self.samples(lib):
+                    raise ValueError(f"library {lib} already has counts for "
+                                     f"sample {s}, so you cannot add them")
+                else:
+                    self._samples[lib].append(s)
+
+        df = (counts_df
+              [req_cols]
+              .merge(self.barcode_variant_df,
+                     on=['library', 'barcode'],
+                     sort=False,
+                     how='inner',
+                     validate='many_to_one',
+                     )
+              )
+
+        if self.variant_count_df is None:
+            self.variant_count_df = df
+        else:
+            assert not (set(df.groupby(['library', 'sample']).groups)
+                        .intersection(set(self.variant_count_df
+                                          .groupby(['library', 'sample'])
+                                          .groups))
+                        )
+            self.variant_count_df = pd.concat(
+                    [self.variant_count_df, df],
+                    axis='index',
+                    ignore_index=True,
+                    sort=False,
+                    )
+
+        # samples in order added after ordering by library, getting
+        # unique ones as here: https://stackoverflow.com/a/39835527
+        unique_samples = list(collections.OrderedDict.fromkeys(
+                itertools.chain.from_iterable(
+                    [self.samples(lib) for lib in self.libraries])
+                ))
+
+        # make library and sample categorical and sort
+        self.variant_count_df = (
+                self.variant_count_df
+                .assign(library=lambda x: pd.Categorical(x['library'],
+                                                         self.libraries,
+                                                         ordered=True),
+                        sample=lambda x: pd.Categorical(x['sample'],
+                                                        unique_samples,
+                                                        ordered=True),
+                        )
+                .sort_values(['library', 'sample', 'count', 'barcode'],
+                             ascending=[True, True, False, True])
+                .reset_index(drop=True)
+                [['barcode', 'count'] + [c for c in self.variant_count_df
+                                         if c not in {'barcode', 'count'}]]
                 )
 
     def valid_barcodes(self, library):

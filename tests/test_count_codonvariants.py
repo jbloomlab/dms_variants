@@ -45,8 +45,12 @@ class test_count_codonvariants(unittest.TestCase):
         assert len(gene) == 1, "Failed to find exactly one gene feature"
         geneseq = str(gene[0].location.extract(amplicon).seq)
 
-        variants = CodonVariantTable(barcode_variant_file=barcode_variant_file,
-                                     geneseq=geneseq)
+        variants = CodonVariantTable(
+                            barcode_variant_file=barcode_variant_file,
+                            geneseq=geneseq)
+        variants2 = CodonVariantTable(
+                            barcode_variant_file=barcode_variant_file,
+                            geneseq=geneseq)
 
         n_variants_file = os.path.join(indir, 'n_variants.csv')
         assert_frame_equal(
@@ -102,6 +106,7 @@ class test_count_codonvariants(unittest.TestCase):
         bclen = len(barcode[0])
 
         fates = []
+        counts_df = []
         for (lib, sample), runs in samples.groupby(['library', 'sample']):
 
             # read barcodes for all runs for library / sample
@@ -130,8 +135,16 @@ class test_count_codonvariants(unittest.TestCase):
                         .reset_index()
                         )
 
+            counts_df.append(barcodes.assign(library=lib, sample=sample))
+
             # add barcode counts to variant table
             variants.addSampleCounts(lib, sample, barcodes)
+
+        # make sure adding by `add_sample_counts_df` is same
+        counts_df = pd.concat(counts_df)
+        variants2.add_sample_counts_df(counts_df)
+        assert_frame_equal(variants.variant_count_df,
+                           variants2.variant_count_df)
 
         # concatenate read fates into one data frame
         fates = (pd.concat(fates, ignore_index=True, sort=False)
