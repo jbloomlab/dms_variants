@@ -30,7 +30,7 @@ from dms_variants.constants import (AAS_WITHSTOP,
 
 
 def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
-                               seed=1, variant_call_support=1):
+                               seed=1, variant_call_support=0.5):
     """Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.
 
     Note
@@ -50,9 +50,9 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
         and 'nvariants'. Mutations per variant are Poisson distributed.
     seed : int or None
         Random number seed or `None` to set no seed.
-    variant_call_support : int or 2-tuple
-        If integer, all supports are set to this. If 2-tuple, support is
-        drawn as random integer uniformly from this range (inclusive).
+    variant_call_support : int > 0
+        Support is floor of 1 plus draw from exponential distribution
+        with this mean.
 
     Returns
     -------
@@ -66,8 +66,8 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
     if len(library_specs) < 1:
         raise ValueError('empty `library_specs`')
 
-    if isinstance(variant_call_support, int):
-        variant_call_support = tuple([variant_call_support] * 2)
+    if variant_call_support <= 0:
+        raise ValueError(f"`variant_call_support` must be int > 0")
 
     if len(geneseq) % 3 != 0:
         raise ValueError('length of `geneseq` not multiple of 3')
@@ -89,7 +89,7 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
                 barcode = ''.join(random.choices(NTS, k=bclen))
             existing_barcodes.add(barcode)
 
-            support = random.randint(*variant_call_support)
+            support = math.floor(1 + random.expovariate(variant_call_support))
 
             # get mutations
             substitutions = []

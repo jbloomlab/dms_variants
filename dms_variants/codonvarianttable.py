@@ -1331,6 +1331,64 @@ class CodonVariantTable:
 
         return p
 
+    def plotVariantSupportHistogram(self, *,
+                                    libraries='all', plotfile=None,
+                                    orientation='h', widthscale=1,
+                                    heightscale=1, max_support=None):
+        """Plot histogram of variant call support for variants.
+
+        Parameters
+        ----------
+        max_support : int or None
+            Group together all variants with >= this support.
+        other_parameters
+            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     None,
+                                                     1)
+
+        if orientation == 'h':
+            width = widthscale * (1 + 1.4 * nlibraries)
+            height = 2.3
+            nrow = 1
+        elif orientation == 'v':
+            width = 2.4
+            height = heightscale * (1 + 1.3 * nlibraries)
+            nrow = nlibraries
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        df = (df
+              .assign(variant_call_support=lambda x:
+                      scipy.clip(x['variant_call_support'], None, max_support)
+                      )
+              .groupby(['library', 'variant_call_support'],
+                       observed=True)
+              .aggregate({'count': 'sum'})
+              .reset_index()
+              )
+
+        p = (p9.ggplot(df, p9.aes('variant_call_support', 'count')) +
+             p9.geom_bar(stat='identity') +
+             p9.scale_x_continuous(name='supporting sequences',
+                                   breaks=dms_variants.utils.integer_breaks) +
+             p9.scale_y_continuous(name='number of variants',
+                                   labels=dms_variants.utils.latex_sci_not) +
+             p9.facet_wrap('~ library', nrow=nrow) +
+             p9.theme(figure_size=(width, height))
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
     def plotNumMutsHistogram(self, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
                              orientation='h', widthscale=1, heightscale=1,

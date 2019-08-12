@@ -21,7 +21,13 @@ Added
 
 - Added `CodonVariantTable.add_sample_counts_df` method.
 
+- Added `CodonVariantTable.plotVariantSupportHistogram` method.
+
 - Add custom `plotnine` theme in `plotnine_themes` and improved formatting of plots from `CodonVariantTable`.
+
+Changed
+--------
+- Changed how `variant_call_support` set in `simulate_CodonVariantTable`.
 
 Fixed
 -----
