@@ -1355,10 +1355,10 @@ class CodonVariantTable:
 
         if orientation == 'h':
             width = widthscale * (1 + 1.4 * nlibraries)
-            height = 2.3
+            height = 2.3 * heightscale
             nrow = 1
         elif orientation == 'v':
-            width = 2.4
+            width = 2.4 * widthscale
             height = heightscale * (1 + 1.3 * nlibraries)
             nrow = nlibraries
         else:
@@ -1389,6 +1389,93 @@ class CodonVariantTable:
 
         return p
 
+    def avgCountsPerVariant(self, *,
+                            libraries='all', samples='all', min_support=1):
+        """Get average counts per variant.
+
+        Parameters
+        ----------
+        libraries :  {'all', 'all_only', list}
+            Include all libraries including a merge, only a merge of all
+            libraries, or a list of libraries.
+        samples : {'all', list}
+            Include all samples or just samples in list.
+        min_support : int
+            Only include variants with variant call support >= this.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Gives average counts per variant for each library and sample.
+
+        """
+        if samples is None:
+            raise ValueError('`samples` cannot be `None`')
+
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
+
+        return (df
+                .groupby(['library', 'sample'], observed=True)
+                .aggregate({'count': 'mean'})
+                .rename(columns={'count': 'avg_counts_per_variant'})
+                .reset_index()
+                )
+
+    def plotAvgCountsPerVariant(self, *,
+                                libraries='all', samples='all', plotfile=None,
+                                orientation='h', widthscale=1, heightscale=1,
+                                min_support=1):
+        """Get average counts per variant.
+
+        Parameters
+        ----------
+        libraries :  {'all', 'all_only', list}
+            Include all libraries including a merge, only a merge of all
+            libraries, or a list of libraries.
+        samples : {'all', list}
+            Include all samples or just samples in list.
+        other_parameters
+            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+
+        """
+        df = self.avgCountsPerVariant(libraries=libraries, samples=samples,
+                                      min_support=min_support)
+
+        nsamples = len(df['sample'].unique())
+        nlibraries = len(df['library'].unique())
+        if orientation == 'h':
+            nrow = 1
+            width = widthscale * nlibraries * (0.9 + 0.2 * nsamples)
+            height = 2.1 * heightscale
+        elif orientation == 'v':
+            nrow = nlibraries
+            width = widthscale * 0.25 * nsamples
+            width = widthscale * (0.9 + 0.2 * nsamples)
+            height = 2.1 * nlibraries
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        p = (p9.ggplot(df, p9.aes('sample', 'avg_counts_per_variant')) +
+             p9.geom_bar(stat='identity') +
+             p9.xlab('') +
+             p9.ylab('average counts per variant') +
+             p9.facet_wrap('~ library', nrow=nrow) +
+             p9.theme(figure_size=(width, height),
+                      axis_text_x=p9.element_text(angle=90)
+                      )
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
     def plotNumMutsHistogram(self, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
                              orientation='h', widthscale=1, heightscale=1,
@@ -1400,7 +1487,7 @@ class CodonVariantTable:
         mut_type : {'codon' or 'aa'}
             Mutation type.
         libraries :  {'all', 'all_only', list}
-            Include all libraries including a marge, only a merge of all
+            Include all libraries including a merge, only a merge of all
             libraries, or a list of libraries.
         samples : {'all', None, list}
             Include all samples, a list of samples, or `None` to just count

@@ -23,6 +23,8 @@ Added
 
 - Added `CodonVariantTable.plotVariantSupportHistogram` method.
 
+- Added `CodonVariantTable.avgCountsPerVariant` and `CodonVariantTable.plotAvgCountsPerVariant` methods.
+
 - Add custom `plotnine` theme in `plotnine_themes` and improved formatting of plots from `CodonVariantTable`.
 
 Changed
