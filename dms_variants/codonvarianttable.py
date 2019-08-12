@@ -1263,13 +1263,15 @@ class CodonVariantTable:
     def plotNumCodonMutsByType(self, variant_type, *,
                                libraries='all', samples='all', plotfile=None,
                                orientation='h', widthscale=1, heightscale=1,
-                               min_support=1):
+                               min_support=1, ylabel=None):
         """Plot average nonsynonymous, synonymous, stop mutations per variant.
 
         Parameters
         ----------
         variant_type : {'single', 'all'}
             Include all variants or just those with <=1 codon mutation.
+        ylabel : None or str
+            If not `None`, specify y-axis label (otherwise it is autoset).
         other_parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
@@ -1297,10 +1299,11 @@ class CodonVariantTable:
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
-        if height > 3:
-            ylabel = f'mutations per variant ({variant_type} mutants)'
-        else:
-            ylabel = f'mutations per variant\n({variant_type} mutants)'
+        if ylabel is None:
+            if height > 3:
+                ylabel = f'mutations per variant ({variant_type} mutants)'
+            else:
+                ylabel = f'mutations per variant\n({variant_type} mutants)'
 
         p = (p9.ggplot(df, p9.aes('mutation_type', 'number',
                                   fill='mutation_type', label='number')) +
