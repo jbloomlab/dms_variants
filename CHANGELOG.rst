@@ -31,6 +31,8 @@ Changed
 --------
 - Changed how `variant_call_support` set in `simulate_CodonVariantTable`.
 
+- Better xlimits on `CodonVariantTable.plotCumulMutCoverage`.
+
 Fixed
 -----
 - Docs /formatting in Jupyter notebooks.

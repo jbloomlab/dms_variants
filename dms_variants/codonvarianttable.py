@@ -1151,7 +1151,12 @@ class CodonVariantTable:
         df = df.assign(count=lambda x: x['count'] + 1)
 
         if max_count is None:
-            max_count = df['count'].quantile(0.75)
+            max_count = (df
+                         .groupby(['library', 'sample'], observed=True)
+                         ['count']
+                         .quantile(0.6)
+                         .median()
+                         )
 
         nlibraries = len(df['library'].unique())
         nsamples = len(df['sample'].unique())
