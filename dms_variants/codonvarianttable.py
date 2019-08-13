@@ -919,7 +919,6 @@ class CodonVariantTable:
         p = (p9.ggplot(df, p9.aes('site', 'mut_char',
                                   fill=count_or_frequency)) +
              p9.geom_tile() +
-             p9.facet_grid(facet_str) +
              p9.theme(figure_size=(width, height),
                       legend_key=p9.element_blank(),
                       axis_text_y=p9.element_text(size=6)
@@ -932,6 +931,14 @@ class CodonVariantTable:
              p9.ylab(mut_desc) +
              p9.scale_fill_cmap('gnuplot')
              )
+
+        if samples is None:
+            p = (p +
+                 p9.facet_wrap('~ library',
+                               nrow={'h': 1, 'v': nlibraries}[orientation])
+                 )
+        else:
+            p = p + p9.facet_grid(facet_str)
 
         if plotfile:
             p.save(plotfile, height=height, width=width,
@@ -1012,12 +1019,18 @@ class CodonVariantTable:
                 limits=(min(self.sites), max(self.sites))
                 ) +
              p9.ylab(ylabel) +
-             p9.facet_grid(facet_str) +
              p9.theme(figure_size=(width, height),
                       legend_key=p9.element_blank(),
-                      legend_text=p9.element_text(size=11)
                       )
              )
+
+        if samples is None:
+            p = (p +
+                 p9.facet_wrap('~ library',
+                               nrow={'h': 1, 'v': nlibraries}[orientation])
+                 )
+        else:
+            p = p + p9.facet_grid(facet_str)
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
@@ -1084,13 +1097,21 @@ class CodonVariantTable:
 
         p = (p9.ggplot(df, p9.aes('count', 'nvariants')) +
              p9.geom_step() +
-             p9.facet_grid(facet_str) +
              p9.xlab('number of counts') +
              p9.ylab(ylabel) +
              p9.scale_x_log10(labels=dms_variants.utils.latex_sci_not) +
              p9.scale_y_continuous(labels=dms_variants.utils.latex_sci_not) +
              p9.theme(figure_size=(width, height))
              )
+
+        if samples is None:
+            p = (p +
+                 p9.facet_wrap('~ library',
+                               nrow={'h': 1, 'v': nlibraries}[orientation]) +
+                 p9.ylab('number of variants')
+                 )
+        else:
+            p = p + p9.facet_grid(facet_str)
 
         if tot_variants_hline:
             p = p + p9.geom_hline(p9.aes(yintercept='total_variants'),
@@ -1130,7 +1151,12 @@ class CodonVariantTable:
         df = df.assign(count=lambda x: x['count'] + 1)
 
         if max_count is None:
-            max_count = df['count'].quantile(0.75)
+            max_count = (df
+                         .groupby(['library', 'sample'], observed=True)
+                         ['count']
+                         .quantile(0.6)
+                         .median()
+                         )
 
         nlibraries = len(df['library'].unique())
         nsamples = len(df['sample'].unique())
@@ -1167,13 +1193,19 @@ class CodonVariantTable:
                 ) +
              p9.xlab(xlabel) +
              p9.ylab(ylabel) +
-             p9.facet_grid(facet_str) +
              p9.theme(figure_size=(width, height),
                       legend_key=p9.element_blank(),
-                      legend_text=p9.element_text(size=11),
                       axis_text_x=p9.element_text(angle=90),
                       )
              )
+
+        if samples is None:
+            p = (p +
+                 p9.facet_wrap('~ library',
+                               nrow={'h': 1, 'v': nlibraries}[orientation])
+                 )
+        else:
+            p = p + p9.facet_grid(facet_str)
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
@@ -1236,13 +1268,15 @@ class CodonVariantTable:
     def plotNumCodonMutsByType(self, variant_type, *,
                                libraries='all', samples='all', plotfile=None,
                                orientation='h', widthscale=1, heightscale=1,
-                               min_support=1):
+                               min_support=1, ylabel=None):
         """Plot average nonsynonymous, synonymous, stop mutations per variant.
 
         Parameters
         ----------
         variant_type : {'single', 'all'}
             Include all variants or just those with <=1 codon mutation.
+        ylabel : None or str
+            If not `None`, specify y-axis label (otherwise it is autoset).
         other_parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
@@ -1259,7 +1293,6 @@ class CodonVariantTable:
                                      libraries=libraries,
                                      samples=samples,
                                      min_support=min_support)
-
         if orientation == 'h':
             facet_str = 'sample ~ library'
             width = widthscale * (1 + 1.4 * nlibraries)
@@ -1271,26 +1304,179 @@ class CodonVariantTable:
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
-        if height > 3:
-            ylabel = f'mutations per variant ({variant_type} mutants)'
-        else:
-            ylabel = f'mutations per variant\n({variant_type} mutants)'
+        if ylabel is None:
+            if height > 3:
+                ylabel = f'mutations per variant ({variant_type} mutants)'
+            else:
+                ylabel = f'mutations per variant\n({variant_type} mutants)'
 
         p = (p9.ggplot(df, p9.aes('mutation_type', 'number',
                                   fill='mutation_type', label='number')) +
              p9.geom_bar(stat='identity') +
-             p9.geom_text(size=8, va='bottom', format_string='{0:.3f}') +
-             p9.facet_grid(facet_str) +
+             p9.geom_text(size=9, va='bottom', format_string='{0:.2f}') +
              p9.scale_y_continuous(name=ylabel,
-                                   expand=(0.03, 0, 0.12, 0)) +
+                                   expand=(0.03, 0, 0.14, 0)) +
              p9.scale_fill_manual(
                 [self._mutation_type_colors[m] for m in
                  df.mutation_type.unique().sort_values().tolist()]
                 ) +
              p9.theme(figure_size=(width, height),
                       axis_title_x=p9.element_blank(),
-                      axis_text_x=p9.element_text(angle=90, size=11),
+                      axis_text_x=p9.element_text(angle=90),
                       legend_position='none')
+             )
+
+        if samples is None:
+            p = (p +
+                 p9.facet_wrap('~ library',
+                               nrow={'h': 1, 'v': nlibraries}[orientation])
+                 )
+        else:
+            p = p + p9.facet_grid(facet_str)
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
+    def plotVariantSupportHistogram(self, *,
+                                    libraries='all', plotfile=None,
+                                    orientation='h', widthscale=1,
+                                    heightscale=1, max_support=None):
+        """Plot histogram of variant call support for variants.
+
+        Parameters
+        ----------
+        max_support : int or None
+            Group together all variants with >= this support.
+        other_parameters
+            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+
+        """
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     None,
+                                                     1)
+
+        if orientation == 'h':
+            width = widthscale * (1 + 1.4 * nlibraries)
+            height = 2.3 * heightscale
+            nrow = 1
+        elif orientation == 'v':
+            width = 2.4 * widthscale
+            height = heightscale * (1 + 1.3 * nlibraries)
+            nrow = nlibraries
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        df = (df
+              .assign(variant_call_support=lambda x:
+                      scipy.clip(x['variant_call_support'], None, max_support)
+                      )
+              .groupby(['library', 'variant_call_support'],
+                       observed=True)
+              .aggregate({'count': 'sum'})
+              .reset_index()
+              )
+
+        p = (p9.ggplot(df, p9.aes('variant_call_support', 'count')) +
+             p9.geom_bar(stat='identity') +
+             p9.scale_x_continuous(name='supporting sequences',
+                                   breaks=dms_variants.utils.integer_breaks) +
+             p9.scale_y_continuous(name='number of variants',
+                                   labels=dms_variants.utils.latex_sci_not) +
+             p9.facet_wrap('~ library', nrow=nrow) +
+             p9.theme(figure_size=(width, height))
+             )
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
+    def avgCountsPerVariant(self, *,
+                            libraries='all', samples='all', min_support=1):
+        """Get average counts per variant.
+
+        Parameters
+        ----------
+        libraries :  {'all', 'all_only', list}
+            Include all libraries including a merge, only a merge of all
+            libraries, or a list of libraries.
+        samples : {'all', list}
+            Include all samples or just samples in list.
+        min_support : int
+            Only include variants with variant call support >= this.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Gives average counts per variant for each library and sample.
+
+        """
+        if samples is None:
+            raise ValueError('`samples` cannot be `None`')
+
+        df, nlibraries, nsamples = self._getPlotData(libraries,
+                                                     samples,
+                                                     min_support)
+
+        return (df
+                .groupby(['library', 'sample'], observed=True)
+                .aggregate({'count': 'mean'})
+                .rename(columns={'count': 'avg_counts_per_variant'})
+                .reset_index()
+                )
+
+    def plotAvgCountsPerVariant(self, *,
+                                libraries='all', samples='all', plotfile=None,
+                                orientation='h', widthscale=1, heightscale=1,
+                                min_support=1):
+        """Get average counts per variant.
+
+        Parameters
+        ----------
+        libraries :  {'all', 'all_only', list}
+            Include all libraries including a merge, only a merge of all
+            libraries, or a list of libraries.
+        samples : {'all', list}
+            Include all samples or just samples in list.
+        other_parameters
+            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+
+        """
+        df = self.avgCountsPerVariant(libraries=libraries, samples=samples,
+                                      min_support=min_support)
+
+        nsamples = len(df['sample'].unique())
+        nlibraries = len(df['library'].unique())
+        if orientation == 'h':
+            nrow = 1
+            width = widthscale * nlibraries * (0.9 + 0.2 * nsamples)
+            height = 2.1 * heightscale
+        elif orientation == 'v':
+            nrow = nlibraries
+            width = widthscale * 0.25 * nsamples
+            width = widthscale * (0.9 + 0.2 * nsamples)
+            height = 2.1 * nlibraries
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        p = (p9.ggplot(df, p9.aes('sample', 'avg_counts_per_variant')) +
+             p9.geom_bar(stat='identity') +
+             p9.xlab('') +
+             p9.ylab('average counts per variant') +
+             p9.facet_wrap('~ library', nrow=nrow) +
+             p9.theme(figure_size=(width, height),
+                      axis_text_x=p9.element_text(angle=90)
+                      )
              )
 
         if plotfile:
@@ -1309,7 +1495,7 @@ class CodonVariantTable:
         mut_type : {'codon' or 'aa'}
             Mutation type.
         libraries :  {'all', 'all_only', list}
-            Include all libraries including a marge, only a merge of all
+            Include all libraries including a merge, only a merge of all
             libraries, or a list of libraries.
         samples : {'all', None, list}
             Include all samples, a list of samples, or `None` to just count
@@ -1367,11 +1553,20 @@ class CodonVariantTable:
 
         p = (p9.ggplot(df, p9.aes(mut_col, 'count')) +
              p9.geom_bar(stat='identity') +
-             p9.facet_grid(facet_str) +
-             p9.xlab(xlabel) +
+             p9.scale_x_continuous(name=xlabel,
+                                   breaks=dms_variants.utils.integer_breaks) +
              p9.scale_y_continuous(labels=dms_variants.utils.latex_sci_not) +
              p9.theme(figure_size=(width, height))
              )
+
+        if samples is None:
+            p = (p +
+                 p9.facet_wrap('~ library',
+                               nrow={'h': 1, 'v': nlibraries}[orientation]) +
+                 p9.ylab('number of variants')
+                 )
+        else:
+            p = p + p9.facet_grid(facet_str)
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
@@ -1552,13 +1747,13 @@ class CodonVariantTable:
         ...                             'variant_class'])
         True
         >>> df_classify[['barcode', 'variant_class']]
-          barcode      variant_class
-        0     AAA           wildtype
-        1     AAG         synonymous
-        2     ATA               stop
-        3     GAA    1 nonsynonymous
-        4     CTT  >=2 nonsynonymous
-        5     CTT  >=2 nonsynonymous
+          barcode     variant_class
+        0     AAA          wildtype
+        1     AAG        synonymous
+        2     ATA              stop
+        3     GAA   1 nonsynonymous
+        4     CTT  >1 nonsynonymous
+        5     CTT  >1 nonsynonymous
 
         """
         req_cols = ['aa_substitutions', 'n_aa_substitutions',
@@ -1576,7 +1771,7 @@ class CodonVariantTable:
             elif row['n_aa_substitutions'] < max_aa:
                 return f"{row['n_aa_substitutions']} nonsynonymous"
             else:
-                return f">={max_aa} nonsynonymous"
+                return f">{max_aa - 1} nonsynonymous"
 
         df = df.copy(deep=True)
         df[variant_class_col] = df.apply(_classify_func, axis=1)

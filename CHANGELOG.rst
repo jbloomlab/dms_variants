@@ -19,7 +19,19 @@ Added
 
 - `CodonVariantTable.func_scores` now takes `libraries` rather than `combine_libs` argument.
 
-- added `CodonVariantTable.add_sample_counts_df` method
+- Added `CodonVariantTable.add_sample_counts_df` method.
+
+- Added `CodonVariantTable.plotVariantSupportHistogram` method.
+
+- Added `CodonVariantTable.avgCountsPerVariant` and `CodonVariantTable.plotAvgCountsPerVariant` methods.
+
+- Add custom `plotnine` theme in `plotnine_themes` and improved formatting of plots from `CodonVariantTable`.
+
+Changed
+--------
+- Changed how `variant_call_support` set in `simulate_CodonVariantTable`.
+
+- Better xlimits on `CodonVariantTable.plotCumulMutCoverage`.
 
 Fixed
 -----

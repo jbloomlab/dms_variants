@@ -8,6 +8,8 @@ Miscellaneous utility functions.
 """
 
 
+import matplotlib.ticker
+
 import pandas as pd  # noqa: F401
 
 import dms_variants._cutils
@@ -268,6 +270,37 @@ def tidy_split(df, column, sep=' ', keep=False):
     new_df = df.iloc[indexes, :].copy()
     new_df[column] = new_values
     return new_df
+
+
+def integer_breaks(x):
+    """Integer breaks for axes labels.
+
+    Note
+    ----
+    The breaks can be passed to `plotnine <http://plotnine.readthedocs.io>`_
+    as in::
+
+        scale_x_continuous(breaks=integer_breaks)
+
+    Parameters
+    ----------
+    x : array-like
+        Numerical data values.
+
+    Returns
+    -------
+    numpy.ndarray
+        Integer tick locations.
+
+    Example
+    -------
+    >>> integer_breaks([0.5, 0.7, 1.2, 3.7, 7, 17])
+    array([ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.])
+
+    """
+    return (matplotlib.ticker.MaxNLocator(integer=True)
+            .tick_values(min(x), max(x))
+            )
 
 
 if __name__ == '__main__':
