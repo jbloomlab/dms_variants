@@ -729,7 +729,8 @@ class CodonVariantTable:
                 )
 
     def mutCounts(self, variant_type, mut_type, *,
-                  libraries='all', samples='all', min_support=1):
+                  libraries='all', samples='all', min_support=1,
+                  sample_rename=None):
         """Get counts of each individual mutation.
 
         Parameters
@@ -810,6 +811,13 @@ class CodonVariantTable:
             assert site in self.sites
             return site
 
+        if sample_rename is None:
+            sample_rename_dict = _dict_missing_is_key()
+        else:
+            if len(sample_rename) != len(set(sample_rename.values())):
+                raise ValueError('duplicates in `sample_rename`')
+            sample_rename_dict = _dict_missing_is_key(sample_rename)
+
         df = (df
               .rename(columns={f"{mut_type}_substitutions": 'mutation'})
               [['library', 'sample', 'mutation', 'count']]
@@ -821,9 +829,10 @@ class CodonVariantTable:
               .assign(library=lambda x: pd.Categorical(x['library'],
                                                        librarylist,
                                                        ordered=True),
-                      sample=lambda x: pd.Categorical(x['sample'],
-                                                      samplelist,
-                                                      ordered=True),
+                      sample=lambda x: pd.Categorical(
+                                x['sample'].map(sample_rename_dict),
+                                [sample_rename_dict[s] for s in samplelist],
+                                ordered=True),
                       mutation_type=lambda x:
                       pd.Categorical(x['mutation'].apply(_classify_mutation),
                                      mutation_types,
@@ -842,7 +851,7 @@ class CodonVariantTable:
                        count_or_frequency='frequency',
                        libraries='all', samples='all', plotfile=None,
                        orientation='h', widthscale=1, heightscale=1,
-                       min_support=1):
+                       min_support=1, sample_rename=None):
         """Heatmap of mutation counts or frequencies.
 
         Parameters
@@ -858,7 +867,8 @@ class CodonVariantTable:
 
         """
         df = self.mutCounts(variant_type, mut_type, samples=samples,
-                            libraries=libraries, min_support=min_support)
+                            libraries=libraries, min_support=min_support,
+                            sample_rename=sample_rename)
 
         n_variants = (self.n_variants_df(libraries=libraries,
                                          samples=samples,
@@ -949,7 +959,7 @@ class CodonVariantTable:
     def plotMutFreqs(self, variant_type, mut_type, *,
                      libraries='all', samples='all', plotfile=None,
                      orientation='h', widthscale=1, heightscale=1,
-                     min_support=1):
+                     min_support=1, sample_rename=None):
         """Mutation frequency along length of gene.
 
         Parameters
@@ -963,7 +973,8 @@ class CodonVariantTable:
 
         """
         df = self.mutCounts(variant_type, mut_type, samples=samples,
-                            libraries=libraries, min_support=min_support)
+                            libraries=libraries, min_support=min_support,
+                            sample_rename=None)
 
         n_variants = (self.n_variants_df(libraries=libraries,
                                          samples=samples,
@@ -1041,7 +1052,8 @@ class CodonVariantTable:
                                libraries='all', samples='all', plotfile=None,
                                orientation='h', widthscale=1, heightscale=1,
                                min_support=1, mut_type='aa',
-                               tot_variants_hline=True):
+                               tot_variants_hline=True,
+                               sample_rename=None):
         """Plot number variants with >= that each number of counts.
 
         Parameters
@@ -1060,7 +1072,8 @@ class CodonVariantTable:
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
-                                                     min_support)
+                                                     min_support,
+                                                     sample_rename)
 
         if variant_type == 'single':
             if mut_type == 'aa':
@@ -1125,7 +1138,8 @@ class CodonVariantTable:
     def plotCumulMutCoverage(self, variant_type, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
                              orientation='h', widthscale=1, heightscale=1,
-                             min_support=1, max_count=None):
+                             min_support=1, max_count=None,
+                             sample_rename=None):
         """Fraction of mutations seen <= some number of times.
 
         Parameters
@@ -1144,7 +1158,8 @@ class CodonVariantTable:
 
         """
         df = self.mutCounts(variant_type, mut_type, samples=samples,
-                            libraries=libraries, min_support=min_support)
+                            libraries=libraries, min_support=min_support,
+                            sample_rename=sample_rename)
 
         # add one to counts to plot fraction found < this many
         # as stat_ecdf by default does <=
@@ -1213,7 +1228,8 @@ class CodonVariantTable:
         return p
 
     def numCodonMutsByType(self, variant_type, *,
-                           libraries='all', samples='all', min_support=1):
+                           libraries='all', samples='all', min_support=1,
+                           sample_rename=None):
         """Get average nonsynonymous, synonymous, stop mutations per variant.
 
         Parameters
@@ -1227,7 +1243,8 @@ class CodonVariantTable:
             Data frame with average mutations of each type per variant.
 
         """
-        df, _, _ = self._getPlotData(libraries, samples, min_support)
+        df, _, _ = self._getPlotData(libraries, samples, min_support,
+                                     sample_rename)
 
         if variant_type == 'single':
             df = df.query('n_codon_substitutions <= 1')
@@ -1268,7 +1285,7 @@ class CodonVariantTable:
     def plotNumCodonMutsByType(self, variant_type, *,
                                libraries='all', samples='all', plotfile=None,
                                orientation='h', widthscale=1, heightscale=1,
-                               min_support=1, ylabel=None):
+                               min_support=1, ylabel=None, sample_rename=None):
         """Plot average nonsynonymous, synonymous, stop mutations per variant.
 
         Parameters
@@ -1287,12 +1304,14 @@ class CodonVariantTable:
         """
         _, nlibraries, nsamples = self._getPlotData(libraries,
                                                     samples,
-                                                    min_support)
+                                                    min_support,
+                                                    sample_rename)
 
         df = self.numCodonMutsByType(variant_type=variant_type,
                                      libraries=libraries,
                                      samples=samples,
-                                     min_support=min_support)
+                                     min_support=min_support,
+                                     sample_rename=sample_rename)
         if orientation == 'h':
             facet_str = 'sample ~ library'
             width = widthscale * (1 + 1.4 * nlibraries)
@@ -1342,7 +1361,8 @@ class CodonVariantTable:
     def plotVariantSupportHistogram(self, *,
                                     libraries='all', plotfile=None,
                                     orientation='h', widthscale=1,
-                                    heightscale=1, max_support=None):
+                                    heightscale=1, max_support=None,
+                                    sample_rename=None):
         """Plot histogram of variant call support for variants.
 
         Parameters
@@ -1359,7 +1379,8 @@ class CodonVariantTable:
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      None,
-                                                     1)
+                                                     1,
+                                                     sample_rename)
 
         if orientation == 'h':
             width = widthscale * (1 + 1.4 * nlibraries)
@@ -1398,7 +1419,8 @@ class CodonVariantTable:
         return p
 
     def avgCountsPerVariant(self, *,
-                            libraries='all', samples='all', min_support=1):
+                            libraries='all', samples='all', min_support=1,
+                            sample_rename=None):
         """Get average counts per variant.
 
         Parameters
@@ -1410,6 +1432,9 @@ class CodonVariantTable:
             Include all samples or just samples in list.
         min_support : int
             Only include variants with variant call support >= this.
+        sample_rename : dict or None
+            Rename samples by specifying original name as key and new name
+            as value.
 
         Returns
         -------
@@ -1422,7 +1447,8 @@ class CodonVariantTable:
 
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
-                                                     min_support)
+                                                     min_support,
+                                                     sample_rename)
 
         return (df
                 .groupby(['library', 'sample'], observed=True)
@@ -1434,7 +1460,7 @@ class CodonVariantTable:
     def plotAvgCountsPerVariant(self, *,
                                 libraries='all', samples='all', plotfile=None,
                                 orientation='h', widthscale=1, heightscale=1,
-                                min_support=1):
+                                min_support=1, sample_rename=None):
         """Get average counts per variant.
 
         Parameters
@@ -1453,7 +1479,8 @@ class CodonVariantTable:
 
         """
         df = self.avgCountsPerVariant(libraries=libraries, samples=samples,
-                                      min_support=min_support)
+                                      min_support=min_support,
+                                      sample_rename=sample_rename)
 
         nsamples = len(df['sample'].unique())
         nlibraries = len(df['library'].unique())
@@ -1487,7 +1514,7 @@ class CodonVariantTable:
     def plotNumMutsHistogram(self, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
                              orientation='h', widthscale=1, heightscale=1,
-                             min_support=1, max_muts=None):
+                             min_support=1, max_muts=None, sample_rename=None):
         """Plot histograms of number of mutations per variant.
 
         Parameters
@@ -1512,6 +1539,9 @@ class CodonVariantTable:
             Only include variants with variant call support >= this.
         max_muts : int or None
             Group together all variants with >= this many mutations.
+        sample_rename : dict or None
+            Rename samples by specifying original name as key and new name
+            as value.
 
         Returns
         -------
@@ -1520,7 +1550,8 @@ class CodonVariantTable:
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
-                                                     min_support)
+                                                     min_support,
+                                                     sample_rename)
 
         if mut_type == 'aa':
             mut_col = 'n_aa_substitutions'
@@ -1820,7 +1851,8 @@ class CodonVariantTable:
 
         return df
 
-    def _getPlotData(self, libraries, samples, min_support):
+    def _getPlotData(self, libraries, samples, min_support,
+                     sample_rename=None):
         """Get data to plot from library and sample filters.
 
         Parameters
@@ -1883,14 +1915,21 @@ class CodonVariantTable:
         else:
             nlibraries = len(df['library'].unique())
 
+        if sample_rename is None:
+            sample_rename_dict = _dict_missing_is_key()
+        else:
+            if len(sample_rename) != len(set(sample_rename.values())):
+                raise ValueError('duplicates in `sample_rename`')
+            sample_rename_dict = _dict_missing_is_key(sample_rename)
         df = (df
               .assign(
                 library=lambda x: pd.Categorical(x['library'],
                                                  x['library'].unique(),
                                                  ordered=True),
-                sample=lambda x: pd.Categorical(x['sample'],
-                                                x['sample'].unique(),
-                                                ordered=True),
+                sample=lambda x: pd.Categorical(
+                                x['sample'].map(sample_rename_dict),
+                                x['sample'].map(sample_rename_dict).unique(),
+                                ordered=True),
                 )
               )
 
@@ -2143,6 +2182,19 @@ class CodonVariantTable:
                 raise ValueError('codon seqs != translated amino-acid seqs')
 
         return df
+
+
+class _dict_missing_is_key(dict):
+    """dict that returns key as value for missing keys.
+
+    Note
+    ----
+    See here: https://stackoverflow.com/a/6229253
+
+    """
+
+    def __missing__(self, key):
+        return key
 
 
 if __name__ == '__main__':

@@ -27,6 +27,8 @@ Added
 
 - Add custom `plotnine` theme in `plotnine_themes` and improved formatting of plots from `CodonVariantTable`.
 
+- Added `sample_rename` parameter to `CodonVariantTable` plotting methods.
+
 Changed
 --------
 - Changed how `variant_call_support` set in `simulate_CodonVariantTable`.
