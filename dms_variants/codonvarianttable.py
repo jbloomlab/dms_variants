@@ -691,7 +691,7 @@ class CodonVariantTable:
 
     def n_variants_df(self, *, libraries='all', samples='all',
                       min_support=1, variant_type='all',
-                      mut_type=None):
+                      mut_type=None, sample_rename=None):
         """Get number of variants per library / sample.
 
         Parameters
@@ -711,7 +711,8 @@ class CodonVariantTable:
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
-                                                     min_support)
+                                                     min_support,
+                                                     sample_rename)
 
         if variant_type == 'single':
             if mut_type in {'aa', 'codon'}:
@@ -874,7 +875,8 @@ class CodonVariantTable:
                                          samples=samples,
                                          min_support=min_support,
                                          variant_type=variant_type,
-                                         mut_type=mut_type)
+                                         mut_type=mut_type,
+                                         sample_rename=sample_rename)
                       .rename(columns={'count': 'nseqs'})
                       )
 
@@ -974,13 +976,14 @@ class CodonVariantTable:
         """
         df = self.mutCounts(variant_type, mut_type, samples=samples,
                             libraries=libraries, min_support=min_support,
-                            sample_rename=None)
+                            sample_rename=sample_rename)
 
         n_variants = (self.n_variants_df(libraries=libraries,
                                          samples=samples,
                                          min_support=min_support,
                                          variant_type=variant_type,
-                                         mut_type=mut_type)
+                                         mut_type=mut_type,
+                                         sample_rename=sample_rename)
                       .rename(columns={'count': 'nseqs'})
                       )
 
@@ -1334,7 +1337,7 @@ class CodonVariantTable:
              p9.geom_bar(stat='identity') +
              p9.geom_text(size=9, va='bottom', format_string='{0:.2f}') +
              p9.scale_y_continuous(name=ylabel,
-                                   expand=(0.03, 0, 0.14, 0)) +
+                                   expand=(0.03, 0, 0.15, 0)) +
              p9.scale_fill_manual(
                 [self._mutation_type_colors[m] for m in
                  df.mutation_type.unique().sort_values().tolist()]
