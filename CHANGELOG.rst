@@ -29,6 +29,8 @@ Added
 
 - Added `sample_rename` parameter to `CodonVariantTable` plotting methods.
 
+- Added `syn_as_wt` to `CodonVariantTable.classifyVariants`.
+
 Changed
 --------
 - Changed how `variant_call_support` set in `simulate_CodonVariantTable`.

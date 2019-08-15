@@ -1734,7 +1734,8 @@ class CodonVariantTable:
     def classifyVariants(df,
                          *,
                          variant_class_col='variant_class',
-                         max_aa=2):
+                         max_aa=2,
+                         syn_as_wt=False):
         """Classifies codon variants in `df`.
 
         Parameters
@@ -1750,6 +1751,10 @@ class CodonVariantTable:
             Overwritten if already exists.
         max_aa : int
             When classifying, group all with >= this many amino-acid mutations.
+        syn_as_wt : bool
+            Do not have a category of 'synonymous' and instead classify
+            synonymous variants as 'wildtype'. If using this option, `df`
+            does not need column 'n_codon_substitutions'.
 
         Returns
         -------
@@ -1788,18 +1793,32 @@ class CodonVariantTable:
         3     GAA   1 nonsynonymous
         4     CTT  >1 nonsynonymous
         5     CTT  >1 nonsynonymous
+        >>> df_syn_as_wt = CodonVariantTable.classifyVariants(df,
+        ...                                                   syn_as_wt=True)
+        >>> df_syn_as_wt[['barcode', 'variant_class']]
+          barcode     variant_class
+        0     AAA          wildtype
+        1     AAG          wildtype
+        2     ATA              stop
+        3     GAA   1 nonsynonymous
+        4     CTT  >1 nonsynonymous
+        5     CTT  >1 nonsynonymous
 
         """
-        req_cols = ['aa_substitutions', 'n_aa_substitutions',
-                    'n_codon_substitutions']
+        req_cols = ['aa_substitutions', 'n_aa_substitutions']
+        if not syn_as_wt:
+            req_cols.append('n_codon_substitutions')
         if not (set(req_cols) <= set(df.columns)):
             raise ValueError(f"`df` does not have columns {req_cols}")
 
         def _classify_func(row):
-            if row['n_codon_substitutions'] == 0:
-                return 'wildtype'
-            elif row['n_aa_substitutions'] == 0:
-                return 'synonymous'
+            if row['n_aa_substitutions'] == 0:
+                if syn_as_wt:
+                    return 'wildtype'
+                elif row['n_codon_substitutions'] == 0:
+                    return 'wildtype'
+                else:
+                    return 'synonymous'
             elif '*' in row['aa_substitutions']:
                 return 'stop'
             elif row['n_aa_substitutions'] < max_aa:
