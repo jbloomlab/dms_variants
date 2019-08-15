@@ -31,6 +31,8 @@ Added
 
 - Added `syn_as_wt` to `CodonVariantTable.classifyVariants`.
 
+- Added `random_seq` and `mutate_seq` to `simulate` module.
+
 Changed
 --------
 - Changed how `variant_call_support` set in `simulate_CodonVariantTable`.
