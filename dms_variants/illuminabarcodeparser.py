@@ -54,8 +54,8 @@ class IlluminaBarcodeParser:
     valid_barcodes : None or iterable such as list
         If not `None`, only retain barcodes listed here. Use if you know
         the possible valid barcodes ahead of time.
-    rc_barcode : bool
-        Get reverse complement the barcode (i.e., get orientation read by R1).
+    bc_orientation : {'R1', 'R2'}
+        Is the barcode defined in the orientation read by R1 or R2?
     minq : int
         Require >= this Q score for all bases in barcode for at least one read.
     chastity_filter : bool
@@ -79,8 +79,8 @@ class IlluminaBarcodeParser:
         Max number of mismatches allowed in `downstream`.
     valid_barcodes : None or set
         If not `None`, set of barcodes to retain.
-    rc_barcode : bool
-        Get reverse complement of the barcode (orientation read by R1).
+    bc_orientation : {'R1', 'R2'}
+        Is the barcode defined in the orientation read by R1 or R2?
     minq : int
         Require >= this Q score for all bases in barcode for at least one read.
     chastity_filter : bool
@@ -97,7 +97,7 @@ class IlluminaBarcodeParser:
 
     def __init__(self, *, bclen=None, upstream='', downstream='',
                  upstream_mismatch=0, downstream_mismatch=0,
-                 valid_barcodes=None, rc_barcode=True, minq=20,
+                 valid_barcodes=None, bc_orientation='R1', minq=20,
                  chastity_filter=True, list_all_valid_barcodes=True):
         """See main class doc string."""
         self.bclen = bclen
@@ -123,7 +123,10 @@ class IlluminaBarcodeParser:
         elif self.bclen is None:
             raise ValueError('must specify `bclen` or `valid_barcodes`')
         self.minq = minq
-        self.rc_barcode = rc_barcode
+        if bc_orientation in {'R1', 'R2'}:
+            self.bc_orientation = bc_orientation
+        else:
+            raise ValueError(f"invalid `bc_orientation` {bc_orientation}")
         self.chastity_filter = chastity_filter
         self.list_all_valid_barcodes = list_all_valid_barcodes
 
@@ -274,11 +277,12 @@ class IlluminaBarcodeParser:
                         bc_q[read] = qual_str_to_array(
                                         q[matches[read].start('bc'):
                                           matches[read].end('bc')])
-                    if self.rc_barcode:
+                    if self.bc_orientation == 'R1':
                         if not r1only:
                             bc['R2'] = reverse_complement(bc['R2'])
                             bc_q['R2'] = scipy.flip(bc_q['R2'], axis=0)
                     else:
+                        assert self.bc_orientation == 'R2'
                         bc['R1'] = reverse_complement(bc['R1'])
                         bc_q['R1'] = scipy.flip(bc_q['R1'], axis=0)
                     if r1only:
