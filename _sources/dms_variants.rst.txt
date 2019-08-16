@@ -2,9 +2,9 @@ dms\_variants package
 =====================
 
 .. automodule:: dms_variants
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -14,6 +14,8 @@ Submodules
    dms_variants.barcodes
    dms_variants.codonvarianttable
    dms_variants.constants
+   dms_variants.fastq
+   dms_variants.illuminabarcodeparser
+   dms_variants.plotnine_themes
    dms_variants.simulate
    dms_variants.utils
-

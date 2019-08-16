@@ -1,0 +1,4 @@
+.. automodule:: dms_variants.plotnine_themes
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.plotnine_themes &#8212; dms_variants 0.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.plotnine_themes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===============</span>
+<span class="sd">plotnine_themes</span>
+<span class="sd">===============</span>
+
+<span class="sd">Defines `plotnine &lt;https://plotnine.readthedocs.io&gt;`_ themes.</span>
+
+<span class="sd">See here for details on how to use the themes for plotting:</span>
+<span class="sd">https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">plotnine</span> <span class="k">as</span> <span class="nn">p9</span>
+
+
+<div class="viewcode-block" id="theme_graygrid"><a class="viewcode-back" href="../../dms_variants.plotnine_themes.html#dms_variants.plotnine_themes.theme_graygrid">[docs]</a><span class="k">class</span> <span class="nc">theme_graygrid</span><span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">themes</span><span class="o">.</span><span class="n">theme_matplotlib</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Plot theme with a light gray grid and axes.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    .. plot::</span>
+
+<span class="sd">       You can set this theme using the `plotnine.theme_set` command:</span>
+
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; from plotnine import *</span>
+<span class="sd">       &gt;&gt;&gt; from dms_variants.plotnine_themes import theme_graygrid</span>
+<span class="sd">       &gt;&gt;&gt; df = pd.DataFrame({&#39;x&#39;: [1, 2, 3, 4], &#39;y&#39;: [1, 4, 9, 16]})</span>
+<span class="sd">       &gt;&gt;&gt; theme_set(theme_graygrid())</span>
+<span class="sd">       &gt;&gt;&gt; p = (ggplot(df, aes(&#39;x&#39;, &#39;y&#39;)) +</span>
+<span class="sd">       ...      geom_point(size=3, color=&#39;orange&#39;) +</span>
+<span class="sd">       ...      theme(figure_size=(2, 2))</span>
+<span class="sd">       ...      )</span>
+<span class="sd">       &gt;&gt;&gt; _ = p.draw()</span>
+
+<span class="sd">       Get rid of the vertical grid lines:</span>
+
+<span class="sd">       &gt;&gt;&gt; p_novertgrid = p + theme(panel_grid_major_x=element_blank())</span>
+<span class="sd">       &gt;&gt;&gt; _ = p_novertgrid.draw()</span>
+
+<span class="sd">       Get rid of the axes border:</span>
+
+<span class="sd">       &gt;&gt;&gt; p_noborder = p + theme(panel_border=element_blank())</span>
+<span class="sd">       &gt;&gt;&gt; _ = p_noborder.draw()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+        <span class="n">p9</span><span class="o">.</span><span class="n">theme_matplotlib</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">gray</span> <span class="o">=</span> <span class="s1">&#39;#D9D9D9&#39;</span>  <span class="c1"># gray used in themes.theme_matplotlib</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_theme</span><span class="p">(</span>
+            <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span>
+                <span class="n">panel_border</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_rect</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">gray</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.7</span><span class="p">),</span>
+                <span class="n">axis_line</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
+                <span class="n">axis_ticks_length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">axis_ticks</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
+                <span class="n">panel_grid_major</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_line</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">gray</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.7</span><span class="p">),</span>
+                <span class="n">panel_grid_minor</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
+                <span class="n">panel_ontop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># plot panel on top of grid</span>
+                <span class="p">),</span>
+            <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

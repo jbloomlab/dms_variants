@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants package &#8212; dms_variants 0.1.0 documentation</title>
+    <title>dms_variants package &#8212; dms_variants 0.2.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="barcodes" href="dms_variants.barcodes.html" />
-    <link rel="prev" title="Analyze simulated library of codon variants" href="codonvariant_sim_data.html" />
+    <link rel="prev" title="Parse simulated barcodes" href="parsebarcodes_sim_data.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -30,6 +30,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="module-dms_variants">
@@ -46,6 +48,9 @@ variants of genes.</p>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.barcodes.html">barcodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.codonvarianttable.html">codonvarianttable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html">constants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.fastq.html">fastq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html">illuminabarcodeparser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.plotnine_themes.html">plotnine_themes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html">simulate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html">utils</a></li>
 </ul>
@@ -55,6 +60,7 @@ variants of genes.</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -87,7 +93,7 @@ variants of genes.</p>
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_variants">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
@@ -116,21 +122,29 @@ variants of genes.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="codonvariant_sim_data.html" title="previous chapter">Analyze simulated library of codon variants</a></li>
+      <li>Previous: <a href="parsebarcodes_sim_data.html" title="previous chapter">Parse simulated barcodes</a></li>
       <li>Next: <a href="dms_variants.barcodes.html" title="next chapter">barcodes</a></li>
   </ul></li>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -139,8 +153,8 @@ variants of genes.</p>
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="_sources/dms_variants.rst.txt"

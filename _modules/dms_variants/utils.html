@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.utils &#8212; dms_variants 0.1.0 documentation</title>
+    <title>dms_variants.utils &#8212; dms_variants 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -28,6 +28,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <h1>Source code for dms_variants.utils</h1><div class="highlight"><pre>
@@ -41,9 +43,44 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
+<span class="kn">import</span> <span class="nn">matplotlib.ticker</span>
+
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># noqa: F401</span>
 
-<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="n">CODON_TO_AA</span>
+<span class="kn">import</span> <span class="nn">dms_variants._cutils</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">,</span>
+                                    <span class="n">NT_COMPLEMENT</span><span class="p">,</span>
+                                    <span class="p">)</span>
+
+
+<div class="viewcode-block" id="reverse_complement"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.reverse_complement">[docs]</a><span class="k">def</span> <span class="nf">reverse_complement</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">use_cutils</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get reverse complement of DNA sequence.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    s : str</span>
+<span class="sd">        DNA sequence.</span>
+<span class="sd">    use_cutils : bool</span>
+<span class="sd">        Use faster C-extension implementation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Reverse complement of `s`.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; s = &#39;ATGCAAN&#39;</span>
+<span class="sd">    &gt;&gt;&gt; reverse_complement(s)</span>
+<span class="sd">    &#39;NTTGCAT&#39;</span>
+<span class="sd">    &gt;&gt;&gt; reverse_complement(s, use_cutils=False) == reverse_complement(s)</span>
+<span class="sd">    True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">use_cutils</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">_cutils</span><span class="o">.</span><span class="n">reverse_complement</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">reversed</span><span class="p">([</span><span class="n">NT_COMPLEMENT</span><span class="p">[</span><span class="n">nt</span><span class="p">]</span> <span class="k">for</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">s</span><span class="p">]))</span></div>
 
 
 <div class="viewcode-block" id="translate"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.translate">[docs]</a><span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">codonseq</span><span class="p">):</span>
@@ -270,12 +307,44 @@
     <span class="k">return</span> <span class="n">new_df</span></div>
 
 
+<div class="viewcode-block" id="integer_breaks"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.integer_breaks">[docs]</a><span class="k">def</span> <span class="nf">integer_breaks</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Integer breaks for axes labels.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The breaks can be passed to `plotnine &lt;http://plotnine.readthedocs.io&gt;`_</span>
+<span class="sd">    as in::</span>
+
+<span class="sd">        scale_x_continuous(breaks=integer_breaks)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x : array-like</span>
+<span class="sd">        Numerical data values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Integer tick locations.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; integer_breaks([0.5, 0.7, 1.2, 3.7, 7, 17])</span>
+<span class="sd">    array([ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">integer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">tick_values</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+            <span class="p">)</span></div>
+
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
     <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
 </pre></div>
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -308,7 +377,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_variants">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
@@ -339,15 +408,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -356,8 +433,8 @@
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

@@ -1,0 +1,485 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.illuminabarcodeparser &#8212; dms_variants 0.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.illuminabarcodeparser</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=====================</span>
+<span class="sd">illuminabarcodeparser</span>
+<span class="sd">=====================</span>
+
+<span class="sd">Defines :class:`IlluminaBarcodeParser` to parse barcodes from Illumina reads.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">import</span> <span class="nn">regex</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">from</span> <span class="nn">dms_variants.fastq</span> <span class="k">import</span> <span class="p">(</span><span class="n">iterate_fastq</span><span class="p">,</span>
+                                <span class="n">iterate_fastq_pair</span><span class="p">,</span>
+                                <span class="n">qual_str_to_array</span><span class="p">,</span>
+                                <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">dms_variants.utils</span> <span class="k">import</span> <span class="n">reverse_complement</span>
+
+
+<div class="viewcode-block" id="IlluminaBarcodeParser"><a class="viewcode-back" href="../../dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">[docs]</a><span class="k">class</span> <span class="nc">IlluminaBarcodeParser</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Parser for Illumina barcodes.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Barcodes should be read by R1 and optionally R2. Expected arrangement is</span>
+
+<span class="sd">        5&#39;-[R2_start]-upstream-barcode-downstream-[R1_start]-3&#39;</span>
+
+<span class="sd">    R1 anneals downstream of barcode and reads backwards. If R2 is used,</span>
+<span class="sd">    it anneals upstream of barcode and reads forward. There can be sequences</span>
+<span class="sd">    (`upstream` and `downstream`) on either side of the barcode: `downstream`</span>
+<span class="sd">    must fully cover region between R1 start and barcode, and if using R2</span>
+<span class="sd">    then `upstream` must fully cover region between R2 start and barcode.</span>
+<span class="sd">    However, it is fine if R1 reads backwards past `upstream`, and if `R2`</span>
+<span class="sd">    reads forward past `downstream`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bclen : int or `None`</span>
+<span class="sd">        Barcode length; `None` if length determined from `valid_barcodes`.</span>
+<span class="sd">    upstream : str</span>
+<span class="sd">        Sequence upstream of the barcode; empty str if no such sequence.</span>
+<span class="sd">    downstream : str</span>
+<span class="sd">        Sequence downstream of barcode; empty str if no such sequence.</span>
+<span class="sd">    upstream_mismatch : int</span>
+<span class="sd">        Max number of mismatches allowed in `upstream`.</span>
+<span class="sd">    downstream_mismatch : int</span>
+<span class="sd">        Max number of mismatches allowed in `downstream`.</span>
+<span class="sd">    valid_barcodes : None or iterable such as list</span>
+<span class="sd">        If not `None`, only retain barcodes listed here. Use if you know</span>
+<span class="sd">        the possible valid barcodes ahead of time.</span>
+<span class="sd">    bc_orientation : {&#39;R1&#39;, &#39;R2&#39;}</span>
+<span class="sd">        Is the barcode defined in the orientation read by R1 or R2?</span>
+<span class="sd">    minq : int</span>
+<span class="sd">        Require &gt;= this Q score for all bases in barcode for at least one read.</span>
+<span class="sd">    chastity_filter : bool</span>
+<span class="sd">        Drop any reads that fail Illumina chastity filter.</span>
+<span class="sd">    list_all_valid_barcodes :  bool</span>
+<span class="sd">        If using `valid_barcodes`, barcode sets returned by</span>
+<span class="sd">        :meth:`IlluminaBarcodeParser.parse` include all valid barcodes</span>
+<span class="sd">        even if no counts.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bclen : int</span>
+<span class="sd">        Length of barcodes.</span>
+<span class="sd">    upstream : str</span>
+<span class="sd">        Sequence upstream of barcode.</span>
+<span class="sd">    downstream : str</span>
+<span class="sd">        Sequence downstream of barcode.</span>
+<span class="sd">    upstream_mismatch : int</span>
+<span class="sd">        Max number of mismatches allowed in `upstream`.</span>
+<span class="sd">    downstream_mismatch : int</span>
+<span class="sd">        Max number of mismatches allowed in `downstream`.</span>
+<span class="sd">    valid_barcodes : None or set</span>
+<span class="sd">        If not `None`, set of barcodes to retain.</span>
+<span class="sd">    bc_orientation : {&#39;R1&#39;, &#39;R2&#39;}</span>
+<span class="sd">        Is the barcode defined in the orientation read by R1 or R2?</span>
+<span class="sd">    minq : int</span>
+<span class="sd">        Require &gt;= this Q score for all bases in barcode for at least one read.</span>
+<span class="sd">    chastity_filter : bool</span>
+<span class="sd">        Drop any reads that fail Illumina chastity filter.</span>
+<span class="sd">    list_all_valid_barcodes :  bool</span>
+<span class="sd">        If using `valid_barcodes`, barcode sets returned by</span>
+<span class="sd">        :meth:`IlluminaBarcodeParser.parse` include all valid barcodes</span>
+<span class="sd">        even if no counts.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">VALID_NTS</span> <span class="o">=</span> <span class="s1">&#39;ACGTN&#39;</span>
+    <span class="sd">&quot;&quot;&quot;str : Valid nucleotide characters in FASTQ files.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">bclen</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upstream</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">downstream</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">upstream_mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">downstream_mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">valid_barcodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bc_orientation</span><span class="o">=</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="n">minq</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                 <span class="n">chastity_filter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">list_all_valid_barcodes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">=</span> <span class="n">bclen</span>
+        <span class="k">if</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;^[</span><span class="si">{self.VALID_NTS}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">upstream</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upstream</span> <span class="o">=</span> <span class="n">upstream</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid chars in upstream </span><span class="si">{upstream}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;^[</span><span class="si">{self.VALID_NTS}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">downstream</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">downstream</span> <span class="o">=</span> <span class="n">downstream</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid chars in downstream </span><span class="si">{downstream}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upstream_mismatch</span> <span class="o">=</span> <span class="n">upstream_mismatch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">downstream_mismatch</span> <span class="o">=</span> <span class="n">downstream_mismatch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="o">=</span> <span class="n">valid_barcodes</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty list for `valid_barcodes`&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`valid_barcodes` not all valid length&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;must specify `bclen` or `valid_barcodes`&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minq</span> <span class="o">=</span> <span class="n">minq</span>
+        <span class="k">if</span> <span class="n">bc_orientation</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">}:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bc_orientation</span> <span class="o">=</span> <span class="n">bc_orientation</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `bc_orientation` </span><span class="si">{bc_orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">chastity_filter</span> <span class="o">=</span> <span class="n">chastity_filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">list_all_valid_barcodes</span> <span class="o">=</span> <span class="n">list_all_valid_barcodes</span>
+
+        <span class="c1"># specify information about R1 / R2 matches</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bcend</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;R1&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream</span><span class="p">),</span>
+                <span class="s1">&#39;R2&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream</span><span class="p">)</span>
+                <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rcdownstream</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rcupstream</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;R1&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;R2&#39;</span><span class="p">:</span> <span class="p">{}}</span>  <span class="c1"># match objects by read length</span>
+
+<div class="viewcode-block" id="IlluminaBarcodeParser.parse"><a class="viewcode-back" href="../../dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r1files</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">r2files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse barcodes from files.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r1files : str or list</span>
+<span class="sd">            Name of R1 FASTQ file, or list of such files. Can be gzipped.</span>
+<span class="sd">        r2files : None, str, or list</span>
+<span class="sd">            `None` or empty list if not using R2, or like `r1files` for R2.</span>
+<span class="sd">        add_cols : None or dict</span>
+<span class="sd">            If dict, specify names and values (i.e., sample or library names)</span>
+<span class="sd">            to be aded to returned data frames.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            The 2-tuple `(barcodes, fates)`, where:</span>
+<span class="sd">                - `barcodes` is pandas DataFrame giving number of observations</span>
+<span class="sd">                  of each barcode (columns are &quot;barcode&quot; and &quot;count&quot;).</span>
+<span class="sd">                - `fates` is pandas DataFrame giving total number of reads with</span>
+<span class="sd">                  each fate (columns &quot;fate&quot; and &quot;count&quot;). Possible fates:</span>
+<span class="sd">                  - &quot;failed chastity filter&quot;</span>
+<span class="sd">                  - &quot;valid barcode&quot;</span>
+<span class="sd">                  - &quot;invalid barcode&quot;: not in barcode whitelist</span>
+<span class="sd">                  - &quot;R1 / R2 disagree&quot; (if using `r2files`)</span>
+<span class="sd">                  - &quot;low quality barcode&quot;: sequencing quality low</span>
+<span class="sd">                  - &quot;unparseable barcode&quot;: invalid flank sequence, N in barcode</span>
+
+<span class="sd">            Note that these data frames also include any columns specified by</span>
+<span class="sd">            `add_cols`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r1files</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">r1files</span> <span class="o">=</span> <span class="p">[</span><span class="n">r1files</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">r2files</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">r2files</span> <span class="o">=</span> <span class="p">[</span><span class="n">r2files</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r2files</span><span class="p">:</span>
+            <span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span>
+            <span class="n">r2files</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">fileslist</span> <span class="o">=</span> <span class="p">[</span><span class="n">r1files</span><span class="p">]</span>
+            <span class="n">r1only</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reads</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">,</span> <span class="s1">&#39;R2&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r1files</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r2files</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`r1files` and `r2files` different length&#39;</span><span class="p">)</span>
+            <span class="n">fileslist</span> <span class="o">=</span> <span class="p">[</span><span class="n">r1files</span><span class="p">,</span> <span class="n">r2files</span><span class="p">]</span>
+            <span class="n">r1only</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_all_valid_barcodes</span><span class="p">:</span>
+            <span class="n">barcodes</span> <span class="o">=</span> <span class="p">{</span><span class="n">bc</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">barcodes</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="n">fates</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;failed chastity filter&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="s1">&#39;unparseable barcode&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="s1">&#39;low quality barcode&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="s1">&#39;invalid barcode&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="s1">&#39;valid barcode&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                 <span class="p">}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">r1only</span><span class="p">:</span>
+            <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;R1 / R2 disagree&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># max length of interest for reads</span>
+        <span class="n">max_len</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">filetup</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">fileslist</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">r1only</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">filetup</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">iterate_fastq</span><span class="p">(</span><span class="n">filetup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">check_pair</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                         <span class="n">trim</span><span class="o">=</span><span class="n">max_len</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">filetup</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{filetup}</span><span class="se">\n</span><span class="si">{fileslist}</span><span class="s2">&quot;</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">iterate_fastq_pair</span><span class="p">(</span><span class="n">filetup</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">filetup</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                              <span class="n">r1trim</span><span class="o">=</span><span class="n">max_len</span><span class="p">,</span> <span class="n">r2trim</span><span class="o">=</span><span class="n">max_len</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">r1only</span><span class="p">:</span>
+                    <span class="n">readlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="n">qlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+                    <span class="n">fail</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">readlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
+                    <span class="n">qlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">entry</span><span class="p">[</span><span class="mi">4</span><span class="p">]]</span>
+                    <span class="n">fail</span> <span class="o">=</span> <span class="n">entry</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">fail</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">chastity_filter</span><span class="p">:</span>
+                    <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;failed chastity filter&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">continue</span>
+
+                <span class="n">matches</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">read</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">readlist</span><span class="p">):</span>
+                    <span class="n">rlen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+                    <span class="c1"># get or build matcher for read of this length</span>
+                    <span class="n">len_past_bc</span> <span class="o">=</span> <span class="n">rlen</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bcend</span><span class="p">[</span><span class="n">read</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">len_past_bc</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{read}</span><span class="s2"> too short: </span><span class="si">{rlen}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">rlen</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span><span class="p">[</span><span class="n">read</span><span class="p">]:</span>
+                        <span class="n">matcher</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="n">rlen</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">read</span> <span class="o">==</span> <span class="s1">&#39;R1&#39;</span><span class="p">:</span>
+                            <span class="n">match_str</span> <span class="o">=</span> <span class="p">(</span>
+                                    <span class="n">f</span><span class="s2">&quot;^(</span><span class="si">{self._rcdownstream}</span><span class="s2">)&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;{{s&lt;=</span><span class="si">{self.downstream_mismatch}</span><span class="s2">}}&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;(?P&lt;bc&gt;[ACTG]{{</span><span class="si">{self.bclen}</span><span class="s2">}})&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;(</span><span class="si">{self._rcupstream[: len_past_bc]}</span><span class="s2">)&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;{{s&lt;=</span><span class="si">{self.upstream_mismatch}</span><span class="s2">}}&quot;</span>
+                                    <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">assert</span> <span class="n">read</span> <span class="o">==</span> <span class="s1">&#39;R2&#39;</span>
+                            <span class="n">match_str</span> <span class="o">=</span> <span class="p">(</span>
+                                    <span class="n">f</span><span class="s2">&quot;^(</span><span class="si">{self.upstream}</span><span class="s2">)&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;{{s&lt;=</span><span class="si">{self.upstream_mismatch}</span><span class="s2">}}&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;(?P&lt;bc&gt;[ACTG]{{</span><span class="si">{self.bclen}</span><span class="s2">}})&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;(</span><span class="si">{self.downstream[: len_past_bc]}</span><span class="s2">)&quot;</span>
+                                    <span class="n">f</span><span class="s2">&quot;{{s&lt;=</span><span class="si">{self.downstream_mismatch}</span><span class="s2">}}&quot;</span>
+                                    <span class="p">)</span>
+                        <span class="n">matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">match_str</span><span class="p">,</span>
+                                                <span class="n">flags</span><span class="o">=</span><span class="n">regex</span><span class="o">.</span><span class="n">BESTMATCH</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span><span class="p">[</span><span class="n">read</span><span class="p">][</span><span class="n">rlen</span><span class="p">]</span> <span class="o">=</span> <span class="n">matcher</span>
+
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                        <span class="n">matches</span><span class="p">[</span><span class="n">read</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">break</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">reads</span><span class="p">):</span>
+                    <span class="n">bc</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="n">bc_q</span> <span class="o">=</span> <span class="p">{}</span>
+                    <span class="k">for</span> <span class="n">read</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">reads</span><span class="p">,</span> <span class="n">qlist</span><span class="p">):</span>
+                        <span class="n">bc</span><span class="p">[</span><span class="n">read</span><span class="p">]</span> <span class="o">=</span> <span class="n">matches</span><span class="p">[</span><span class="n">read</span><span class="p">]</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;bc&#39;</span><span class="p">)</span>
+                        <span class="n">bc_q</span><span class="p">[</span><span class="n">read</span><span class="p">]</span> <span class="o">=</span> <span class="n">qual_str_to_array</span><span class="p">(</span>
+                                        <span class="n">q</span><span class="p">[</span><span class="n">matches</span><span class="p">[</span><span class="n">read</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s1">&#39;bc&#39;</span><span class="p">):</span>
+                                          <span class="n">matches</span><span class="p">[</span><span class="n">read</span><span class="p">]</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="s1">&#39;bc&#39;</span><span class="p">)])</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc_orientation</span> <span class="o">==</span> <span class="s1">&#39;R1&#39;</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">r1only</span><span class="p">:</span>
+                            <span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">])</span>
+                            <span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc_orientation</span> <span class="o">==</span> <span class="s1">&#39;R2&#39;</span>
+                        <span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">])</span>
+                        <span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">r1only</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minq</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="ow">and</span> <span class="p">(</span>
+                                    <span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">):</span>
+                                <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;invalid barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">barcodes</span><span class="p">[</span><span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+                                <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;valid barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;low quality barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="ow">and</span> <span class="p">(</span>
+                                    <span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">):</span>
+                                <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;invalid barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="k">elif</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">],</span> <span class="n">bc_q</span><span class="p">[</span><span class="s1">&#39;R2&#39;</span><span class="p">])</span>
+                                    <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minq</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                                <span class="n">barcodes</span><span class="p">[</span><span class="n">bc</span><span class="p">[</span><span class="s1">&#39;R1&#39;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
+                                <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;valid barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;low quality barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;R1 / R2 disagree&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># invalid flanking sequence or N in barcode</span>
+                    <span class="n">fates</span><span class="p">[</span><span class="s1">&#39;unparseable barcode&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">add_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">add_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">existing_cols</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;fate&#39;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">add_cols</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">existing_cols</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`add_cols` cannot contain </span><span class="si">{existing_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">barcodes</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                        <span class="nb">list</span><span class="p">(</span><span class="n">barcodes</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span>
+                        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">])</span>
+                    <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">],</span>
+                                 <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+                    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="n">add_cols</span><span class="p">)</span>
+                    <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="p">)</span>
+
+        <span class="n">fates</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+                    <span class="nb">list</span><span class="p">(</span><span class="n">fates</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span>
+                    <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;fate&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">])</span>
+                 <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;fate&#39;</span><span class="p">],</span>
+                              <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+                 <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="n">add_cols</span><span class="p">)</span>
+                 <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                 <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">fates</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

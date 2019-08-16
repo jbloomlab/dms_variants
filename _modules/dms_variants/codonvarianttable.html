@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.1.0 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -28,6 +28,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <h1>Source code for dms_variants.codonvarianttable</h1><div class="highlight"><pre>
@@ -86,6 +88,9 @@
 <span class="sd">    extra_cols : list</span>
 <span class="sd">        Additional columns in `barcode_variant_file` to retain when creating</span>
 <span class="sd">        `barcode_variant_df` and `variant_count_df` attributes.</span>
+<span class="sd">    substitutions_col : str</span>
+<span class="sd">        Name of substitutions column in `barcode_variant_file` (use if you</span>
+<span class="sd">        want it to be something other than &quot;substitutions&quot;).</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -178,40 +183,34 @@
                     <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{variant_count_df_file}</span><span class="s2"> lacks required &quot;</span>
-                             <span class="n">f</span><span class="s2">&quot;columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+                             <span class="n">f</span><span class="s2">&quot;columns </span><span class="si">{req_cols}</span><span class="s2">. It has: {set(df.columns)}&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">req_cols</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">drop_all_libs</span><span class="p">:</span>
-            <span class="n">dropcol</span> <span class="o">=</span> <span class="s2">&quot;all libraries&quot;</span>
+            <span class="n">dropcol</span> <span class="o">=</span> <span class="s1">&#39;all libraries&#39;</span>
             <span class="k">if</span> <span class="n">dropcol</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
                 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library != @dropcol&#39;</span><span class="p">)</span>
 
         <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="p">(</span><span class="n">df</span>
              <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">])</span>
-             <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">:</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">})</span>
              <span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
              <span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
              <span class="p">)</span>
             <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
             <span class="n">cvt</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                       <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
-                      <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                      <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">)</span>
 
-        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
-            <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">cvt</span><span class="o">.</span><span class="n">libraries</span><span class="p">:</span>
-                <span class="n">idf</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample == @sample &amp; library == @lib&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">idf</span><span class="p">):</span>
-                    <span class="n">cvt</span><span class="o">.</span><span class="n">addSampleCounts</span><span class="p">(</span><span class="n">lib</span><span class="p">,</span>
-                                        <span class="n">sample</span><span class="p">,</span>
-                                        <span class="n">idf</span><span class="p">[[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]]</span>
-                                        <span class="p">)</span>
+        <span class="n">cvt</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]])</span>
 
         <span class="k">return</span> <span class="n">cvt</span></div>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">barcode_variant_file</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span>
-                 <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extra_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                 <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extra_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;substitutions&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span> <span class="o">=</span> <span class="n">geneseq</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;^[{&#39;&#39;.join(NTS)}]+$&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">):</span>
@@ -224,7 +223,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">aas</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">([</span>
                 <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">CODON_TO_AA</span><span class="p">[</span><span class="n">codon</span><span class="p">])</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">codon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">codons</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
 
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">barcode_variant_file</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">barcode_variant_file</span><span class="p">)</span>
+              <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">substitutions_col</span><span class="p">:</span> <span class="s1">&#39;substitutions&#39;</span><span class="p">})</span>
+              <span class="p">)</span>
         <span class="n">required_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span>
                          <span class="s1">&#39;substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_call_support&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">required_cols</span><span class="p">)):</span>
@@ -326,6 +327,12 @@
 <div class="viewcode-block" id="CodonVariantTable.addSampleCounts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts">[docs]</a>    <span class="k">def</span> <span class="nf">addSampleCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">barcodecounts</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add variant counts for a sample to `variant_count_df`.</span>
 
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        If you have many samples to add at once, it is faster to use</span>
+<span class="sd">        :meth:`CodonVariantTable.add_sample_counts_df` rather than</span>
+<span class="sd">        repeatedly calling this method.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        library : str</span>
@@ -335,8 +342,10 @@
 <span class="sd">            :class:`CodonVariantTable.samples` for `library`.</span>
 <span class="sd">        barcodecounts : pandas.DataFrame</span>
 <span class="sd">            Counts for each variant by barcode. Must have columns &quot;barcode&quot;</span>
-<span class="sd">            and &quot;count&quot;. The &quot;barcode&quot; column must contain all barcodes in</span>
-<span class="sd">            :class:`CodonVariantTable.valid_barcodes` for `library`.</span>
+<span class="sd">            and &quot;count&quot;. The &quot;barcode&quot; column must have all barcodes in</span>
+<span class="sd">            :class:`CodonVariantTable.valid_barcodes` for `library`. Such</span>
+<span class="sd">            data frames are returned by</span>
+<span class="sd">            :mod:`dms_variants.illuminabarcodeparser.IlluminaBarcodeParser`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">library</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">:</span>
@@ -399,6 +408,81 @@
                 <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="p">)</span></div>
 
+<div class="viewcode-block" id="CodonVariantTable.add_sample_counts_df"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df">[docs]</a>    <span class="k">def</span> <span class="nf">add_sample_counts_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts_df</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add variant counts for several samples to `variant_count_df`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        counts_df : pandas.DataFrame</span>
+<span class="sd">            Must have columns &#39;library&#39;, &#39;sample&#39;, &#39;barcode&#39;, and &#39;count&#39;.</span>
+<span class="sd">            The sample must **not** already be in `CodonVariantTable.samples`</span>
+<span class="sd">            for that library. The barcode columns must have all barcodes for</span>
+<span class="sd">            that library including zero-count ones.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">counts_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`counts_df` lacks required columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">counts_df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">lib</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`counts_df` has unknown library </span><span class="si">{lib}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">counts_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == @lib&#39;</span><span class="p">)[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">lib</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;library </span><span class="si">{lib}</span><span class="s2"> already has counts for &quot;</span>
+                                     <span class="n">f</span><span class="s2">&quot;sample </span><span class="si">{s}</span><span class="s2">, so you cannot add them&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_samples</span><span class="p">[</span><span class="n">lib</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">counts_df</span>
+              <span class="p">[</span><span class="n">req_cols</span><span class="p">]</span>
+              <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">,</span>
+                     <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">],</span>
+                     <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">how</span><span class="o">=</span><span class="s1">&#39;inner&#39;</span><span class="p">,</span>
+                     <span class="n">validate</span><span class="o">=</span><span class="s1">&#39;many_to_one&#39;</span><span class="p">,</span>
+                     <span class="p">)</span>
+              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+                        <span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span>
+                                          <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">])</span>
+                                          <span class="o">.</span><span class="n">groups</span><span class="p">))</span>
+                        <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span><span class="p">,</span> <span class="n">df</span><span class="p">],</span>
+                    <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">,</span>
+                    <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+        <span class="c1"># samples in order added after ordering by library, getting</span>
+        <span class="c1"># unique ones as here: https://stackoverflow.com/a/39835527</span>
+        <span class="n">unique_samples</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="o">.</span><span class="n">fromkeys</span><span class="p">(</span>
+                <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span>
+                    <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">])</span>
+                <span class="p">))</span>
+
+        <span class="c1"># make library and sample categorical and sort</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">library</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">],</span>
+                                                         <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                                         <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                        <span class="n">sample</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">],</span>
+                                                        <span class="n">unique_samples</span><span class="p">,</span>
+                                                        <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                        <span class="p">)</span>
+                <span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">],</span>
+                             <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="p">[[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span>
+                                         <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">}]]</span>
+                <span class="p">)</span></div>
+
 <div class="viewcode-block" id="CodonVariantTable.valid_barcodes"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes">[docs]</a>    <span class="k">def</span> <span class="nf">valid_barcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set of valid barcodes for `library`.</span>
 
@@ -420,7 +504,7 @@
 
 <div class="viewcode-block" id="CodonVariantTable.func_scores"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">[docs]</a>    <span class="k">def</span> <span class="nf">func_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preselection</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                     <span class="n">pseudocount</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">&quot;barcode&quot;</span><span class="p">,</span>
-                    <span class="n">combine_libs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">syn_as_wt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logbase</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">syn_as_wt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logbase</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                     <span class="n">permit_zero_wt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">permit_self_comp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get data frame with functional scores for variants.</span>
 
@@ -467,9 +551,9 @@
 <span class="sd">            sample with the pre-selection sample being the value.</span>
 <span class="sd">        pseudocount : float</span>
 <span class="sd">            Pseudocount added to each count.</span>
-<span class="sd">        by : str</span>
-<span class="sd">            Compute effects for each &quot;barcode&quot;, set of &quot;aa_substitutions&quot;, or</span>
-<span class="sd">            set of &quot;codon_substitutions&quot;. In the latter two cases, all barcodes</span>
+<span class="sd">        by : {&#39;barcode&#39;, &#39;aa_substitutions&#39;, &#39;codon_substitutions&#39;}</span>
+<span class="sd">            Compute effects for each barcode&quot;, set of amino-acid substitutions,</span>
+<span class="sd">            or set of codon substitutions. In the last two cases, all barcodes</span>
 <span class="sd">            with each set of substitutions are combined (see `combine_libs`).</span>
 <span class="sd">            If you use &quot;aa_substitutions&quot; then it may be more sensible to set</span>
 <span class="sd">            `syn_as_wt` to `True`.</span>
@@ -477,9 +561,11 @@
 <span class="sd">            In formula for functional scores, consider variants with only</span>
 <span class="sd">            synonymous mutations when determining wildtype counts? If `False`,</span>
 <span class="sd">            only variants with **no** mutations of any type contribute.</span>
-<span class="sd">        combine_libs : bool</span>
-<span class="sd">            If `by` is &quot;aa_substitutions&quot; or &quot;codon_substitutions&quot;, do we</span>
-<span class="sd">            combine across libraries as well as barcodes?</span>
+<span class="sd">        libraries : {&#39;all&#39;, &#39;all_only&#39;, list}</span>
+<span class="sd">            Perform calculation for all libraries including a merge</span>
+<span class="sd">            (named &quot;all libraries&quot;), only for the merge of all libraries,</span>
+<span class="sd">            or for the libraries in the list. If `by` is &#39;barcode&#39;, then</span>
+<span class="sd">            the barcodes for the merge have the library name pre-pended.</span>
 <span class="sd">        logbase : float</span>
 <span class="sd">            Base for logarithm when calculating functional score.</span>
 <span class="sd">        permit_zero_wt : bool</span>
@@ -492,7 +578,7 @@
 <span class="sd">        -------</span>
 <span class="sd">        pandas.DataFrame</span>
 <span class="sd">            Has the following columns:</span>
-<span class="sd">              - &quot;library&quot;: the library (&quot;all libraries&quot; if `combine_libs`)</span>
+<span class="sd">              - &quot;library&quot;: the library</span>
 <span class="sd">              - &quot;pre_sample&quot;: the pre-selection sample</span>
 <span class="sd">              - &quot;post_sample&quot;: the post-selection sample</span>
 <span class="sd">              - value corresponding to grouping used to compute effects (`by`)</span>
@@ -533,14 +619,18 @@
               <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;sample in @samples&#39;</span><span class="p">)</span>
               <span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">combine_libs</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">libraries</span>
-                   <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot use `combine_libs`, not every &#39;</span>
-                                 <span class="n">f</span><span class="s2">&quot;library has every sample: </span><span class="si">{samples}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">libraries</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addMergedLibraries</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">libraries</span> <span class="o">==</span> <span class="s1">&#39;all_only&#39;</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addMergedLibraries</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
                   <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library == &quot;all libraries&quot;&#39;</span><span class="p">)</span>
                   <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">libraries</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">libraries</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `libraries` of </span><span class="si">{libraries}</span><span class="s2">. Must &quot;</span>
+                                 <span class="s1">&#39;be &quot;all&quot;, &quot;all_only&quot;, or a list containing &#39;</span>
+                                 <span class="n">f</span><span class="s2">&quot;some subset of </span><span class="si">{self.libraries}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;library in @libraries&#39;</span><span class="p">)</span>
 
         <span class="c1"># get wildtype counts for each sample and library</span>
         <span class="k">if</span> <span class="n">syn_as_wt</span><span class="p">:</span>
@@ -566,7 +656,8 @@
         <span class="k">elif</span> <span class="n">by</span> <span class="o">!=</span> <span class="s1">&#39;barcode&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `by` of </span><span class="si">{by}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
-              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">by</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">)</span>
+              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">by</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">,</span>
+                       <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
               <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
               <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
               <span class="p">)</span>
@@ -635,7 +726,7 @@
 
 <div class="viewcode-block" id="CodonVariantTable.n_variants_df"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df">[docs]</a>    <span class="k">def</span> <span class="nf">n_variants_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
                       <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">variant_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
-                      <span class="n">mut_type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                      <span class="n">mut_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get number of variants per library / sample.</span>
 
 <span class="sd">        Parameters</span>
@@ -655,7 +746,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
                                                      <span class="n">samples</span><span class="p">,</span>
-                                                     <span class="n">min_support</span><span class="p">)</span>
+                                                     <span class="n">min_support</span><span class="p">,</span>
+                                                     <span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">mut_type</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="s1">&#39;codon&#39;</span><span class="p">}:</span>
@@ -666,20 +758,22 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `variant_type` </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="p">(</span><span class="n">df</span>
-                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">])</span>
+                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">],</span>
+                         <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
                 <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
                 <span class="p">)</span></div>
 
 <div class="viewcode-block" id="CodonVariantTable.mutCounts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.mutCounts">[docs]</a>    <span class="k">def</span> <span class="nf">mutCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                  <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                  <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                  <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get counts of each individual mutation.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        variant_type : {&#39;single&#39;, &#39;all&#39;}</span>
 <span class="sd">            Include just single mutants, or all mutants?</span>
-<span class="sd">        Other args</span>
+<span class="sd">        other_parameters</span>
 <span class="sd">            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.</span>
 
 <span class="sd">        Returns</span>
@@ -753,6 +847,13 @@
             <span class="k">assert</span> <span class="n">site</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sites</span>
             <span class="k">return</span> <span class="n">site</span>
 
+        <span class="k">if</span> <span class="n">sample_rename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sample_rename_dict</span> <span class="o">=</span> <span class="n">_dict_missing_is_key</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_rename</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sample_rename</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;duplicates in `sample_rename`&#39;</span><span class="p">)</span>
+            <span class="n">sample_rename_dict</span> <span class="o">=</span> <span class="n">_dict_missing_is_key</span><span class="p">(</span><span class="n">sample_rename</span><span class="p">)</span>
+
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
               <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{mut_type}</span><span class="s2">_substitutions&quot;</span><span class="p">:</span> <span class="s1">&#39;mutation&#39;</span><span class="p">})</span>
               <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]]</span>
@@ -764,9 +865,10 @@
               <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">library</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">],</span>
                                                        <span class="n">librarylist</span><span class="p">,</span>
                                                        <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
-                      <span class="n">sample</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">],</span>
-                                                      <span class="n">samplelist</span><span class="p">,</span>
-                                                      <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                      <span class="n">sample</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+                                <span class="n">x</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sample_rename_dict</span><span class="p">),</span>
+                                <span class="p">[</span><span class="n">sample_rename_dict</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">samplelist</span><span class="p">],</span>
+                                <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                       <span class="n">mutation_type</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
                       <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_classify_mutation</span><span class="p">),</span>
                                      <span class="n">mutation_types</span><span class="p">,</span>
@@ -785,14 +887,14 @@
                        <span class="n">count_or_frequency</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span>
                        <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                       <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                       <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Heatmap of mutation counts or frequencies.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        count_or_frequency : {&#39;count&#39;, &#39;frequency&#39;}</span>
 <span class="sd">            Plot mutation counts or frequencies?</span>
-<span class="sd">        All other args</span>
+<span class="sd">        other_parameters</span>
 <span class="sd">            Same as for :meth:`CodonVariantTable.plotCumulMutCoverage`.</span>
 
 <span class="sd">        Returns</span>
@@ -801,13 +903,15 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
-                            <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">)</span>
+                            <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
+                            <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="n">n_variants</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span>
                                          <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
                                          <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
                                          <span class="n">variant_type</span><span class="o">=</span><span class="n">variant_type</span><span class="p">,</span>
-                                         <span class="n">mut_type</span><span class="o">=</span><span class="n">mut_type</span><span class="p">)</span>
+                                         <span class="n">mut_type</span><span class="o">=</span><span class="n">mut_type</span><span class="p">,</span>
+                                         <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
                       <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;nseqs&#39;</span><span class="p">})</span>
                       <span class="p">)</span>
 
@@ -862,7 +966,6 @@
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mut_char&#39;</span><span class="p">,</span>
                                   <span class="n">fill</span><span class="o">=</span><span class="n">count_or_frequency</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">geom_tile</span><span class="p">()</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
                       <span class="n">legend_key</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
                       <span class="n">axis_text_y</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
@@ -876,6 +979,14 @@
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_fill_cmap</span><span class="p">(</span><span class="s1">&#39;gnuplot&#39;</span><span class="p">)</span>
              <span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
                    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">limitsize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -885,7 +996,7 @@
 <div class="viewcode-block" id="CodonVariantTable.plotMutFreqs"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs">[docs]</a>    <span class="k">def</span> <span class="nf">plotMutFreqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                      <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                     <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                     <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Mutation frequency along length of gene.</span>
 
 <span class="sd">        Parameters</span>
@@ -899,13 +1010,15 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
-                            <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">)</span>
+                            <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
+                            <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="n">n_variants</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span>
                                          <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
                                          <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
                                          <span class="n">variant_type</span><span class="o">=</span><span class="n">variant_type</span><span class="p">,</span>
-                                         <span class="n">mut_type</span><span class="o">=</span><span class="n">mut_type</span><span class="p">)</span>
+                                         <span class="n">mut_type</span><span class="o">=</span><span class="n">mut_type</span><span class="p">,</span>
+                                         <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
                       <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;nseqs&#39;</span><span class="p">})</span>
                       <span class="p">)</span>
 
@@ -955,12 +1068,18 @@
                 <span class="n">limits</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sites</span><span class="p">))</span>
                 <span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
                       <span class="n">legend_key</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
-                      <span class="n">legend_text</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
                       <span class="p">)</span>
              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -971,7 +1090,8 @@
                                <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span>
-                               <span class="n">tot_variants_hline</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                               <span class="n">tot_variants_hline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot number variants with &gt;= that each number of counts.</span>
 
 <span class="sd">        Parameters</span>
@@ -980,7 +1100,7 @@
 <span class="sd">            Include all variants or just those with &lt;=1 `mut_type` mutation.</span>
 <span class="sd">        tot_variants_hline : bool</span>
 <span class="sd">            Include dotted horizontal line indicating total number of variants.</span>
-<span class="sd">        Other parameters</span>
+<span class="sd">        other_parameters</span>
 <span class="sd">            Same as for :meth:`CodonVariantTable.plotNumMutsHistogram`.</span>
 
 <span class="sd">        Returns</span>
@@ -990,7 +1110,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
                                                      <span class="n">samples</span><span class="p">,</span>
-                                                     <span class="n">min_support</span><span class="p">)</span>
+                                                     <span class="n">min_support</span><span class="p">,</span>
+                                                     <span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">mut_type</span> <span class="o">==</span> <span class="s1">&#39;aa&#39;</span><span class="p">:</span>
@@ -1027,13 +1148,21 @@
 
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;nvariants&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">geom_step</span><span class="p">()</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;number of counts&#39;</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_x_log10</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">latex_sci_not</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">latex_sci_not</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">)</span>
+                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">tot_variants_hline</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">geom_hline</span><span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="n">yintercept</span><span class="o">=</span><span class="s1">&#39;total_variants&#39;</span><span class="p">),</span>
@@ -1047,7 +1176,8 @@
 <div class="viewcode-block" id="CodonVariantTable.plotCumulMutCoverage"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage">[docs]</a>    <span class="k">def</span> <span class="nf">plotCumulMutCoverage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                              <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                              <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                             <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                             <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Fraction of mutations seen &lt;= some number of times.</span>
 
 <span class="sd">        Parameters</span>
@@ -1057,7 +1187,7 @@
 <span class="sd">        max_count : None or int</span>
 <span class="sd">            Plot cumulative fraction plot out to this number of observations.</span>
 <span class="sd">            If `None`, a reasonable value is automatically determined.</span>
-<span class="sd">        Other parameters</span>
+<span class="sd">        other_parameters</span>
 <span class="sd">            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.</span>
 
 <span class="sd">        Returns</span>
@@ -1066,14 +1196,20 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
-                            <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">)</span>
+                            <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
+                            <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="c1"># add one to counts to plot fraction found &lt; this many</span>
         <span class="c1"># as stat_ecdf by default does &lt;=</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">max_count</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">max_count</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+            <span class="n">max_count</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+                         <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                         <span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+                         <span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
+                         <span class="o">.</span><span class="n">median</span><span class="p">()</span>
+                         <span class="p">)</span>
 
         <span class="n">nlibraries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
         <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
@@ -1110,61 +1246,48 @@
                 <span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
                       <span class="n">legend_key</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
-                      <span class="n">legend_text</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">11</span><span class="p">),</span>
                       <span class="n">axis_text_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
                       <span class="p">)</span>
              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotNumCodonMutsByType"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumCodonMutsByType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                               <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                               <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                               <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Nonsynonymous, synonymous, stop mutations per variant.</span>
+<div class="viewcode-block" id="CodonVariantTable.numCodonMutsByType"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType">[docs]</a>    <span class="k">def</span> <span class="nf">numCodonMutsByType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                           <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get average nonsynonymous, synonymous, stop mutations per variant.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        variant_type : {&#39;single&#39;, &#39;all&#39;}</span>
-<span class="sd">            Include all variants or just those with &lt;=1 `mut_type` mutation.</span>
-<span class="sd">        Other parameters</span>
-<span class="sd">            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.</span>
+<span class="sd">        all_parameters</span>
+<span class="sd">            Same as for :meth:`CodonVariantTable.plotNumCodonMutsByType`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        plotnine.ggplot.ggplot</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            Data frame with average mutations of each type per variant.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
-                                                     <span class="n">samples</span><span class="p">,</span>
-                                                     <span class="n">min_support</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">min_support</span><span class="p">,</span>
+                                     <span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">variant_type</span> <span class="o">==</span> <span class="s1">&#39;single&#39;</span><span class="p">:</span>
             <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;n_codon_substitutions &lt;= 1&#39;</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">variant_type</span> <span class="o">!=</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid variant_type </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
-            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
-            <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
-            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
-            <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;mutations per variant (</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;mutations per variant</span><span class="se">\n</span><span class="s1">(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
 
         <span class="n">codon_mut_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;nonsynonymous&#39;</span><span class="p">,</span> <span class="s1">&#39;synonymous&#39;</span><span class="p">,</span> <span class="s1">&#39;stop&#39;</span><span class="p">]</span>
 
@@ -1188,27 +1311,237 @@
                                                          <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
                   <span class="n">num_muts_count</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">num_muts</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
                   <span class="p">)</span>
-              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation_type&#39;</span><span class="p">])</span>
+              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;mutation_type&#39;</span><span class="p">],</span>
+                       <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
               <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;num_muts_count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
               <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
               <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">num_muts_count</span> <span class="o">/</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">])</span>
               <span class="p">)</span>
 
+        <span class="k">return</span> <span class="n">df</span></div>
+
+<div class="viewcode-block" id="CodonVariantTable.plotNumCodonMutsByType"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumCodonMutsByType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                               <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                               <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot average nonsynonymous, synonymous, stop mutations per variant.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        variant_type : {&#39;single&#39;, &#39;all&#39;}</span>
+<span class="sd">            Include all variants or just those with &lt;=1 codon mutation.</span>
+<span class="sd">        ylabel : None or str</span>
+<span class="sd">            If not `None`, specify y-axis label (otherwise it is autoset).</span>
+<span class="sd">        other_parameters</span>
+<span class="sd">            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        plotnine.ggplot.ggplot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
+                                                    <span class="n">samples</span><span class="p">,</span>
+                                                    <span class="n">min_support</span><span class="p">,</span>
+                                                    <span class="n">sample_rename</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="n">variant_type</span><span class="p">,</span>
+                                     <span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span>
+                                     <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+                                     <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
+                                     <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
+            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
+            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ylabel</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;mutations per variant (</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ylabel</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;mutations per variant</span><span class="se">\n</span><span class="s1">(</span><span class="si">{variant_type}</span><span class="s1"> mutants)&#39;</span>
+
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;mutation_type&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span>
                                   <span class="n">fill</span><span class="o">=</span><span class="s1">&#39;mutation_type&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;identity&#39;</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">geom_text</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">format_string</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0:.3f}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">geom_text</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">9</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">format_string</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0:.2f}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
-                                   <span class="n">expand</span><span class="o">=</span><span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.12</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span>
+                                   <span class="n">expand</span><span class="o">=</span><span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_fill_manual</span><span class="p">(</span>
                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mutation_type_colors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span>
                  <span class="n">df</span><span class="o">.</span><span class="n">mutation_type</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
                 <span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
                       <span class="n">axis_title_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
-                      <span class="n">axis_text_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">11</span><span class="p">),</span>
+                      <span class="n">axis_text_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
                       <span class="n">legend_position</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">p</span></div>
+
+<div class="viewcode-block" id="CodonVariantTable.plotVariantSupportHistogram"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram">[docs]</a>    <span class="k">def</span> <span class="nf">plotVariantSupportHistogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_support</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot histogram of variant call support for variants.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_support : int or None</span>
+<span class="sd">            Group together all variants with &gt;= this support.</span>
+<span class="sd">        other_parameters</span>
+<span class="sd">            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        plotnine.ggplot.ggplot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
+                                                     <span class="kc">None</span><span class="p">,</span>
+                                                     <span class="mi">1</span><span class="p">,</span>
+                                                     <span class="n">sample_rename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="mf">2.3</span> <span class="o">*</span> <span class="n">heightscale</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="mf">2.4</span> <span class="o">*</span> <span class="n">widthscale</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="n">nlibraries</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+              <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">variant_call_support</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+                      <span class="n">scipy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;variant_call_support&#39;</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_support</span><span class="p">)</span>
+                      <span class="p">)</span>
+              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_call_support&#39;</span><span class="p">],</span>
+                       <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+              <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
+              <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+              <span class="p">)</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;variant_call_support&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;identity&#39;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;supporting sequences&#39;</span><span class="p">,</span>
+                                   <span class="n">breaks</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">integer_breaks</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;number of variants&#39;</span><span class="p">,</span>
+                                   <span class="n">labels</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">latex_sci_not</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
+             <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">p</span></div>
+
+<div class="viewcode-block" id="CodonVariantTable.avgCountsPerVariant"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant">[docs]</a>    <span class="k">def</span> <span class="nf">avgCountsPerVariant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                            <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                            <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get average counts per variant.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        libraries :  {&#39;all&#39;, &#39;all_only&#39;, list}</span>
+<span class="sd">            Include all libraries including a merge, only a merge of all</span>
+<span class="sd">            libraries, or a list of libraries.</span>
+<span class="sd">        samples : {&#39;all&#39;, list}</span>
+<span class="sd">            Include all samples or just samples in list.</span>
+<span class="sd">        min_support : int</span>
+<span class="sd">            Only include variants with variant call support &gt;= this.</span>
+<span class="sd">        sample_rename : dict or None</span>
+<span class="sd">            Rename samples by specifying original name as key and new name</span>
+<span class="sd">            as value.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            Gives average counts per variant for each library and sample.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`samples` cannot be `None`&#39;</span><span class="p">)</span>
+
+        <span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
+                                                     <span class="n">samples</span><span class="p">,</span>
+                                                     <span class="n">min_support</span><span class="p">,</span>
+                                                     <span class="n">sample_rename</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">df</span>
+                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;mean&#39;</span><span class="p">})</span>
+                <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;avg_counts_per_variant&#39;</span><span class="p">})</span>
+                <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+                <span class="p">)</span></div>
+
+<div class="viewcode-block" id="CodonVariantTable.plotAvgCountsPerVariant"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant">[docs]</a>    <span class="k">def</span> <span class="nf">plotAvgCountsPerVariant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                                <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get average counts per variant.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        libraries :  {&#39;all&#39;, &#39;all_only&#39;, list}</span>
+<span class="sd">            Include all libraries including a merge, only a merge of all</span>
+<span class="sd">            libraries, or a list of libraries.</span>
+<span class="sd">        samples : {&#39;all&#39;, list}</span>
+<span class="sd">            Include all samples or just samples in list.</span>
+<span class="sd">        other_parameters</span>
+<span class="sd">            Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        plotnine.ggplot.ggplot</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">libraries</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+                                      <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
+                                      <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
+
+        <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="n">nlibraries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="n">nlibraries</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.9</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="mf">2.1</span> <span class="o">*</span> <span class="n">heightscale</span>
+        <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
+            <span class="n">nrow</span> <span class="o">=</span> <span class="n">nlibraries</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">nsamples</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.9</span> <span class="o">+</span> <span class="mf">0.2</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
+            <span class="n">height</span> <span class="o">=</span> <span class="mf">2.1</span> <span class="o">*</span> <span class="n">nlibraries</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `orientation` </span><span class="si">{orientation}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;avg_counts_per_variant&#39;</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;identity&#39;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;average counts per variant&#39;</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
+                      <span class="n">axis_text_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
+                      <span class="p">)</span>
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
@@ -1219,7 +1552,7 @@
 <div class="viewcode-block" id="CodonVariantTable.plotNumMutsHistogram"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumMutsHistogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                              <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                              <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                             <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_muts</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                             <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_muts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot histograms of number of mutations per variant.</span>
 
 <span class="sd">        Parameters</span>
@@ -1227,10 +1560,10 @@
 <span class="sd">        mut_type : {&#39;codon&#39; or &#39;aa&#39;}</span>
 <span class="sd">            Mutation type.</span>
 <span class="sd">        libraries :  {&#39;all&#39;, &#39;all_only&#39;, list}</span>
-<span class="sd">            Include all libraries including a marge, only a merge of all</span>
+<span class="sd">            Include all libraries including a merge, only a merge of all</span>
 <span class="sd">            libraries, or a list of libraries.</span>
 <span class="sd">        samples : {&#39;all&#39;, None, list}</span>
-<span class="sd">            Include all samples, a list of simple, or `None` to just count</span>
+<span class="sd">            Include all samples, a list of samples, or `None` to just count</span>
 <span class="sd">            each barcoded variant once.</span>
 <span class="sd">        plotfile : None or str</span>
 <span class="sd">            Name of file to which to save plot.</span>
@@ -1244,6 +1577,9 @@
 <span class="sd">            Only include variants with variant call support &gt;= this.</span>
 <span class="sd">        max_muts : int or None</span>
 <span class="sd">            Group together all variants with &gt;= this many mutations.</span>
+<span class="sd">        sample_rename : dict or None</span>
+<span class="sd">            Rename samples by specifying original name as key and new name</span>
+<span class="sd">            as value.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1252,7 +1588,8 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getPlotData</span><span class="p">(</span><span class="n">libraries</span><span class="p">,</span>
                                                      <span class="n">samples</span><span class="p">,</span>
-                                                     <span class="n">min_support</span><span class="p">)</span>
+                                                     <span class="n">min_support</span><span class="p">,</span>
+                                                     <span class="n">sample_rename</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">mut_type</span> <span class="o">==</span> <span class="s1">&#39;aa&#39;</span><span class="p">:</span>
             <span class="n">mut_col</span> <span class="o">=</span> <span class="s1">&#39;n_aa_substitutions&#39;</span>
@@ -1277,18 +1614,28 @@
         <span class="n">df</span><span class="p">[</span><span class="n">mut_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">mut_col</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_muts</span><span class="p">)</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
-              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">mut_col</span><span class="p">])</span>
+              <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">mut_col</span><span class="p">],</span>
+                       <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
               <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
               <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
               <span class="p">)</span>
 
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="n">mut_col</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;identity&#39;</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">scale_x_continuous</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+                                   <span class="n">breaks</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">integer_breaks</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">latex_sci_not</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span> <span class="o">+</span>
+                 <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">)</span>
+                 <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1422,7 +1769,8 @@
     <span class="k">def</span> <span class="nf">classifyVariants</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
                          <span class="o">*</span><span class="p">,</span>
                          <span class="n">variant_class_col</span><span class="o">=</span><span class="s1">&#39;variant_class&#39;</span><span class="p">,</span>
-                         <span class="n">max_aa</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+                         <span class="n">max_aa</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                         <span class="n">syn_as_wt</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Classifies codon variants in `df`.</span>
 
 <span class="sd">        Parameters</span>
@@ -1438,6 +1786,10 @@
 <span class="sd">            Overwritten if already exists.</span>
 <span class="sd">        max_aa : int</span>
 <span class="sd">            When classifying, group all with &gt;= this many amino-acid mutations.</span>
+<span class="sd">        syn_as_wt : bool</span>
+<span class="sd">            Do not have a category of &#39;synonymous&#39; and instead classify</span>
+<span class="sd">            synonymous variants as &#39;wildtype&#39;. If using this option, `df`</span>
+<span class="sd">            does not need column &#39;n_codon_substitutions&#39;.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1469,31 +1821,45 @@
 <span class="sd">        ...                             &#39;variant_class&#39;])</span>
 <span class="sd">        True</span>
 <span class="sd">        &gt;&gt;&gt; df_classify[[&#39;barcode&#39;, &#39;variant_class&#39;]]</span>
-<span class="sd">          barcode      variant_class</span>
-<span class="sd">        0     AAA           wildtype</span>
-<span class="sd">        1     AAG         synonymous</span>
-<span class="sd">        2     ATA               stop</span>
-<span class="sd">        3     GAA    1 nonsynonymous</span>
-<span class="sd">        4     CTT  &gt;=2 nonsynonymous</span>
-<span class="sd">        5     CTT  &gt;=2 nonsynonymous</span>
+<span class="sd">          barcode     variant_class</span>
+<span class="sd">        0     AAA          wildtype</span>
+<span class="sd">        1     AAG        synonymous</span>
+<span class="sd">        2     ATA              stop</span>
+<span class="sd">        3     GAA   1 nonsynonymous</span>
+<span class="sd">        4     CTT  &gt;1 nonsynonymous</span>
+<span class="sd">        5     CTT  &gt;1 nonsynonymous</span>
+<span class="sd">        &gt;&gt;&gt; df_syn_as_wt = CodonVariantTable.classifyVariants(df,</span>
+<span class="sd">        ...                                                   syn_as_wt=True)</span>
+<span class="sd">        &gt;&gt;&gt; df_syn_as_wt[[&#39;barcode&#39;, &#39;variant_class&#39;]]</span>
+<span class="sd">          barcode     variant_class</span>
+<span class="sd">        0     AAA          wildtype</span>
+<span class="sd">        1     AAG          wildtype</span>
+<span class="sd">        2     ATA              stop</span>
+<span class="sd">        3     GAA   1 nonsynonymous</span>
+<span class="sd">        4     CTT  &gt;1 nonsynonymous</span>
+<span class="sd">        5     CTT  &gt;1 nonsynonymous</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span>
+        <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">syn_as_wt</span><span class="p">:</span>
+            <span class="n">req_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` does not have columns </span><span class="si">{req_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">_classify_func</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s1">&#39;wildtype&#39;</span>
-            <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">return</span> <span class="s1">&#39;synonymous&#39;</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">syn_as_wt</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s1">&#39;wildtype&#39;</span>
+                <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s1">&#39;wildtype&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="s1">&#39;synonymous&#39;</span>
             <span class="k">elif</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]:</span>
                 <span class="k">return</span> <span class="s1">&#39;stop&#39;</span>
             <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_aa</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{row[&#39;n_aa_substitutions&#39;]}</span><span class="s2"> nonsynonymous&quot;</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&gt;=</span><span class="si">{max_aa}</span><span class="s2"> nonsynonymous&quot;</span>
+                <span class="k">return</span> <span class="n">f</span><span class="s2">&quot;&gt;{max_aa - 1} nonsynonymous&quot;</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">df</span><span class="p">[</span><span class="n">variant_class_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_classify_func</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -1542,7 +1908,8 @@
 
         <span class="k">return</span> <span class="n">df</span></div>
 
-    <span class="k">def</span> <span class="nf">_getPlotData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">libraries</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">min_support</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_getPlotData</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">libraries</span><span class="p">,</span> <span class="n">samples</span><span class="p">,</span> <span class="n">min_support</span><span class="p">,</span>
+                     <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get data to plot from library and sample filters.</span>
 
 <span class="sd">        Parameters</span>
@@ -1605,6 +1972,24 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nlibraries</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
+        <span class="k">if</span> <span class="n">sample_rename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sample_rename_dict</span> <span class="o">=</span> <span class="n">_dict_missing_is_key</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_rename</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sample_rename</span><span class="o">.</span><span class="n">values</span><span class="p">())):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;duplicates in `sample_rename`&#39;</span><span class="p">)</span>
+            <span class="n">sample_rename_dict</span> <span class="o">=</span> <span class="n">_dict_missing_is_key</span><span class="p">(</span><span class="n">sample_rename</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+              <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+                <span class="n">library</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">],</span>
+                                                 <span class="n">x</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span>
+                                                 <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">sample</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+                                <span class="n">x</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sample_rename_dict</span><span class="p">),</span>
+                                <span class="n">x</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sample_rename_dict</span><span class="p">)</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span>
+                                <span class="n">ordered</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="p">)</span>
+              <span class="p">)</span>
+
         <span class="k">return</span> <span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">)</span>
 
 <div class="viewcode-block" id="CodonVariantTable.codonToAAMuts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts">[docs]</a>    <span class="nd">@classmethod</span>
@@ -1662,6 +2047,7 @@
 <span class="sd">        ...                 )</span>
 <span class="sd">        &gt;&gt;&gt; variants._sortCodonMuts(&#39;GGA2CGT ATG1GTG&#39;)</span>
 <span class="sd">        &#39;ATG1GTG GGA2CGT&#39;</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">muts</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">mut</span> <span class="ow">in</span> <span class="n">mut_str</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
@@ -1855,12 +2241,26 @@
         <span class="k">return</span> <span class="n">df</span></div></div>
 
 
+<span class="k">class</span> <span class="nc">_dict_missing_is_key</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;dict that returns key as value for missing keys.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    See here: https://stackoverflow.com/a/6229253</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__missing__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">key</span>
+
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
     <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
 </pre></div>
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -1893,7 +2293,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_variants">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
@@ -1924,15 +2324,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -1941,8 +2349,8 @@
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 

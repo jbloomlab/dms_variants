@@ -1,0 +1,468 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.fastq &#8212; dms_variants 0.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.fastq</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===========</span>
+<span class="sd">fastq</span>
+<span class="sd">===========</span>
+
+<span class="sd">Tools for processing FASTQ files.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+
+<div class="viewcode-block" id="qual_str_to_array"><a class="viewcode-back" href="../../dms_variants.fastq.html#dms_variants.fastq.qual_str_to_array">[docs]</a><span class="k">def</span> <span class="nf">qual_str_to_array</span><span class="p">(</span><span class="n">q_str</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">33</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert quality score string to array of integers.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    q_str : str</span>
+<span class="sd">        Quality score string.</span>
+<span class="sd">    offset : int</span>
+<span class="sd">        Offset in ASCII encoding of Q-scores.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        Array of integer quality scores.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; qual_str_to_array(&#39;!I:0G&#39;)</span>
+<span class="sd">    array([ 0, 40, 25, 15, 38])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">ord</span><span class="p">(</span><span class="n">q</span><span class="p">)</span> <span class="o">-</span> <span class="n">offset</span> <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">q_str</span><span class="p">],</span>
+                       <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="iterate_fastq_pair"><a class="viewcode-back" href="../../dms_variants.fastq.html#dms_variants.fastq.iterate_fastq_pair">[docs]</a><span class="k">def</span> <span class="nf">iterate_fastq_pair</span><span class="p">(</span><span class="n">r1filename</span><span class="p">,</span> <span class="n">r2filename</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                       <span class="n">r1trim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">r2trim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qual_format</span><span class="o">=</span><span class="s1">&#39;str&#39;</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterate over paired R1 and R2 FASTQ files.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r1filename : str</span>
+<span class="sd">        R1 FASTQ file name, can be gzipped (extension ``.gz``).</span>
+<span class="sd">    r2filename : str</span>
+<span class="sd">        R2 FASTQ file name, can be gzipped (extension ``.gz``).</span>
+<span class="sd">    r1trim : int or None</span>
+<span class="sd">        If not `None`, trim R1 reads and Q scores to be longer than this.</span>
+<span class="sd">    r2trim : int or None</span>
+<span class="sd">        If not `None`, trim R2 reads and Q scores to be longer than this.</span>
+<span class="sd">    qual_format : {&#39;str&#39;, &#39;array&#39;}</span>
+<span class="sd">        Return the quality scores as string of ASCII codes or array of numbers?</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    namedtuple</span>
+<span class="sd">        The entries in the tuple are (in order):</span>
+<span class="sd">         - `id` : read id</span>
+<span class="sd">         - `r1_seq` : R1 read sequence</span>
+<span class="sd">         - `r2_seq` : R2 read sequence</span>
+<span class="sd">         - `r1_qs` : R1 Q scores (`qual_format` parameter determines format)</span>
+<span class="sd">         - `r2_qs` : R2 Q scores (`qual_format` parameter determines format)</span>
+<span class="sd">         - `fail` : did either read fail chastity filter? (`None` if no info)</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; f1 = tempfile.NamedTemporaryFile(mode=&#39;w&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; _ = f1.write(</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;ATGCAATTG\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;GGGGGIIII\n&#39;</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 1:Y:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;ACGCTATTC\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;GHGGGIKII\n&#39;</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; f1.flush()</span>
+<span class="sd">    &gt;&gt;&gt; f2 = tempfile.NamedTemporaryFile(mode=&#39;w&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; _ = f2.write(</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 2:N:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;CAGCATA\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;AGGGGII\n&#39;</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 2:Y:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;CTGAATA\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;GHBGGIK\n&#39;</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; f2.flush()</span>
+
+<span class="sd">    &gt;&gt;&gt; for tup in iterate_fastq_pair(f1.name, f2.name, r1trim=8, r2trim=5,</span>
+<span class="sd">    ...                               qual_format=&#39;array&#39;):</span>
+<span class="sd">    ...     print(tup)</span>
+<span class="sd">    ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">    FastqPairEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
+<span class="sd">                   r1_seq=&#39;ATGCAATT&#39;,</span>
+<span class="sd">                   r2_seq=&#39;CAGCA&#39;,</span>
+<span class="sd">                   r1_qs=array([38, 38, 38, 38, 38, 40, 40, 40]),</span>
+<span class="sd">                   r2_qs=array([32, 38, 38, 38, 38]),</span>
+<span class="sd">                   fail=False)</span>
+<span class="sd">    FastqPairEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985&#39;,</span>
+<span class="sd">                   r1_seq=&#39;ACGCTATT&#39;,</span>
+<span class="sd">                   r2_seq=&#39;CTGAA&#39;,</span>
+<span class="sd">                   r1_qs=array([38, 39, 38, 38, 38, 40, 42, 40]),</span>
+<span class="sd">                   r2_qs=array([38, 39, 33, 38, 38]),</span>
+<span class="sd">                   fail=True)</span>
+
+<span class="sd">    &gt;&gt;&gt; for tup in iterate_fastq_pair(f1.name, f2.name, r1trim=8, r2trim=5):</span>
+<span class="sd">    ...     print(tup)</span>
+<span class="sd">    ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">    FastqPairEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
+<span class="sd">                   r1_seq=&#39;ATGCAATT&#39;,</span>
+<span class="sd">                   r2_seq=&#39;CAGCA&#39;,</span>
+<span class="sd">                   r1_qs=&#39;GGGGGIII&#39;,</span>
+<span class="sd">                   r2_qs=&#39;AGGGG&#39;,</span>
+<span class="sd">                   fail=False)</span>
+<span class="sd">    FastqPairEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985&#39;,</span>
+<span class="sd">                   r1_seq=&#39;ACGCTATT&#39;,</span>
+<span class="sd">                   r2_seq=&#39;CTGAA&#39;,</span>
+<span class="sd">                   r1_qs=&#39;GHGGGIKI&#39;,</span>
+<span class="sd">                   r2_qs=&#39;GHBGG&#39;,</span>
+<span class="sd">                   fail=True)</span>
+
+
+<span class="sd">    &gt;&gt;&gt; f1.close()</span>
+<span class="sd">    &gt;&gt;&gt; f2.close()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FastqPairEntry</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span>
+                            <span class="s1">&#39;FastqPairEntry&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;id r1_seq r2_seq r1_qs r2_qs fail&#39;</span><span class="p">)</span>
+
+    <span class="n">r1_iterator</span> <span class="o">=</span> <span class="n">iterate_fastq</span><span class="p">(</span><span class="n">r1filename</span><span class="p">,</span>
+                                <span class="n">trim</span><span class="o">=</span><span class="n">r1trim</span><span class="p">,</span>
+                                <span class="n">check_pair</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                <span class="n">qual_format</span><span class="o">=</span><span class="n">qual_format</span><span class="p">)</span>
+    <span class="n">r2_iterator</span> <span class="o">=</span> <span class="n">iterate_fastq</span><span class="p">(</span><span class="n">r2filename</span><span class="p">,</span>
+                                <span class="n">trim</span><span class="o">=</span><span class="n">r2trim</span><span class="p">,</span>
+                                <span class="n">check_pair</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                <span class="n">qual_format</span><span class="o">=</span><span class="n">qual_format</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">r1_entry</span><span class="p">,</span> <span class="n">r2_entry</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">r1_iterator</span><span class="p">,</span> <span class="n">r2_iterator</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">r1_entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">r2_entry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{r1filename}</span><span class="s2"> and </span><span class="si">{r2filename}</span><span class="s2"> have unequal &quot;</span>
+                          <span class="s1">&#39;number of entries&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">r1_entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">r2_entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{r1filename}</span><span class="s2"> and </span><span class="si">{r2filename}</span><span class="s2"> specify different &quot;</span>
+                          <span class="n">f</span><span class="s2">&quot;read IDs:</span><span class="se">\n</span><span class="si">{r1_entry[0]}</span><span class="se">\n</span><span class="si">{r2_entry[0]}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">FastqPairEntry</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">r1_entry</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                             <span class="n">r1_seq</span><span class="o">=</span><span class="n">r1_entry</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="n">r2_seq</span><span class="o">=</span><span class="n">r2_entry</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="n">r1_qs</span><span class="o">=</span><span class="n">r1_entry</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                             <span class="n">r2_qs</span><span class="o">=</span><span class="n">r2_entry</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                             <span class="n">fail</span><span class="o">=</span><span class="p">(</span><span class="n">r1_entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="ow">or</span> <span class="n">r2_entry</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span>
+                             <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="iterate_fastq"><a class="viewcode-back" href="../../dms_variants.fastq.html#dms_variants.fastq.iterate_fastq">[docs]</a><span class="k">def</span> <span class="nf">iterate_fastq</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">trim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">check_pair</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qual_format</span><span class="o">=</span><span class="s1">&#39;str&#39;</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterate over a FASTQ file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        FASTQ file name, can be gzipped (extension ``.gz``).</span>
+<span class="sd">    trim : int or None</span>
+<span class="sd">        If not `None`, trim reads and Q scores to be longer than this.</span>
+<span class="sd">    check_pair : {1, 2, None}</span>
+<span class="sd">        If not `None`, check reads are read 1 or read 2 if this info given.</span>
+<span class="sd">        Assumes Casava 1.8 or SRA header format.</span>
+<span class="sd">    qual_format : {&#39;str&#39;, &#39;array&#39;}</span>
+<span class="sd">        Return the quality scores as string of ASCII codes or array of numbers?</span>
+
+<span class="sd">    Yields</span>
+<span class="sd">    ------</span>
+<span class="sd">    namedtuple</span>
+<span class="sd">        The entries in the tuple are (in order):</span>
+<span class="sd">         - `id` : read id</span>
+<span class="sd">         - `seq` : read sequence</span>
+<span class="sd">         - `qs` : Q scores (`qual_format` parameter determines format)</span>
+<span class="sd">         - `fail` : did read fail chastity filter? (`None` if no filter info)</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; f = tempfile.NamedTemporaryFile(mode=&#39;w&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; _ = f.write(</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984 1:N:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;ATGCAATTG\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;GGGGGIIII\n&#39;</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 1:Y:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;ACGCTATTC\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;GHGGGIKII\n&#39;</span>
+<span class="sd">    ...         &#39;@DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 2:Y:0:CGATGT\n&#39;</span>
+<span class="sd">    ...         &#39;ACGCTATTC\n&#39;</span>
+<span class="sd">    ...         &#39;+\n&#39;</span>
+<span class="sd">    ...         &#39;GHGGGIKII\n&#39;</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; f.flush()</span>
+
+<span class="sd">    &gt;&gt;&gt; try:</span>
+<span class="sd">    ...     for tup in iterate_fastq(f.name, trim=5, check_pair=1):</span>
+<span class="sd">    ...         print(tup)</span>
+<span class="sd">    ... except ValueError as e:</span>
+<span class="sd">    ...    print(f&quot;ValueError: {e}&quot;)</span>
+<span class="sd">    ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">    FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
+<span class="sd">               seq=&#39;ATGCA&#39;,</span>
+<span class="sd">               qs=&#39;GGGGG&#39;,</span>
+<span class="sd">               fail=False)</span>
+<span class="sd">    FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985&#39;,</span>
+<span class="sd">               seq=&#39;ACGCT&#39;,</span>
+<span class="sd">               qs=&#39;GHGGG&#39;,</span>
+<span class="sd">               fail=True)</span>
+<span class="sd">    ValueError: header not for R1:</span>
+<span class="sd">    @DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985 2:Y:0:CGATGT</span>
+
+<span class="sd">    &gt;&gt;&gt; for tup in iterate_fastq(f.name, qual_format=&#39;array&#39;):</span>
+<span class="sd">    ...    print(tup)</span>
+<span class="sd">    ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">    FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
+<span class="sd">               seq=&#39;ATGCAATTG&#39;,</span>
+<span class="sd">               qs=array([38, 38, 38, 38, 38, 40, 40, 40, 40]),</span>
+<span class="sd">               fail=False)</span>
+<span class="sd">    FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985&#39;,</span>
+<span class="sd">               seq=&#39;ACGCTATTC&#39;,</span>
+<span class="sd">               qs=array([38, 39, 38, 38, 38, 40, 42, 40, 40]),</span>
+<span class="sd">               fail=True)</span>
+<span class="sd">    FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1985&#39;,</span>
+<span class="sd">               seq=&#39;ACGCTATTC&#39;,</span>
+<span class="sd">               qs=array([38, 39, 38, 38, 38, 40, 42, 40, 40]),</span>
+<span class="sd">               fail=True)</span>
+
+<span class="sd">    &gt;&gt;&gt; f.close()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FastqEntry</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;FastqEntry&#39;</span><span class="p">,</span>
+                                        <span class="s1">&#39;id seq qs fail&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">check_pair</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">check_pair</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">check_pair</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">check_pair</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `check_pair` of </span><span class="si">{check_pair}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;no FASTQ file </span><span class="si">{filename}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">qual_format</span> <span class="o">==</span> <span class="s1">&#39;array&#39;</span><span class="p">:</span>
+        <span class="n">qual_to_array</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="n">qual_format</span> <span class="o">==</span> <span class="s1">&#39;str&#39;</span><span class="p">:</span>
+        <span class="n">qual_to_array</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid value for `qual_format`: </span><span class="si">{qual_format}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
+        <span class="n">openfunc</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">openfunc</span> <span class="o">=</span> <span class="nb">open</span>
+
+    <span class="k">with</span> <span class="n">openfunc</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">head</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">head</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">head</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;@&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;id starts with </span><span class="si">{head[0]}</span><span class="s2">, not @:</span><span class="se">\n</span><span class="si">{head}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">head</span> <span class="o">=</span> <span class="n">head</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+                <span class="n">headspl</span> <span class="o">=</span> <span class="n">head</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                <span class="n">read_id</span> <span class="o">=</span> <span class="n">headspl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+            <span class="n">plusline</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+            <span class="n">qs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">seq</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">qs</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">plusline</span> <span class="o">!=</span> <span class="s1">&#39;+&#39;</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid entry for </span><span class="si">{read_id}</span><span class="s2"> in </span><span class="si">{filename}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                              <span class="n">f</span><span class="s2">&quot;</span><span class="si">{head}</span><span class="se">\n</span><span class="si">{seq}</span><span class="se">\n</span><span class="si">{plusline}</span><span class="se">\n</span><span class="si">{qs}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># trim last two characters (needed for SRA downloads)</span>
+            <span class="k">if</span> <span class="n">read_id</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;.1&#39;</span><span class="p">,</span> <span class="s1">&#39;.2&#39;</span><span class="p">}:</span>
+                <span class="k">if</span> <span class="n">check_pair</span> <span class="ow">and</span> <span class="p">(</span><span class="n">read_id</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">check_pair</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;header not for R</span><span class="si">{check_pair}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{head}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">read_id</span> <span class="o">=</span> <span class="n">read_id</span><span class="p">[:</span> <span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">check_pair</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">headspl</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">headspl</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">check_pair</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;header not for R</span><span class="si">{check_pair}</span><span class="s2">:</span><span class="se">\n</span><span class="si">{head}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># parse chastity filter assuming CASAVA 1.8 header</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">chastity</span> <span class="o">=</span> <span class="n">headspl</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">chastity</span> <span class="o">==</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span>
+                    <span class="n">fail</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">chastity</span> <span class="o">==</span> <span class="s1">&#39;N&#39;</span><span class="p">:</span>
+                    <span class="n">fail</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;cannot parse chastity filter in </span><span class="si">{head}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">fail</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># header does not specify chastity filter</span>
+
+            <span class="k">if</span> <span class="n">trim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[:</span> <span class="n">trim</span><span class="p">]</span>
+                <span class="n">qs</span> <span class="o">=</span> <span class="n">qs</span><span class="p">[:</span> <span class="n">trim</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">qual_to_array</span><span class="p">:</span>
+                <span class="n">qs</span> <span class="o">=</span> <span class="n">qual_str_to_array</span><span class="p">(</span><span class="n">qs</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">FastqEntry</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">read_id</span><span class="p">,</span>
+                             <span class="n">seq</span><span class="o">=</span><span class="n">seq</span><span class="p">,</span>
+                             <span class="n">qs</span><span class="o">=</span><span class="n">qs</span><span class="p">,</span>
+                             <span class="n">fail</span><span class="o">=</span><span class="n">fail</span><span class="p">,</span>
+                             <span class="p">)</span>
+
+            <span class="n">head</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

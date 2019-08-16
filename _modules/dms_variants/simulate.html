@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.simulate &#8212; dms_variants 0.1.0 documentation</title>
+    <title>dms_variants.simulate &#8212; dms_variants 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -28,6 +28,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <h1>Source code for dms_variants.simulate</h1><div class="highlight"><pre>
@@ -62,8 +64,97 @@
                                     <span class="p">)</span>
 
 
+<div class="viewcode-block" id="rand_seq"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.rand_seq">[docs]</a><span class="k">def</span> <span class="nf">rand_seq</span><span class="p">(</span><span class="n">seqlen</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nseqs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Random nucleotide sequence(s).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    seqlen : int</span>
+<span class="sd">        Length of sequence(s).</span>
+<span class="sd">    exclude : None or list</span>
+<span class="sd">        Do not generate any of the sequences in this list.</span>
+<span class="sd">    nseqs : int</span>
+<span class="sd">        If &gt;1, return a list of this many sequences.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or list</span>
+<span class="sd">        A random sequence or list of them depending on value of `nseqs`.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Seed `random.seed` for reproducible output.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; rand_seq(4)</span>
+<span class="sd">    &#39;CAGA&#39;</span>
+
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; rand_seq(5, nseqs=3)</span>
+<span class="sd">    [&#39;CAGAT&#39;, &#39;TTTCA&#39;, &#39;TATTA&#39;]</span>
+
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; rand_seq(5, nseqs=3, exclude=[&#39;TTTCA&#39;])</span>
+<span class="sd">    [&#39;CAGAT&#39;, &#39;TATTA&#39;, &#39;TGCAG&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">exclude</span><span class="p">:</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span><span class="o">**</span><span class="n">seqlen</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;excluding too many sequences, none valid.&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">seqs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">seqs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">nseqs</span><span class="p">:</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seqlen</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">seq</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
+            <span class="n">seqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seqs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">seqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">seqs</span></div>
+
+
+<div class="viewcode-block" id="mutate_seq"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.mutate_seq">[docs]</a><span class="k">def</span> <span class="nf">mutate_seq</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">nmuts</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mutate a nucleotide sequence.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    seq : str</span>
+<span class="sd">        Sequence to mutate.</span>
+<span class="sd">    nmuts: int</span>
+<span class="sd">        Number of mutations to make to sequence.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Mutagenized sequence, all upper-case.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Seed `random.seed` for reproducible output.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; mutate_seq(&#39;ATGCAA&#39;, 2)</span>
+<span class="sd">    &#39;AAGCGA&#39;</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">nmuts</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Can not make </span><span class="si">{nmuts}</span><span class="s2"> mutations to sequence of &quot;</span>
+                         <span class="n">f</span><span class="s2">&quot;length {len(seq)}.&quot;</span><span class="p">)</span>
+    <span class="n">seq</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+    <span class="n">sites</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)),</span> <span class="n">nmuts</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
+        <span class="n">seq</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">nt</span> <span class="k">for</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">NTS</span> <span class="k">if</span> <span class="n">nt</span> <span class="o">!=</span> <span class="n">seq</span><span class="p">[</span><span class="n">r</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="simulate_CodonVariantTable"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">[docs]</a><span class="k">def</span> <span class="nf">simulate_CodonVariantTable</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="n">bclen</span><span class="p">,</span> <span class="n">library_specs</span><span class="p">,</span>
-                               <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">variant_call_support</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+                               <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">variant_call_support</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.</span>
 
 <span class="sd">    Note</span>
@@ -83,9 +174,9 @@
 <span class="sd">        and &#39;nvariants&#39;. Mutations per variant are Poisson distributed.</span>
 <span class="sd">    seed : int or None</span>
 <span class="sd">        Random number seed or `None` to set no seed.</span>
-<span class="sd">    variant_call_support : int or 2-tuple</span>
-<span class="sd">        If integer, all supports are set to this. If 2-tuple, support is</span>
-<span class="sd">        drawn as random integer uniformly from this range (inclusive).</span>
+<span class="sd">    variant_call_support : int &gt; 0</span>
+<span class="sd">        Support is floor of 1 plus draw from exponential distribution</span>
+<span class="sd">        with this mean.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -99,8 +190,8 @@
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">library_specs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;empty `library_specs`&#39;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">variant_call_support</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">variant_call_support</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">variant_call_support</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">variant_call_support</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`variant_call_support` must be int &gt; 0&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geneseq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;length of `geneseq` not multiple of 3&#39;</span><span class="p">)</span>
@@ -122,7 +213,7 @@
                 <span class="n">barcode</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">NTS</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">bclen</span><span class="p">))</span>
             <span class="n">existing_barcodes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">barcode</span><span class="p">)</span>
 
-            <span class="n">support</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">*</span><span class="n">variant_call_support</span><span class="p">)</span>
+            <span class="n">support</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">expovariate</span><span class="p">(</span><span class="n">variant_call_support</span><span class="p">))</span>
 
             <span class="c1"># get mutations</span>
             <span class="n">substitutions</span> <span class="o">=</span> <span class="p">[]</span>
@@ -600,6 +691,7 @@
 </pre></div>
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -632,7 +724,7 @@
     
 
 <p>
-<a href="https://travis-ci.org/jbloomlab/dms_variants">
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
     <img
         alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
         src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
@@ -663,15 +755,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -680,8 +780,8 @@
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
 
