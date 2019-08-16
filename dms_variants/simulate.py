@@ -29,6 +29,95 @@ from dms_variants.constants import (AAS_WITHSTOP,
                                     )
 
 
+def rand_seq(seqlen, *, exclude=None, nseqs=1):
+    """Random nucleotide sequence(s).
+
+    Parameters
+    ----------
+    seqlen : int
+        Length of sequence(s).
+    exclude : None or list
+        Do not generate any of the sequences in this list.
+    nseqs : int
+        If >1, return a list of this many sequences.
+
+    Returns
+    -------
+    str or list
+        A random sequence or list of them depending on value of `nseqs`.
+
+    Note
+    ----
+    Seed `random.seed` for reproducible output.
+
+    Example
+    -------
+    >>> random.seed(1)
+    >>> rand_seq(4)
+    'CAGA'
+
+    >>> random.seed(1)
+    >>> rand_seq(5, nseqs=3)
+    ['CAGAT', 'TTTCA', 'TATTA']
+
+    >>> random.seed(1)
+    >>> rand_seq(5, nseqs=3, exclude=['TTTCA'])
+    ['CAGAT', 'TATTA', 'TGCAG']
+
+    """
+    if exclude:
+        exclude = {s.upper() for s in exclude}
+        if len(exclude) >= len(NTS)**seqlen:
+            raise ValueError('excluding too many sequences, none valid.')
+    else:
+        exclude = {}
+    seqs = []
+    while len(seqs) < nseqs:
+        seq = ''.join(random.choice(NTS) for _ in range(seqlen))
+        if seq not in exclude:
+            seqs.append(seq)
+    if len(seqs) == 1:
+        return seqs[0]
+    else:
+        return seqs
+
+
+def mutate_seq(seq, nmuts):
+    """Mutate a nucleotide sequence.
+
+    Parameters
+    ----------
+    seq : str
+        Sequence to mutate.
+    nmuts: int
+        Number of mutations to make to sequence.
+
+    Returns
+    -------
+    str
+        Mutagenized sequence, all upper-case.
+
+    Note
+    ----
+    Seed `random.seed` for reproducible output.
+
+    Example
+    -------
+    >>> random.seed(1)
+    >>> mutate_seq('ATGCAA', 2)
+    'AAGCGA'
+
+    """
+    if nmuts > len(seq):
+        raise ValueError(f"Can not make {nmuts} mutations to sequence of "
+                         f"length {len(seq)}.")
+    seq = list(seq.upper())
+    sites = random.sample(range(len(seq)), nmuts)
+    for r in sites:
+        seq[r] = random.choice([nt for nt in NTS if nt != seq[r]])
+    return ''.join(seq)
+
+
 def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
                                seed=1, variant_call_support=0.5):
     """Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.

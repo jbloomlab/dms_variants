@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-0.2.dev0
+0.2.0
 --------
 
 Added
@@ -30,6 +30,8 @@ Added
 - Added `sample_rename` parameter to `CodonVariantTable` plotting methods.
 
 - Added `syn_as_wt` to `CodonVariantTable.classifyVariants`.
+
+- Added `random_seq` and `mutate_seq` to `simulate` module.
 
 Changed
 --------
