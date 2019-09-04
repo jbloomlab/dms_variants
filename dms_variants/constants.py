@@ -8,7 +8,6 @@ Defines constants used by package.
 """
 
 
-import Bio.Alphabet.IUPAC
 import Bio.Seq
 
 
@@ -19,19 +18,18 @@ CBPALETTE = ('#999999', '#E69F00', '#56B4E9', '#009E73',
 From http://bconnelly.net/2013/10/creating-colorblind-friendly-figures/
 """
 
-AAS_NOSTOP = tuple(sorted(_aa.upper() for _aa in
-                          Bio.Alphabet.IUPAC.IUPACProtein.letters))
+AAS_NOSTOP = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
+              'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
 """tuple: Amino-acid one-letter codes alphabetized, doesn't include stop."""
 
 AAS_WITHSTOP = tuple(list(AAS_NOSTOP) + ['*'])
 """tuple: Amino-acid one-letter codes alphabetized plus stop as ``*``."""
 
-NTS = tuple(sorted(_nt.upper() for _nt in
-                   Bio.Alphabet.IUPAC.IUPACUnambiguousDNA.letters))
+NTS = ('A', 'C', 'G', 'T')
 """tuple: DNA nucleotide one-letter codes."""
 
-NTS_AMBIGUOUS = tuple(sorted(_nt.upper() for _nt in
-                             Bio.Alphabet.IUPAC.IUPACAmbiguousDNA.letters))
+NTS_AMBIGUOUS = ('A', 'B', 'C', 'D', 'G', 'H', 'K', 'M', 'N',
+                 'R', 'S', 'T', 'V', 'W', 'Y')
 """tuple: DNA nucleotide one-letter codes including ambiguous ones."""
 
 NT_COMPLEMENT = {_nt: str(Bio.Seq.Seq(_nt).reverse_complement()) for
