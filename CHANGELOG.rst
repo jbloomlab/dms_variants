@@ -13,6 +13,10 @@ Added
 -----
 - Added `utils.tidy_to_corr`. 
 
+Fixed
+-----
+- Removed use of deprecated `Bio.Alphabet`
+
 0.2.0
 --------
 
