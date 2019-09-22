@@ -19,6 +19,10 @@ Changed
 -------
 - Order of rows in data frames from `CodonVariantTable.func_scores`.
 
+Fixed
+-----
+- Removed use of deprecated `Bio.Alphabet`
+
 0.2.0
 --------
 
