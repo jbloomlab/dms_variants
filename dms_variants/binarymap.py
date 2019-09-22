@@ -10,7 +10,6 @@ of variants and their functional scores.
 
 
 import collections
-import itertools
 import re
 
 import numpy
@@ -67,6 +66,8 @@ class BinaryMap:
     func_scores_var : numpy.ndarray of floats, or None
         A 1D array of length `nvariants` giving variance on score for each
         variant, or `None` if no variance estimates provided.
+    alphabet : tuple
+        Allowed characters (e.g., amino acids or codons).
 
     Example
     -------
@@ -112,12 +113,8 @@ class BinaryMap:
     >>> for ivar in range(binmap.nvariants):
     ...     binvar = binmap.binary_variants[ivar]
     ...     subs_from_df = func_scores_df.at[ivar, 'aa_substitutions']
-    ...     subs = ' '.join(map(binmap.i_to_sub, numpy.flatnonzero(binvar)))
-    ...     assert subs == subs_from_df, f"{subs}\n{subs_from_df}"
-    ...     bin_from_subs = numpy.zeros(binmap.binarylength)
-    ...     for sub in subs_from_df.split():
-    ...         bin_from_subs[binmap.sub_to_i(sub)] = 1
-    ...     assert all(binvar == bin_from_subs), f"{binvar}\n{bin_from_subs}"
+    ...     assert subs_from_df == binmap.binary_to_sub_str(binvar)
+    ...     assert all(binvar == binmap.sub_str_to_binary(subs_from_df))
 
     """
 
@@ -131,6 +128,7 @@ class BinaryMap:
                  ):
         """Initialize object; see main class docstring."""
         self.nvariants = len(func_scores_df)
+        self.alphabet = tuple(alphabet)
 
         if func_score_col not in func_scores_df.columns:
             raise ValueError('`func_scores_df` lacks `func_score_col` ' +
@@ -154,15 +152,13 @@ class BinaryMap:
             if any(self.func_scores_var < 0):
                 raise ValueError('some functional score variances are < 0')
 
-        # get lists of lists of substitutions for each variant
+        # get list of substitution strings for each variant
         if substitutions_col not in func_scores_df.columns:
             raise ValueError('`func_scores_df` lacks `substitutions_col` ' +
                              substitutions_col)
         substitutions = func_scores_df[substitutions_col].tolist()
         if not all(isinstance(s, str) for s in substitutions):
             raise ValueError('values in `substitutions_col` not all str')
-        substitutions = [s.split() for s in substitutions]
-        assert len(substitutions) == self.nvariants
 
         # regex that matches substitution
         chars = []
@@ -174,26 +170,27 @@ class BinaryMap:
             else:
                 raise ValueError(f"invalid alphabet character: {char}")
         chars = '|'.join(chars)
-        sub_regex = re.compile(rf"(?P<wt>{chars})"
-                               rf"(?P<site>\d+)"
-                               rf"(?P<mut>{chars})")
+        self._sub_regex = re.compile(rf"(?P<wt>{chars})"
+                                     rf"(?P<site>\d+)"
+                                     rf"(?P<mut>{chars})")
 
         # build mapping from substitution to binary map index
         wts = {}
         muts = collections.defaultdict(set)
-        for sub in itertools.chain.from_iterable(substitutions):
-            m = sub_regex.fullmatch(sub)
-            if not m:
-                raise ValueError(f"could not match substitution: {sub}")
-            site = int(m.group('site'))
-            if site not in wts:
-                wts[site] = m.group('wt')
-            elif m.group('wt') != wts[site]:
-                raise ValueError(f"different wildtype identities at {site}:\n"
-                                 f"{m.group('wt')} versus {wts[site]}")
-            if m.group('mut') == wts[site]:
-                raise ValueError(f"wildtype and mutant the same in {sub}")
-            muts[site].add(m.group('mut'))
+        for subs in substitutions:
+            for sub in subs.split():
+                m = self._sub_regex.fullmatch(sub)
+                if not m:
+                    raise ValueError(f"could not match substitution: {sub}")
+                site = int(m.group('site'))
+                if site not in wts:
+                    wts[site] = m.group('wt')
+                elif m.group('wt') != wts[site]:
+                    raise ValueError(f"different wildtypes at {site}:\n"
+                                     f"{m.group('wt')} versus {wts[site]}")
+                if m.group('mut') == wts[site]:
+                    raise ValueError(f"wildtype and mutant the same in {sub}")
+                muts[site].add(m.group('mut'))
         self._i_to_sub = {}
         i = 0
         for site, wt in sorted(wts.items()):
@@ -201,24 +198,71 @@ class BinaryMap:
                 self._i_to_sub[i] = f"{wt}{site}{mut}"
                 i += 1
         self.binarylength = i
-        assert (set(itertools.chain.from_iterable(substitutions)) ==
-                set(self._i_to_sub.values()))
         self._sub_to_i = {sub: i for i, sub in self._i_to_sub.items()}
         assert len(self._sub_to_i) == len(self._i_to_sub) == self.binarylength
 
         # build binary_variants
-        self.binary_variants = numpy.zeros(
-                                shape=(self.nvariants, self.binarylength),
-                                dtype='int8')
-        for ivariant, subs in enumerate(substitutions):
-            # check that variant doesn't have multiple subs at same site
-            sites = [int(sub_regex.fullmatch(s).group('site')) for s in subs]
-            if len(sites) != len(set(sites)):
-                raise ValueError(f"variant {ivariant} has multiple "
-                                 f"substitutions at the same site:\n{subs}")
-            for sub in subs:
-                self.binary_variants[ivariant, self.sub_to_i(sub)] = 1
-            assert len(subs) == self.binary_variants[ivariant].sum()
+        self.binary_variants = numpy.array([self.sub_str_to_binary(subs)
+                                            for subs in substitutions],
+                                           dtype='int8')
+
+    def sub_str_to_binary(self, sub_str):
+        """Convert space-delimited substitutions to binary representation.
+
+        Parameters
+        ----------
+        sub_str : str
+            Space-delimited substitutions.
+
+        Returns
+        -------
+        numpy.ndarray of dtype `int8`
+            Binary representation.
+
+        """
+        sites = set()
+        binrep = numpy.zeros(self.binarylength, dtype='int8')
+        for sub in sub_str.split():
+            m = self._sub_regex.fullmatch(sub)
+            if not m:
+                raise ValueError(f"substitution {sub} in {sub_str} invalid "
+                                 f"for alphabet {self.alphabet}")
+            if m.group('site') in sites:
+                raise ValueError("multiple subs at same site in {sub_str}")
+            sites.add(m.group('site'))
+            binrep[self.sub_to_i(sub)] = 1
+        assert binrep.sum() == len(sub_str.split())
+        return binrep
+
+    def binary_to_sub_str(self, binary):
+        """Convert binary representation to space-delimited substitutions.
+
+        Note
+        ----
+        This method is the inverse of :meth:`BinaryMap.sub_str_to_binary`.
+
+        Parameters
+        ----------
+        binary : numpy.ndarray
+            Binary representation.
+
+        Returns
+        -------
+        str
+            Space-delimited substitutions.
+
+        """
+        if binary.shape != (self.binarylength,):
+            raise ValueError(f"`binary` not length {self.binarylength}:\n" +
+                             str(binary))
+        if not set(binary).issubset({0, 1}):
+            raise ValueError(f"`binary` not all 0 or 1:\n{binary}")
+        subs = list(map(self.i_to_sub, numpy.flatnonzero(binary)))
+        sites = [self._sub_regex.fullmatch(sub) for sub in subs]
+        if len(sites) != len(set(sites)):
+            raise ValueError('`binary` specifies multiple substitutions '
+                             f"at same site:\n{binary}\n{' '.join(subs)}")
+        return ' '.join(subs)
 
     def i_to_sub(self, i):
         """Mutation corresponding to index in binary representation.
