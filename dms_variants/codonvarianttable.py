@@ -606,7 +606,7 @@ class CodonVariantTable:
                 df
                 .assign(count=lambda x: (x['count'] *
                                          (0 == x[wt_col]).astype('int')))
-                .groupby(['library', 'sample'])
+                .groupby(['library', 'sample'], sort=False)
                 .aggregate({'count': 'sum'})
                 .reset_index()
                 )
@@ -618,14 +618,14 @@ class CodonVariantTable:
                       'aa_substitutions', 'n_aa_substitutions']
         if by in {'aa_substitutions', 'codon_substitutions'}:
             group_cols = group_cols[group_cols.index(by) + 1:]
+            df = (df
+                  .groupby(['library', 'sample', by] + group_cols,
+                           observed=True, sort=False)
+                  .aggregate({'count': 'sum'})
+                  .reset_index()
+                  )
         elif by != 'barcode':
             raise ValueError(f"invalid `by` of {by}")
-        df = (df
-              .groupby(['library', 'sample', by] + group_cols,
-                       observed=True)
-              .aggregate({'count': 'sum'})
-              .reset_index()
-              )
 
         # get data frame with pre- and post-selection samples / counts
         df_func_scores = []
