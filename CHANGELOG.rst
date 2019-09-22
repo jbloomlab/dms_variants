@@ -11,7 +11,13 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Added
 -----
-- Added `utils.tidy_to_corr`. 
+- Added `utils.tidy_to_corr`.
+
+- Added `binarymap` module.
+
+Changed
+-------
+- Order of rows in data frames from `CodonVariantTable.func_scores`.
 
 0.2.0
 --------
