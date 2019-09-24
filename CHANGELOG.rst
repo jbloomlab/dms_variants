@@ -15,6 +15,8 @@ Added
 
 - Added `binarymap` module.
 
+- Added `globalepistasis` module.
+
 Changed
 -------
 - Order of rows in data frames from `CodonVariantTable.func_scores`.
