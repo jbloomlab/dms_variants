@@ -82,7 +82,7 @@ where :math:`N` is the normal distribution defined by
    :label: normaldist
 
    N\left(y \mid \mu, \sigma^2\right) = \frac{1}{\sigma \sqrt{2\pi}} \exp
-                                        \left(\frac{y - \mu}{\sigma}\right).
+                    \left(-\frac{\left(y - \mu\right)^2}{2 \sigma^2}\right).
 
 To fit the model, we maximize the log likelihood in Eq. :eq:`loglik` with
 respect to all model parameters: the latent effects :math:`\beta_m` of all
@@ -96,6 +96,11 @@ API implementing models
 .. _`Otwinoski et al (2018)`: https://www.pnas.org/content/115/32/E7550
 
 """
+
+
+import numpy
+
+import scipy.stats
 
 
 class NoEpistasis:
@@ -116,6 +121,10 @@ class NoEpistasis:
         Contains variants, functional scores, and (optionally) score variances.
 
     """
+
+    _EPISTASIS_FUNC_PARAMS = ()
+    """tuple: names of parameters used by `epistasis_func`."""
+
     def __init__(self,
                  binarymap,
                  ):
@@ -123,27 +132,118 @@ class NoEpistasis:
         self.binarymap = binarymap
         self._fit_complete = False
 
+        # parameter order: latent effects, epistasis_HOC, epistasis_func params
+        nparams = (self.binarymap.binarylength + 1 +
+                   len(self._EPISTASIS_FUNC_PARAMS))
+        self._params = numpy.zeros(nparams, dtype='float')
+
     @property
     def latenteffects_array(self):
         r"""numpy.ndarray of floats : Latent effects of mutations.
-        
+
         These are the :math:`\beta_m` values in Eq. :eq:`latent_phenotype`.
 
         """
-        raise RuntimeError('not yet implemented')
+        assert len(self._params) >= self.binarymap.binarylength
+        return self._params[: self.binarymap.binarylength]
+
+    def latent_phenotype_frombinary(self, binary_variants):
+        """Latent phenotypes from binary variant representations.
+
+        Parameters
+        ----------
+        binary_variants : a 2D numpy.ndarray
+            Binary variants in form used by
+            :class:`dms_variants.binarymap.BinaryMap`, with each row
+            giving a different variant.
+
+        Returns
+        --------
+        numpy.ndarray
+            Latent phenotypes calculated using Eq. :eq:`latent_phenotype`.
+
+        """
+        if len(binary_variants.shape) != 2:
+            raise ValueError(f"`binary_variants` not 2D:\n{binary_variants}")
+        nvariants, binarylength = binary_variants.shape
+        if binarylength != self.binarymap.binarylength:
+            raise ValueError(f"variants not length {binarylength}")
+        if not (set(binary_variants.ravel()) <= {0, 1}):
+            raise ValueError(f"variants not all 0 or 1")
+        return numpy.matmul(binary_variants, self.latenteffects_array)
+
+    def observed_phenotype_frombinary(self, binary_variants):
+        """Observed phenotypes from binary variant representations.
+
+        Parameters
+        ----------
+        binary_variants : a 2D numpy.ndarray
+            Binary variants in form used by
+            :class:`dms_variants.binarymap.BinaryMap`, with each row
+            giving a different variant.
+
+        Returns
+        --------
+        numpy.ndarray
+            Observed phenotypes calculated using Eq. :eq:`observed_phenotype`.
+
+        """
+        latent = self.latent_phenotype_frombinary(binary_variants)
+        return self.epistasis_func(latent)
 
     @property
     def loglik(self):
-        """Docs needed."""
-        raise RuntimeError('not yet implemented')
+        """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
+        return self._loglik_func(self._params)
+
+    def _loglik_func(self, paramsarray):
+        """Calculate log likelihood from array of parameters.
+
+        Parameters
+        ----------
+        paramsarray : numpy.ndarray
+            Parameters values in form of the `_params` attribute.
+
+        Returns
+        -------
+        float
+            Log likelihood.
+
+        Note
+        ----
+        Calling this method updates the `_params` attribute (and so
+        all of the model parameters) to whatever is specified by
+        `paramsarray`. So do not call this methd unless you understand
+        what you are doing!
+
+        """
+        assert self._params.shape == paramsarray.shape
+        self._params = paramsarray
+        predicted = self.observed_phenotype_from_binary(
+                        self.binarymap.binary_variants)
+        actual = self.binarymap.func_scores
+        if self.binarymap.func_scores_var is not None:
+            var = self.binarymap.func_scores_var + self.epistasis_HOC
+        else:
+            var = numpy.full(self.binarymap.binarylength, self.epistasis_HOC)
+        sd = numpy.sqrt(var)
+        if not all(sd > 0):
+            raise ValueError('standard deviations not all > 0')
+        logliks_by_var = scipy.stats.norm.logpdf(actual, predicted, sd)
+        return sum(logliks_by_var)
+
+    @property
+    def nparams(self):
+        """int: Total number of parameters in model."""
+        return len(self._params)
 
     @property
     def epistasis_HOC(self):
-        """Docs needed."""
-        raise RuntimeError('not yet implemented')
+        r"""float: House of cards epistasis, :math:`\sigma^2_{rm{HOC}}`."""
+        return self._params[self.binarymap.binarylength]
 
-    def epistasis_func(latent_phenotype):
-        """Get observed phenotype as function of latent phenotype.
+    def epistasis_func(self, latent_phenotype):
+        """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
 
         Parameters
         -----------
@@ -153,10 +253,19 @@ class NoEpistasis:
         Returns
         -------
         float or numpy.ndarray
-            Observed phenotype.
+            Observed phenotype(s) after transforming latent phenotype(s)
+            using global epistasis function.
 
         """
         return latent_phenotype
+
+    @property
+    def epistasis_func_params(self):
+        """dict: Parameters of global epistasis function."""
+        offset = self.binarymap.binarylength + 1
+        assert len(self._params[offset]) >= len(self._EPISTASIS_FUNC_PARAMS)
+        return {key: val for key, val in
+                zip(self._EPISTASIS_FUNC_PARAMS, self._params[offset:])}
 
     def fit(self):
         """Fit all model params to maximum likelihood values."""
