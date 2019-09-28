@@ -216,7 +216,7 @@ class NoEpistasis:
         """
         assert self._params.shape == paramsarray.shape
         self._params = paramsarray
-        predicted = self.observed_phenotype_from_binary(
+        predicted = self.observed_phenotype_frombinary(
                         self.binarymap.binary_variants)
         actual = self.binarymap.func_scores
         if self.binarymap.func_scores_var is not None:
@@ -259,8 +259,10 @@ class NoEpistasis:
     @property
     def epistasis_func_params(self):
         """dict: Parameters of global epistasis function."""
+        if not self._EPISTASIS_FUNC_PARAMS:
+            return {}
         offset = self.binarymap.binarylength + 1
-        assert len(self._params[offset]) >= len(self._EPISTASIS_FUNC_PARAMS)
+        assert len(self._params[offset:]) >= len(self._EPISTASIS_FUNC_PARAMS)
         return {key: val for key, val in
                 zip(self._EPISTASIS_FUNC_PARAMS, self._params[offset:])}
 
