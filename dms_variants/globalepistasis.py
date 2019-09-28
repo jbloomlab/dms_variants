@@ -132,20 +132,33 @@ class NoEpistasis:
         self.binarymap = binarymap
         self._fit_complete = False
 
-        # parameter order: latent effects, epistasis_HOC, epistasis_func params
-        nparams = (self.binarymap.binarylength + 1 +
+        # parameter order:
+        #   * latent effects
+        #   * latent phenotype of wildtype
+        #   * epistasis_HOC
+        #   * epistasis_func params
+        nparams = (self.binarymap.binarylength + 2 +
                    len(self._EPISTASIS_FUNC_PARAMS))
         self._params = numpy.zeros(nparams, dtype='float')
 
     @property
     def latenteffects_array(self):
-        r"""numpy.ndarray of floats : Latent effects of mutations.
+        r"""numpy.ndarray of floats: Latent effects of mutations.
 
         These are the :math:`\beta_m` values in Eq. :eq:`latent_phenotype`.
 
         """
         assert len(self._params) >= self.binarymap.binarylength
         return self._params[: self.binarymap.binarylength]
+
+    @property
+    def latent_phenotype_wt(self):
+        r"""float: latent phenotype of wildtype.
+
+        This is :math:`\beta_{rm{wt}}` in Eq. :eq:`latent_phenotype`.
+
+        """
+        return self._params[self.binarymap.binarylength]
 
     def latent_phenotype_frombinary(self, binary_variants):
         """Latent phenotypes from binary variant representations.
@@ -168,7 +181,8 @@ class NoEpistasis:
         nvariants, binarylength = binary_variants.shape
         if binarylength != self.binarymap.binarylength:
             raise ValueError(f"variants not length {binarylength}")
-        return binary_variants.dot(self.latenteffects_array)
+        return (binary_variants.dot(self.latenteffects_array) +
+                self.latent_phenotype_wt)
 
     def observed_phenotype_frombinary(self, binary_variants):
         """Observed phenotypes from binary variant representations.
@@ -237,7 +251,7 @@ class NoEpistasis:
     @property
     def epistasis_HOC(self):
         r"""float: House of cards epistasis, :math:`\sigma^2_{rm{HOC}}`."""
-        return self._params[self.binarymap.binarylength]
+        return self._params[self.binarymap.binarylength + 1]
 
     def epistasis_func(self, latent_phenotype):
         """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
@@ -261,7 +275,7 @@ class NoEpistasis:
         """dict: Parameters of global epistasis function."""
         if not self._EPISTASIS_FUNC_PARAMS:
             return {}
-        offset = self.binarymap.binarylength + 1
+        offset = self.binarymap.binarylength + 2
         assert len(self._params[offset:]) >= len(self._EPISTASIS_FUNC_PARAMS)
         return {key: val for key, val in
                 zip(self._EPISTASIS_FUNC_PARAMS, self._params[offset:])}
