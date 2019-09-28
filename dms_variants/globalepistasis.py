@@ -152,7 +152,7 @@ class NoEpistasis:
 
         Parameters
         ----------
-        binary_variants : a 2D numpy.ndarray
+        binary_variants : 2D numpy.ndarray or scipy.sparse.csr.csr_matrix
             Binary variants in form used by
             :class:`dms_variants.binarymap.BinaryMap`, with each row
             giving a different variant.
@@ -168,19 +168,16 @@ class NoEpistasis:
         nvariants, binarylength = binary_variants.shape
         if binarylength != self.binarymap.binarylength:
             raise ValueError(f"variants not length {binarylength}")
-        if not (set(binary_variants.ravel()) <= {0, 1}):
-            raise ValueError(f"variants not all 0 or 1")
-        return numpy.matmul(binary_variants, self.latenteffects_array)
+        return binary_variants.dot(self.latenteffects_array)
 
     def observed_phenotype_frombinary(self, binary_variants):
         """Observed phenotypes from binary variant representations.
 
         Parameters
         ----------
-        binary_variants : a 2D numpy.ndarray
+        binary_variants : 2D numpy.ndarray or scipy.sparse.csr.csr_matrix
             Binary variants in form used by
             :class:`dms_variants.binarymap.BinaryMap`, with each row
-            giving a different variant.
 
         Returns
         --------

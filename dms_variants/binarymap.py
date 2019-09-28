@@ -16,6 +16,8 @@ import numpy
 
 import pandas as pd  # noqa: F401
 
+import scipy.sparse
+
 import dms_variants.constants
 
 
@@ -55,12 +57,13 @@ class BinaryMap:
         Length of the binary representation of each variant.
     nvariants : int
         Number of variants.
-    binary_variants : numpy.ndarray of dtype int8
-        A 2D array of shape `nvariants` by `binarylength`. So
+    binary_variants : scipy.sparse.csr.csr_matrix of dtype int8
+        Sparse matrix of shape `nvariants` by `binarylength`. Row
         `binary_variants[ivariant]` gives the binary representation of
         variant `ivariant`, and `binary_variants[ivariant, i]` is 1
         if the variant has the substitution :meth:`BinaryMap.i_to_sub`
-        and 0 otherwise.
+        and 0 otherwise. To convert to dense `numpy.ndarray`, use
+        `toarray` method of the sparse matrix.
     func_scores : numpy.ndarray of floats
         A 1D array of length `nvariants` giving score for each variant.
     func_scores_var : numpy.ndarray of floats, or None
@@ -100,7 +103,9 @@ class BinaryMap:
     array([ 0.  , -0.2 , -0.4 ,  0.01, -0.05, -1.2 ])
     >>> binmap.func_scores_var
     array([0.2 , 0.1 , 0.3 , 0.15, 0.1 , 0.4 ])
-    >>> binmap.binary_variants
+    >>> type(binmap.binary_variants)
+    <class 'scipy.sparse.csr.csr_matrix'>
+    >>> binmap.binary_variants.toarray()
     array([[0, 0, 0, 0, 0],
            [1, 0, 0, 0, 0],
            [0, 1, 0, 0, 1],
@@ -111,7 +116,7 @@ class BinaryMap:
     Validate binary map interconverts binary representations and substitutions:
 
     >>> for ivar in range(binmap.nvariants):
-    ...     binvar = binmap.binary_variants[ivar]
+    ...     binvar = binmap.binary_variants.toarray()[ivar]
     ...     subs_from_df = func_scores_df.at[ivar, 'aa_substitutions']
     ...     assert subs_from_df == binmap.binary_to_sub_str(binvar)
     ...     assert all(binvar == binmap.sub_str_to_binary(subs_from_df))
@@ -202,9 +207,17 @@ class BinaryMap:
         assert len(self._sub_to_i) == len(self._i_to_sub) == self.binarylength
 
         # build binary_variants
-        self.binary_variants = numpy.array([self.sub_str_to_binary(subs)
-                                            for subs in substitutions],
-                                           dtype='int8')
+        row_ind = []  # row indices of elements that are one
+        col_ind = []  # column indices of elements that are one
+        for ivariant, subs in enumerate(substitutions):
+            for isub in numpy.flatnonzero(self.sub_str_to_binary(subs)):
+                row_ind.append(ivariant)
+                col_ind.append(isub)
+        self.binary_variants = scipy.sparse.csr_matrix(
+                        (numpy.ones(len(row_ind), dtype='int8'),
+                         (row_ind, col_ind)),
+                        shape=(self.nvariants, self.binarylength),
+                        dtype='int8')
 
     def sub_str_to_binary(self, sub_str):
         """Convert space-delimited substitutions to binary representation.
