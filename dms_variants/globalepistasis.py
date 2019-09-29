@@ -287,6 +287,48 @@ class NoEpistasis:
 
             self._fit_complete = True
 
+    def _fit_latent_leastsquares(self):
+        """Fit latent effects, phenotype, and HOC epistasis by least squares.
+
+        Note
+        ----
+        This is a useful way to quickly get "reasonable" initial values in
+        `_params` for subsequent likelihood-based fitting of latent effects.
+
+        """
+        # To fit the wt latent phenotype (intercept) as well as the latent
+        # effects, add a column of all ones to the end of the binary_variants
+        # sparse matrix as here: https://stackoverflow.com/a/41947378
+        binary_variants = scipy.sparse.hstack(
+                [self.binarymap.binary_variants,
+                 numpy.ones(self.binarymap.nvariants, dtype='int8')[:, None],
+                 ],
+                format='csr',
+                )
+        ncol = self.binarymap.binarylength + 1  # columns after adding 1
+        assert binary_variants.shape == (self.binarymap.nvariants, ncol)
+
+        # fit by least squares
+        fitres = scipy.sparse.linalg.lsqr(
+                    A=binary_variants,
+                    b=self.binarymap.func_scores,
+                    x0=self._params[: ncol],
+                    )
+        assert len(fitres[0]) == ncol
+
+        # use fit result to update _params
+        self._params = scipy.append(fitres[0], self._params[ncol:])
+
+        # estimate HOC epistasis as residuals not from func_score variance
+        residuals2 = fitres[3]**2
+        if self.binarymap.func_scores_var is None:
+            epistasis_HOC = residuals2
+        else:
+            epistasis_HOC = residuals2 - sum(self.binarymap.func_scores_var)
+
+        # update _params with HOC epistasis estimate
+        self._params[ncol] = max(epistasis_HOC, 0)
+
 
 if __name__ == '__main__':
     import doctest
