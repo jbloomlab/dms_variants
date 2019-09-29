@@ -100,7 +100,14 @@ API implementing models
 
 import numpy
 
+import scipy.optimize
 import scipy.stats
+
+
+class EpistasisFittingError(Exception):
+    """Error fitting an epistasis model."""
+
+    pass
 
 
 class NoEpistasis:
@@ -125,6 +132,9 @@ class NoEpistasis:
     _EPISTASIS_FUNC_PARAMS = ()
     """tuple: names of parameters used by `epistasis_func`."""
 
+    _NEARLY_ZERO = 1e-10
+    """float: lower bound for parameters that should be > 0."""
+
     def __init__(self,
                  binarymap,
                  ):
@@ -140,6 +150,7 @@ class NoEpistasis:
         nparams = (self.binarymap.binarylength + 2 +
                    len(self._EPISTASIS_FUNC_PARAMS))
         self._params = numpy.zeros(nparams, dtype='float')
+        self._params[self.binarymap.binarylength + 1] = 1  # init HOC epistasis
 
     @property
     def latenteffects_array(self):
@@ -207,13 +218,15 @@ class NoEpistasis:
         """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
         return self._loglik_func(self._params)
 
-    def _loglik_func(self, paramsarray):
+    def _loglik_func(self, paramsarray, negative=False):
         """Calculate log likelihood from array of parameters.
 
         Parameters
         ----------
         paramsarray : numpy.ndarray
             Parameters values in form of the `_params` attribute.
+        negative : bool
+            Return negative log likelihood rather than log likelihood.
 
         Returns
         -------
@@ -224,7 +237,7 @@ class NoEpistasis:
         ----
         Calling this method updates the `_params` attribute (and so
         all of the model parameters) to whatever is specified by
-        `paramsarray`. So do not call this methd unless you understand
+        `paramsarray`. So do not call this method unless you understand
         what you are doing!
 
         """
@@ -236,12 +249,15 @@ class NoEpistasis:
         if self.binarymap.func_scores_var is not None:
             var = self.binarymap.func_scores_var + self.epistasis_HOC
         else:
-            var = numpy.full(self.binarymap.binarylength, self.epistasis_HOC)
+            var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
         sd = numpy.sqrt(var)
         if not all(sd > 0):
             raise ValueError('standard deviations not all > 0')
         logliks_by_var = scipy.stats.norm.logpdf(actual, predicted, sd)
-        return sum(logliks_by_var)
+        if negative:
+            return -sum(logliks_by_var)
+        else:
+            return sum(logliks_by_var)
 
     @property
     def nparams(self):
@@ -280,11 +296,42 @@ class NoEpistasis:
         return {key: val for key, val in
                 zip(self._EPISTASIS_FUNC_PARAMS, self._params[offset:])}
 
-    def fit(self):
-        """Fit all model params to maximum likelihood values."""
-        if not self._fit_complete:
-            raise RuntimeError('not yet implemented')
+    def fit(self, *, refit=False):
+        """Fit all model params to maximum likelihood values.
 
+        Parameters
+        ----------
+        refit : bool
+            If model has already been fit once, do we re-fit it?
+
+        """
+        if refit or not self._fit_complete:
+            # least squares fit of latent effects for reasonable initial values
+            self._fit_latent_leastsquares()
+
+            # set parameter bounds
+            bounds = [(None, None)] * self.nparams
+            # HOC epistasis must be > 0
+            bounds[self.binarymap.binarylength + 1] = (self._NEARLY_ZERO, None)
+
+            # optimize model
+            optres = scipy.optimize.minimize(
+                        fun=self._loglik_func,
+                        x0=self._params,
+                        args=(True,),  # get negative of loglik
+                        method='L-BFGS-B',
+                        bounds=bounds,
+                        options={'ftol': 1e-6,
+                                 'maxfun': 100000,
+                                 },
+                        )
+            if not optres.success:
+                raise EpistasisFittingError(
+                        f"Fitting of {self.__class__.__name__} failed after "
+                        f"{optres.nit} iterations. Message:\n{optres.message}")
+            self._params == optres.x
+
+            # record fitting complete
             self._fit_complete = True
 
     def _fit_latent_leastsquares(self):
@@ -293,7 +340,7 @@ class NoEpistasis:
         Note
         ----
         This is a useful way to quickly get "reasonable" initial values in
-        `_params` for subsequent likelihood-based fitting of latent effects.
+        `_params` for subsequent likelihood-based fitting.
 
         """
         # To fit the wt latent phenotype (intercept) as well as the latent
@@ -322,12 +369,13 @@ class NoEpistasis:
         # estimate HOC epistasis as residuals not from func_score variance
         residuals2 = fitres[3]**2
         if self.binarymap.func_scores_var is None:
-            epistasis_HOC = residuals2
+            epistasis_HOC = residuals2 / self.binarymap.nvariants
         else:
-            epistasis_HOC = residuals2 - sum(self.binarymap.func_scores_var)
+            epistasis_HOC = (residuals2 - sum(self.binarymap.func_scores_var)
+                             ) / self.binarymap.nvariants
 
         # update _params with HOC epistasis estimate
-        self._params[ncol] = max(epistasis_HOC, 0)
+        self._params[ncol] = max(epistasis_HOC, self._NEARLY_ZERO)
 
 
 if __name__ == '__main__':
