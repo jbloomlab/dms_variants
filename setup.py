@@ -49,6 +49,7 @@ setup(
             'pandas>=0.25.1',
             'plotnine>=0.6',
             'regex>=2.4.153',
+            'tensorflow>=2.0',
             'scipy>=1.1.0',
             ],
     platforms='Linux and Mac OS X.',
