@@ -105,6 +105,8 @@ import scipy.stats
 
 import tensorflow as tf
 
+import tensorflow_probability as tfp
+
 
 class EpistasisFittingError(Exception):
     """Error fitting an epistasis model."""
@@ -124,11 +126,6 @@ class NoEpistasis:
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
 
-    Attributes
-    ----------
-    binarymap : :class:`dms_variants.binarymap.BinaryMap`
-        Contains variants, functional scores, and (optionally) score variances.
-
     """
 
     _EPISTASIS_FUNC_PARAMS = ()
@@ -141,18 +138,25 @@ class NoEpistasis:
                  binarymap,
                  ):
         """See main class docstring."""
-        self.binarymap = binarymap
+        self._binarymap = binarymap
         self._nlatent = self.binarymap.binarylength  # number latent effects
 
-        # initialize _params
-        nparams = self._nlatent + 2 + len(self._EPISTASIS_FUNC_PARAMS)
-        initparams = numpy.zeros(nparams, dtype='float')
-        initparams[self._nlatent + 1] = 1  # initial HOC epistasis
-        self._params = initparams
+        # initialize params
+        self.params = numpy.array(
+                        [0.0] * self._nlatent +  # latent effects
+                        [0.0] +  # latent phenotype of wildtype
+                        [1.0] +  # initial HOC epistasis
+                        [0.0] * len(self._EPISTASIS_FUNC_PARAMS),
+                        dtype='float')
 
     @property
-    def _params(self):
-        """Immutable numpy.ndarray array of floats: all model parameters.
+    def binarymap(self):
+        """:class:`dms_variants.binarymap.BinaryMap`: variants to model."""
+        return self._binarymap
+
+    @property
+    def params(self):
+        """numpy.ndarray: all model parameters.
 
         Note
         ----
@@ -162,27 +166,33 @@ class NoEpistasis:
           - epistasis_HOC
           - `epistasis_func` params
 
-        """
-        return self._paramsval
+        Updating `params` is the only way you should alter the parameters
+        of the model.
 
-    @_params.setter
-    def _params(self, val):
-        if not isinstance(val, numpy.ndarray):
-            raise ValueError('`_params` can only be set to numpy ndarray.')
-        if hasattr(self, '_paramsval') and val.shape != self._paramsval.shape:
-            raise ValueError('trying to set `_params` to new shape')
-        self._paramsval = val.copy()
-        self._paramsval.flags.writeable = False  # make immutable
+        You can also set params to a `tensorflow.Tensor`, and then other
+        attributes and methods will also return `tensorflow.Tensor` objects
+        rather than `numpy.ndarray` or float objects.
+
+        """
+        return self._params
+
+    @params.setter
+    def params(self, val):
+        if not isinstance(val, (numpy.ndarray, tf.Tensor)):
+            raise ValueError(f"`params` is invalid type of {type(val)}")
+        if hasattr(self, '_params') and val.shape != self.params.shape:
+            raise ValueError('trying to set `params` to new shape')
+        self._params = val
 
     @property
     def latenteffects_array(self):
-        r"""immutable numpy.ndarray of floats: Latent effects of mutations.
+        r"""numpy.ndarray: Latent effects of mutations.
 
         These are the :math:`\beta_m` values in Eq. :eq:`latent_phenotype`.
 
         """
-        assert len(self._params) >= self._nlatent
-        return self._params[: self._nlatent]
+        assert len(self.params) >= self._nlatent
+        return self.params[: self._nlatent]
 
     @property
     def latent_phenotype_wt(self):
@@ -191,17 +201,17 @@ class NoEpistasis:
         This is :math:`\beta_{rm{wt}}` in Eq. :eq:`latent_phenotype`.
 
         """
-        return self._params[self._nlatent]
+        return self.params[self._nlatent]
 
     def latent_phenotype_frombinary(self, binary_variants):
         """Latent phenotypes from binary variant representations.
 
         Parameters
         ----------
-        binary_variants : 2D numpy.ndarray or scipy.sparse.csr.csr_matrix
+        binary_variants : scipy.sparse.csr.csr_matrix or None
             Binary variants in form used by
-            :class:`dms_variants.binarymap.BinaryMap`, with each row
-            giving a different variant.
+            :class:`dms_variants.binarymap.BinaryMap`, or None
+            to use the variants specified by the `binarymap` attribute.
 
         Returns
         --------
@@ -209,22 +219,37 @@ class NoEpistasis:
             Latent phenotypes calculated using Eq. :eq:`latent_phenotype`.
 
         """
+        if binary_variants is None:
+            if isinstance(self.params, tf.Tensor):
+                binary_variants = self._binary_variants_tf
+            else:
+                binary_variants = self.binarymap.binary_variants
+
         if len(binary_variants.shape) != 2:
             raise ValueError(f"`binary_variants` not 2D:\n{binary_variants}")
-        nvariants, binarylength = binary_variants.shape
-        if binarylength != self._nlatent:
+        if binary_variants.shape[1] != self._nlatent:
             raise ValueError(f"variants not length {binarylength}")
-        return (binary_variants.dot(self.latenteffects_array) +
-                self.latent_phenotype_wt)
+
+        if isinstance(self.params, tf.Tensor):
+            if not isinstance(binary_variants, tf.SparseTensor):
+                raise ValueError('`params` is tensorflow Tensor but '
+                                 '`binary_variants` is not SparseTensor')
+            return (tf.sparse.sparse_dense_matmul(
+                        binary_variants,
+                        tf.expand_dims(self.latenteffects_array, 1)) +
+                    self.latent_phenotype_wt
+                    )
+        else:
+            return (binary_variants.dot(self.latenteffects_array) +
+                    self.latent_phenotype_wt)
 
     def observed_phenotype_frombinary(self, binary_variants):
         """Observed phenotypes from binary variant representations.
 
         Parameters
         ----------
-        binary_variants : 2D numpy.ndarray or scipy.sparse.csr.csr_matrix
-            Binary variants in form used by
-            :class:`dms_variants.binarymap.BinaryMap`, with each row
+        binary_variants
+            Same as for :meth:`NoEpistasis.latent_phenotype_frombinary`.
 
         Returns
         --------
@@ -238,7 +263,7 @@ class NoEpistasis:
     @property
     def loglik(self):
         """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
-        return self._loglik_func(self._params)
+        return self._loglik_func(self.params)
 
     def _loglik_func(self, paramsarray, negative=False):
         """Calculate log likelihood from array of parameters.
@@ -246,7 +271,7 @@ class NoEpistasis:
         Parameters
         ----------
         paramsarray : numpy.ndarray
-            Parameters values in form of the `_params` attribute.
+            Parameters values in form of the `params` attribute.
         negative : bool
             Return negative log likelihood rather than log likelihood.
 
@@ -257,15 +282,14 @@ class NoEpistasis:
 
         Note
         ----
-        Calling this method updates the `_params` attribute (and so
+        Calling this method updates the `params` attribute (and so
         all of the model parameters) to whatever is specified by
         `paramsarray`. So do not call this method unless you understand
         what you are doing!
 
         """
-        self._params = paramsarray
-        predicted = self.observed_phenotype_frombinary(
-                        self.binarymap.binary_variants)
+        self.params = paramsarray
+        predicted = self.observed_phenotype_frombinary(binary_variants=None)
         actual = self.binarymap.func_scores
         if self.binarymap.func_scores_var is not None:
             var = self.binarymap.func_scores_var + self.epistasis_HOC
@@ -283,12 +307,12 @@ class NoEpistasis:
     @property
     def nparams(self):
         """int: Total number of parameters in model."""
-        return len(self._params)
+        return len(self.params)
 
     @property
     def epistasis_HOC(self):
         r"""float: House of cards epistasis, :math:`\sigma^2_{rm{HOC}}`."""
-        return self._params[self._nlatent + 1]
+        return self.params[self._nlatent + 1]
 
     def epistasis_func(self, latent_phenotype):
         """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
@@ -313,36 +337,64 @@ class NoEpistasis:
         if not self._EPISTASIS_FUNC_PARAMS:
             return {}
         offset = self._nlatent + 2
-        assert len(self._params[offset:]) >= len(self._EPISTASIS_FUNC_PARAMS)
+        assert len(self.params[offset:]) >= len(self._EPISTASIS_FUNC_PARAMS)
         return {key: val for key, val in
-                zip(self._EPISTASIS_FUNC_PARAMS, self._params[offset:])}
+                zip(self._EPISTASIS_FUNC_PARAMS, self.params[offset:])}
 
-    def fit(self):
-        """Fit all model params to maximum likelihood values."""
+    def fit(self, *, engine='tensorflow'):
+        """Fit all model params to maximum likelihood values.
+
+        Parameters
+        ----------
+        engine : {'tensorflow', 'scipy'}
+            Fit using `tensorflow <https://www.tensorflow.org>`_ or
+            `scipy <https://scipy.org/>`_.
+
+        """
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
-        # set parameter bounds
-        bounds = [(None, None)] * self.nparams
-        # HOC epistasis must be > 0
-        bounds[self._nlatent + 1] = (self._NEARLY_ZERO, None)
+        if engine == 'scipy':
+            # set parameter bounds
+            bounds = [(None, None)] * self.nparams
+            # HOC epistasis must be > 0
+            bounds[self._nlatent + 1] = (self._NEARLY_ZERO, None)
 
-        # optimize model
-        optres = scipy.optimize.minimize(
-                    fun=self._loglik_func,
-                    x0=self._params,
-                    args=(True,),  # get negative of loglik
-                    method='L-BFGS-B',
-                    bounds=bounds,
-                    options={'ftol': 1e-6,
-                             'maxfun': 100000,
-                             },
+            # optimize model
+            optres = scipy.optimize.minimize(
+                        fun=self._loglik_func,
+                        x0=self.params,
+                        args=(True,),  # get negative of loglik
+                        method='L-BFGS-B',
+                        bounds=bounds,
+                        options={'ftol': 1e-8,
+                                 'maxfun': 100000,
+                                 },
+                        )
+            if not optres.success:
+                raise EpistasisFittingError(
+                        f"Fitting of {self.__class__.__name__} failed after "
+                        f"{optres.nit} iterations. Message:\n{optres.message}")
+            self.params == optres.x
+
+        elif engine == 'tensorflow':
+            def val_and_grad(params):
+                return tfp.math.value_and_gradient(
+                        f=self._loglik_func,
+                        xs=params)
+            optres = tfp.optimizer.lbfgs_minimize(
+                    value_and_gradients_function=val_and_grad,
+                    initial_position=self.params,
+                    tolerance=1e-6,
+                    f_relative_tolerance=1e-8,
                     )
-        if not optres.success:
-            raise EpistasisFittingError(
-                    f"Fitting of {self.__class__.__name__} failed after "
-                    f"{optres.nit} iterations. Message:\n{optres.message}")
-        self._params == optres.x
+            print(optres)
+            if not isinstance(self.params, numpy.ndarray):
+                raise ValueError(type(self.params))
+            raise RuntimeError('not yet implemented')
+
+        else:
+            raise ValueError(f"invalid `engine` of {engine}")
 
     def _fit_latent_leastsquares(self):
         """Fit latent effects, phenotype, and HOC epistasis by least squares.
@@ -350,7 +402,7 @@ class NoEpistasis:
         Note
         ----
         This is a useful way to quickly get "reasonable" initial values in
-        `_params` for subsequent likelihood-based fitting.
+        `params` for subsequent likelihood-based fitting.
 
         """
         # To fit the wt latent phenotype (intercept) as well as the latent
@@ -369,12 +421,12 @@ class NoEpistasis:
         fitres = scipy.sparse.linalg.lsqr(
                     A=binary_variants,
                     b=self.binarymap.func_scores,
-                    x0=self._params[: ncol],
+                    x0=self.params[: ncol],
                     )
         assert len(fitres[0]) == ncol
 
-        # use fit result to update _params
-        newparams = scipy.append(fitres[0], self._params[ncol:])
+        # use fit result to update params
+        newparams = scipy.append(fitres[0], self.params[ncol:])
 
         # estimate HOC epistasis as residuals not from func_score variance
         residuals2 = fitres[3]**2
@@ -385,16 +437,17 @@ class NoEpistasis:
                              ) / self.binarymap.nvariants
         newparams[ncol] = max(epistasis_HOC, self._NEARLY_ZERO)
 
-        self._params = newparams
+        self.params = newparams
 
     @property
     def _binary_variants_tf(self):
-        """tensorflow.SparseTensor: the binary variants."""
+        """tensorflow.SparseTensor: the binary variants in `binarymap`."""
         if not hasattr(self, '_binary_variants_tf_val'):
             self._binary_variants_tf_val = tf.SparseTensor(
                     indices=list(zip(
                             *self.binarymap.binary_variants.nonzero())),
-                    values=self.binarymap.binary_variants.data,
+                    values=self.binarymap.binary_variants.data
+                           .astype('float64'),
                     dense_shape=self.binarymap.binary_variants.shape,
                     )
         return self._binary_variants_tf_val
