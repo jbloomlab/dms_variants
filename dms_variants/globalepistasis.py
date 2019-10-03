@@ -134,6 +134,9 @@ class NoEpistasis:
     _NEARLY_ZERO = 1e-10
     """float: lower bound for parameters that should be > 0."""
 
+    _TF_DTYPE = 'float64'
+    """str: dtype for `tensorflow` Tensors."""
+
     def __init__(self,
                  binarymap,
                  ):
@@ -228,7 +231,7 @@ class NoEpistasis:
         if len(binary_variants.shape) != 2:
             raise ValueError(f"`binary_variants` not 2D:\n{binary_variants}")
         if binary_variants.shape[1] != self._nlatent:
-            raise ValueError(f"variants not length {binarylength}")
+            raise ValueError(f"variants not length {self._nlatent}")
 
         if isinstance(self.params, tf.Tensor):
             if not isinstance(binary_variants, tf.SparseTensor):
@@ -265,13 +268,13 @@ class NoEpistasis:
         """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
         return self._loglik_func(self.params)
 
-    def _loglik_func(self, paramsarray, negative=False):
+    def _loglik_func(self, params, negative=False):
         """Calculate log likelihood from array of parameters.
 
         Parameters
         ----------
-        paramsarray : numpy.ndarray
-            Parameters values in form of the `params` attribute.
+        params : numpy.ndarray
+            Parameter values used to set the `params` attribute.
         negative : bool
             Return negative log likelihood rather than log likelihood.
 
@@ -284,25 +287,48 @@ class NoEpistasis:
         ----
         Calling this method updates the `params` attribute (and so
         all of the model parameters) to whatever is specified by
-        `paramsarray`. So do not call this method unless you understand
+        `params`. So do not call this method unless you understand
         what you are doing!
 
         """
-        self.params = paramsarray
+        self.params = params
         predicted = self.observed_phenotype_frombinary(binary_variants=None)
-        actual = self.binarymap.func_scores
-        if self.binarymap.func_scores_var is not None:
-            var = self.binarymap.func_scores_var + self.epistasis_HOC
+
+        if isinstance(self.params, tf.Tensor):
+            actual = self._func_scores_tf
+            if self.binarymap.func_scores_var is not None:
+                var = self._func_scores_var_tf + self.epistasis_HOC
+            else:
+                var = tf.fill((self.binarymap.nvariants,), self.epistasis_HOC)
+            sd = tf.sqrt(var)
+#            if not all(sd > 0):
+#                raise ValueError('standard deviations not all > 0')
+            logliks_by_variant = tfp.distributions.Normal(
+                                        loc=predicted,
+                                        scale=sd,
+                                        ).log_prob(actual)
+            if negative:
+                return -tf.reduce_sum(logliks_by_variant)
+            else:
+                return tf.reduce_sum(logliks_by_variant)
+
         else:
-            var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
-        sd = numpy.sqrt(var)
-        if not all(sd > 0):
-            raise ValueError('standard deviations not all > 0')
-        logliks_by_var = scipy.stats.norm.logpdf(actual, predicted, sd)
-        if negative:
-            return -sum(logliks_by_var)
-        else:
-            return sum(logliks_by_var)
+            actual = self.binarymap.func_scores
+            if self.binarymap.func_scores_var is not None:
+                var = self.binarymap.func_scores_var + self.epistasis_HOC
+            else:
+                var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
+            sd = numpy.sqrt(var)
+            if not all(sd > 0):
+                raise ValueError('standard deviations not all > 0')
+            logliks_by_variant = scipy.stats.norm.logpdf(
+                                        actual,
+                                        loc=predicted,
+                                        scale=sd)
+            if negative:
+                return -sum(logliks_by_variant)
+            else:
+                return sum(logliks_by_variant)
 
     @property
     def nparams(self):
@@ -384,7 +410,8 @@ class NoEpistasis:
                         xs=params)
             optres = tfp.optimizer.lbfgs_minimize(
                     value_and_gradients_function=val_and_grad,
-                    initial_position=self.params,
+                    initial_position=tf.Variable(self.params,
+                                                 dtype=self._TF_DTYPE),
                     tolerance=1e-6,
                     f_relative_tolerance=1e-8,
                     )
@@ -446,11 +473,33 @@ class NoEpistasis:
             self._binary_variants_tf_val = tf.SparseTensor(
                     indices=list(zip(
                             *self.binarymap.binary_variants.nonzero())),
-                    values=self.binarymap.binary_variants.data
-                           .astype('float64'),
+                    values=(self.binarymap.binary_variants.data
+                            .astype(self._TF_DTYPE)),
                     dense_shape=self.binarymap.binary_variants.shape,
                     )
+            self._binary_variants_tf_val = tf.sparse.reorder(
+                    self._binary_variants_tf_val)
         return self._binary_variants_tf_val
+
+    @property
+    def _func_scores_tf(self):
+        """tensorflow.Tensor: functional scores in `binarymap`."""
+        if not hasattr(self, '_func_scores_tf_val'):
+            self._func_scores_tf_val = tf.constant(self.binarymap.func_scores,
+                                                   dtype=self._TF_DTYPE)
+        return self._func_scores_tf_val
+
+    @property
+    def _func_scores_var_tf(self):
+        """tensorflow.Tensor or None: score variances in `binarymap`."""
+        if not hasattr(self, '_func_scores_var_tf_val'):
+            if self.binarymap.func_scores is None:
+                self._func_scores_var_tf_val = None
+            else:
+                self._func_scores_var_tf_val = tf.constant(
+                            self.binarymap.func_scores_var,
+                            dtype=self._TF_DTYPE)
+        return self._func_scores_var_tf_val
 
 
 if __name__ == '__main__':
