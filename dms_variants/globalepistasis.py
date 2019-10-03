@@ -103,10 +103,6 @@ import numpy
 import scipy.optimize
 import scipy.stats
 
-import tensorflow as tf
-
-import tensorflow_probability as tfp
-
 
 class EpistasisFittingError(Exception):
     """Error fitting an epistasis model."""
@@ -133,9 +129,6 @@ class NoEpistasis:
 
     _NEARLY_ZERO = 1e-10
     """float: lower bound for parameters that should be > 0."""
-
-    _TF_DTYPE = 'float64'
-    """str: dtype for `tensorflow` Tensors."""
 
     def __init__(self,
                  binarymap,
@@ -172,16 +165,12 @@ class NoEpistasis:
         Updating `params` is the only way you should alter the parameters
         of the model.
 
-        You can also set params to a `tensorflow.Tensor`, and then other
-        attributes and methods will also return `tensorflow.Tensor` objects
-        rather than `numpy.ndarray` or float objects.
-
         """
         return self._params
 
     @params.setter
     def params(self, val):
-        if not isinstance(val, (numpy.ndarray, tf.Tensor)):
+        if not isinstance(val, numpy.ndarray):
             raise ValueError(f"`params` is invalid type of {type(val)}")
         if hasattr(self, '_params') and val.shape != self.params.shape:
             raise ValueError('trying to set `params` to new shape')
@@ -211,10 +200,9 @@ class NoEpistasis:
 
         Parameters
         ----------
-        binary_variants : scipy.sparse.csr.csr_matrix or None
+        binary_variants : scipy.sparse.csr.csr_matrix or numpy.ndarray
             Binary variants in form used by
-            :class:`dms_variants.binarymap.BinaryMap`, or None
-            to use the variants specified by the `binarymap` attribute.
+            :class:`dms_variants.binarymap.BinaryMap`.
 
         Returns
         --------
@@ -222,29 +210,13 @@ class NoEpistasis:
             Latent phenotypes calculated using Eq. :eq:`latent_phenotype`.
 
         """
-        if binary_variants is None:
-            if isinstance(self.params, tf.Tensor):
-                binary_variants = self._binary_variants_tf
-            else:
-                binary_variants = self.binarymap.binary_variants
-
         if len(binary_variants.shape) != 2:
             raise ValueError(f"`binary_variants` not 2D:\n{binary_variants}")
         if binary_variants.shape[1] != self._nlatent:
             raise ValueError(f"variants not length {self._nlatent}")
 
-        if isinstance(self.params, tf.Tensor):
-            if not isinstance(binary_variants, tf.SparseTensor):
-                raise ValueError('`params` is tensorflow Tensor but '
-                                 '`binary_variants` is not SparseTensor')
-            return (tf.sparse.sparse_dense_matmul(
-                        binary_variants,
-                        tf.expand_dims(self.latenteffects_array, 1)) +
-                    self.latent_phenotype_wt
-                    )
-        else:
-            return (binary_variants.dot(self.latenteffects_array) +
-                    self.latent_phenotype_wt)
+        return (binary_variants.dot(self.latenteffects_array) +
+                self.latent_phenotype_wt)
 
     def observed_phenotype_frombinary(self, binary_variants):
         """Observed phenotypes from binary variant representations.
@@ -292,43 +264,24 @@ class NoEpistasis:
 
         """
         self.params = params
-        predicted = self.observed_phenotype_frombinary(binary_variants=None)
-
-        if isinstance(self.params, tf.Tensor):
-            actual = self._func_scores_tf
-            if self.binarymap.func_scores_var is not None:
-                var = self._func_scores_var_tf + self.epistasis_HOC
-            else:
-                var = tf.fill((self.binarymap.nvariants,), self.epistasis_HOC)
-            sd = tf.sqrt(var)
-#            if not all(sd > 0):
-#                raise ValueError('standard deviations not all > 0')
-            logliks_by_variant = tfp.distributions.Normal(
-                                        loc=predicted,
-                                        scale=sd,
-                                        ).log_prob(actual)
-            if negative:
-                return -tf.reduce_sum(logliks_by_variant)
-            else:
-                return tf.reduce_sum(logliks_by_variant)
-
+        predicted = self.observed_phenotype_frombinary(
+                    self.binarymap.binary_variants)
+        actual = self.binarymap.func_scores
+        if self.binarymap.func_scores_var is not None:
+            var = self.binarymap.func_scores_var + self.epistasis_HOC
         else:
-            actual = self.binarymap.func_scores
-            if self.binarymap.func_scores_var is not None:
-                var = self.binarymap.func_scores_var + self.epistasis_HOC
-            else:
-                var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
-            sd = numpy.sqrt(var)
-            if not all(sd > 0):
-                raise ValueError('standard deviations not all > 0')
-            logliks_by_variant = scipy.stats.norm.logpdf(
+            var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
+        sd = numpy.sqrt(var)
+        if not all(sd > 0):
+            raise ValueError('standard deviations not all > 0')
+        logliks_by_variant = scipy.stats.norm.logpdf(
                                         actual,
                                         loc=predicted,
                                         scale=sd)
-            if negative:
-                return -sum(logliks_by_variant)
-            else:
-                return sum(logliks_by_variant)
+        if negative:
+            return -sum(logliks_by_variant)
+        else:
+            return sum(logliks_by_variant)
 
     @property
     def nparams(self):
@@ -367,27 +320,18 @@ class NoEpistasis:
         return {key: val for key, val in
                 zip(self._EPISTASIS_FUNC_PARAMS, self.params[offset:])}
 
-    def fit(self, *, engine='tensorflow'):
-        """Fit all model params to maximum likelihood values.
-
-        Parameters
-        ----------
-        engine : {'tensorflow', 'scipy'}
-            Fit using `tensorflow <https://www.tensorflow.org>`_ or
-            `scipy <https://scipy.org/>`_.
-
-        """
+    def fit(self):
+        """Fit all model params to maximum likelihood values."""
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
-        if engine == 'scipy':
-            # set parameter bounds
-            bounds = [(None, None)] * self.nparams
-            # HOC epistasis must be > 0
-            bounds[self._nlatent + 1] = (self._NEARLY_ZERO, None)
+        # set parameter bounds
+        bounds = [(None, None)] * self.nparams
+        # HOC epistasis must be > 0
+        bounds[self._nlatent + 1] = (self._NEARLY_ZERO, None)
 
-            # optimize model
-            optres = scipy.optimize.minimize(
+        # optimize model
+        optres = scipy.optimize.minimize(
                         fun=self._loglik_func,
                         x0=self.params,
                         args=(True,),  # get negative of loglik
@@ -397,31 +341,11 @@ class NoEpistasis:
                                  'maxfun': 100000,
                                  },
                         )
-            if not optres.success:
-                raise EpistasisFittingError(
-                        f"Fitting of {self.__class__.__name__} failed after "
-                        f"{optres.nit} iterations. Message:\n{optres.message}")
-            self.params == optres.x
-
-        elif engine == 'tensorflow':
-            def val_and_grad(params):
-                return tfp.math.value_and_gradient(
-                        f=self._loglik_func,
-                        xs=params)
-            optres = tfp.optimizer.lbfgs_minimize(
-                    value_and_gradients_function=val_and_grad,
-                    initial_position=tf.Variable(self.params,
-                                                 dtype=self._TF_DTYPE),
-                    tolerance=1e-6,
-                    f_relative_tolerance=1e-8,
-                    )
-            print(optres)
-            if not isinstance(self.params, numpy.ndarray):
-                raise ValueError(type(self.params))
-            raise RuntimeError('not yet implemented')
-
-        else:
-            raise ValueError(f"invalid `engine` of {engine}")
+        if not optres.success:
+            raise EpistasisFittingError(
+                    f"Fitting of {self.__class__.__name__} failed after "
+                    f"{optres.nit} iterations. Message:\n{optres.message}")
+        self.params == optres.x
 
     def _fit_latent_leastsquares(self):
         """Fit latent effects, phenotype, and HOC epistasis by least squares.
@@ -464,42 +388,8 @@ class NoEpistasis:
                              ) / self.binarymap.nvariants
         newparams[ncol] = max(epistasis_HOC, self._NEARLY_ZERO)
 
+        # update the params with least squares estimate
         self.params = newparams
-
-    @property
-    def _binary_variants_tf(self):
-        """tensorflow.SparseTensor: the binary variants in `binarymap`."""
-        if not hasattr(self, '_binary_variants_tf_val'):
-            self._binary_variants_tf_val = tf.SparseTensor(
-                    indices=list(zip(
-                            *self.binarymap.binary_variants.nonzero())),
-                    values=(self.binarymap.binary_variants.data
-                            .astype(self._TF_DTYPE)),
-                    dense_shape=self.binarymap.binary_variants.shape,
-                    )
-            self._binary_variants_tf_val = tf.sparse.reorder(
-                    self._binary_variants_tf_val)
-        return self._binary_variants_tf_val
-
-    @property
-    def _func_scores_tf(self):
-        """tensorflow.Tensor: functional scores in `binarymap`."""
-        if not hasattr(self, '_func_scores_tf_val'):
-            self._func_scores_tf_val = tf.constant(self.binarymap.func_scores,
-                                                   dtype=self._TF_DTYPE)
-        return self._func_scores_tf_val
-
-    @property
-    def _func_scores_var_tf(self):
-        """tensorflow.Tensor or None: score variances in `binarymap`."""
-        if not hasattr(self, '_func_scores_var_tf_val'):
-            if self.binarymap.func_scores is None:
-                self._func_scores_var_tf_val = None
-            else:
-                self._func_scores_var_tf_val = tf.constant(
-                            self.binarymap.func_scores_var,
-                            dtype=self._TF_DTYPE)
-        return self._func_scores_var_tf_val
 
 
 if __name__ == '__main__':
