@@ -165,6 +165,8 @@ API implementing models
 """
 
 
+import abc
+
 import numpy
 
 import scipy.optimize
@@ -177,25 +179,31 @@ class EpistasisFittingError(Exception):
     pass
 
 
-class NoEpistasis:
-    """Non-epistatic (linear) model.
-
-    Note
-    ----
-    The :meth:`NoEpistasis.epistasis_func` is defined in Eq. :eq:`noepistasis`.
+class AbstractEpistasis(abc.ABC):
+    """Abstract base class for epistasis models.
 
     Parameters
     ----------
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
 
-    """
+    Note
+    ----
+    This is an abstract base class. It implements most of the epistasis model
+    functionality, but does not define the actual functional form of
+    the global epistasis function :meth:`AbstractEpistasis.epistasis_func`.
 
-    _EPISTASIS_FUNC_PARAMS = ()
-    """tuple: names of parameters used by `epistasis_func`."""
+    """
 
     _NEARLY_ZERO = 1e-10
     """float: lower bound for parameters that should be > 0."""
+
+    @property
+    @classmethod
+    @abc.abstractmethod
+    def _EPISTASIS_FUNC_PARAMS(cls):
+        """tuple: names of :meth:`AbstractEpistasis.epistasis_func` params."""
+        return NotImplementedError
 
     def __init__(self,
                  binarymap,
@@ -214,12 +222,12 @@ class NoEpistasis:
 
     @property
     def binarymap(self):
-        """:class:`dms_variants.binarymap.BinaryMap`: variants to model."""
+        """:class:`dms_variants.binarymap.BinaryMap`: Variants to model."""
         return self._binarymap
 
     @property
     def params(self):
-        """numpy.ndarray: all model parameters.
+        """numpy.ndarray: All model parameters.
 
         Note
         ----
@@ -227,7 +235,7 @@ class NoEpistasis:
           - latent effects
           - latent phenotype of wildtype
           - epistasis_HOC
-          - `epistasis_func` params
+          - :meth:`Abstract.epistasis_func` params
 
         Updating `params` is the only way you should alter the parameters
         of the model.
@@ -241,7 +249,8 @@ class NoEpistasis:
             raise ValueError(f"`params` is invalid type of {type(val)}")
         if hasattr(self, '_params') and val.shape != self.params.shape:
             raise ValueError('trying to set `params` to new shape')
-        self._params = val
+        self._params = val.copy()
+        self._params.flags.writeable = False
 
     @property
     def latenteffects_array(self):
@@ -257,7 +266,7 @@ class NoEpistasis:
     def latent_phenotype_wt(self):
         r"""float: latent phenotype of wildtype.
 
-        This is :math:`\beta_{rm{wt}}` in Eq. :eq:`latent_phenotype`.
+        This is :math:`\beta_{\rm{wt}}` in Eq. :eq:`latent_phenotype`.
 
         """
         return self.params[self._nlatent]
@@ -291,7 +300,7 @@ class NoEpistasis:
         Parameters
         ----------
         binary_variants
-            Same as for :meth:`NoEpistasis.latent_phenotype_frombinary`.
+            Same as for :meth:`AbstractEpistasis.latent_phenotype_frombinary`.
 
         Returns
         --------
@@ -360,26 +369,24 @@ class NoEpistasis:
         r"""float: House of cards epistasis, :math:`\sigma^2_{rm{HOC}}`."""
         return self.params[self._nlatent + 1]
 
+    @classmethod
+    @abc.abstractmethod
     def epistasis_func(self, latent_phenotype):
         """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
 
-        Parameters
-        -----------
-        latent_phenotype : float or numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Observed phenotype(s) after transforming latent phenotype(s)
-            using global epistasis function.
+        Note
+        ----
+        This is an abstract method for the :class:`AbstractEpistasis` class.
+        The actual functional forms for specific models are defined in
+        concrete subclasses. Those concrete implementations of the function
+        will typically also have additional parameters used by the function.
 
         """
-        return latent_phenotype
+        return NotImplementedError
 
     @property
     def epistasis_func_params(self):
-        """dict: Parameters of global epistasis function."""
+        """dict: Values of :meth:`AbstractEpistasis.epistasis_func` params."""
         if not self._EPISTASIS_FUNC_PARAMS:
             return {}
         offset = self._nlatent + 2
@@ -457,6 +464,36 @@ class NoEpistasis:
 
         # update the params with least squares estimate
         self.params = newparams
+
+
+class NoEpistasis(AbstractEpistasis):
+    """Non-epistatic model (see Eq. :eq:`noepistasis`).
+
+    See docs for the base class :class:`AbstractEpistasis` for details on
+    most attributes and methods.
+
+    """
+
+    _EPISTASIS_FUNC_PARAMS = ()
+    """tuple: names of :class:`NoEpistasis.epistasis_func` params."""
+
+    @classmethod
+    def epistasis_func(cls, latent_phenotype):
+        """Global epistasis function :math:`g` in Eq. :eq:`noepistasis`.
+
+        Parameters
+        -----------
+        latent_phenotype : float or numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Observed phenotype(s) after transforming the latent phenotypes
+            using the global epistasis function.
+
+        """
+        return latent_phenotype
 
 
 if __name__ == '__main__':
