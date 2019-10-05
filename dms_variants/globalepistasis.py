@@ -166,6 +166,8 @@ API implementing models
 
 
 import abc
+import collections
+import inspect
 
 import numpy
 
@@ -198,13 +200,6 @@ class AbstractEpistasis(abc.ABC):
     _NEARLY_ZERO = 1e-10
     """float: lower bound for parameters that should be > 0."""
 
-    @property
-    @classmethod
-    @abc.abstractmethod
-    def _EPISTASIS_FUNC_PARAMS(cls):
-        """tuple: names of :meth:`AbstractEpistasis.epistasis_func` params."""
-        return NotImplementedError
-
     def __init__(self,
                  binarymap,
                  ):
@@ -217,7 +212,7 @@ class AbstractEpistasis(abc.ABC):
                         [0.0] * self._nlatent +  # latent effects
                         [0.0] +  # latent phenotype of wildtype
                         [1.0] +  # initial HOC epistasis
-                        [0.0] * len(self._EPISTASIS_FUNC_PARAMS),
+                        [0.0] * len(self.epistasis_func_params),
                         dtype='float')
 
     @property
@@ -386,13 +381,30 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def epistasis_func_params(self):
-        """dict: Values of :meth:`AbstractEpistasis.epistasis_func` params."""
-        if not self._EPISTASIS_FUNC_PARAMS:
-            return {}
-        offset = self._nlatent + 2
-        assert len(self.params[offset:]) >= len(self._EPISTASIS_FUNC_PARAMS)
-        return {key: val for key, val in
-                zip(self._EPISTASIS_FUNC_PARAMS, self.params[offset:])}
+        """OrderedDict: :meth:`AbstractEpistasis.epistasis_func` param values.
+
+        Maps names of parameters defining the global epistasis function to
+        current values in the model. These parameters are all arguments to
+        :meth:`AbstractEpistasis.epistasis_func` **except** `latent_phenotype`
+        (which is the function input, not a parameter defining the function).
+
+        """
+        # get names of params to `epistasis_func`
+        if not hasattr(self, '_epistasis_func_param_names'):
+            sig_params = inspect.signature(self.epistasis_func).parameters
+            if 'latent_phenotype' not in sig_params:
+                raise ValueError('`epistasis_func` signature lacks '
+                                 f"'latent_phenotype':\n{sig_params}")
+            self._epistasis_func_param_names = [name for name in sig_params
+                                                if name != 'latent_phenotype']
+
+        # construct and return OrderedDict
+        if not self._epistasis_func_param_names:
+            return collections.OrderedDict()
+        i = self._nlatent + 2
+        assert len(self.params[i:]) >= len(self._epistasis_func_param_names)
+        return collections.OrderedDict(zip(self._epistasis_func_param_names,
+                                           self.params[i:]))
 
     def fit(self):
         """Fit all model params to maximum likelihood values."""
@@ -473,9 +485,6 @@ class NoEpistasis(AbstractEpistasis):
     most attributes and methods.
 
     """
-
-    _EPISTASIS_FUNC_PARAMS = ()
-    """tuple: names of :class:`NoEpistasis.epistasis_func` params."""
 
     @classmethod
     def epistasis_func(cls, latent_phenotype):
