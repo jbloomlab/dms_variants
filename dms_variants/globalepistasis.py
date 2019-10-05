@@ -7,6 +7,7 @@ Implements global epistasis models based on `Otwinoski et al (2018)`_.
 
 .. contents:: Contents
    :local:
+   :depth: 1
 
 Definition of models
 ---------------------
@@ -15,8 +16,9 @@ The models are defined as follows. Let :math:`v` be a variant. We convert
 :math:`v` into a binary representation with respect to some wildtype
 sequence. This representation is a vector :math:`\mathbf{b}\left(v\right)`
 with element :math:`b\left(v\right)_m` equal to 1 if the variant has mutation
-:math:`m` and 0 otherwise, and :math:`m` ranging over all mutations observed in
-the overall set of variants. Variants can be converted to this binary form
+:math:`m` and 0 otherwise, and :math:`m` ranging over all :math:`M` mutations
+observed in the overall set of variants (so :math:`\mathbf{b}\left(v\right)`
+is of length :math:`M`). Variants can be converted into this binary form
 using :class:`dms_variants.binarymap.BinaryMap`.
 
 We define a *latent effect* for each mutation :math:`m`, which we denote as
@@ -27,7 +29,8 @@ We define a *latent effect* for each mutation :math:`m`, which we denote as
 .. math::
    :label: latent_phenotype
 
-   \phi\left(v\right) = \beta_{\rm{wt}} + \sum_m \beta_m b\left(v\right)_m.
+   \phi\left(v\right) = \beta_{\rm{wt}} +
+                        \sum_{m=1}^M \beta_m b\left(v\right)_m.
 
 The predicted *observed phenotype* :math:`p\left(v\right)` is a function of the
 latent phenotype:
@@ -73,10 +76,11 @@ the model is
 .. math::
    :label: loglik
 
-   \mathcal{L} = \sum_v \ln\left[N\left(y_v \mid p\left(v\right),
+   \mathcal{L} = \sum_{v=1}^V \ln\left[N\left(y_v \mid p\left(v\right),
                  \sigma^2_{y_v} + \sigma^2_{\rm{HOC}}\right)\right]
 
-where :math:`N` is the normal distribution defined by
+where :math:`V` is the number of variants and :math:`N` is the normal
+distribution defined by
 
 .. math::
    :label: normaldist
@@ -90,18 +94,36 @@ mutations, the latent phenotype :math:`\beta_{\rm{wt}}` of the wildtype
 sequence, the house-of-cards epistasis :math:`\sigma^2_{\rm{HOC}}`,
 and any parameters that define the global epistasis function :math:`g`.
 
-For this optimization, we use the following gradients:
+Details of optimization
+-------------------------
+
+Vector representation of :math:`\beta_{\rm{wt}}`
++++++++++++++++++++++++++++++++++++++++++++++++++
+For the purposes of the optimization (and in the equations below), we change
+how :math:`\beta_{\rm{wt}}` is represented to simplify the calculations.
+Specifically, to the binary encoding :math:`\mathbf{b}\left(v\right)` of
+each variant, we append a 1 so that the encodings are now of length
+:math:`M + 1`. We then define :math:`\beta_{M + 1} = \beta_{\rm{wt}}`.
+Then Eq. :eq:`latent_phenotype` can be rewritten as
+
+.. math::
+   :label: latent_phenotype_wt_vec
+
+   \phi\left(v\right) = \sum_{m=1}^{M+1} \beta_m b\left(v\right)_m
+
+enabling :math:`\beta_{\rm{wt}}` to just be handled like the other
+:math:`\beta_m` parameters.
+
+Gradients
++++++++++++
+
+For the optimization, we use the following gradients:
 
 .. math::
    :label: dlatent_phenotype_dlatent_effect
 
    \frac{\partial \phi\left(v\right)}{\partial \beta_m} =
    b\left(v_m\right)
-
-.. math::
-   :label: dlatent_phenotype_dlatent_wt
-
-   \frac{\partial \phi\left(v\right)}{\partial \beta_{\rm{wt}}} = 1
 
 .. math::
    :label: dobserved_phenotype_dlatent_effect
@@ -112,17 +134,6 @@ For this optimization, we use the following gradients:
        \frac{\partial \phi\left(v\right)}{\partial \beta_m} \\
    &=& \left.\frac{\partial g\left(x\right)}{\partial x}
        \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
-
-
-.. math::
-   :label: dobserved_phenotype_dlatent_wt
-
-   \frac{\partial p\left(v\right)}{\partial \beta_{\rm{wt}}}
-   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
-       \right\rvert_{x = \phi\left(v\right)} \times
-       \frac{\partial \phi\left(v\right)}{\partial \beta_{\rm{wt}}} \\
-   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
-       \right\rvert_{x = \phi\left(v\right)}
 
 .. math::
    :label: dnormaldist
@@ -135,23 +146,16 @@ For this optimization, we use the following gradients:
    :label: dloglik_dlatent_effect
 
    \frac{\partial \mathcal{L}}{\partial \beta_m}
-   &=& \sum_v \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
-                    \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}
-                   {\partial p\left(v\right)} \times
-              \frac{\partial p\left(v\right)}{\partial \beta_m} \\
-   &=& \sum_v \frac{y_v - p\left(v\right)}
-                   {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
-              \left.\frac{\partial g\left(x\right)}{\partial x}
-              \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
+   &=& \sum_{v=1}^V \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
+                          \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}
+                         {\partial p\left(v\right)} \times
+                    \frac{\partial p\left(v\right)}{\partial \beta_m} \\
+   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
+                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
+                    \left.\frac{\partial g\left(x\right)}{\partial x}
+                    \right\rvert_{x = \phi\left(v\right)} \times
+                    b\left(v_m\right)
 
-.. math::
-   :label: dloglik_dlatent_wt
-
-   \frac{\partial \mathcal{L}}{\partial \beta_{\rm{wt}}}
-   = \sum_v \frac{y_v - p\left(v\right)}
-                 {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
-            \left.\frac{\partial g\left(x\right)}{\partial x}
-            \right\rvert_{x = \phi\left(v\right)}
 
 API implementing models
 --------------------------
