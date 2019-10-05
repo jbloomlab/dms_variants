@@ -90,6 +90,69 @@ mutations, the latent phenotype :math:`\beta_{\rm{wt}}` of the wildtype
 sequence, the house-of-cards epistasis :math:`\sigma^2_{\rm{HOC}}`,
 and any parameters that define the global epistasis function :math:`g`.
 
+For this optimization, we use the following gradients:
+
+.. math::
+   :label: dlatent_phenotype_dlatent_effect
+
+   \frac{\partial \phi\left(v\right)}{\partial \beta_m} =
+   b\left(v_m\right)
+
+.. math::
+   :label: dlatent_phenotype_dlatent_wt
+
+   \frac{\partial \phi\left(v\right)}{\partial \beta_{\rm{wt}}} = 1
+
+.. math::
+   :label: dobserved_phenotype_dlatent_effect
+
+   \frac{\partial p\left(v\right)}{\partial \beta_m}
+   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi\left(v\right)} \times
+       \frac{\partial \phi\left(v\right)}{\partial \beta_m} \\
+   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
+
+
+.. math::
+   :label: dobserved_phenotype_dlatent_wt
+
+   \frac{\partial p\left(v\right)}{\partial \beta_{\rm{wt}}}
+   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi\left(v\right)} \times
+       \frac{\partial \phi\left(v\right)}{\partial \beta_{\rm{wt}}} \\
+   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi\left(v\right)}
+
+.. math::
+   :label: dnormaldist
+
+   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
+        {\partial \mu} =
+   \frac{y - \mu}{\sigma^2}
+
+.. math::
+   :label: dloglik_dlatent_effect
+
+   \frac{\partial \mathcal{L}}{\partial \beta_m}
+   &=& \sum_v \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
+                    \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}
+                   {\partial p\left(v\right)} \times
+              \frac{\partial p\left(v\right)}{\partial \beta_m} \\
+   &=& \sum_v \frac{y_v - p\left(v\right)}
+                   {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
+              \left.\frac{\partial g\left(x\right)}{\partial x}
+              \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
+
+.. math::
+   :label: dloglik_dlatent_wt
+
+   \frac{\partial \mathcal{L}}{\partial \beta_{\rm{wt}}}
+   = \sum_v \frac{y_v - p\left(v\right)}
+                 {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
+            \left.\frac{\partial g\left(x\right)}{\partial x}
+            \right\rvert_{x = \phi\left(v\right)}
+
 API implementing models
 --------------------------
 
