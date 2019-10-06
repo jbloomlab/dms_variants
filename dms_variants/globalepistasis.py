@@ -217,7 +217,11 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def binarymap(self):
-        """:class:`dms_variants.binarymap.BinaryMap`: Variants to model."""
+        """:class:`dms_variants.binarymap.BinaryMap`: Variants to model.
+
+        The binary map is set during initialization of the model.
+
+        """
         return self._binarymap
 
     @property
@@ -266,19 +270,31 @@ class AbstractEpistasis(abc.ABC):
         """
         return self.params[self._nlatent]
 
-    def latent_phenotype_frombinary(self, binary_variants):
-        """Latent phenotypes from binary variant representations.
+    def phenotype_frombinary(self,
+                             binary_variants,
+                             phenotype,
+                             *,
+                             wt_col=False,
+                             ):
+        """Phenotypes from binary variant representations.
 
         Parameters
         ----------
         binary_variants : scipy.sparse.csr.csr_matrix or numpy.ndarray
             Binary variants in form used by
             :class:`dms_variants.binarymap.BinaryMap`.
+        phenotype : {'latent', 'observed'}
+            Calculate latent phenotypes using Eq. :eq:`latent_phenotype`
+            or observed phenotypes using Eq. :eq:`observed_phenotype`.
+        wt_col : bool
+            Set to `True` if `binary_variants` contains a terminal
+            column of ones to enable calculations in the form given
+            by Eq. :eq:`latent_phenotype_wt_vec`.
 
         Returns
         --------
         numpy.ndarray
-            Latent phenotypes calculated using Eq. :eq:`latent_phenotype`.
+            The calculated phenotypes.
 
         """
         if len(binary_variants.shape) != 2:
@@ -286,25 +302,18 @@ class AbstractEpistasis(abc.ABC):
         if binary_variants.shape[1] != self._nlatent:
             raise ValueError(f"variants not length {self._nlatent}")
 
-        return (binary_variants.dot(self.latenteffects_array) +
-                self.latent_phenotype_wt)
+        if wt_col:
+            raise NotImplementedError('`wt_col` not implemented')
 
-    def observed_phenotype_frombinary(self, binary_variants):
-        """Observed phenotypes from binary variant representations.
+        latent = (binary_variants.dot(self.latenteffects_array) +
+                  self.latent_phenotype_wt)
 
-        Parameters
-        ----------
-        binary_variants
-            Same as for :meth:`AbstractEpistasis.latent_phenotype_frombinary`.
-
-        Returns
-        --------
-        numpy.ndarray
-            Observed phenotypes calculated using Eq. :eq:`observed_phenotype`.
-
-        """
-        latent = self.latent_phenotype_frombinary(binary_variants)
-        return self.epistasis_func(latent)
+        if phenotype == 'latent':
+            return latent
+        elif phenotype == 'observed':
+            return self.epistasis_func(latent)
+        else:
+            raise ValueError(f"invalid `phenotype` of {phenotype}")
 
     @property
     def loglik(self):
@@ -335,8 +344,10 @@ class AbstractEpistasis(abc.ABC):
 
         """
         self.params = params
-        predicted = self.observed_phenotype_frombinary(
-                    self.binarymap.binary_variants)
+        predicted = self.phenotype_frombinary(
+                        binary_variants=self.binarymap.binary_variants,
+                        phenotype='observed',
+                        )
         actual = self.binarymap.func_scores
         if self.binarymap.func_scores_var is not None:
             var = self.binarymap.func_scores_var + self.epistasis_HOC
