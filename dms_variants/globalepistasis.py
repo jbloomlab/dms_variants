@@ -237,7 +237,7 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def epistasis_HOC(self):
-        r"""float: House of cards epistasis, :math:`\sigma^2_{rm{HOC}}`."""
+        r"""float: House of cards epistasis, :math:`\sigma^2_{\rm{HOC}}`."""
         return self._epistasis_HOC_val
 
     @epistasis_HOC.setter
@@ -282,6 +282,7 @@ class AbstractEpistasis(abc.ABC):
         r"""scipy.sparse.csr.csr_matrix: Binary variants with 1 in last column.
 
         As in Eq. :eq:`latent_phenotype_wt_vec` with :math:`\beta_{M+1}`.
+        So this is a :math:`V` by :math:`M + 1` matrix.
 
         """
         if not hasattr(self, '_binary_variants_val'):
@@ -304,7 +305,7 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def latent_phenotype_wt(self):
-        r"""float: latent phenotype of wildtype.
+        r"""float: Latent phenotype of wildtype.
 
         :math:`\beta_{\rm{wt}}` in Eq. :eq:`latent_phenotype`.
 
@@ -511,6 +512,14 @@ class AbstractEpistasis(abc.ABC):
         key = '_dobserved_phenotype_dlatent'
         if key not in self._cache:
             raise NotImplementedError
+            self._cache[key] = (
+                    self._binary_variants
+                    .transpose()  # convert from V by M to M by V
+                    .multiply(self.depistasis_func_dlatent(
+                                self._latent_phenotypes))
+                    )
+            assert self._cache[key].shape == (self._nlatent + 1,
+                                              self.binarymap.nvariants)
         return self._cache[key]
 
     @property
@@ -576,7 +585,7 @@ class AbstractEpistasis(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative epistasis function by latent phenotype.
+        """Get derivative of epistasis function by latent phenotype.
 
         Note
         ----
@@ -590,10 +599,15 @@ class AbstractEpistasis(abc.ABC):
 
 
 class NoEpistasis(AbstractEpistasis):
-    """Non-epistatic model (see Eq. :eq:`noepistasis`).
+    """Non-epistatic model.
 
-    See docs for the base class :class:`AbstractEpistasis` for details on
-    most attributes and methods.
+    Note
+    ----
+    Model when there is no epistasis, which is when the global epistasis
+    function :math:`g` is defined by Eq. :eq:`noepistasis`.
+
+    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
+    of that abstract base class for details on most properties and methods.
 
     """
 
@@ -617,7 +631,7 @@ class NoEpistasis(AbstractEpistasis):
 
     @classmethod
     def depistasis_func_dlatent(cls, latent_phenotype):
-        """Get derivative epistasis function by latent phenotype.
+        """Get derivative of epistasis function by latent phenotype.
 
         Parameters
         -----------
