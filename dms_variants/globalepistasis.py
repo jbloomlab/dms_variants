@@ -152,9 +152,7 @@ For the optimization, we use the following gradients:
                     \frac{\partial p\left(v\right)}{\partial \beta_m} \\
    &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
                          {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
-                    \left.\frac{\partial g\left(x\right)}{\partial x}
-                    \right\rvert_{x = \phi\left(v\right)} \times
-                    b\left(v_m\right)
+                    \frac{\partial p\left(v\right)}{\partial \beta_m}
 
 
 API implementing models
@@ -245,7 +243,8 @@ class AbstractEpistasis(abc.ABC):
     @epistasis_HOC.setter
     def epistasis_HOC(self, val):
         for key in list(self._cache.keys()):
-            if key not in {'_latent_phenotypes', '_observed_phenotypes'}:
+            if key not in {'_latent_phenotypes', '_observed_phenotypes',
+                           '_dobserved_phenotype_dlatent'}:
                 del self._cache[key]
         if val <= 0:
             raise ValueError(f"`epistasis_HOC` must be > 0: {val}")
@@ -394,7 +393,8 @@ class AbstractEpistasis(abc.ABC):
             Observed phenotypes calculated using Eq. :eq:`latent_phenotype`.
 
         """
-        observed = self.epistasis_func(latent_phenotypes)
+        observed = self.epistasis_func(latent_phenotypes,
+                                       **self.epistasis_func_params_dict)
         assert observed.shape == latent_phenotypes.shape
         return observed
 
@@ -500,6 +500,31 @@ class AbstractEpistasis(abc.ABC):
             self._cache[key] = var
         return self._cache[key]
 
+    @property
+    def _dobserved_phenotypes_dlatent(self):
+        """scipy.parse.csr_matrix: Derivative observed pheno by latent effects.
+
+        See Eq. :eq:`dobserved_phenotype_dlatent_effect`. This is a
+        :math:`M + 1` by :math:`V` matrix.
+
+        """
+        key = '_dobserved_phenotype_dlatent'
+        if key not in self._cache:
+            raise NotImplementedError
+        return self._cache[key]
+
+    @property
+    def _dloglik_dlatent(self):
+        """numpy.ndarray: Derivative log likelihood by latent effects.
+
+        See Eq. :eq:`dloglik_dlatent_effect`.
+
+        """
+        key = '_dloglik_dlatent'
+        if key not in self._cache:
+            raise NotImplementedError
+        return self._cache[key]
+
     def _fit_latent_leastsquares(self):
         """Fit latent effects and HOC epistasis by least squares.
 
@@ -542,8 +567,23 @@ class AbstractEpistasis(abc.ABC):
         ----
         This is an abstract method for the :class:`AbstractEpistasis` class.
         The actual functional forms for specific models are defined in
-        concrete subclasses. Those concrete implementations of the function
-        will typically also have additional parameters used by the function.
+        concrete subclasses. Those concrete implementations will also have
+        additional parameters used by the function.
+
+        """
+        return NotImplementedError
+
+    @classmethod
+    @abc.abstractmethod
+    def depistasis_func_dlatent(self, latent_phenotype):
+        """Get derivative epistasis function by latent phenotype.
+
+        Note
+        ----
+        This is the derivative of :meth:`AbstractEpistasis.epistasis_func`
+        with respect to the latent phenotype. It is an abstract method;
+        the actual functional forms for specific models are defined in
+        concrete subclasses.
 
         """
         return NotImplementedError
@@ -574,6 +614,27 @@ class NoEpistasis(AbstractEpistasis):
 
         """
         return latent_phenotype
+
+    @classmethod
+    def depistasis_func_dlatent(cls, latent_phenotype):
+        """Get derivative epistasis function by latent phenotype.
+
+        Parameters
+        -----------
+        latent_phenotype : float or numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
+            latent phenotype evaluated at `latent_phenotype`.
+
+        """
+        if isinstance(latent_phenotype, (int, float)):
+            return 1.0
+        else:
+            return numpy.ones(latent_phenotype.shape, dtype='float')
 
 
 if __name__ == '__main__':
