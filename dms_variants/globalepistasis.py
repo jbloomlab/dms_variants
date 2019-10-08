@@ -195,7 +195,7 @@ class AbstractEpistasis(abc.ABC):
 
     """
 
-    _NEARLY_ZERO = 1e-10
+    _NEARLY_ZERO = 1e-8
     """float: lower bound for parameters that should be > 0."""
 
     def __init__(self,
@@ -228,12 +228,14 @@ class AbstractEpistasis(abc.ABC):
 
     @_latenteffects.setter
     def _latenteffects(self, val):
-        self._cache = {}
         if not (isinstance(val, numpy.ndarray) and
                 len(val) == self._nlatent + 1):
             raise ValueError(f"invalid value for `_latenteffects`: {val}")
-        self._latenteffects_val = val.copy()
-        self._latenteffects_val.flags.writeable = False
+        if (not hasattr(self, '_latenteffects_val')) or (self._latenteffects
+                                                         != val).any():
+            self._cache = {}
+            self._latenteffects_val = val.copy()
+            self._latenteffects_val.flags.writeable = False
 
     @property
     def epistasis_HOC(self):
@@ -242,13 +244,15 @@ class AbstractEpistasis(abc.ABC):
 
     @epistasis_HOC.setter
     def epistasis_HOC(self, val):
-        for key in list(self._cache.keys()):
-            if key not in {'_latent_phenotypes', '_observed_phenotypes',
-                           '_dobserved_phenotype_dlatent'}:
-                del self._cache[key]
         if val <= 0:
             raise ValueError(f"`epistasis_HOC` must be > 0: {val}")
-        self._epistasis_HOC_val = val
+        if (not hasattr(self, '_epistasis_HOC_val')) or (val !=
+                                                         self.epistasis_HOC):
+            for key in list(self._cache.keys()):
+                if key not in {'_latent_phenotypes', '_observed_phenotypes',
+                               '_dobserved_phenotype_dlatent'}:
+                    del self._cache[key]
+            self._epistasis_HOC_val = val
 
     @property
     def _epistasis_func_params(self):
@@ -257,13 +261,15 @@ class AbstractEpistasis(abc.ABC):
 
     @_epistasis_func_params.setter
     def _epistasis_func_params(self, val):
-        for key in list(self._cache.keys()):
-            if key not in {'_latent_phenotypes', '_variances'}:
-                del self._cache[key]
         if len(val) != len(self._epistasis_func_param_names):
             raise ValueError('invalid length for `_epistasis_func_params`')
-        self._epistasis_func_params_val = val.copy()
-        self._epistasis_func_params_val.flags.writeable = False
+        if ((not hasattr(self, '_epistasis_func_params_val')) or
+                (val != self._epistasis_func_params).any()):
+            for key in list(self._cache.keys()):
+                if key not in {'_latent_phenotypes', '_variances'}:
+                    del self._cache[key]
+            self._epistasis_func_params_val = val.copy()
+            self._epistasis_func_params_val.flags.writeable = False
 
     # ------------------------------------------------------------------------
     # Methods / properties to get model parameters in useful formats
@@ -409,31 +415,12 @@ class AbstractEpistasis(abc.ABC):
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
-        # initial parameter values and bounds
-        params = numpy.array(list(self._latenteffects) +
-                             [self.epistasis_HOC] +
-                             list(self._epistasis_func_params)
-                             )
-        bounds = ([(None, None)] * len(self._latenteffects) +
-                  [(self._NEARLY_ZERO, None)] +  # HOC epistasis must be > 0
-                  [(None, None)] * len(self._epistasis_func_params)
-                  )
-
-        # define function to optimize
-        def func(params):
-            self._latenteffects = params[: len(self._latenteffects)]
-            self.epistasis_HOC = params[len(self._latenteffects)]
-            if self._epistasis_func_params:
-                self._epistasis_func_params = params[len(self._latenteffects)
-                                                     + 1:]
-            return -self.loglik
-
-        # optimize model
+        # optimize model by maximum likelihood
         optres = scipy.optimize.minimize(
-                        fun=func,
-                        x0=params,
+                        fun=self._loglik_by_allparams,
+                        x0=self._allparams,
                         method='L-BFGS-B',
-                        bounds=bounds,
+                        bounds=self._allparams_bounds,
                         options={'ftol': 1e-8,
                                  'maxfun': 100000,
                                  },
@@ -442,6 +429,7 @@ class AbstractEpistasis(abc.ABC):
             raise EpistasisFittingError(
                     f"Fitting of {self.__class__.__name__} failed after "
                     f"{optres.nit} iterations. Message:\n{optres.message}")
+        self._allparams = optres.x
 
     @property
     def loglik(self):
@@ -450,6 +438,74 @@ class AbstractEpistasis(abc.ABC):
         if key not in self._cache:
             self._cache[key] = sum(self._loglik_by_variant)
         return self._cache[key]
+
+    def _loglik_by_allparams(self, allparams, negative=True):
+        """(Negative) log likelihood after setting all parameters.
+
+        Note
+        ----
+        Calling this method alters the interal model parameters, so only
+        use if you understand what you are doing.
+
+        Parameters
+        ----------
+        allparams : numpy.ndarray
+            Parameters used to set :meth:`AbstractEpistasis._allparams`.
+        negative : bool
+            Return negative log likelihood. Useful if using a minimizer to
+            optimize.
+
+        Returns
+        -------
+        float
+            Log likelihood after setting parameters to `_allparams`.
+
+        """
+        self._allparams = allparams
+        return -self.loglik
+
+    @property
+    def _allparams(self):
+        """numpy.ndarray: All model parameters in a single array.
+
+        Note
+        ----
+        This property should only be used for purposes in which it is
+        necessary to get or set all params in a single vector (typically
+        for model optimiziation), **not** to access the values of specific
+        parameters, since the order of parameters in the array may change
+        in future implementations.
+
+        """
+        val = numpy.array(list(self._latenteffects) +
+                          [self.epistasis_HOC] +
+                          list(self._epistasis_func_params)
+                          )
+        assert val.shape == (self.nparams,)
+        return val
+
+    @_allparams.setter
+    def _allparams(self, val):
+        if val.shape != (self.nparams,):
+            raise ValueError(f"invalid `_allparams`: {val}")
+        self._latenteffects = val[: len(self._latenteffects)]
+        self.epistasis_HOC = val[len(self._latenteffects)]
+        if self._epistasis_func_params:
+            self._epistasis_func_params = val[len(self._latenteffects) + 1:]
+
+    @property
+    def _allparams_bounds(self):
+        """list: Bounds for :meth:`AbstractEpistasis._allparams`.
+
+        Can be passed to `scipy.optimize.minimize`.
+
+        """
+        bounds = ([(None, None)] * len(self._latenteffects) +
+                  [(self._NEARLY_ZERO, None)] +  # HOC epistasis must be > 0
+                  [(None, None)] * len(self._epistasis_func_params)
+                  )
+        assert len(bounds) == len(self._allparams)
+        return bounds
 
     @property
     def _loglik_by_variant(self):
@@ -498,6 +554,8 @@ class AbstractEpistasis(abc.ABC):
                 var = self.binarymap.func_scores_var + self.epistasis_HOC
             else:
                 var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
+            if any(var <= 0):
+                raise ValueError('variance <= 0')
             self._cache[key] = var
         return self._cache[key]
 
@@ -511,7 +569,6 @@ class AbstractEpistasis(abc.ABC):
         """
         key = '_dobserved_phenotype_dlatent'
         if key not in self._cache:
-            raise NotImplementedError
             self._cache[key] = (
                     self._binary_variants
                     .transpose()  # convert from V by M to M by V
@@ -531,7 +588,10 @@ class AbstractEpistasis(abc.ABC):
         """
         key = '_dloglik_dlatent'
         if key not in self._cache:
-            raise NotImplementedError
+            vec = (self.binarymap.func_scores - self._observed_phenotypes
+                   ) / self._variances
+            self._cache[key] = self._dobserved_phenotypes_dlatent.dot(vec)
+            assert self._cache[key].shape == (self._nlatent + 1,)
         return self._cache[key]
 
     def _fit_latent_leastsquares(self):
