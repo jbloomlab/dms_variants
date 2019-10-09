@@ -427,14 +427,27 @@ class AbstractEpistasis(abc.ABC):
     # that store the current state for the variants we are fitting, using the
     # cache so that they don't have to be re-computed needlessly.
     # ------------------------------------------------------------------------
-    def fit(self):
-        """Fit all model params to maximum likelihood values."""
+    def fit(self, *, use_grad=True):
+        """Fit all model params to maximum likelihood values.
+
+        Parameters
+        ----------
+        use_grad : bool
+            Use analytical gradients to help with fitting.
+
+        Returns
+        -------
+        scipy.optimize.OptimizeResult
+            The results of the optimization.
+
+        """
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
         # optimize model by maximum likelihood
         optres = scipy.optimize.minimize(
                         fun=self._loglik_by_allparams,
+                        jac=self._dloglik_by_allparams if use_grad else None,
                         x0=self._allparams,
                         method='L-BFGS-B',
                         bounds=self._allparams_bounds,
@@ -447,6 +460,8 @@ class AbstractEpistasis(abc.ABC):
                     f"Fitting of {self.__class__.__name__} failed after "
                     f"{optres.nit} iterations. Message:\n{optres.message}")
         self._allparams = optres.x
+
+        return optres
 
     @property
     def loglik(self):
@@ -511,7 +526,7 @@ class AbstractEpistasis(abc.ABC):
                                  )
                                 )
         assert val.shape == (self.nparams,)
-        return val
+        return -val
 
     @property
     def _allparams(self):
