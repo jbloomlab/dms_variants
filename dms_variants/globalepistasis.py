@@ -55,6 +55,24 @@ We define epistasis models with the following global epistasis functions:
 
    This model is implemented as :class:`NoEpistasis`.
 
+ - **Monotonic spline epistasis model**:
+   This is the model used in `Otwinoski et al (2018)`_, which transforms
+   the latent phenotype to the observed phenotype using monotonic splines:
+
+   .. math::
+      :label:monotonicsplineepistasis
+
+      g\left(x\right) = c_{\alpha} + \sum_m \alpha_{m=1}^M I_m\left(x\right)
+
+   where :math:`c_{\alpha}` is an arbitrary number giving the _minimum_
+   observed phenotype, the :math:`\alpha_m` coefficients are all :math:`\ge 0`,
+   :math:`M = 5`
+
+   Polynomials are order :math:`k = 3`, which means polynomials are degree
+   :math:`k - 1 = 2`.
+
+   This model is implemented as class:`MonotonicSplineEpistasis`.
+
 Fitting of models
 -------------------
 For each variant :math:`v`, we have an experimentally measured functional
@@ -830,6 +848,11 @@ class NoEpistasis(AbstractEpistasis):
         """
         assert len(self.epistasis_func_params_dict) == 0
         return numpy.array([], dtype='float')
+
+
+def MonotonicSplineEpistasis(AbstractEpistasis):
+    """Docs needed"""
+    pass
 
 
 if __name__ == '__main__':
