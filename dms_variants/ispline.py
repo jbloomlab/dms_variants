@@ -50,21 +50,49 @@ class Msplines:
     -------
     Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
 
-    >>> msplines = Msplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
-    >>> msplines.order
-    3
-    >>> msplines.mesh
-    array([0. , 0.3, 0.5, 0.6, 1. ])
-    >>> msplines.n
-    6
-    >>> msplines.knots
-    array([0. , 0. , 0. , 0.3, 0.5, 0.6, 1. , 1. , 1. ])
-    >>> msplines.lower
-    0.0
-    >>> msplines.upper
-    1.0
-    >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 1.0])
-    >>> msplines.m(x, 1)
+    .. plot::
+
+       >>> import numpy
+       >>> import pandas as pd
+       >>> from dms_variants.ispline import Msplines
+
+       >>> msplines = Msplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
+       >>> msplines.order
+       3
+       >>> msplines.mesh
+       array([0. , 0.3, 0.5, 0.6, 1. ])
+       >>> msplines.n
+       6
+       >>> msplines.knots
+       array([0. , 0. , 0. , 0.3, 0.5, 0.6, 1. , 1. , 1. ])
+       >>> msplines.lower
+       0.0
+       >>> msplines.upper
+       1.0
+
+       Evaluate the M-splines at some selected points:
+
+       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
+       >>> for i in range(1, msplines.n + 1):
+       ...     print(f"M{i}: {numpy.round(msplines.m(x, i), 2)}")
+       ... # doctest: +NORMALIZE_WHITESPACE
+       M1: [10. 1.11 0.  0.   0.   0.  ]
+       M2: [0.  3.73 2.4 0.6  0.   0.  ]
+       M3: [0.  1.33 3.  3.67 0.   0.  ]
+       M4: [0.  0.   0.  0.71 0.86 0.  ]
+       M5: [0.  0.   0.  0.   3.3  0.  ]
+       M6: [0.  0.   0.  0.   1.88 7.5 ]
+
+       Plot the M-splines:
+
+       >>> xplot = numpy.linspace(0, 1, 1000, endpoint=False)
+       >>> data = {'x': xplot}
+       >>> for i in range(1, msplines.n + 1):
+       ...     data[f"M{i}"] = msplines.m(xplot, i)
+       >>> df = pd.DataFrame(data)
+       >>> _ = df.plot(x='x',
+       ...             y=[f"M{i}" for i in range(1, msplines.n + 1)],
+       ...             kind='line')
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -96,7 +124,7 @@ class Msplines:
         self.n = len(self.knots) - self.order
         assert self.n == len(self.mesh) - 2 + self.order
 
-    def m(self, x, i, k=None):
+    def m(self, x, i, k=None, invalid_i='raise'):
         r"""Evaluate spline :math:`M_i` at point(s) `x`.
 
         Parameters
@@ -108,6 +136,8 @@ class Msplines:
         k : int or None
             Order of spline. If `None`, assumed to be overall `order`
             of the M-splines family.
+        invalid_i : {'raise', 'zero'}
+            If `i` is invalid, do we raise an error or return 0?
 
         Returns
         -------
@@ -120,7 +150,7 @@ class Msplines:
         `Ramsay (1988) <https://www.jstor.org/stable/2245395>`_:
 
         .. math::
-           
+
            M_i\left(x \mid k=1\right)
            &=&
            \begin{cases}
@@ -139,7 +169,12 @@ class Msplines:
 
         """
         if not (1 <= i <= self.n):
-            raise ValueError(f"invalid spline member `i` of {i}")
+            if invalid_i == 'raise':
+                raise ValueError(f"invalid spline member `i` of {i}")
+            elif invalid_i == 'zero':
+                return 0
+            else:
+                raise ValueError(f"invalid `invalid_i` of {invalid_i}")
         if k is None:
             k = self.order
         if not 1 <= k <= self.order:
@@ -151,6 +186,8 @@ class Msplines:
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
+        if tiplusk == ti:
+            return numpy.zeros(x.shape, dtype='float')
 
         if k == 1:
             return numpy.where((ti <= x) & (x < tiplusk),
@@ -161,7 +198,8 @@ class Msplines:
             return numpy.where(
                         (ti <= x) & (x < tiplusk),
                         (k * ((x - ti) * self.m(x, i, k - 1) +
-                         (tiplusk - x) * self.m(x, i + 1, k - 1)
+                         (tiplusk - x) * self.m(x, i + 1, k - 1,
+                                                invalid_i='zero')
                          ) / ((k - 1) * (tiplusk - ti))),
                         0.0)
 
