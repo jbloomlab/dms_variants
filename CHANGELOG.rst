@@ -17,6 +17,8 @@ Added
 
 - Added `globalepistasis` module.
 
+- Added `ispline` module.
+
 Changed
 -------
 - Order of rows in data frames from `CodonVariantTable.func_scores`.
