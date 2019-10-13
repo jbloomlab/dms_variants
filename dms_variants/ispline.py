@@ -73,7 +73,6 @@ class Isplines:
        Evaluate the I-splines at some selected points:
 
        >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 1])
-       >>> # x = numpy.array([0, 0.2, 0.3, 0.4])
        >>> for i in range(1, isplines.n + 1):
        ...     print(f"I{i}: {numpy.round(isplines.I(x, i), 2)}")
        ... # doctest: +NORMALIZE_WHITESPACE
@@ -170,45 +169,34 @@ class Isplines:
             raise ValueError(f"`x` not between {self.lower} and {self.upper}")
 
         k = self.order
+
+        # create `sum_terms`, where row m - 1 has the summation term for m
+        sum_terms = numpy.vstack(
+                [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
+                 self._msplines.M(x, m, k + 1) / (k + 1)
+                 for m in range(1, self._msplines.n + 1)])
+        assert sum_terms.shape == (self._msplines.n, len(x))
+
+        # calculate j for all entries in x
         j = numpy.searchsorted(self._msplines.knots, x, 'right')
         assert all(1 <= j) and all(j <= len(self._msplines.knots))
         assert x.shape == j.shape
 
-        spline = []
-        for xval, jval in zip(x, j):
-            xval = numpy.array([xval])
-            if i > jval:
-                spline.append(0.0)
-            elif i < jval - k:
-                spline.append(1.0)
-            else:
-                spline.append(sum((self._msplines.knots[m + k] -
-                                   self._msplines.knots[m - 1]) *
-                                  self._msplines.M(xval, m, k + 1) / (k + 1)
-                                  for m in range(i + 1, jval + 1)))
-        return numpy.array(spline, dtype='float').ravel()
+        # create `binary_terms` where entry (m - 1, x) is 1 if and only if
+        # the corresponding `sum_terms` entry is part of the sum.
+        binary_terms = numpy.vstack(
+                [numpy.zeros(len(x)) if m < i + 1 else (m <= j).astype(int)
+                 for m in range(1, self._msplines.n + 1)])
+        assert binary_terms.shape == sum_terms.shape
 
-        # Vectorize calculation for j - k + 1 <= i <= j.
-        # Noting that j is a function of x, write:
-        #  sum_{m=i}^j(x) (t_{m+k+1} - t_m) * M_m(x|k+1) / (k+1) =
-        #  sum_{m=i}^n bool(m <= j(x)) (t_{m+k+1} - t_m) * M_m(x|k+1) / (k+1) =
-        #  sum_{m2=0}^{n-i} bool(m2+i <= j(x)) (t_{m2+i+k+1} - t_{m2+i})
-        #                   M_{m2+i}(x|k+1) / (k+1) =
-        #  sum_{m2=0}^{n-i} B[m2, x] * Y[m2, x]
-        # where B[m2, x] = bool(m2+i <= j(x)) and
-        # Y[m2, x] = (t_{m2+i+k+1} - t_{m2+i}) M_{m2+i}(x|k+1) / (k+1)
-        B = numpy.vstack([m2 + i <= j for m2 in range(self.n - i + 1)]
-                         ).astype(int)
-        Y = numpy.vstack([(self.knots[m2 + i + k - 1] -
-                           self.knots[m2 + i - 1]) *
-                          self._msplines.M(x, m2 + i, k + 1) / (k + 1)
-                          for m2 in range(self.n - i + 1)])
-        assert B.shape == (self.n - i + 1, len(x)) == Y.shape
-        sum_terms = numpy.sum(B * Y, axis=0)
-        assert sum_terms.shape == x.shape
+        # compute sums from `sum_terms` and `binary_terms`
+        sums = numpy.sum(sum_terms * binary_terms, axis=0)
+        assert sums.shape == x.shape
+
+        # return value with sums, 0, or 1
         return numpy.where(i > j, 0.0,
-                           numpy.where(i < j - k + 1, 1.0,
-                                       sum_terms))
+                           numpy.where(i < j - k, 1.0,
+                                       sums))
 
 
 class Msplines:
