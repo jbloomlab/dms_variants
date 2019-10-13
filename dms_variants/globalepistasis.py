@@ -456,22 +456,35 @@ class AbstractEpistasis(abc.ABC):
         Returns
         -------
         scipy.optimize.OptimizeResult
-            The results of the optimization.
+            The results of optimizing the full model.
 
         """
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
-        # optimize model by maximum likelihood
+        # optimize epistasis function parameters by maximum likelihood
+        if self._epistasis_func_params:
+            func_optres = scipy.optimize.minimize(
+                            fun=self._loglik_by_epistasis_func_params,
+                            jac=self._dloglik_by_epistasis_func_params,
+                            x0=self._epistasis_func_params,
+                            method='L-BFGS-B',
+                            bounds=self._epistasis_func_param_bounds,
+                            )
+            if not func_optres.success:
+                raise EpistasisFittingError(
+                        f"Fitting of {self.__class__.__name__} epistasis func "
+                        f"params failed after {func_optres.nit} iterations:\n"
+                        f"{func_optres.message}")
+            self._epistais_func_params = func_optres.x
+
+        # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
                         fun=self._loglik_by_allparams,
                         jac=self._dloglik_by_allparams if use_grad else None,
                         x0=self._allparams,
                         method='L-BFGS-B',
                         bounds=self._allparams_bounds,
-                        options={'ftol': 1e-8,
-                                 'maxfun': 100000,
-                                 },
                         )
         if not optres.success:
             raise EpistasisFittingError(
@@ -514,6 +527,33 @@ class AbstractEpistasis(abc.ABC):
         self._allparams = allparams
         return -self.loglik
 
+    def _loglik_by_epistasis_func_params(self, epistasis_func_params,
+                                         negative=True):
+        """(Negative) log likelihood after setting epistasis func params.
+
+        Note
+        ----
+        Calling this method alters the interal model parameters, so only
+        use if you understand what you are doing.
+
+        Parameters
+        ----------
+        epistasis_func_params : numpy.ndarray
+            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.
+        negative : bool
+            Return negative log likelihood. Useful if using a minimizer to
+            optimize.
+
+        Returns
+        -------
+        float
+            (Negative) log likelihood after setting epistasis func params
+            to `epistasis_func_params`.
+
+        """
+        self._epistasis_func_params = epistasis_func_params
+        return -self.loglik
+
     def _dloglik_by_allparams(self, allparams, negative=True):
         """(Negative) derivative of log likelihood with respect to all params.
 
@@ -545,6 +585,33 @@ class AbstractEpistasis(abc.ABC):
                                 )
         assert val.shape == (self.nparams,)
         return -val
+
+    def _dloglik_by_epistasis_func_params(self, epistasis_func_params,
+                                          negative=True):
+        """(Negative) derivative of log likelihood by epistasis func params.
+
+        Note
+        ----
+        Calling this method alters the interal model parameters, so only
+        use if you understand what you are doing.
+
+        Parameters
+        ----------
+        epistasis_func_params : numpy.ndarray
+            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.
+        negative : bool
+            Return negative log likelihood. Useful if using a minimizer to
+            optimize.
+
+        Returns
+        --------
+        numpy.ndarray
+            (Negative) derivative of log likelihood with respect to
+            :meth:`AbstractEpistasis._epistasis_func_params`.
+
+        """
+        self._epistasis_func_params = epistasis_func_params
+        return self._dloglik_depistasis_func_params
 
     @property
     def _allparams(self):
@@ -585,7 +652,7 @@ class AbstractEpistasis(abc.ABC):
         """
         bounds = ([(None, None)] * len(self._latenteffects) +
                   [(self._NEARLY_ZERO, None)] +  # HOC epistasis must be > 0
-                  [(None, None)] * len(self._epistasis_func_params)
+                  self._epistasis_func_param_bounds
                   )
         assert len(bounds) == len(self._allparams)
         return bounds
@@ -773,7 +840,7 @@ class AbstractEpistasis(abc.ABC):
     @property
     @abc.abstractmethod
     def _dloglik_depistasis_func_params(self):
-        """Get derivative of epistasis function with respect to its parameters.
+        """numpy.ndarray: Derivative of epistasis function by its parameters.
 
         Note
         ----
@@ -781,6 +848,23 @@ class AbstractEpistasis(abc.ABC):
         with respect to the latent phenotype. It is an abstract method;
         the actual functional forms for specific models are defined in
         concrete subclasses.
+
+        """
+        return NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _epistasis_func_param_bounds(self):
+        """list: Bounds for the epistasis function parameters.
+
+        For each entry in :meth:`AbstractEpistasis._epistasis_func_param_names`
+        a 2-tuple gives the lower and upper bound for optimization by
+        `scipy.optimize.minimize`.
+
+        Note
+        ----
+        This is an abstract method; the actual bounds for specific models are
+        defined in concrete subclasses.
 
         """
         return NotImplementedError
@@ -848,6 +932,17 @@ class NoEpistasis(AbstractEpistasis):
         """
         assert len(self.epistasis_func_params_dict) == 0
         return numpy.array([], dtype='float')
+
+    @property
+    def _epistasis_func_param_bounds(self):
+        """list: Bounds for the epistasis function parameters.
+
+        For :class:`NoEpistasis` models, this is just an empty list as
+        there are no epistasis function parameters.
+
+        """
+        bounds_d = {}
+        return [bounds_d[name] for name in self._epistasis_func_param_names]
 
 
 def MonotonicSplineEpistasis(AbstractEpistasis):
