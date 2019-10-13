@@ -453,6 +453,86 @@ class Msplines:
                          ) / ((k - 1) * (tiplusk - ti))),
                         0.0)
 
+    def dM_dx(self, x, i, k=None, invalid_i='raise'):
+        r"""Get derivative of :meth:`Msplines.M` with respect to `x`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Same as for :meth:`Msplines.M`.
+        i : int
+            Same as for :meth:`Msplines.M`.
+        k : int or None
+            Same as for :meth:`Msplines.M`.
+        invalid_i : {'raise', 'zero'}
+            Same as for :meth:`Msplines.M`.
+
+        Returns
+        -------
+        numpy.ndarray
+            Derivative of M-spline with respect to `x`.
+
+        Note
+        ----
+        The derivative is calculated from the equation in :meth:`Msplines.M`:
+
+        .. math::
+
+           \frac{\partial M_i\left(x \mid k=1\right)}{\partial x} &=& 0
+           \\
+           \frac{\partial M_i\left(x \mid k > 1\right)}{\partial x}
+           &=&
+           \begin{cases}
+           \frac{k\left[\left(x - t_i\right)
+                        \frac{\partial M_i\left(x \mid k-1\right)}{\partial x}
+                        +
+                        M_i\left(x \mid k-1\right)
+                        +
+                        \left(t_{i+k} -x\right)
+                        \frac{\partial M_{i+1}\left(x \mid k-1\right)}
+                             {\partial x}
+                        -
+                        M_{i+1}\left(x \mid k-1\right)
+                        \right]}
+           {\left(k - 1\right)\left(t_{i + k} - t_i\right)},
+           & \rm{if\;} t_i \le x < t_{i+1} \\
+           0, & \rm{otherwise}
+           \end{cases}
+
+        """
+        if not (1 <= i <= self.n):
+            if invalid_i == 'raise':
+                raise ValueError(f"invalid spline member `i` of {i}")
+            elif invalid_i == 'zero':
+                return 0
+            else:
+                raise ValueError(f"invalid `invalid_i` of {invalid_i}")
+        if k is None:
+            k = self.order
+        if not 1 <= k <= self.order:
+            raise ValueError(f"invalid spline order `k` of {k}")
+        if not isinstance(x, numpy.ndarray):
+            raise ValueError('`x` not numpy.ndarray')
+        if (x < self.lower).any() or (x > self.upper).any():
+            raise ValueError(f"`x` not between {self.lower} and {self.upper}")
+
+        tiplusk = self.knots[i + k - 1]
+        ti = self.knots[i - 1]
+        if tiplusk == ti or k == 1:
+            return numpy.zeros(x.shape, dtype='float')
+        else:
+            assert k > 1
+            return numpy.where(
+                        (ti <= x) & (x < tiplusk),
+                        (k * ((x - ti) * self.dM_dx(x, i, k - 1) +
+                              self.M(x, i, k - 1) +
+                              (tiplusk - x) * self.dM_dx(x, i + 1, k - 1,
+                                                         invalid_i='zero') -
+                              self.M(x, i + 1, k - 1, invalid_i='zero')
+                              ) / ((k - 1) * (tiplusk - ti))
+                         ),
+                        0.0)
+
 
 if __name__ == '__main__':
     import doctest
