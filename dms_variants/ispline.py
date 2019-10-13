@@ -54,8 +54,11 @@ class Isplines:
     .. plot::
        :context: reset
 
+       >>> import functools
+       >>> import itertools
        >>> import numpy
        >>> import pandas as pd
+       >>> import scipy.optimize
        >>> from dms_variants.ispline import Isplines
 
        >>> isplines = Isplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
@@ -72,7 +75,7 @@ class Isplines:
 
        Evaluate the I-splines at some selected points:
 
-       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 1])
+       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
        >>> for i in range(1, isplines.n + 1):
        ...     print(f"I{i}: {numpy.round(isplines.I(x, i), 2)}")
        ... # doctest: +NORMALIZE_WHITESPACE
@@ -91,6 +94,16 @@ class Isplines:
        ...     data[f"I{i}"] = isplines.I(xplot, i)
        >>> df = pd.DataFrame(data)
        >>> _ = df.plot(x='x')
+
+       Check that the gradients are correct:
+
+       >>> for i, xval in itertools.product(range(1, isplines.n + 1), x):
+       ...     xval = numpy.array([xval])
+       ...     ifunc = functools.partial(isplines.I, i=i)
+       ...     difunc = functools.partial(isplines.dI_dx, i=i)
+       ...     err = scipy.optimize.check_grad(ifunc, difunc, xval)
+       ...     if err > 1e-5:
+       ...         raise ValueError(f"excess err {err} for {i}, {xval}")
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -198,9 +211,9 @@ class Isplines:
             raise ValueError(f"invalid spline member `i` of {i}")
 
         if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` not numpy.ndarray')
+            raise ValueError('`x` is not numpy.ndarray')
         if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` not between {self.lower} and {self.upper}")
+            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         k = self.order
 
@@ -304,8 +317,11 @@ class Msplines:
     .. plot::
        :context: reset
 
+       >>> import functools
+       >>> import itertools
        >>> import numpy
        >>> import pandas as pd
+       >>> import scipy.optimize
        >>> from dms_variants.ispline import Msplines
 
        >>> msplines = Msplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
@@ -343,6 +359,16 @@ class Msplines:
        ...     data[f"M{i}"] = msplines.M(xplot, i)
        >>> df = pd.DataFrame(data)
        >>> _ = df.plot(x='x')
+
+       Check that the gradients are correct:
+
+       >>> for i, xval in itertools.product(range(1, msplines.n + 1), x):
+       ...     xval = numpy.array([xval])
+       ...     mfunc = functools.partial(msplines.M, i=i)
+       ...     dmfunc = functools.partial(msplines.dM_dx, i=i)
+       ...     err = scipy.optimize.check_grad(mfunc, dmfunc, xval)
+       ...     if err > 1e-5:
+       ...         raise ValueError(f"excess err {err} for {i}, {xval}")
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -430,9 +456,9 @@ class Msplines:
         if not 1 <= k <= self.order:
             raise ValueError(f"invalid spline order `k` of {k}")
         if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` not numpy.ndarray')
+            raise ValueError('`x` is not numpy.ndarray')
         if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` not between {self.lower} and {self.upper}")
+            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
@@ -512,9 +538,9 @@ class Msplines:
         if not 1 <= k <= self.order:
             raise ValueError(f"invalid spline order `k` of {k}")
         if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` not numpy.ndarray')
+            raise ValueError('`x` is not numpy.ndarray')
         if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` not between {self.lower} and {self.upper}")
+            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
