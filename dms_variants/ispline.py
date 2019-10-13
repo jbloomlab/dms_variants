@@ -123,7 +123,7 @@ class Isplines:
         Parameters
         ----------
         x : numpy.ndarray
-            One or more points in range covered by the splines.
+            One or more points in range covered by the spline.
         i : int
             Spline member :math:`I_i`, where :math:`1 \le i \le`
             :attr:`Isplines.n`.
@@ -160,6 +160,40 @@ class Isplines:
         .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html
 
         """
+        return self._calculate_I_or_dI(x, i, 'I')
+
+    def _calculate_I_or_dI(self, x, i, quantity):
+        """Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Same meaning as for :meth:`Isplines.I`.
+        i : int
+            Same meaning as for :meth:`Isplines.I`.
+        quantity : {'I', 'dI'}
+            Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`?
+
+        Returns
+        -------
+        numpy.ndarray
+            The return value of :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.
+
+        Note
+        ----
+        Most calculations for :meth:`Isplines.I` and :meth:`Isplines.dI_dx`
+        are the same, so this method implements both.
+
+        """
+        if quantity == 'I':
+            func = self._msplines.M
+            i_lt_jminusk = 1.0
+        elif quantity == 'dI':
+            func = self._msplines.dM_dx
+            i_lt_jminusk = 0.0
+        else:
+            raise ValueError(f"invalid `quantity` {quantity}")
+
         if not (1 <= i <= self.n):
             raise ValueError(f"invalid spline member `i` of {i}")
 
@@ -173,7 +207,7 @@ class Isplines:
         # create `sum_terms`, where row m - 1 has the summation term for m
         sum_terms = numpy.vstack(
                 [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
-                 self._msplines.M(x, m, k + 1) / (k + 1)
+                 func(x, m, k + 1) / (k + 1)
                  for m in range(1, self._msplines.n + 1)])
         assert sum_terms.shape == (self._msplines.n, len(x))
 
@@ -195,8 +229,42 @@ class Isplines:
 
         # return value with sums, 0, or 1
         return numpy.where(i > j, 0.0,
-                           numpy.where(i < j - k, 1.0,
+                           numpy.where(i < j - k, i_lt_jminusk,
                                        sums))
+
+    def dI_dx(self, x, i):
+        r"""Get derivative of :meth:`Isplines.I` with respect to `x`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Same meaning as for :meth:`Isplines.I`.
+        i : int
+            Same meaning as for :meth:`Isplines.I`.
+
+        Returns
+        -------
+        numpy.ndarray
+            Derivative of I-spline with respect to `x`.
+
+        Note
+        ----
+        The derivative is calculated from the equation in :meth:`Isplines.I`:
+
+        .. math::
+
+           \frac{\partial I_i\left(x\right)}{\partial x}
+           =
+           \begin{cases}
+           0 & \rm{if\;} i > j \rm{\; or \;} i < j - k, \\
+           \sum_{m=i+1}^j\left(t_{m+k+1} - t_m\right)
+                         \frac{\partial M_m\left(x \mid k+1\right)}{\partial x}
+                         \frac{1}{k + 1}
+             & \rm{otherwise}.
+           \end{cases}
+
+        """
+        return self._calculate_I_or_dI(x, i, 'dI')
 
 
 class Msplines:
@@ -312,7 +380,7 @@ class Msplines:
         Parameters
         ----------
         x : numpy.ndarray
-            One or more points in the range covered by the splines.
+            One or more points in the range covered by the spline.
         i : int
             Spline member :math:`M_i`, where :math:`1 \le i \le`
             :attr:`Msplines.n`.
