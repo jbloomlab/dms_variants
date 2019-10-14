@@ -7,7 +7,7 @@ Implements global epistasis models based on `Otwinoski et al (2018)`_.
 
 .. contents:: Contents
    :local:
-   :depth: 1
+   :depth: 2
 
 Definition of models
 ---------------------
@@ -44,34 +44,38 @@ where :math:`g` is the *global epistasis function*.
 
 We define epistasis models with the following global epistasis functions:
 
- - **Non-epistatic model**:
-   This model has no epistasis, so the observed phenotype is just the latent
-   phenotype. In other words:
+Non-epistatic model
++++++++++++++++++++++
+This model has no epistasis, so the observed phenotype is just the latent
+phenotype. In other words:
 
-   .. math::
-      :label: noepistasis
+.. math::
+   :label: noepistasis
 
-      g\left(x\right) = x.
+   g\left(x\right) = x.
 
-   This model is implemented as :class:`NoEpistasis`.
+This model is implemented as :class:`NoEpistasis`.
 
- - **Monotonic spline epistasis model**:
-   This is the model used in `Otwinoski et al (2018)`_, which transforms
-   the latent phenotype to the observed phenotype using monotonic splines:
+Monotonic spline epistasis model
++++++++++++++++++++++++++++++++++
+This is the model used in `Otwinoski et al (2018)`_. It transforms
+the latent phenotype to the observed phenotype using monotonic I-splines:
 
-   .. math::
-      :label:monotonicsplineepistasis
+.. math::
+   :label: monotonicsplineepistasis
 
-      g\left(x\right) = c_{\alpha} + \sum_m \alpha_{m=1}^M I_m\left(x\right)
+   g\left(x\right) = c_{\alpha} + \sum_{m=1}^M \alpha_{m} I_m\left(x\right)
 
-   where :math:`c_{\alpha}` is an arbitrary number giving the _minimum_
-   observed phenotype, the :math:`\alpha_m` coefficients are all :math:`\ge 0`,
-   :math:`M = 5`
+where :math:`c_{\alpha}` is an arbitrary number giving the *minimum*
+observed phenotype, the :math:`\alpha_m` coefficients are all :math:`\ge 0`,
+and :math:`I_m` indicates a family of I-splines defined via
+:class:`dms_variants.ispline.Isplines`.
 
-   Polynomials are order :math:`k = 3`, which means polynomials are degree
-   :math:`k - 1 = 2`.
-
-   This model is implemented as class:`MonotonicSplineEpistasis`.
+This model is implemented as :class:`MonotonicSplineEpistasis`. By default,
+the I-splines are of order 3 and are defined on a mesh of four evenly spaced
+points such that the total number of I-splines is :math:`M=5` (although these
+options can be adjusted when initializing a :class:`MonotonicSplineEpistasis`
+model).
 
 Fitting of models
 -------------------
@@ -200,12 +204,13 @@ API implementing models
 
 import abc
 import collections
-import inspect
 
 import numpy
 
 import scipy.optimize
 import scipy.stats
+
+import dms_variants.ispline
 
 
 class EpistasisFittingError(Exception):
@@ -244,8 +249,7 @@ class AbstractEpistasis(abc.ABC):
         # initialize params
         self._latenteffects = numpy.zeros(self._nlatent + 1, dtype='float')
         self.epistasis_HOC = 1.0
-        self._epistasis_func_params = numpy.zeros(
-                    len(self._epistasis_func_param_names), dtype='float')
+        self._epistasis_func_params = self._init_epistasis_func_params
 
     # ------------------------------------------------------------------------
     # Methods / properties to set and get model parameters that are fit.
@@ -354,18 +358,6 @@ class AbstractEpistasis(abc.ABC):
         return self._latenteffects[self._nlatent]
 
     @property
-    def _epistasis_func_param_names(self):
-        """list: Names of :meth:`AbstractEpistasis.epistasis_func_params`."""
-        if not hasattr(self, '_epistasis_func_param_names_val'):
-            sig_params = inspect.signature(self.epistasis_func).parameters
-            if 'latent_phenotype' not in sig_params:
-                raise ValueError('`epistasis_func` signature lacks '
-                                 f"'latent_phenotype':\n{sig_params}")
-            self._epistasis_func_param_names_val = [x for x in sig_params
-                                                    if x != 'latent_phenotype']
-        return self._epistasis_func_param_names_val
-
-    @property
     def epistasis_func_params_dict(self):
         """OrderedDict: :meth:`AbstractEpistasis.epistasis_func` param values.
 
@@ -435,8 +427,7 @@ class AbstractEpistasis(abc.ABC):
             Observed phenotypes calculated using Eq. :eq:`latent_phenotype`.
 
         """
-        observed = self.epistasis_func(latent_phenotypes,
-                                       **self.epistasis_func_params_dict)
+        observed = self.epistasis_func(latent_phenotypes)
         assert observed.shape == latent_phenotypes.shape
         return observed
 
@@ -807,7 +798,6 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     # Abstract methods for global epistasis func, must implement in subclasses
     # ------------------------------------------------------------------------
-    @classmethod
     @abc.abstractmethod
     def epistasis_func(self, latent_phenotype):
         """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
@@ -822,7 +812,6 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
-    @classmethod
     @abc.abstractmethod
     def depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
@@ -845,9 +834,22 @@ class AbstractEpistasis(abc.ABC):
         Note
         ----
         This is the derivative of :meth:`AbstractEpistasis.epistasis_func`
-        with respect to the latent phenotype. It is an abstract method;
+        with respect to the latent phenotype. It is an abstract property
         the actual functional forms for specific models are defined in
         concrete subclasses.
+
+        """
+        return NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _epistasis_func_param_names(self):
+        """list: Names of :meth:`AbstractEpistasis.epistasis_func_params`.
+
+        Note
+        ----
+        This is an abstract property; the actual bounds for specific models are
+        defined in concrete subclasses.
 
         """
         return NotImplementedError
@@ -863,7 +865,20 @@ class AbstractEpistasis(abc.ABC):
 
         Note
         ----
-        This is an abstract method; the actual bounds for specific models are
+        This is an abstract property; the actual bounds for specific models are
+        defined in concrete subclasses.
+
+        """
+        return NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _init_epistasis_func_params(self):
+        """numpy.ndarray: Init :meth:`AbstractEpistasis._epistasis_func_params`
+
+        Note
+        ----
+        This is an abstract property; the actual bounds for specific models are
         defined in concrete subclasses.
 
         """
@@ -881,11 +896,15 @@ class NoEpistasis(AbstractEpistasis):
     This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
     of that abstract base class for details on most properties and methods.
 
+    Parameters
+    ----------
+    binarymap : :class:`dms_variants.binarymap.BinaryMap`
+        Contains the variants, their functional scores, and score variances.
+
     """
 
-    @classmethod
-    def epistasis_func(cls, latent_phenotype):
-        """Global epistasis function :math:`g` in Eq. :eq:`noepistasis`.
+    def epistasis_func(self, latent_phenotype):
+        """Apply :math:`g` in Eq. :eq:`noepistasis`.
 
         Parameters
         -----------
@@ -901,8 +920,7 @@ class NoEpistasis(AbstractEpistasis):
         """
         return latent_phenotype
 
-    @classmethod
-    def depistasis_func_dlatent(cls, latent_phenotype):
+    def depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
 
         Parameters
@@ -934,6 +952,16 @@ class NoEpistasis(AbstractEpistasis):
         return numpy.array([], dtype='float')
 
     @property
+    def _epistasis_func_param_names(self):
+        """list: Epistasis function parameter names.
+
+        For :class:`NoEpistasis`, this is just an emptly list as there are
+        no epistasis function parameters.
+
+        """
+        return []
+
+    @property
     def _epistasis_func_param_bounds(self):
         """list: Bounds for the epistasis function parameters.
 
@@ -944,10 +972,140 @@ class NoEpistasis(AbstractEpistasis):
         bounds_d = {}
         return [bounds_d[name] for name in self._epistasis_func_param_names]
 
+    @property
+    def _init_epistasis_func_params(self):
+        """numpy.ndarray: Initial :meth:`NoEpistasis._epistasis_func_params`.
 
-def MonotonicSplineEpistasis(AbstractEpistasis):
-    """Docs needed"""
-    pass
+        For :class:`NoEpistasis` models, this is just an empty array as
+        there are no epistasis function parameters.
+
+        """
+        init_d = {}
+        return numpy.array([init_d[name] for name in
+                            self._epistasis_func_param_names],
+                           dtype='float')
+
+
+class MonotonicSplineEpistasis(AbstractEpistasis):
+    """Monotonic spline global epistasis model.
+
+    Note
+    ----
+    Models global epistasis function :math:`g` via monotonic splines as
+    defined in Eq. :eq:`monotonicsplineepistasis`.
+
+    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
+    of that abstract base class for details on most properties and methods.
+
+    Parameters
+    ----------
+    binarymap : :class:`dms_variants.binarymap.BinaryMap`
+        Contains the variants, their functional scores, and score variances.
+    spline_order : int
+        Order of the I-splines defining the global epistasis function.
+    mesh : array-like
+        Mesh points for the I-spline defining the global epistasis function.
+
+    """
+
+    def __init__(self,
+                 binarymap,
+                 *,
+                 spline_order=3,
+                 mesh=(0.0, 1 / 3., 2 / 3., 1.0),
+                 ):
+        """See main class docstring."""
+        self._isplines = dms_variants.ispline.Isplines(spline_order, mesh)
+        super().__init__(binarymap)
+
+    @property
+    def isplines(self):
+        """:class:`dms_variants.ispline.Isplines`: The I-splines."""
+        return self._isplines
+
+    def epistasis_func(self, latent_phenotype):
+        """Apply :math:`g` in Eq. :eq:`monotonicsplineepistasis`.
+
+        Parameters
+        -----------
+        latent_phenotype : float or numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Observed phenotype(s) after transforming the latent phenotypes
+            using the global epistasis function.
+
+        """
+        raise NotImplementedError
+
+    def depistasis_func_dlatent(self, latent_phenotype):
+        """Get derivative of epistasis function by latent phenotype.
+
+        Parameters
+        -----------
+        latent_phenotype : float or numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            Derivative of :meth:`MonotonicSplineEpistasis.epistasis_func` with
+            with respect to latent phenotype evaluated at `latent_phenotype`.
+
+        """
+        raise NotImplementedError
+
+    @property
+    def _dloglik_depistasis_func_params(self):
+        """numpy.ndarray: Derivative of epistasis function by its params."""
+        raise NotImplementedError
+
+    @property
+    def _epistasis_func_param_names(self):
+        r"""list: Epistasis function parameter names.
+
+        These are the :math:`c_{\alpha}` and :math:`\alpha_m` parameters
+        in Eq. :eq:`monotonicsplineepistasis`.
+
+        """
+        return ['c_alpha'] + [f"alpha_{m}" for m in
+                              range(1, self.isplines.n + 1)]
+
+    @property
+    def _epistasis_func_param_bounds(self):
+        r"""list: Bounds for the epistasis function parameters.
+
+        There is no bound on :math:`c_{\alpha}`, and the :math:`\alpha_m`
+        parameters must be > 0.
+
+        """
+        bounds_d = {'c_alpha': (None, None)}
+        for m in range(1, self.isplines.n + 1):
+            bounds_d[f"alpha_{m}"] = (self._NEARLY_ZERO, None)
+        return [bounds_d[name] for name in self._epistasis_func_param_names]
+
+    @property
+    def _init_epistasis_func_params(self):
+        r"""numpy.ndarray: Initial values for epistasis func parameters.
+
+        :math:`c_{alpha}` is set to the minimum observed phenotype in the
+        actual data, and all :math:`\alpha_m` values are set to
+        :math:`\left[\max\left(y_v\right) - \min\left(y_v\right)\right] / M`
+        so that the range of :math:`g` over 0 to 1 goes from the smallest
+        to largest observed phenotype.
+
+        """
+        func_score_min = min(self.binarymap.func_scores)
+        func_score_max = min(self.binarymap.func_scores)
+        init_d = {'c_alpha': func_score_min}
+        for m in range(1, self.isplines.n + 1):
+            init_d[f"alpha_{m}"] = ((func_score_min / func_score_max) /
+                                    self.isplines.n)
+        return numpy.array([init_d[name] for name in
+                            self._epistasis_func_param_names],
+                           dtype='float')
 
 
 if __name__ == '__main__':
