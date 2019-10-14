@@ -95,6 +95,22 @@ class Isplines:
        >>> df = pd.DataFrame(data)
        >>> _ = df.plot(x='x')
 
+       Now calculate the weighted sum of the I-spline family, using the
+       same weights as in Fig. 1 of `Ramsay (1988)`_:
+
+       >>> weights=numpy.array([1.2, 2, 1.2, 1.2, 3, 0]) / 6
+       >>> numpy.round(isplines.Itotal(x, weights, w_lower=0), 2)
+       array([0.  , 0.38, 0.54, 0.66, 1.21, 1.43])
+
+       Now calculate using some points that require linear extrapolation
+       outside the mesh and also have a nonzero `w_lower`:
+
+       >>> numpy.round(isplines.Itotal(
+       ...      numpy.array([-0.5, -0.25, 0, 0.01, 1.0, 1.5]),
+       ...      weights=weights,
+       ...      w_lower=1), 3)
+       array([0.   , 0.5  , 1.   , 1.02 , 2.433, 2.433])
+
        Check that the gradients are correct:
 
        >>> for i, xval in itertools.product(range(1, isplines.n + 1), x):
@@ -104,6 +120,16 @@ class Isplines:
        ...     err = scipy.optimize.check_grad(ifunc, difunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {i}, {xval}")
+
+       >>> for xval in [-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5]:
+       ...     xval = numpy.array([xval])
+       ...     itotfunc = functools.partial(isplines.Itotal, weights=weights,
+       ...                                  w_lower=0)
+       ...     ditotfunc = functools.partial(isplines.dItotal_dx,
+       ...                                   weights=weights)
+       ...     err = scipy.optimize.check_grad(itotfunc, ditotfunc, xval)
+       ...     if err > 1e-5:
+       ...         raise ValueError(f"excess err {err} for {xval}")
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -129,6 +155,175 @@ class Isplines:
         self.n = len(self.mesh) - 2 + self.order
 
         self._msplines = Msplines(order + 1, mesh)
+
+    def Itotal(self, x, weights, w_lower, linear_extrapolate=True):
+        r"""Evaluate weighted sum of spline family at points :math:`x`.
+
+        Note
+        ----
+        Evaluates the full interpolating curve from the I-splines. When
+        :math:`x` falls within the lower :math:`L` and upper :math:`U`
+        bounds of the range covered by the I-splines (:math:`L \le x \le U`),
+        then this curve is defined as:
+
+        .. math::
+
+           I_{\rm{total}}\left(x\right)
+           =
+           w_{\rm{lower}} + \sum_i w_i I_i\left(x\right).
+
+        When :math:`x` is outside the range of the mesh covered by the splines,
+        the values are linearly extrapolated from first derivative at the
+        bounds. Specifically, if :math:`x < L` then:
+
+        .. math::
+
+           I_{\rm{total}}\left(x\right)
+           =
+           I_{\rm{total}}\left(L\right) +
+           \left(x - L\right)
+           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                      {\partial y}\right\rvert_{y=L},
+
+        and if :math:`x > U` then:
+
+        .. math::
+
+           I_{\rm{total}}\left(x\right)
+           =
+           I_{\rm{total}}\left(U\right) +
+           \left(x - U\right)
+           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                      {\partial y}\right\rvert_{y=U}.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Points at which to evaluate the spline family.
+        weights : numpy.ndarray
+            Nonnegative weights :math:`w_i` of members :math:`I_i` of spline
+            family, should be of length equal to :attr:`Isplines.n`.
+        w_lower : float
+            The value at the lower bound :math:`L` of the spline range,
+            :math:`w_{\rm{lower}}`.
+        linear_extrapolate : bool
+            Linearly extrapolate values outside mesh covered by spline. If
+            `False`, raise an error if any points in `x` outside mesh range.
+
+        Returns
+        -------
+        numpy.ndarray
+            Value of :math:`I_{\rm{total}}` for each point in `x`.
+
+        """
+        return self._calculate_Itotal_or_dItotal_dx(x, weights, w_lower,
+                                                    linear_extrapolate,
+                                                    'Itotal')
+
+    def _calculate_Itotal_or_dItotal_dx(self, x, weights, w_lower,
+                                        linear_extrapolate, quantity):
+        """Calculate :meth:`Isplines.Itotal` or :meth:`Isplines.dItotal_dx`.
+
+        The calculations are mostly similar for these two methods. Set
+        `quantity` to 'Itotal' or 'dItotal_dx'.
+
+        """
+        if not isinstance(x, numpy.ndarray):
+            raise ValueError(f"`x` is not a numpy array: {type(x)}")
+
+        # get indices of `x` in, above, or below I-spline range
+        index = {'below': numpy.flatnonzero(x < self.lower),
+                 'above': numpy.flatnonzero(x > self.upper),
+                 'in': numpy.flatnonzero((x >= self.lower) & (x <= self.upper))
+                 }
+        if (not linear_extrapolate) and (index['below'] or index['above']):
+            raise ValueError('`x` out of range, `linear_extrapolate` is False')
+
+        # check validity of `weights`
+        if weights.shape != (self.n,):
+            raise ValueError(f"invalid shape of `weights`: {weights.shape}")
+        if any(weights < 0):
+            raise ValueError(f"`weights` not all non-negative: {weights}")
+
+        # compute Itotal return values for each category of indices
+        itotal = {}
+        if quantity == 'Itotal':
+            if len(index['in']):
+                itotal['in'] = numpy.sum([self.I(x[index['in']], i) *
+                                          weights[i - 1]
+                                          for i in range(1, self.n + 1)],
+                                         axis=0) + w_lower
+            for name, limit in [('below', self.lower), ('above', self.upper)]:
+                if not len(index[name]):
+                    continue
+                limit_arr = numpy.array([limit], dtype='float')
+                itotal[name] = (self.Itotal(limit_arr, weights, w_lower) +
+                                (x[index[name]] - limit) *
+                                self.dItotal_dx(limit_arr, weights)
+                                )
+        elif quantity == 'dItotal_dx':
+            if len(index['in']):
+                itotal['in'] = numpy.sum([self.dI_dx(x[index['in']], i) *
+                                          weights[i - 1]
+                                          for i in range(1, self.n + 1)],
+                                         axis=0)
+            for name, limit in [('below', self.lower), ('above', self.upper)]:
+                if not len(index[name]):
+                    continue
+                limit_arr = numpy.array([limit], dtype='float')
+                itotal[name] = self.dItotal_dx(limit_arr, weights)
+        else:
+            raise ValueError(f"invalid `quantity` {quantity}")
+
+        # reconstruct return value from indices and values for each
+        returnval = numpy.full_like(x, fill_value=numpy.nan, dtype='float')
+        for name, name_index in index.items():
+            if len(name_index):
+                returnval[name_index] = itotal[name]
+        assert not numpy.isnan(returnval).any()
+        return returnval
+
+    def dItotal_dx(self, x, weights, linear_extrapolate=True):
+        r"""Get derivative of :meth:`Isplines.Itotal` with respect to :math:`x`.
+
+        Note
+        ----
+        Derivatives calculated from equations in :meth:`Isplines.Itotal` as:
+
+        .. math::
+
+           \frac{\partial I_{\rm{total}}\left(x\right)}{\partial x}
+           =
+           \begin{cases}
+           \sum_i w_i \frac{\partial I_i\left(x\right)}{\partial x}
+             & \rm{if\;} L \le x \le U, \\
+           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                      {\partial y}\right\rvert_{y=L}
+             & \rm{if\;} x < L, \\
+           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                      {\partial y}\right\rvert_{y=U}
+             & \rm{otherwise}.
+           \end{cases}
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Same meaning as for :meth:`Isplines.Itotal`.
+        weights : numpy.ndarray
+            Same meaning as for :meth:`Isplines.Itotal`.
+        linear_extrapolate : bool
+            Same meaning as for :meth:`Isplines.Itotal`.
+
+        Returns
+        -------
+        numpy.ndarray
+            Derivative :math:`\frac{\partial I_{\rm{total}}}{\partial x}`
+            for each point in `x`.
+
+        """
+        return self._calculate_Itotal_or_dItotal_dx(x, weights, None,
+                                                    linear_extrapolate,
+                                                    'dItotal_dx')
 
     def I(self, x, i):  # noqa: E743
         r"""Evaluate spline :math:`I_i` at point(s) :math:`x`.
