@@ -69,7 +69,9 @@ the latent phenotype to the observed phenotype using monotonic I-splines:
 where :math:`c_{\alpha}` is an arbitrary number giving the *minimum*
 observed phenotype, the :math:`\alpha_m` coefficients are all :math:`\ge 0`,
 and :math:`I_m` indicates a family of I-splines defined via
-:class:`dms_variants.ispline.Isplines`.
+:class:`dms_variants.ispline.Isplines`. When :math:`x` is outside the range
+of the I-splines, we linearly extrapolate :math:`g` from its range boundaries
+to calculate :math:`g\left(x\right)`.
 
 This model is implemented as :class:`MonotonicSplineEpistasis`. By default,
 the I-splines are of order 3 and are defined on a mesh of four evenly spaced
@@ -713,7 +715,7 @@ class AbstractEpistasis(abc.ABC):
             self._cache[key] = (
                     self._binary_variants
                     .transpose()  # convert from V by M to M by V
-                    .multiply(self.depistasis_func_dlatent(
+                    .multiply(self._depistasis_func_dlatent(
                                 self._latent_phenotypes))
                     )
             assert self._cache[key].shape == (self._nlatent + 1,
@@ -813,7 +815,7 @@ class AbstractEpistasis(abc.ABC):
         return NotImplementedError
 
     @abc.abstractmethod
-    def depistasis_func_dlatent(self, latent_phenotype):
+    def _depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
 
         Note
@@ -920,7 +922,7 @@ class NoEpistasis(AbstractEpistasis):
         """
         return latent_phenotype
 
-    def depistasis_func_dlatent(self, latent_phenotype):
+    def _depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
 
         Parameters
@@ -1038,9 +1040,25 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             using the global epistasis function.
 
         """
+        # classify `latent_phenotype` as in, above, or below I-spline range
+        index_below = numpy.where(latent_phenotype < self.isplines.lower)
+        index_above = numpy.where(latent_phenotype > self.isplines.upper)
+        index_in = numpy.where((latent_phenotype >= self.isplines.lower) &
+                               (latent_phenotype <= self.isplines.upper))
+        assert len(latent_phenotype) == (len(index_below) + len(index_above) +
+                                         len(index_in))
+        assert not numpy.intersect1d(index_below, index_above)
+        assert not numpy.intersect1d(index_below, index_in)
+        assert not numpy.intersect1d(index_above, index_in)
+
+        # get slopes at edge of mesh to extrapolate
+        slope_below, slope_above = self._depistasis_func_dlatent(
+                                    numpy.array([self.isplines.lower,
+                                                 self.isplines.upper]))
+
         raise NotImplementedError
 
-    def depistasis_func_dlatent(self, latent_phenotype):
+    def _depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
 
         Parameters
