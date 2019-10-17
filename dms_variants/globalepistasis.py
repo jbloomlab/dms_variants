@@ -62,7 +62,7 @@ This is the model used in `Otwinoski et al (2018)`_. It transforms
 the latent phenotype to the observed phenotype using monotonic I-splines:
 
 .. math::
-   :label: monotonicsplineepistasis
+   :label: monotonicspline
 
    g\left(x\right) = c_{\alpha} + \sum_{m=1}^M \alpha_{m} I_m\left(x\right)
 
@@ -194,6 +194,37 @@ For the optimization, we use the following gradients:
                                 {\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2}\right)^2
                      - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]
 
+For derivatives of log likelihood with respect to the parameters of
+:math:`g` as defined in Eq. :eq:`monotonicspline`:
+
+.. math::
+
+   \frac{g\left(x\right)}{\partial c_{\alpha}} = 1
+
+.. math::
+
+   \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
+
+.. math::
+   :label: dloglik_dcalpha
+
+   \frac{\mathcal{L}}{\partial c_{\alpha}}
+   &=&
+   \frac{\mathcal{L}}{\partial p\left(v\right)}
+   \frac{\partial p\left(v\right)}{\partial c_{\alpha}} \\
+   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
+                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
+
+.. math::
+   :label: dloglik_dalpham
+
+   \frac{\mathcal{L}}{\partial \alpha_m}
+   &=&
+   \frac{\mathcal{L}}{\partial p\left(v\right)}
+   \frac{\partial p\left(v\right)}{\partial \alpha_m} \\
+   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
+                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
+       I_m\left(\phi\left(v\right)\right)
 
 
 API implementing models
@@ -831,14 +862,14 @@ class AbstractEpistasis(abc.ABC):
     @property
     @abc.abstractmethod
     def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Derivative of epistasis function by its parameters.
+        """numpy.ndarray: Derivative log likelihood by epistasis func params.
 
         Note
         ----
-        This is the derivative of :meth:`AbstractEpistasis.epistasis_func`
-        with respect to the latent phenotype. It is an abstract property
-        the actual functional forms for specific models are defined in
-        concrete subclasses.
+        Derivative of :meth:`AbstractEpistasis.loglik` with respect to
+        :meth:`AbstractEpistasis._epistasis_func_params`. It is an abstract
+        property, the actual functional forms for specific models are defined
+        in concrete subclasses.
 
         """
         return NotImplementedError
@@ -944,7 +975,7 @@ class NoEpistasis(AbstractEpistasis):
 
     @property
     def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Derivative of epistasis function by its parameters.
+        """numpy.ndarray: Derivative of log likelihood by epistasis fun params.
 
         For :class:`NoEpistasis` models, this is just an empty array as there
         are no epistasis function parameters.
@@ -994,7 +1025,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     Note
     ----
     Models global epistasis function :math:`g` via monotonic splines as
-    defined in Eq. :eq:`monotonicsplineepistasis`.
+    defined in Eq. :eq:`monotonicspline`.
 
     This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
     of that abstract base class for details on most properties and methods.
@@ -1026,7 +1057,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         return self._isplines
 
     def epistasis_func(self, latent_phenotype):
-        """Apply :math:`g` in Eq. :eq:`monotonicsplineepistasis`.
+        """Apply :math:`g` in Eq. :eq:`monotonicspline`.
 
         Parameters
         -----------
@@ -1040,23 +1071,10 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             using the global epistasis function.
 
         """
-        # classify `latent_phenotype` as in, above, or below I-spline range
-        index_below = numpy.where(latent_phenotype < self.isplines.lower)
-        index_above = numpy.where(latent_phenotype > self.isplines.upper)
-        index_in = numpy.where((latent_phenotype >= self.isplines.lower) &
-                               (latent_phenotype <= self.isplines.upper))
-        assert len(latent_phenotype) == (len(index_below) + len(index_above) +
-                                         len(index_in))
-        assert not numpy.intersect1d(index_below, index_above)
-        assert not numpy.intersect1d(index_below, index_in)
-        assert not numpy.intersect1d(index_above, index_in)
-
-        # get slopes at edge of mesh to extrapolate
-        slope_below, slope_above = self._depistasis_func_dlatent(
-                                    numpy.array([self.isplines.lower,
-                                                 self.isplines.upper]))
-
-        raise NotImplementedError
+        return self.isplines.Itotal(x=latent_phenotype,
+                                    weights=self.alpha_ms,
+                                    w_lower=self.c_alpha,
+                                    linear_extrapolate=True)
 
     def _depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
@@ -1073,19 +1091,39 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             with respect to latent phenotype evaluated at `latent_phenotype`.
 
         """
-        raise NotImplementedError
+        return self.isplines.dItotal_dx(x=latent_phenotype,
+                                        weights=self.alpha_ms,
+                                        linear_extrapolate=True)
 
     @property
     def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Derivative of epistasis function by its params."""
-        raise NotImplementedError
+        r"""numpy.ndarray: Derivative of epistasis function by its params.
+
+        Derivative of :meth:`AbstractEpistasis.loglik` with respect to
+        :meth:`AbstractEpistasis._epistasis_func_params`.
+
+        Note
+        ----
+        See Eqs. and :eq:`dloglik_dcalpha` and :eq:`dloglik_dalpham`.
+
+        """
+        assert self._epistasis_func_params[0] == self.c_alpha
+        assert all(self._epistasis_func_params[1:] == self.alpha_ms)
+        dlog_dobs = self._func_score_minus_observed_pheno_over_variance
+        deriv = numpy.array(
+                    [dlog_dobs] +
+                    [dlog_dobs.dot(self.isplines.I(self._latent_phenotypes, m))
+                     for m in range(1, self.isplines.n + 1)],
+                    dtype='float')
+        assert deriv.shape == self._epistasis_func_params.shape
+        return deriv
 
     @property
     def _epistasis_func_param_names(self):
         r"""list: Epistasis function parameter names.
 
         These are the :math:`c_{\alpha}` and :math:`\alpha_m` parameters
-        in Eq. :eq:`monotonicsplineepistasis`.
+        in Eq. :eq:`monotonicspline`.
 
         """
         return ['c_alpha'] + [f"alpha_{m}" for m in
@@ -1123,6 +1161,18 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                                     self.isplines.n)
         return numpy.array([init_d[name] for name in
                             self._epistasis_func_param_names],
+                           dtype='float')
+
+    @property
+    def c_alpha(self):
+        r"""float: :math:`c_{\alpha}` in Eq. :eq:`monotonicspline`."""
+        return self.epistasis_func_params_dict['c_alpha']
+
+    @property
+    def alpha_ms(self):
+        r"""numpy.ndarray: :math:`\alpha_m` in Eq. :eq:`monotonicspline`."""
+        return numpy.array([self.epistasis_func_params_dict[f"alpha_{m}"]
+                            for m in range(1, self.isplines.n + 1)],
                            dtype='float')
 
 
