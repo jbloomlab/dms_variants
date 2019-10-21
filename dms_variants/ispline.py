@@ -111,7 +111,7 @@ class Isplines:
        ...      w_lower=1), 3)
        array([0.   , 0.5  , 1.   , 1.02 , 2.433, 2.433])
 
-       Check that the gradients are correct:
+       Check that gradients are correct. First test :meth:`Isplines.dI_dx`:
 
        >>> for i, xval in itertools.product(range(1, isplines.n + 1), x):
        ...     xval = numpy.array([xval])
@@ -121,7 +121,10 @@ class Isplines:
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {i}, {xval}")
 
-       >>> for xval in [-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5]:
+       Test :meth:`Isplines.dItotal_dx`:
+
+       >>> x_deriv = numpy.array([-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5])
+       >>> for xval in x_deriv:
        ...     xval = numpy.array([xval])
        ...     itotfunc = functools.partial(isplines.Itotal, weights=weights,
        ...                                  w_lower=0)
@@ -130,6 +133,33 @@ class Isplines:
        ...     err = scipy.optimize.check_grad(itotfunc, ditotfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {xval}")
+
+       >>> (isplines.dItotal_dw_lower(x) == numpy.ones(x.shape)).all()
+       True
+
+       Test :meth:`Isplines.dItotal_dweights`:
+
+       >>> wl = 1.5
+       >>> (isplines.dItotal_dweights(x_deriv, weights, wl).shape ==
+       ...  (len(x_deriv), len(weights)))
+       True
+       >>> weightslist = list(weights)
+       >>> for xval, iw in itertools.product(x_deriv, range(len(weights))):
+       ...     xval = numpy.array([xval])
+       ...     w = numpy.array([weightslist[iw]])
+       ...     def func(w):
+       ...         iweights = numpy.array(weightslist[: iw] +
+       ...                                list(w) +
+       ...                                weightslist[iw + 1:])
+       ...         return isplines.Itotal(xval, iweights, wl)
+       ...     def dfunc(w):
+       ...         iweights = numpy.array(weightslist[: iw] +
+       ...                                list(w) +
+       ...                                weightslist[iw + 1:])
+       ...         return isplines.dItotal_dweights(xval, iweights, wl)[0, iw]
+       ...     err = scipy.optimize.check_grad(func, dfunc, w)
+       ...     if err > 1e-6:
+       ...         raise ValueError(f"excess err {err} for {iw, xval}")
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -216,16 +246,20 @@ class Isplines:
             Value of :math:`I_{\rm{total}}` for each point in `x`.
 
         """
-        return self._calculate_Itotal_or_dItotal_dx(x, weights, w_lower,
-                                                    linear_extrapolate,
-                                                    'Itotal')
+        return self._calculate_Itotal_or_dItotal(x, weights, w_lower,
+                                                 linear_extrapolate,
+                                                 'Itotal')
 
-    def _calculate_Itotal_or_dItotal_dx(self, x, weights, w_lower,
-                                        linear_extrapolate, quantity):
-        """Calculate :meth:`Isplines.Itotal` or :meth:`Isplines.dItotal_dx`.
+    def _calculate_Itotal_or_dItotal(self, x, weights, w_lower,
+                                     linear_extrapolate, quantity):
+        """Calculate :meth:`Isplines.Itotal` or derivatives.
 
-        The calculations are mostly similar for these two methods. Set
-        `quantity` to 'Itotal' or 'dItotal_dx'.
+        All parameters have same meaning as for :meth:`Isplines.Itotal`
+        except for `quantity`, which should be
+
+          - 'Itotal' to compute :meth:`Isplines.Itotal`
+          - 'dItotal_dx' to compute :meth:`Isplines.dItotal_dx`
+          - 'dItotal_dweights` to compute :meth:`Isplines.dItotal_dweights`
 
         """
         if not isinstance(x, numpy.ndarray):
@@ -245,41 +279,59 @@ class Isplines:
         if any(weights < 0):
             raise ValueError(f"`weights` not all non-negative: {weights}")
 
-        # compute Itotal return values for each category of indices
-        itotal = {}
+        # get spline limits in array form
+        limits = [('below', numpy.array([self.lower])),
+                  ('above', numpy.array([self.upper]))]
+
+        # compute return values for each category of indices
+        returnvals = {}
         if quantity == 'Itotal':
+            returnshape = len(x)
             if len(index['in']):
-                itotal['in'] = numpy.sum([self.I(x[index['in']], i) *
-                                          weights[i - 1]
-                                          for i in range(1, self.n + 1)],
-                                         axis=0) + w_lower
-            for name, limit in [('below', self.lower), ('above', self.upper)]:
+                returnvals['in'] = numpy.sum([self.I(x[index['in']], i) *
+                                              weights[i - 1]
+                                              for i in range(1, self.n + 1)],
+                                             axis=0) + w_lower
+            for name, limit in limits:
                 if not len(index[name]):
                     continue
-                limit_arr = numpy.array([limit], dtype='float')
-                itotal[name] = (self.Itotal(limit_arr, weights, w_lower) +
-                                (x[index[name]] - limit) *
-                                self.dItotal_dx(limit_arr, weights)
-                                )
+                returnvals[name] = (self.Itotal(limit, weights, w_lower) +
+                                    (x[index[name]] - limit) *
+                                    self.dItotal_dx(limit, weights)
+                                    )
         elif quantity == 'dItotal_dx':
+            returnshape = len(x)
             if len(index['in']):
-                itotal['in'] = numpy.sum([self.dI_dx(x[index['in']], i) *
-                                          weights[i - 1]
-                                          for i in range(1, self.n + 1)],
-                                         axis=0)
-            for name, limit in [('below', self.lower), ('above', self.upper)]:
+                returnvals['in'] = numpy.sum([self.dI_dx(x[index['in']], i) *
+                                              weights[i - 1]
+                                              for i in range(1, self.n + 1)],
+                                             axis=0)
+            for name, limit in limits:
                 if not len(index[name]):
                     continue
-                limit_arr = numpy.array([limit], dtype='float')
-                itotal[name] = self.dItotal_dx(limit_arr, weights)
+                returnvals[name] = self.dItotal_dx(limit, weights)
+        elif quantity == 'dItotal_dweights':
+            returnshape = (len(x), len(weights))
+            if len(index['in']):
+                returnvals['in'] = (numpy.vstack([self.I(x[index['in']], i) for
+                                                  i in range(1, self.n + 1)])
+                                    ).transpose()
+            for name, limit in limits:
+                if not len(index[name]):
+                    continue
+                returnvals[name] = (numpy.vstack([self.I(limit, i) +
+                                                  (x[index[name]] - limit) *
+                                                  self.dI_dx(limit, i) for
+                                                  i in range(1, self.n + 1)])
+                                    ).transpose()
         else:
             raise ValueError(f"invalid `quantity` {quantity}")
 
-        # reconstruct return value from indices and values for each
-        returnval = numpy.full_like(x, fill_value=numpy.nan, dtype='float')
+        # reconstruct single return value from indices and returnvalues
+        returnval = numpy.full(returnshape, fill_value=numpy.nan)
         for name, name_index in index.items():
             if len(name_index):
-                returnval[name_index] = itotal[name]
+                returnval[name_index] = returnvals[name]
         assert not numpy.isnan(returnval).any()
         return returnval
 
@@ -321,9 +373,71 @@ class Isplines:
             for each point in `x`.
 
         """
-        return self._calculate_Itotal_or_dItotal_dx(x, weights, None,
-                                                    linear_extrapolate,
-                                                    'dItotal_dx')
+        return self._calculate_Itotal_or_dItotal(x, weights, None,
+                                                 linear_extrapolate,
+                                                 'dItotal_dx')
+
+    def dItotal_dweights(self, x, weights, w_lower, linear_extrapolate=True):
+        r"""Derivative of :meth:`Isplines.Itotal` by :math:`w_i`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Same meaning as for :meth:`Isplines.Itotal`.
+        weights : numpy.ndarray
+            Same meaning as for :meth:`Isplines.Itotal`.
+        w_lower : float
+            Same meaning as for :meth:`Isplines.Itotal`.
+        linear_extrapolate : bool
+            Same meaning as for :meth:`Isplines.Itotal`.
+
+        Returns
+        -------
+        numpy.ndarray
+            The array is of shape `(len(x), len(weights))`, and element
+            `ix, iweight` gives the derivative with respect to weight
+            `weights[iweight]` evaluated at `x[ix]`.
+
+        Note
+        ----
+        The derivative is:
+
+        .. math::
+
+           \frac{\partial I_{\rm{total}}\left(x\right)}{\partial w_i}
+           =
+           \begin{cases}
+           I_i\left(x\right)
+            & \rm{if\;} L \le x \le U, \\
+           I_i\left(L\right) + \left(x-L\right)
+           \left.\frac{\partial I_i\left(y\right)}{\partial y}\right\vert_{y=L}
+            & \rm{if\;} x < L, \\
+           I_i\left(U\right) + \left(x-U\right)
+           \left.\frac{\partial I_i\left(y\right)}{\partial y}\right\vert_{y=U}
+            & \rm{if\;} x > U.
+           \end{cases}
+
+        """
+        return self._calculate_Itotal_or_dItotal(x, weights, w_lower,
+                                                 linear_extrapolate,
+                                                 'dItotal_dweights')
+
+    def dItotal_dw_lower(self, x):
+        r"""Derivative of :meth:`Isplines.Itotal` by :math:`w_{\rm{lower}}`.
+
+        Parameters
+        ----------
+        x : numpy.ndarray
+            Same meaning as for :meth:`Isplines.Itotal`.
+
+        Returns
+        -------
+        numpy.ndarray
+            :math:`\frac{\partial{I_{\rm{total}}}}{\partial w_{\rm{lower}}}`,
+            which is just one for all `x`.
+
+        """
+        return numpy.ones(x.shape, dtype='float')
 
     def I(self, x, i):  # noqa: E743
         r"""Evaluate spline :math:`I_i` at point(s) :math:`x`.
