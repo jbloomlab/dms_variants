@@ -59,19 +59,38 @@ This model is implemented as :class:`NoEpistasis`.
 Monotonic spline epistasis model
 +++++++++++++++++++++++++++++++++
 This is the model used in `Otwinoski et al (2018)`_. It transforms
-the latent phenotype to the observed phenotype using monotonic I-splines:
+the latent phenotype to the observed phenotype using monotonic I-splines with
+linear extrapolation outside the spline boundaries:
 
 .. math::
    :label: monotonicspline
 
-   g\left(x\right) = c_{\alpha} + \sum_{m=1}^M \alpha_{m} I_m\left(x\right)
+   g\left(x\right)
+   =
+   \begin{cases}
+   c_{\alpha} + \sum_{m=1}^M \alpha_{m} I_m\left(x\right)
+     & \rm{if\;} L \le x \le U, \\
+   c_{\alpha} + \sum_{m=1}^M \alpha_m
+     \left[I_m\left(L\right) + \left(x - L\right)
+           \left.\frac{\partial I_m\left(y\right)}
+                      {\partial y}\right\rvert_{y=L}
+     \right]
+     & \rm{if\;} x < L, \\
+   c_{\alpha} + \sum_{m=1}^M \alpha_m
+     \left[I_m\left(U\right) + \left(x - U\right)
+           \left.\frac{\partial I_m\left(y\right)}
+                      {\partial y}\right\rvert_{y=U}
+     \right]
+     & \rm{if\;} x > U,
+   \end{cases}
 
 where :math:`c_{\alpha}` is an arbitrary number giving the *minimum*
 observed phenotype, the :math:`\alpha_m` coefficients are all :math:`\ge 0`,
-and :math:`I_m` indicates a family of I-splines defined via
-:class:`dms_variants.ispline.Isplines`. When :math:`x` is outside the range
-of the I-splines, we linearly extrapolate :math:`g` from its range boundaries
-to calculate :math:`g\left(x\right)`.
+:math:`I_m` indicates a family of I-splines defined via
+:class:`dms_variants.ispline.Isplines`, and :math:`L` and :math:`U` are
+the lower and upper bounds on the regions over which the I-splines are defined.
+Note how when :math:`x` is outside the range of the I-splines, we linearly
+extrapolate :math:`g` from its range boundaries to calculate.
 
 This model is implemented as :class:`MonotonicSplineEpistasis`. By default,
 the I-splines are of order 3 and are defined on a mesh of four evenly spaced
@@ -487,7 +506,7 @@ class AbstractEpistasis(abc.ABC):
         self._fit_latent_leastsquares()
 
         # optimize epistasis function parameters by maximum likelihood
-        if self._epistasis_func_params:
+        if len(self._epistasis_func_params):
             func_optres = scipy.optimize.minimize(
                             fun=self._loglik_by_epistasis_func_params,
                             jac=self._dloglik_by_epistasis_func_params,
@@ -664,7 +683,7 @@ class AbstractEpistasis(abc.ABC):
             raise ValueError(f"invalid `_allparams`: {val}")
         self._latenteffects = val[: len(self._latenteffects)]
         self.epistasis_HOC = val[len(self._latenteffects)]
-        if self._epistasis_func_params:
+        if len(self._epistasis_func_params):
             self._epistasis_func_params = val[len(self._latenteffects) + 1:]
 
     @property
@@ -1111,7 +1130,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         assert all(self._epistasis_func_params[1:] == self.alpha_ms)
         dlog_dobs = self._func_score_minus_observed_pheno_over_variance
         deriv = numpy.array(
-                    [dlog_dobs] +
+                    [dlog_dobs.sum()] +
                     [dlog_dobs.dot(self.isplines.I(self._latent_phenotypes, m))
                      for m in range(1, self.isplines.n + 1)],
                     dtype='float')
@@ -1154,10 +1173,10 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         """
         func_score_min = min(self.binarymap.func_scores)
-        func_score_max = min(self.binarymap.func_scores)
+        func_score_max = max(self.binarymap.func_scores)
         init_d = {'c_alpha': func_score_min}
         for m in range(1, self.isplines.n + 1):
-            init_d[f"alpha_{m}"] = ((func_score_min / func_score_max) /
+            init_d[f"alpha_{m}"] = ((func_score_max - func_score_min) /
                                     self.isplines.n)
         return numpy.array([init_d[name] for name in
                             self._epistasis_func_param_names],
