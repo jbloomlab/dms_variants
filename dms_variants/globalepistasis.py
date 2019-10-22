@@ -505,6 +505,9 @@ class AbstractEpistasis(abc.ABC):
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
+        # rescale latent effects to desired range
+        self._rescale_latent_effects()
+
         # optimize epistasis function parameters by maximum likelihood
         if len(self._epistasis_func_params):
             func_optres = scipy.optimize.minimize(
@@ -519,7 +522,7 @@ class AbstractEpistasis(abc.ABC):
                         f"Fitting of {self.__class__.__name__} epistasis func "
                         f"params failed after {func_optres.nit} iterations:\n"
                         f"{func_optres.message}")
-            self._epistais_func_params = func_optres.x
+            self._epistasis_func_params = func_optres.x
 
         # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
@@ -936,6 +939,18 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
+    @abc.abstractmethod
+    def _rescale_latent_effects(self):
+        """Rescale latent effects so latent phenotypes in desired range.
+
+        Note
+        ----
+        This is an abstract property; the actual bounds for specific models are
+        defined in concrete subclasses.
+
+        """
+        return NotImplementedError
+
 
 class NoEpistasis(AbstractEpistasis):
     """Non-epistatic model.
@@ -1037,6 +1052,10 @@ class NoEpistasis(AbstractEpistasis):
                             self._epistasis_func_param_names],
                            dtype='float')
 
+    def _rescale_latent_effects(self):
+        """Do nothing, as no need to rescale for :class:`NoEpistasis`."""
+        pass
+
 
 class MonotonicSplineEpistasis(AbstractEpistasis):
     """Monotonic spline global epistasis model.
@@ -1129,11 +1148,13 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         assert self._epistasis_func_params[0] == self.c_alpha
         assert all(self._epistasis_func_params[1:] == self.alpha_ms)
         dlog_dobs = self._func_score_minus_observed_pheno_over_variance
-        deriv = numpy.array(
-                    [dlog_dobs.sum()] +
-                    [dlog_dobs.dot(self.isplines.I(self._latent_phenotypes, m))
-                     for m in range(1, self.isplines.n + 1)],
-                    dtype='float')
+        dcalpha = dlog_dobs.dot(
+                self.isplines.dItotal_dw_lower(self._latent_phenotypes))
+        dalpham = dlog_dobs.dot(
+                self.isplines.dItotal_dweights(self._latent_phenotypes,
+                                               self.alpha_ms,
+                                               self.c_alpha))
+        deriv = numpy.append(dcalpha, dalpham)
         assert deriv.shape == self._epistasis_func_params.shape
         return deriv
 
@@ -1193,6 +1214,28 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         return numpy.array([self.epistasis_func_params_dict[f"alpha_{m}"]
                             for m in range(1, self.isplines.n + 1)],
                            dtype='float')
+
+    def _rescale_latent_effects(self):
+        """Rescale latent effects so latent phenotypes are between 0 and 1."""
+        rescale_min, rescale_max = 0.0, 1.0
+        rescalerange = rescale_max - rescale_min
+        assert rescalerange > 0
+        currentrange = (self._latent_phenotypes.max() -
+                        self._latent_phenotypes.min())
+        if currentrange <= 0:
+            raise ValueError(f"bad latent phenotype range: {currentrange}")
+        # rescale so latent phenotypes span desired range
+        self._latenteffects = self._latenteffects * rescalerange / currentrange
+        assert numpy.allclose(
+                self._latent_phenotypes.max() - self._latent_phenotypes.min(),
+                rescalerange)
+        # change wildtype latent phenotype so latent phenotypes have right min
+        self._latenteffects = numpy.append(
+                self._latenteffects[: -1],
+                (self._latenteffects[-1] + rescale_min -
+                 self._latent_phenotypes.min()))
+        assert numpy.allclose(rescale_min, self._latent_phenotypes.min())
+        assert numpy.allclose(rescale_max, self._latent_phenotypes.max())
 
 
 if __name__ == '__main__':
