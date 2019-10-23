@@ -501,20 +501,23 @@ class AbstractEpistasis(abc.ABC):
         self._rescale_latent_effects()
 
         # optimize epistasis function parameters by maximum likelihood
-        if len(self._epistasis_func_params):
-            func_optres = scipy.optimize.minimize(
-                            fun=self._loglik_by_epistasis_func_params,
-                            jac=self._dloglik_by_epistasis_func_params,
-                            x0=self._epistasis_func_params,
-                            method='L-BFGS-B',
-                            bounds=self._epistasis_func_param_bounds,
-                            )
-            if not func_optres.success:
-                raise EpistasisFittingError(
-                        f"Fitting of {self.__class__.__name__} epistasis func "
-                        f"params failed after {func_optres.nit} iterations:\n"
-                        f"{func_optres.message}")
-            self._epistasis_func_params = func_optres.x
+#        if len(self._epistasis_func_params):
+#            func_optres = scipy.optimize.minimize(
+#                            fun=self._loglik_by_epistasis_func_params,
+#                            jac=self._dloglik_by_epistasis_func_params,
+#                            x0=self._epistasis_func_params,
+#                            method='L-BFGS-B',
+#                            bounds=self._epistasis_func_param_bounds,
+#                            )
+#            if not func_optres.success:
+#                raise EpistasisFittingError(
+#                        f"Fitting of {self.__class__.__name__} epistasis func "
+#                        f"params failed after {func_optres.nit} iterations:\n"
+#                        f"{func_optres.message}\n"
+#                        f"{func_optres}")
+#            self._epistasis_func_params = func_optres.x
+#        print(f"func_optres: {func_optres}") # debugging
+#        return # debugging
 
         # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
@@ -527,7 +530,8 @@ class AbstractEpistasis(abc.ABC):
         if not optres.success:
             raise EpistasisFittingError(
                     f"Fitting of {self.__class__.__name__} failed after "
-                    f"{optres.nit} iterations. Message:\n{optres.message}")
+                    f"{optres.nit} iterations. Message:\n{optres.message}\n"
+                    f"{optres}")
         self._allparams = optres.x
 
         return optres
@@ -563,7 +567,10 @@ class AbstractEpistasis(abc.ABC):
 
         """
         self._allparams = allparams
-        return -self.loglik
+        if negative:
+            return -self.loglik
+        else:
+            return self.loglik
 
     def _loglik_by_epistasis_func_params(self, epistasis_func_params,
                                          negative=True):
@@ -590,7 +597,10 @@ class AbstractEpistasis(abc.ABC):
 
         """
         self._epistasis_func_params = epistasis_func_params
-        return -self.loglik
+        if negative:
+            return -self.loglik
+        else:
+            return self.loglik
 
     def _dloglik_by_allparams(self, allparams, negative=True):
         """(Negative) derivative of log likelihood with respect to all params.
@@ -622,7 +632,10 @@ class AbstractEpistasis(abc.ABC):
                                  )
                                 )
         assert val.shape == (self.nparams,)
-        return -val
+        if negative:
+            return -val
+        else:
+            return val
 
     def _dloglik_by_epistasis_func_params(self, epistasis_func_params,
                                           negative=True):
@@ -649,7 +662,10 @@ class AbstractEpistasis(abc.ABC):
 
         """
         self._epistasis_func_params = epistasis_func_params
-        return self._dloglik_depistasis_func_params
+        if negative:
+            return -self._dloglik_depistasis_func_params
+        else:
+            return self._dloglik_depistasis_func_params
 
     @property
     def _allparams(self):
