@@ -16,6 +16,8 @@ by `Ramsay (1988)`_.
 """
 
 
+import methodtools
+
 import numpy
 
 
@@ -867,6 +869,76 @@ class Msplines:
                               ) / ((k - 1) * (tiplusk - ti))
                          ),
                         0.0)
+
+
+class Msplines_fixed_x:
+    """Implementation of :class:`Msplines` with fixed `x` parameter.
+
+    Note
+    ----
+    This class is like :class:`Msplines` **except** that the `x` parameter
+    that is the first argument to methods of :class:`Msplines` is fixed to
+    the value set at initialization. This enables the results to be cached,
+    and so makes :class:`Msplines_fixed_x` faster if making repeated calls
+    with same `x`.
+
+    The other difference from :class:`Msplines` is that the returned
+    arrays are **not** writeable.
+
+    Parameters
+    ----------
+    order : int
+        Same as for :class:`Msplines`.
+    mesh : array-like
+        Same as for :class:`Msplines`.
+    x : numpy.ndarray
+        The fixed `x` value for evaluating the splines.
+
+    Example
+    -------
+    Show how :class:`Msplines_fixed_x` returns the same results as calling
+    :class:`Msplines` with the fixed value of `x`:
+
+    >>> order = 3
+    >>> mesh = [0.0, 0.3, 0.5, 0.6, 1.0]
+    >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
+    >>> msplines = Msplines(order, mesh)
+    >>> msplines_fixed_x = Msplines_fixed_x(order, mesh, x)
+    >>> all(all(msplines.M(x, i) == msplines_fixed_x.M(i))
+    ...     for i in range(1, msplines.n + 1))
+    True
+    >>> all(all(msplines.dM_dx(x, i) == msplines_fixed_x.dM_dx(i))
+    ...     for i in range(1, msplines.n + 1))
+    True
+
+    Confirm that :class:`Msplines` and :class:`Msplines_fixed_x` have the
+    same methods:
+
+    >>> (set(key for key in Msplines.__dict__ if key[0] != '_') ==
+    ...  set(key for key in Msplines_fixed_x.__dict__ if key[0] != '_'))
+    True
+
+    """
+
+    def __init__(self, order, mesh, x):
+        """See main class docstring."""
+        self._x = x.copy()
+        self._x.flags.writeable = False
+        self._msplines = Msplines(order, mesh)
+
+    @methodtools.lru_cache(maxsize=65536)
+    def M(self, i, k=None, invalid_i='raise'):
+        """Same as :meth:`Msplines.M` for the fixed value of `x`."""
+        returnval = self._msplines.M(self._x, i, k, invalid_i)
+        returnval.flags.writeable = False
+        return returnval
+
+    @methodtools.lru_cache(maxsize=65536)
+    def dM_dx(self, i, k=None, invalid_i='raise'):
+        """Same as :meth:`Msplines.dM_dx` for the fixed value of `x`."""
+        returnval = self._msplines.dM_dx(self._x, i, k, invalid_i)
+        returnval.flags.writeable = False
+        return returnval
 
 
 if __name__ == '__main__':
