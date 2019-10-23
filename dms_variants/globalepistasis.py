@@ -429,18 +429,21 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     # Methods to calculate phenotypes given current model state
     # ------------------------------------------------------------------------
-    def latent_phenotypes_frombinary(self,
-                                     binary_variants,
-                                     *,
-                                     wt_col=False,
-                                     ):
-        """Latent phenotypes from binary variant representations.
+    def phenotypes_frombinary(self,
+                              binary_variants,
+                              phenotype,
+                              *,
+                              wt_col=False,
+                              ):
+        """Phenotypes from binary variant representations.
 
         Parameters
         ----------
         binary_variants : scipy.sparse.csr.csr_matrix or numpy.ndarray
             Binary variants in form used by
             :class:`dms_variants.binarymap.BinaryMap`.
+        phenotype : {'latent', 'observed'}
+            Calculate the latent or observed phenotype.
         wt_col : bool
             Set to `True` if `binary_variants` contains a terminal
             column of ones to enable calculations in the form given
@@ -459,29 +462,18 @@ class AbstractEpistasis(abc.ABC):
 
         if wt_col:
             assert len(self._latenteffects) == binary_variants.shape[1]
-            return binary_variants.dot(self._latenteffects)
+            latent = binary_variants.dot(self._latenteffects)
         else:
             assert (len(self._latenteffects) - 1) == binary_variants.shape[1]
-            return (binary_variants.dot(self._latenteffects[: -1]) +
-                    self.latent_phenotype_wt)
+            latent = (binary_variants.dot(self._latenteffects[: -1]) +
+                      self.latent_phenotype_wt)
 
-    def observed_phenotypes_fromlatent(self, latent_phenotypes):
-        """Observed phenotypes from latent ones.
-
-        Parameters
-        ----------
-        latent_phenotypes : numpy.ndarray
-            Latent phenotypes.
-
-        Returns
-        -------
-        numpy.ndarray
-            Observed phenotypes calculated using Eq. :eq:`latent_phenotype`.
-
-        """
-        observed = self.epistasis_func(latent_phenotypes)
-        assert observed.shape == latent_phenotypes.shape
-        return observed
+        if phenotype == 'latent':
+            return latent
+        elif phenotype == 'observed':
+            return self.epistasis_func(latent)
+        else:
+            return ValueError(f"invalid `phenotype` of {phenotype}")
 
     # ------------------------------------------------------------------------
     # Methods / properties used for model fitting. Many of these are properties
@@ -722,8 +714,9 @@ class AbstractEpistasis(abc.ABC):
         """numpy.ndarray: Latent phenotypes, Eq. :eq:`latent_phenotype`."""
         key = '_latent_phenotypes'
         if key not in self._cache:
-            self._cache[key] = self.latent_phenotypes_frombinary(
+            self._cache[key] = self.phenotypes_frombinary(
                                 binary_variants=self._binary_variants,
+                                phenotype='latent',
                                 wt_col=True,
                                 )
         return self._cache[key]
@@ -733,8 +726,7 @@ class AbstractEpistasis(abc.ABC):
         """numpy.ndarray: Observed phenotypes, Eq. :eq:`observed_phenotype`."""
         key = '_observed_phenotypes'
         if key not in self._cache:
-            self._cache[key] = self.observed_phenotypes_fromlatent(
-                                    self._latent_phenotypes)
+            self._cache[key] = self.epistasis_func(self._latent_phenotypes)
         return self._cache[key]
 
     @property
