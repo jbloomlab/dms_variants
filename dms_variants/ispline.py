@@ -674,6 +674,8 @@ class Msplines:
         Sets :attr:`Msplines.order`.
     mesh : array-like
         Sets :attr:`Msplines.mesh`.
+    x : numpy.ndarray
+        Sets :attr:`Msplines.x`.
 
     Attributes
     ----------
@@ -695,6 +697,12 @@ class Msplines:
     upper : float
         Upper end of interval spanned by the splines (last point in mesh).
 
+    Note
+    ----
+    The methods of this class cache their results and return immutable
+    numpy arrays. Do **not** make those arrays mutable and change their
+    values as this will lead to invalid caching.
+
     Example
     -------
     Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
@@ -709,7 +717,10 @@ class Msplines:
        >>> import scipy.optimize
        >>> from dms_variants.ispline import Msplines
 
-       >>> msplines = Msplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
+       >>> order = 3
+       >>> mesh = [0.0, 0.3, 0.5, 0.6, 1.0]
+       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
+       >>> msplines = Msplines(order, mesh, x)
        >>> msplines.order
        3
        >>> msplines.mesh
@@ -725,9 +736,8 @@ class Msplines:
 
        Evaluate the M-splines at some selected points:
 
-       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
        >>> for i in range(1, msplines.n + 1):
-       ...     print(f"M{i}: {numpy.round(msplines.M(x, i), 2)}")
+       ...     print(f"M{i}: {numpy.round(msplines.M(i), 2)}")
        ... # doctest: +NORMALIZE_WHITESPACE
        M1: [10. 1.11 0.  0.   0.   0.  ]
        M2: [0.  3.73 2.4 0.6  0.   0.  ]
@@ -739,9 +749,10 @@ class Msplines:
        Plot the M-splines:
 
        >>> xplot = numpy.linspace(0, 1, 1000, endpoint=False)
+       >>> msplines_plot = Msplines(order, mesh, xplot)
        >>> data = {'x': xplot}
-       >>> for i in range(1, msplines.n + 1):
-       ...     data[f"M{i}"] = msplines.M(xplot, i)
+       >>> for i in range(1, msplines_plot.n + 1):
+       ...     data[f"M{i}"] = msplines_plot.M(i)
        >>> df = pd.DataFrame(data)
        >>> _ = df.plot(x='x')
 
@@ -749,9 +760,11 @@ class Msplines:
 
        >>> for i, xval in itertools.product(range(1, msplines.n + 1), x):
        ...     xval = numpy.array([xval])
-       ...     mfunc = functools.partial(msplines.M, i=i)
-       ...     dmfunc = functools.partial(msplines.dM_dx, i=i)
-       ...     err = scipy.optimize.check_grad(mfunc, dmfunc, xval)
+       ...     def func(xval):
+       ...         return Msplines(order, mesh, xval).M(i)
+       ...     def dfunc(xval):
+       ...         return Msplines(order, mesh, xval).dM_dx(i)
+       ...     err = scipy.optimize.check_grad(func, dfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {i}, {xval}")
 
@@ -759,7 +772,7 @@ class Msplines:
 
     """
 
-    def __init__(self, order, mesh):
+    def __init__(self, order, mesh, x):
         """See main class docstring."""
         if not (isinstance(order, int) and order >= 1):
             raise ValueError(f"`order` not int >= 1: {order}")
@@ -785,13 +798,24 @@ class Msplines:
         self.n = len(self.knots) - self.order
         assert self.n == len(self.mesh) - 2 + self.order
 
-    def M(self, x, i, k=None, invalid_i='raise'):
-        r"""Evaluate spline :math:`M_i` at point(s) `x`.
+        if not (isinstance(x, numpy.ndarray) and x.ndim == 1):
+            raise ValueError('`x` is not numpy.ndarray of dimension 1')
+        if (x < self.lower).any() or (x > self.upper).any():
+            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
+        self._x = x.copy()
+        self._x.flags.writeable = False
+
+    @property
+    def x(self):
+        """numpy.ndarray: Points at which spline is evaluated."""
+        return self._x
+
+    @methodtools.lru_cache(maxsize=65536)
+    def M(self, i, k=None, invalid_i='raise'):
+        r"""Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            One or more points in the range covered by the spline.
         i : int
             Spline member :math:`M_i`, where :math:`1 \le i \le`
             :attr:`Msplines.n`.
@@ -803,7 +827,7 @@ class Msplines:
         Returns
         -------
         numpy.ndarray
-            The values of the M-spline at each point in `x`.
+            The values of the M-spline at each point in :attr:`Msplines.x`.
 
         Note
         ----
@@ -840,37 +864,32 @@ class Msplines:
             k = self.order
         if not 1 <= k <= self.order:
             raise ValueError(f"invalid spline order `k` of {k}")
-        if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` is not numpy.ndarray')
-        if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti:
-            return numpy.zeros(x.shape, dtype='float')
+            return numpy.zeros(self.x.shape, dtype='float')
 
         if k == 1:
-            return numpy.where((ti <= x) & (x < tiplusk),
+            return numpy.where((ti <= self.x) & (self.x < tiplusk),
                                1.0 / (tiplusk - ti),
                                0.0)
         else:
             assert k > 1
             return numpy.where(
-                        (ti <= x) & (x < tiplusk),
-                        (k * ((x - ti) * self.M(x, i, k - 1) +
-                         (tiplusk - x) * self.M(x, i + 1, k - 1,
-                                                invalid_i='zero')
+                        (ti <= self.x) & (self.x < tiplusk),
+                        (k * ((self.x - ti) * self.M(i, k - 1) +
+                         (tiplusk - self.x) * self.M(i + 1, k - 1,
+                                                     invalid_i='zero')
                          ) / ((k - 1) * (tiplusk - ti))),
                         0.0)
 
-    def dM_dx(self, x, i, k=None, invalid_i='raise'):
-        r"""Get derivative of :meth:`Msplines.M` with respect to `x`.
+    @methodtools.lru_cache(maxsize=65536)
+    def dM_dx(self, i, k=None, invalid_i='raise'):
+        r"""Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            Same as for :meth:`Msplines.M`.
         i : int
             Same as for :meth:`Msplines.M`.
         k : int or None
@@ -881,7 +900,7 @@ class Msplines:
         Returns
         -------
         numpy.ndarray
-            Derivative of M-spline with respect to `x`.
+            Derivative of M-spline with respect to :attr:`Msplines.x`.
 
         Note
         ----
@@ -922,97 +941,23 @@ class Msplines:
             k = self.order
         if not 1 <= k <= self.order:
             raise ValueError(f"invalid spline order `k` of {k}")
-        if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` is not numpy.ndarray')
-        if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti or k == 1:
-            return numpy.zeros(x.shape, dtype='float')
+            return numpy.zeros(self.x.shape, dtype='float')
         else:
             assert k > 1
             return numpy.where(
-                        (ti <= x) & (x < tiplusk),
-                        (k * ((x - ti) * self.dM_dx(x, i, k - 1) +
-                              self.M(x, i, k - 1) +
-                              (tiplusk - x) * self.dM_dx(x, i + 1, k - 1,
-                                                         invalid_i='zero') -
-                              self.M(x, i + 1, k - 1, invalid_i='zero')
+                        (ti <= self.x) & (self.x < tiplusk),
+                        (k * ((self.x - ti) * self.dM_dx(i, k - 1) +
+                              self.M(i, k - 1) +
+                              (tiplusk - self.x) * self.dM_dx(i + 1, k - 1,
+                                                              invalid_i='zero')
+                              - self.M(i + 1, k - 1, invalid_i='zero')
                               ) / ((k - 1) * (tiplusk - ti))
                          ),
                         0.0)
-
-
-class Msplines_fixed_x:
-    """Implementation of :class:`Msplines` with fixed `x` parameter.
-
-    Note
-    ----
-    This class is like :class:`Msplines` **except** that the `x` parameter
-    that is the first argument to methods of :class:`Msplines` is fixed to
-    the value set at initialization. This enables the results to be cached,
-    and so makes :class:`Msplines_fixed_x` faster if making repeated calls
-    with same `x`.
-
-    The other difference from :class:`Msplines` is that the returned
-    arrays are **not** writeable.
-
-    Parameters
-    ----------
-    order : int
-        Same as for :class:`Msplines`.
-    mesh : array-like
-        Same as for :class:`Msplines`.
-    x : numpy.ndarray
-        The fixed `x` value for evaluating the splines.
-
-    Example
-    -------
-    Show how :class:`Msplines_fixed_x` returns the same results as calling
-    :class:`Msplines` with the fixed value of `x`:
-
-    >>> order = 3
-    >>> mesh = [0.0, 0.3, 0.5, 0.6, 1.0]
-    >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
-    >>> msplines = Msplines(order, mesh)
-    >>> msplines_fixed_x = Msplines_fixed_x(order, mesh, x)
-    >>> all(all(msplines.M(x, i) == msplines_fixed_x.M(i))
-    ...     for i in range(1, msplines.n + 1))
-    True
-    >>> all(all(msplines.dM_dx(x, i) == msplines_fixed_x.dM_dx(i))
-    ...     for i in range(1, msplines.n + 1))
-    True
-
-    Confirm that :class:`Msplines` and :class:`Msplines_fixed_x` have the
-    same methods:
-
-    >>> (set(key for key in Msplines.__dict__ if key[0] != '_') ==
-    ...  set(key for key in Msplines_fixed_x.__dict__ if key[0] != '_'))
-    True
-
-    """
-
-    def __init__(self, order, mesh, x):
-        """See main class docstring."""
-        self._x = x.copy()
-        self._x.flags.writeable = False
-        self._msplines = Msplines(order, mesh)
-
-    @methodtools.lru_cache(maxsize=65536)
-    def M(self, i, k=None, invalid_i='raise'):
-        """Same as :meth:`Msplines.M` for the fixed value of `x`."""
-        returnval = self._msplines.M(self._x, i, k, invalid_i)
-        returnval.flags.writeable = False
-        return returnval
-
-    @methodtools.lru_cache(maxsize=65536)
-    def dM_dx(self, i, k=None, invalid_i='raise'):
-        """Same as :meth:`Msplines.dM_dx` for the fixed value of `x`."""
-        returnval = self._msplines.dM_dx(self._x, i, k, invalid_i)
-        returnval.flags.writeable = False
-        return returnval
 
 
 if __name__ == '__main__':
