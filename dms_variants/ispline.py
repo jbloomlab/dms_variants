@@ -868,21 +868,27 @@ class Msplines:
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti:
-            return numpy.zeros(self.x.shape, dtype='float')
+            res = numpy.zeros(self.x.shape, dtype='float')
+            res.flags.writeable = False
+            return res
 
         if k == 1:
-            return numpy.where((ti <= self.x) & (self.x < tiplusk),
-                               1.0 / (tiplusk - ti),
-                               0.0)
+            res = numpy.where((ti <= self.x) & (self.x < tiplusk),
+                              1.0 / (tiplusk - ti),
+                              0.0)
+            res.flags.writeable = False
+            return res
         else:
             assert k > 1
-            return numpy.where(
+            res = numpy.where(
                         (ti <= self.x) & (self.x < tiplusk),
                         (k * ((self.x - ti) * self.M(i, k - 1) +
                          (tiplusk - self.x) * self.M(i + 1, k - 1,
                                                      invalid_i='zero')
                          ) / ((k - 1) * (tiplusk - ti))),
                         0.0)
+            res.flags.writeable = False
+            return res
 
     @methodtools.lru_cache(maxsize=65536)
     def dM_dx(self, i, k=None, invalid_i='raise'):
@@ -945,10 +951,12 @@ class Msplines:
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti or k == 1:
-            return numpy.zeros(self.x.shape, dtype='float')
+            res = numpy.zeros(self.x.shape, dtype='float')
+            res.flags.writeable = False
+            return res
         else:
             assert k > 1
-            return numpy.where(
+            res = numpy.where(
                         (ti <= self.x) & (self.x < tiplusk),
                         (k * ((self.x - ti) * self.dM_dx(i, k - 1) +
                               self.M(i, k - 1) +
@@ -958,6 +966,8 @@ class Msplines:
                               ) / ((k - 1) * (tiplusk - ti))
                          ),
                         0.0)
+            res.flags.writeable = False
+            return res
 
 
 if __name__ == '__main__':
