@@ -932,9 +932,7 @@ class Msplines:
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti:
-            res = numpy.zeros(self.x.shape, dtype='float')
-            res.flags.writeable = False
-            return res
+            return 0
 
         if k == 1:
             res = numpy.where((ti <= self.x) & (self.x < tiplusk),
@@ -1019,9 +1017,7 @@ class Msplines:
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti or k == 1:
-            res = numpy.zeros(self.x.shape, dtype='float')
-            res.flags.writeable = False
-            return res
+            return 0
         else:
             assert k > 1
             res = numpy.where(
