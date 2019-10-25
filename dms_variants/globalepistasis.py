@@ -502,25 +502,6 @@ class AbstractEpistasis(abc.ABC):
         # rescale latent effects to desired range
         self._rescale_latent_effects()
 
-        # optimize epistasis function parameters by maximum likelihood
-#        if len(self._epistasis_func_params):
-#            func_optres = scipy.optimize.minimize(
-#                            fun=self._loglik_by_epistasis_func_params,
-#                            jac=self._dloglik_by_epistasis_func_params,
-#                            x0=self._epistasis_func_params,
-#                            method='L-BFGS-B',
-#                            bounds=self._epistasis_func_param_bounds,
-#                            )
-#            if not func_optres.success:
-#                raise EpistasisFittingError(
-#                        f"Fitting of {self.__class__.__name__} epistasis func "
-#                        f"params failed after {func_optres.nit} iterations:\n"
-#                        f"{func_optres.message}\n"
-#                        f"{func_optres}")
-#            self._epistasis_func_params = func_optres.x
-#        print(f"func_optres: {func_optres}") # debugging
-#        return # debugging
-
         # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
                         fun=self._loglik_by_allparams,
