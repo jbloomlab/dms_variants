@@ -121,7 +121,7 @@ class Isplines_total:
 
        Test :meth:`Isplines_total.dItotal_dx`:
 
-       >>> x_deriv = [-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5]
+       >>> x_deriv = numpy.array([-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5])
        >>> for xval in x_deriv:
        ...     xval = numpy.array([xval])
        ...     def func(xval):
@@ -137,27 +137,29 @@ class Isplines_total:
 
        Test :meth:`Isplines_total.dItotal_dweights`:
 
+       >>> isplines_total3 = Isplines_total(order, mesh, x_deriv)
        >>> wl = 1.5
-       >>> (isplines.dItotal_dweights(x_deriv, weights, wl).shape ==
+       >>> (isplines_total3.dItotal_dweights(weights, wl).shape ==
        ...  (len(x_deriv), len(weights)))
        True
        >>> weightslist = list(weights)
-       >>> for xval, iw in itertools.product(x_deriv, range(len(weights))):
-       ...     xval = numpy.array([xval])
+       >>> for ix, iw in itertools.product(range(len(x_deriv)),
+       ...                                 range(len(weights))):
        ...     w = numpy.array([weightslist[iw]])
        ...     def func(w):
        ...         iweights = numpy.array(weightslist[: iw] +
        ...                                list(w) +
        ...                                weightslist[iw + 1:])
-       ...         return isplines.Itotal(xval, iweights, wl)
+       ...         return isplines_total3.Itotal(iweights, wl)[ix]
        ...     def dfunc(w):
        ...         iweights = numpy.array(weightslist[: iw] +
        ...                                list(w) +
        ...                                weightslist[iw + 1:])
-       ...         return isplines.dItotal_dweights(xval, iweights, wl)[0, iw]
+       ...         return isplines_total3.dItotal_dweights(iweights, wl)[ix,
+       ...                                                               iw]
        ...     err = scipy.optimize.check_grad(func, dfunc, w)
        ...     if err > 1e-6:
-       ...         raise ValueError(f"excess err {err} for {iw, xval}")
+       ...         raise ValueError(f"excess err {err} for {ix, iw}")
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -231,6 +233,7 @@ class Isplines_total:
         return self._calculate_Itotal_or_dItotal(tuple(weights), w_lower,
                                                  'Itotal')
 
+    @methodtools.lru_cache(maxsize=65536)
     def _calculate_Itotal_or_dItotal(self, weights, w_lower,
                                      quantity):
         """Calculate :meth:`Isplines.Itotal` or derivatives.
@@ -291,16 +294,20 @@ class Isplines_total:
         elif quantity == 'dItotal_dweights':
             returnshape = (len(self.x), len(weights))
             if len(self._index['in']):
-                returnvals['in'] = (numpy.vstack([self._isplines.I(i) for
+                returnvals['in'] = (numpy.vstack([self._isplines['in'].I(i) for
                                                   i in range(1, self.n + 1)])
                                     ).transpose()
-            for name, limit in limits:
+            # values of I at limits
+            I_limits = {'lower': 0.0, 'upper': 1.0}
+            for name, limit in [('lower', self.lower), ('upper', self.upper)]:
                 if not len(self._index[name]):
                     continue
-                returnvals[name] = (numpy.vstack([self.I(limit, i) + # problem
-                                                  (self._x_byrange[name] - limit) *
-                                                  self.dI_dx(limit, i) for # problem
-                                                  i in range(1, self.n + 1)])
+                returnvals[name] = numpy.vstack(
+                                    [I_limits[name] +
+                                     (self._x_byrange[name] - limit) *
+                                     self._isplines[name].dI_dx(i)
+                                     for i in range(1, self.n + 1)
+                                     ]
                                     ).transpose()
 
         else:
@@ -403,6 +410,13 @@ class Isplines_total:
            \left.\frac{\partial I_i\left(y\right)}{\partial y}\right\vert_{y=U}
             & \rm{if\;} x > U.
            \end{cases}
+
+        Note that:
+
+        .. math::
+
+           I_i\left(L\right) &=& 0 \\
+           I_i\left(U\right) &=& 1.
 
         """
         return self._calculate_Itotal_or_dItotal(tuple(weights), w_lower,
