@@ -499,8 +499,8 @@ class AbstractEpistasis(abc.ABC):
         # least squares fit of latent effects for reasonable initial values
         self._fit_latent_leastsquares()
 
-        # rescale latent effects to desired range
-        self._rescale_latent_effects()
+        # prescale parameters to desired range
+        self._prescale_params()
 
         # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
@@ -931,13 +931,13 @@ class AbstractEpistasis(abc.ABC):
         return NotImplementedError
 
     @abc.abstractmethod
-    def _rescale_latent_effects(self):
-        """Rescale latent effects so latent phenotypes in desired range.
+    def _prescale_params(self):
+        """Rescale parameters prior to the global fitting.
 
         Note
         ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
+        This is an abstract method, the actula pre-scaling is done in concrete
+        subclasses.
 
         """
         return NotImplementedError
@@ -1040,8 +1040,8 @@ class NoEpistasis(AbstractEpistasis):
                             self._epistasis_func_param_names],
                            dtype='float')
 
-    def _rescale_latent_effects(self):
-        """Do nothing, as no need to rescale for :class:`NoEpistasis`."""
+    def _prescale_params(self):
+        """Do nothing, as no need to prescale for :class:`NoEpistasis`."""
         pass
 
 
@@ -1220,7 +1220,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                             for m in range(1, self._isplines_total.n + 1)],
                            dtype='float')
 
-    def _rescale_latent_effects(self):
+    def _prescale_params(self):
         """Rescale latent effects so latent phenotypes are between 0 and 1."""
         rescale_min, rescale_max = 0.0, 1.0
         rescalerange = rescale_max - rescale_min
