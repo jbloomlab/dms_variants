@@ -4,7 +4,8 @@ ispline
 =================
 
 Implements :class:`Isplines`, which are monotonic spline functions that are
-defined in terms of :class:`Msplines`.
+defined in terms of :class:`Msplines`. Also implements :class:`Isplines_total`
+for the weighted sum of a :class:`Isplines` family.
 
 See `Ramsay (1988)`_ for details about these splines, and also note the
 corrections in the `Praat manual`_ to the errors in the I-spline formula
@@ -92,7 +93,7 @@ class Isplines_total:
 
     Example
     -------
-    Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
+    Short examples to demonstrate and test :class:`Isplines_total`:
 
     .. plot::
        :context: reset
@@ -160,6 +161,16 @@ class Isplines_total:
        ...     err = scipy.optimize.check_grad(func, dfunc, w)
        ...     if err > 1e-6:
        ...         raise ValueError(f"excess err {err} for {ix, iw}")
+
+       Plot the total of the I-spline family shown in Fig. 1 of
+       `Ramsay (1988)`_, adding some linear extrapolation outside the
+       mesh range:
+
+       >>> xplot = numpy.linspace(-0.2, 1.2, 1000)
+       >>> isplines_totalplot = Isplines_total(order, mesh, xplot)
+       >>> df = pd.DataFrame({'x': xplot,
+       ...                    'Itotal': isplines_totalplot.Itotal(weights, 0)})
+       >>> _ = df.plot(x='x', y='Itotal')
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -475,7 +486,7 @@ class Isplines:
 
     Example
     -------
-    Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
+    Short examples to demonstrate and test :class:`Isplines`:
 
     .. plot::
        :context: reset
@@ -513,16 +524,6 @@ class Isplines:
        I5: [0.   0.   0.   0.   0.58 1.  ]
        I6: [0.   0.   0.   0.   0.13 1.  ]
 
-       Plot the I-splines:
-
-       >>> xplot = numpy.linspace(0, 1, 1000)
-       >>> isplines_xplot = Isplines(order, mesh, xplot)
-       >>> data = {'x': xplot}
-       >>> for i in range(1, isplines.n + 1):
-       ...     data[f"I{i}"] = isplines_xplot.I(i)
-       >>> df = pd.DataFrame(data)
-       >>> _ = df.plot(x='x')
-
        Check that gradients are correct for :meth:`Isplines.dI_dx`:
 
        >>> for i, xval in itertools.product(range(1, isplines.n + 1), x):
@@ -534,6 +535,16 @@ class Isplines:
        ...     err = scipy.optimize.check_grad(func, dfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {i}, {xval}")
+
+       Plot the I-splines in Fig. 1 of `Ramsay (1988)`_:
+
+       >>> xplot = numpy.linspace(0, 1, 1000)
+       >>> isplines_xplot = Isplines(order, mesh, xplot)
+       >>> data = {'x': xplot}
+       >>> for i in range(1, isplines.n + 1):
+       ...     data[f"I{i}"] = isplines_xplot.I(i)
+       >>> df = pd.DataFrame(data)
+       >>> _ = df.plot(x='x')
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -754,7 +765,7 @@ class Msplines:
 
     Example
     -------
-    Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
+    Demonstrate and test :class:`Msplines`:
 
     .. plot::
        :context: reset
@@ -795,16 +806,6 @@ class Msplines:
        M5: [0.  0.   0.  0.   3.3  0.  ]
        M6: [0.  0.   0.  0.   1.88 7.5 ]
 
-       Plot the M-splines:
-
-       >>> xplot = numpy.linspace(0, 1, 1000, endpoint=False)
-       >>> msplines_plot = Msplines(order, mesh, xplot)
-       >>> data = {'x': xplot}
-       >>> for i in range(1, msplines_plot.n + 1):
-       ...     data[f"M{i}"] = msplines_plot.M(i)
-       >>> df = pd.DataFrame(data)
-       >>> _ = df.plot(x='x')
-
        Check that the gradients are correct:
 
        >>> for i, xval in itertools.product(range(1, msplines.n + 1), x):
@@ -816,6 +817,16 @@ class Msplines:
        ...     err = scipy.optimize.check_grad(func, dfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {i}, {xval}")
+
+       Plot the M-splines in in Fig. 1 of `Ramsay (1988)`_:
+
+       >>> xplot = numpy.linspace(0, 1, 1000, endpoint=False)
+       >>> msplines_plot = Msplines(order, mesh, xplot)
+       >>> data = {'x': xplot}
+       >>> for i in range(1, msplines_plot.n + 1):
+       ...     data[f"M{i}"] = msplines_plot.M(i)
+       >>> df = pd.DataFrame(data)
+       >>> _ = df.plot(x='x')
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
@@ -859,7 +870,6 @@ class Msplines:
         """numpy.ndarray: Points at which spline is evaluated."""
         return self._x
 
-    @methodtools.lru_cache(maxsize=65536)
     def M(self, i, k=None, invalid_i='raise'):
         r"""Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.
 
@@ -902,6 +912,11 @@ class Msplines:
            \end{cases}
 
         """
+        return self._calculate_M(i, k, invalid_i)
+
+    @methodtools.lru_cache(maxsize=65536)
+    def _calculate_M(self, i, k, invalid_i):
+        """Calculate :meth:`Msplines.M` with result caching."""
         if not (1 <= i <= self.n):
             if invalid_i == 'raise':
                 raise ValueError(f"invalid spline member `i` of {i}")
@@ -939,7 +954,6 @@ class Msplines:
             res.flags.writeable = False
             return res
 
-    @methodtools.lru_cache(maxsize=65536)
     def dM_dx(self, i, k=None, invalid_i='raise'):
         r"""Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.
 
@@ -985,6 +999,11 @@ class Msplines:
            \end{cases}
 
         """
+        return self._calculate_dM_dx(i, k, invalid_i)
+
+    @methodtools.lru_cache(maxsize=65536)
+    def _calculate_dM_dx(self, i, k, invalid_i):
+        """Calculate :meth:`Msplines.dM_dx` with results caching."""
         if not (1 <= i <= self.n):
             if invalid_i == 'raise':
                 raise ValueError(f"invalid spline member `i` of {i}")
