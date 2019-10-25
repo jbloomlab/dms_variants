@@ -121,18 +121,18 @@ class Isplines_total:
 
        Test :meth:`Isplines_total.dItotal_dx`:
 
-       >>> x_deriv = numpy.array([-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5])
+       >>> x_deriv = [-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5]
        >>> for xval in x_deriv:
        ...     xval = numpy.array([xval])
-       ...     itotfunc = functools.partial(isplines.Itotal, weights=weights,
-       ...                                  w_lower=0)
-       ...     ditotfunc = functools.partial(isplines.dItotal_dx,
-       ...                                   weights=weights)
-       ...     err = scipy.optimize.check_grad(itotfunc, ditotfunc, xval)
+       ...     def func(xval):
+       ...         return Isplines_total(order, mesh, xval).Itotal(weights, 0)
+       ...     def dfunc(xval):
+       ...         return Isplines_total(order, mesh, xval).dItotal_dx(weights)
+       ...     err = scipy.optimize.check_grad(func, dfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {xval}")
 
-       >>> (isplines.dItotal_dw_lower(x) == numpy.ones(x.shape)).all()
+       >>> (isplines_total.dItotal_dw_lower() == numpy.ones(x.shape)).all()
        True
 
        Test :meth:`Isplines_total.dItotal_dweights`:
@@ -251,12 +251,9 @@ class Isplines_total:
         if any(weight < 0 for weight in weights):
             raise ValueError(f"`weights` not all non-negative: {weights}")
 
-        # values of Itotal at limits
-        Itotal_limits = {'lower': w_lower,
-                         'upper': w_lower + sum(weights)}
-
         # compute return values for each category of indices
         returnvals = {}
+
         if quantity == 'Itotal':
             returnshape = len(self.x)
             if len(self._index['in']):
@@ -264,6 +261,9 @@ class Isplines_total:
                                               weights[i - 1]
                                               for i in range(1, self.n + 1)],
                                              axis=0) + w_lower
+            # values of Itotal at limits
+            Itotal_limits = {'lower': w_lower,
+                             'upper': w_lower + sum(weights)}
             for name, limit in [('lower', self.lower), ('upper', self.upper)]:
                 if not len(self._index[name]):
                     continue
@@ -273,17 +273,21 @@ class Isplines_total:
                                         weights[i - 1]
                                         for i in range(1, self.n + 1))
                                     )
+
         elif quantity == 'dItotal_dx':
             returnshape = len(self.x)
             if len(self._index['in']):
-                returnvals['in'] = numpy.sum([self._isplines.dI_dx(i) *
+                returnvals['in'] = numpy.sum([self._isplines['in'].dI_dx(i) *
                                               weights[i - 1]
                                               for i in range(1, self.n + 1)],
                                              axis=0)
-            for name, limit in limits:
+            for name in ['lower', 'upper']:
                 if not len(self._index[name]):
                     continue
-                returnvals[name] = self.dItotal_dx(limit, weights) # problem
+                returnvals[name] = sum(self._isplines[name].dI_dx(i) *
+                                       weights[i - 1]
+                                       for i in range(1, self.n + 1))
+
         elif quantity == 'dItotal_dweights':
             returnshape = (len(self.x), len(weights))
             if len(self._index['in']):
@@ -298,6 +302,7 @@ class Isplines_total:
                                                   self.dI_dx(limit, i) for # problem
                                                   i in range(1, self.n + 1)])
                                     ).transpose()
+
         else:
             raise ValueError(f"invalid `quantity` {quantity}")
 
