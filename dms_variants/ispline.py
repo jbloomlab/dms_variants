@@ -4,7 +4,8 @@ ispline
 =================
 
 Implements :class:`Isplines`, which are monotonic spline functions that are
-defined in terms of :class:`Msplines`.
+defined in terms of :class:`Msplines`. Also implements :class:`Isplines_total`
+for the weighted sum of a :class:`Isplines` family.
 
 See `Ramsay (1988)`_ for details about these splines, and also note the
 corrections in the `Praat manual`_ to the errors in the I-spline formula
@@ -16,156 +17,166 @@ by `Ramsay (1988)`_.
 """
 
 
+import methodtools
+
 import numpy
 
 
-class Isplines:
-    r"""Implements I-splines (see `Ramsay (1988)`_).
+class Isplines_total:
+    r"""Evaluate the weighted sum of an I-spline family (see `Ramsay (1988)`_).
 
     Parameters
     ----------
     order : int
-        Sets :attr:`Isplines.order`.
+        Sets :attr:`Isplines_total.order`.
     mesh : array-like
-        Sets :attr:`Isplines.mesh`.
+        Sets :attr:`Isplines_total.mesh`.
+    x : numpy.ndarray
+        Sets :attr:`Isplines_total.x`.
 
     Attributes
     ----------
     order : int
-        Order of spline, :math:`k` in notation of `Ramsay (1988)`_. Note that
-        the degree of the I-spline is equal to :math:`k`, while the
-        associated M-spline has order :math:`k` but degree :math:`k - 1`.
+        See :attr:`Isplines.order`.
     mesh : numpy.ndarray
-        Mesh sequence, :math:`\xi_1 < \ldots < \xi_q` in the notation
-        of `Ramsay (1988)`_. This class implements **fixed** mesh sequences.
+        See :attr:`Isplines.mesh`.
     n : int
-        Number of members in spline, denoted as :math:`n` in `Ramsay (1988)`_.
-        Related to number of points :math:`q` in the mesh and the order
-        :math:`k` by :math:`n = q - 2 + k`.
+        See :attr:`Isplines.n`.
     lower : float
-        Lower end of interval spanned by the splines (first point in mesh).
+        See :attr:`Isplines.lower`.
     upper : float
-        Upper end of interval spanned by the splines (last point in mesh).
+        See :attr:`Isplines.upper`.
+
+    Note
+    ----
+    Evaluates the full interpolating curve from the I-splines. When
+    :math:`x` falls within the lower :math:`L` and upper :math:`U`
+    bounds of the range covered by the I-splines (:math:`L \le x \le U`),
+    then this curve is defined as:
+
+    .. math::
+
+       I_{\rm{total}}\left(x\right)
+       =
+       w_{\rm{lower}} + \sum_i w_i I_i\left(x\right).
+
+    When :math:`x` is outside the range of the mesh covered by the splines,
+    the values are linearly extrapolated from first derivative at the
+    bounds. Specifically, if :math:`x < L` then:
+
+    .. math::
+
+       I_{\rm{total}}\left(x\right)
+       =
+       I_{\rm{total}}\left(L\right) +
+       \left(x - L\right)
+       \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                  {\partial y}\right\rvert_{y=L},
+
+    and if :math:`x > U` then:
+
+    .. math::
+
+       I_{\rm{total}}\left(x\right)
+       =
+       I_{\rm{total}}\left(U\right) +
+       \left(x - U\right)
+       \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                  {\partial y}\right\rvert_{y=U}.
+
+    Note also that:
+
+    .. math::
+
+       I_{\rm{total}}\left(L\right) &=& w_{\rm{lower}}, \\
+       I_{\rm{total}}\left(U\right) &=& w_{\rm{lower}} + \sum_i w_i
 
     Example
     -------
-    Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
+    Short examples to demonstrate and test :class:`Isplines_total`:
 
     .. plot::
        :context: reset
 
-       >>> import functools
        >>> import itertools
        >>> import numpy
        >>> import pandas as pd
        >>> import scipy.optimize
-       >>> from dms_variants.ispline import Isplines
+       >>> from dms_variants.ispline import Isplines_total
 
-       >>> isplines = Isplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
-       >>> isplines.order
-       3
-       >>> isplines.mesh
-       array([0. , 0.3, 0.5, 0.6, 1. ])
-       >>> isplines.n
-       6
-       >>> isplines.lower
-       0.0
-       >>> isplines.upper
-       1.0
-
-       Evaluate the I-splines at some selected points:
-
+       >>> order = 3
+       >>> mesh = [0.0, 0.3, 0.5, 0.6, 1.0]
        >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
-       >>> for i in range(1, isplines.n + 1):
-       ...     print(f"I{i}: {numpy.round(isplines.I(x, i), 2)}")
-       ... # doctest: +NORMALIZE_WHITESPACE
-       I1: [0.   0.96 1.   1.   1.   1.  ]
-       I2: [0.   0.52 0.84 0.98 1.   1.  ]
-       I3: [0.   0.09 0.3  0.66 1.   1.  ]
-       I4: [0.   0.   0.   0.02 0.94 1.  ]
-       I5: [0.   0.   0.   0.   0.58 1.  ]
-       I6: [0.   0.   0.   0.   0.13 1.  ]
-
-       Plot the I-splines:
-
-       >>> xplot = numpy.linspace(0, 1, 1000)
-       >>> data = {'x': xplot}
-       >>> for i in range(1, isplines.n + 1):
-       ...     data[f"I{i}"] = isplines.I(xplot, i)
-       >>> df = pd.DataFrame(data)
-       >>> _ = df.plot(x='x')
-
-       Now calculate the weighted sum of the I-spline family, using the
-       same weights as in Fig. 1 of `Ramsay (1988)`_:
-
-       >>> weights=numpy.array([1.2, 2, 1.2, 1.2, 3, 0]) / 6
-       >>> numpy.round(isplines.Itotal(x, weights, w_lower=0), 2)
+       >>> isplines_total = Isplines_total(order, mesh, x)
+       >>> weights = numpy.array([1.2, 2, 1.2, 1.2, 3, 0]) / 6
+       >>> numpy.round(isplines_total.Itotal(weights, w_lower=0), 2)
        array([0.  , 0.38, 0.54, 0.66, 1.21, 1.43])
 
        Now calculate using some points that require linear extrapolation
        outside the mesh and also have a nonzero `w_lower`:
 
-       >>> numpy.round(isplines.Itotal(
-       ...      numpy.array([-0.5, -0.25, 0, 0.01, 1.0, 1.5]),
-       ...      weights=weights,
-       ...      w_lower=1), 3)
+       >>> x2 = numpy.array([-0.5, -0.25, 0, 0.01, 1.0, 1.5])
+       >>> isplines_total2 = Isplines_total(order, mesh, x2)
+       >>> numpy.round(isplines_total2.Itotal(weights, w_lower=1), 3)
        array([0.   , 0.5  , 1.   , 1.02 , 2.433, 2.433])
 
-       Check that gradients are correct. First test :meth:`Isplines.dI_dx`:
-
-       >>> for i, xval in itertools.product(range(1, isplines.n + 1), x):
-       ...     xval = numpy.array([xval])
-       ...     ifunc = functools.partial(isplines.I, i=i)
-       ...     difunc = functools.partial(isplines.dI_dx, i=i)
-       ...     err = scipy.optimize.check_grad(ifunc, difunc, xval)
-       ...     if err > 1e-5:
-       ...         raise ValueError(f"excess err {err} for {i}, {xval}")
-
-       Test :meth:`Isplines.dItotal_dx`:
+       Test :meth:`Isplines_total.dItotal_dx`:
 
        >>> x_deriv = numpy.array([-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5])
        >>> for xval in x_deriv:
        ...     xval = numpy.array([xval])
-       ...     itotfunc = functools.partial(isplines.Itotal, weights=weights,
-       ...                                  w_lower=0)
-       ...     ditotfunc = functools.partial(isplines.dItotal_dx,
-       ...                                   weights=weights)
-       ...     err = scipy.optimize.check_grad(itotfunc, ditotfunc, xval)
+       ...     def func(xval):
+       ...         return Isplines_total(order, mesh, xval).Itotal(weights, 0)
+       ...     def dfunc(xval):
+       ...         return Isplines_total(order, mesh, xval).dItotal_dx(weights)
+       ...     err = scipy.optimize.check_grad(func, dfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {xval}")
 
-       >>> (isplines.dItotal_dw_lower(x) == numpy.ones(x.shape)).all()
+       >>> (isplines_total.dItotal_dw_lower() == numpy.ones(x.shape)).all()
        True
 
-       Test :meth:`Isplines.dItotal_dweights`:
+       Test :meth:`Isplines_total.dItotal_dweights`:
 
+       >>> isplines_total3 = Isplines_total(order, mesh, x_deriv)
        >>> wl = 1.5
-       >>> (isplines.dItotal_dweights(x_deriv, weights, wl).shape ==
+       >>> (isplines_total3.dItotal_dweights(weights, wl).shape ==
        ...  (len(x_deriv), len(weights)))
        True
        >>> weightslist = list(weights)
-       >>> for xval, iw in itertools.product(x_deriv, range(len(weights))):
-       ...     xval = numpy.array([xval])
+       >>> for ix, iw in itertools.product(range(len(x_deriv)),
+       ...                                 range(len(weights))):
        ...     w = numpy.array([weightslist[iw]])
        ...     def func(w):
        ...         iweights = numpy.array(weightslist[: iw] +
        ...                                list(w) +
        ...                                weightslist[iw + 1:])
-       ...         return isplines.Itotal(xval, iweights, wl)
+       ...         return isplines_total3.Itotal(iweights, wl)[ix]
        ...     def dfunc(w):
        ...         iweights = numpy.array(weightslist[: iw] +
        ...                                list(w) +
        ...                                weightslist[iw + 1:])
-       ...         return isplines.dItotal_dweights(xval, iweights, wl)[0, iw]
+       ...         return isplines_total3.dItotal_dweights(iweights, wl)[ix,
+       ...                                                               iw]
        ...     err = scipy.optimize.check_grad(func, dfunc, w)
        ...     if err > 1e-6:
-       ...         raise ValueError(f"excess err {err} for {iw, xval}")
+       ...         raise ValueError(f"excess err {err} for {ix, iw}")
+
+       Plot the total of the I-spline family shown in Fig. 1 of
+       `Ramsay (1988)`_, adding some linear extrapolation outside the
+       mesh range:
+
+       >>> xplot = numpy.linspace(-0.2, 1.2, 1000)
+       >>> isplines_totalplot = Isplines_total(order, mesh, xplot)
+       >>> df = pd.DataFrame({'x': xplot,
+       ...                    'Itotal': isplines_totalplot.Itotal(weights, 0)})
+       >>> _ = df.plot(x='x', y='Itotal')
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
     """
 
-    def __init__(self, order, mesh):
+    def __init__(self, order, mesh, x):
         """See main class docstring."""
         if not (isinstance(order, int) and order >= 1):
             raise ValueError(f"`order` not int >= 1: {order}")
@@ -184,163 +195,150 @@ class Isplines:
 
         self.n = len(self.mesh) - 2 + self.order
 
-        self._msplines = Msplines(order + 1, mesh)
+        self._x = x.copy()
+        self._x.flags.writeable = False
 
-    def Itotal(self, x, weights, w_lower, linear_extrapolate=True):
-        r"""Evaluate weighted sum of spline family at points :math:`x`.
+        # indices of `x` in, above, or below I-spline range
+        self._index = {'lower': numpy.flatnonzero(self.x < self.lower),
+                       'upper': numpy.flatnonzero(self.x > self.upper),
+                       'in': numpy.flatnonzero((self.x >= self.lower) &
+                                               (self.x <= self.upper))
+                       }
 
-        Note
-        ----
-        Evaluates the full interpolating curve from the I-splines. When
-        :math:`x` falls within the lower :math:`L` and upper :math:`U`
-        bounds of the range covered by the I-splines (:math:`L \le x \le U`),
-        then this curve is defined as:
+        # values of x in each range
+        self._x_byrange = {rangename: self.x[index] for rangename, index
+                           in self._index.items()}
 
-        .. math::
+        # Isplines for each range: for lower and upper it is value at bound
+        self._isplines = {'in': Isplines(self.order, self.mesh,
+                                         self._x_byrange['in']),
+                          'lower': Isplines(self.order, self.mesh,
+                                            numpy.array([self.lower])),
+                          'upper': Isplines(self.order, self.mesh,
+                                            numpy.array([self.upper])),
+                          }
 
-           I_{\rm{total}}\left(x\right)
-           =
-           w_{\rm{lower}} + \sum_i w_i I_i\left(x\right).
+    @property
+    def x(self):
+        """numpy.ndarray: Points at which spline is evaluated."""
+        return self._x
 
-        When :math:`x` is outside the range of the mesh covered by the splines,
-        the values are linearly extrapolated from first derivative at the
-        bounds. Specifically, if :math:`x < L` then:
-
-        .. math::
-
-           I_{\rm{total}}\left(x\right)
-           =
-           I_{\rm{total}}\left(L\right) +
-           \left(x - L\right)
-           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
-                      {\partial y}\right\rvert_{y=L},
-
-        and if :math:`x > U` then:
-
-        .. math::
-
-           I_{\rm{total}}\left(x\right)
-           =
-           I_{\rm{total}}\left(U\right) +
-           \left(x - U\right)
-           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
-                      {\partial y}\right\rvert_{y=U}.
+    def Itotal(self, weights, w_lower):
+        r"""Weighted sum of spline family at points :attr:`Isplines_total.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            Points at which to evaluate the spline family.
-        weights : numpy.ndarray
+        weights : array-like
             Nonnegative weights :math:`w_i` of members :math:`I_i` of spline
             family, should be of length equal to :attr:`Isplines.n`.
         w_lower : float
             The value at the lower bound :math:`L` of the spline range,
             :math:`w_{\rm{lower}}`.
-        linear_extrapolate : bool
-            Linearly extrapolate values outside mesh covered by spline. If
-            `False`, raise an error if any points in `x` outside mesh range.
 
         Returns
         -------
         numpy.ndarray
-            Value of :math:`I_{\rm{total}}` for each point in `x`.
+            :math:`I_{\rm{total}}` for each point in :attr:`Isplines_total.x`.
 
         """
-        return self._calculate_Itotal_or_dItotal(x, weights, w_lower,
-                                                 linear_extrapolate,
+        return self._calculate_Itotal_or_dItotal(tuple(weights), w_lower,
                                                  'Itotal')
 
-    def _calculate_Itotal_or_dItotal(self, x, weights, w_lower,
-                                     linear_extrapolate, quantity):
+    @methodtools.lru_cache(maxsize=65536)
+    def _calculate_Itotal_or_dItotal(self, weights, w_lower,
+                                     quantity):
         """Calculate :meth:`Isplines.Itotal` or derivatives.
 
-        All parameters have same meaning as for :meth:`Isplines.Itotal`
+        Parameters have same meaning as for :meth:`Isplines.Itotal`
         except for `quantity`, which should be
 
           - 'Itotal' to compute :meth:`Isplines.Itotal`
           - 'dItotal_dx' to compute :meth:`Isplines.dItotal_dx`
           - 'dItotal_dweights` to compute :meth:`Isplines.dItotal_dweights`
 
+        Also, `weights` must be hashable (e.g., a tuple).
+
         """
-        if not isinstance(x, numpy.ndarray):
-            raise ValueError(f"`x` is not a numpy array: {type(x)}")
-
-        # get indices of `x` in, above, or below I-spline range
-        index = {'below': numpy.flatnonzero(x < self.lower),
-                 'above': numpy.flatnonzero(x > self.upper),
-                 'in': numpy.flatnonzero((x >= self.lower) & (x <= self.upper))
-                 }
-        if (not linear_extrapolate) and (index['below'] or index['above']):
-            raise ValueError('`x` out of range, `linear_extrapolate` is False')
-
         # check validity of `weights`
-        if weights.shape != (self.n,):
-            raise ValueError(f"invalid shape of `weights`: {weights.shape}")
-        if any(weights < 0):
+        if len(weights) != self.n:
+            raise ValueError(f"invalid length of `weights`: {weights}")
+        if any(weight < 0 for weight in weights):
             raise ValueError(f"`weights` not all non-negative: {weights}")
-
-        # get spline limits in array form
-        limits = [('below', numpy.array([self.lower])),
-                  ('above', numpy.array([self.upper]))]
 
         # compute return values for each category of indices
         returnvals = {}
+
         if quantity == 'Itotal':
-            returnshape = len(x)
-            if len(index['in']):
-                returnvals['in'] = numpy.sum([self.I(x[index['in']], i) *
+            returnshape = len(self.x)
+            if len(self._index['in']):
+                returnvals['in'] = numpy.sum([self._isplines['in'].I(i) *
                                               weights[i - 1]
                                               for i in range(1, self.n + 1)],
                                              axis=0) + w_lower
-            for name, limit in limits:
-                if not len(index[name]):
+            # values of Itotal at limits
+            Itotal_limits = {'lower': w_lower,
+                             'upper': w_lower + sum(weights)}
+            for name, limit in [('lower', self.lower), ('upper', self.upper)]:
+                if not len(self._index[name]):
                     continue
-                returnvals[name] = (self.Itotal(limit, weights, w_lower) +
-                                    (x[index[name]] - limit) *
-                                    self.dItotal_dx(limit, weights)
+                returnvals[name] = (Itotal_limits[name] +
+                                    (self._x_byrange[name] - limit) *
+                                    sum(self._isplines[name].dI_dx(i) *
+                                        weights[i - 1]
+                                        for i in range(1, self.n + 1))
                                     )
+
         elif quantity == 'dItotal_dx':
-            returnshape = len(x)
-            if len(index['in']):
-                returnvals['in'] = numpy.sum([self.dI_dx(x[index['in']], i) *
+            returnshape = len(self.x)
+            if len(self._index['in']):
+                returnvals['in'] = numpy.sum([self._isplines['in'].dI_dx(i) *
                                               weights[i - 1]
                                               for i in range(1, self.n + 1)],
                                              axis=0)
-            for name, limit in limits:
-                if not len(index[name]):
+            for name in ['lower', 'upper']:
+                if not len(self._index[name]):
                     continue
-                returnvals[name] = self.dItotal_dx(limit, weights)
+                returnvals[name] = sum(self._isplines[name].dI_dx(i) *
+                                       weights[i - 1]
+                                       for i in range(1, self.n + 1))
+
         elif quantity == 'dItotal_dweights':
-            returnshape = (len(x), len(weights))
-            if len(index['in']):
-                returnvals['in'] = (numpy.vstack([self.I(x[index['in']], i) for
+            returnshape = (len(self.x), len(weights))
+            if len(self._index['in']):
+                returnvals['in'] = (numpy.vstack([self._isplines['in'].I(i) for
                                                   i in range(1, self.n + 1)])
                                     ).transpose()
-            for name, limit in limits:
-                if not len(index[name]):
+            # values of I at limits
+            I_limits = {'lower': 0.0, 'upper': 1.0}
+            for name, limit in [('lower', self.lower), ('upper', self.upper)]:
+                if not len(self._index[name]):
                     continue
-                returnvals[name] = (numpy.vstack([self.I(limit, i) +
-                                                  (x[index[name]] - limit) *
-                                                  self.dI_dx(limit, i) for
-                                                  i in range(1, self.n + 1)])
+                returnvals[name] = numpy.vstack(
+                                    [I_limits[name] +
+                                     (self._x_byrange[name] - limit) *
+                                     self._isplines[name].dI_dx(i)
+                                     for i in range(1, self.n + 1)
+                                     ]
                                     ).transpose()
+
         else:
             raise ValueError(f"invalid `quantity` {quantity}")
 
         # reconstruct single return value from indices and returnvalues
         returnval = numpy.full(returnshape, fill_value=numpy.nan)
-        for name, name_index in index.items():
+        for name, name_index in self._index.items():
             if len(name_index):
                 returnval[name_index] = returnvals[name]
         assert not numpy.isnan(returnval).any()
+        returnval.flags.writeable = False
         return returnval
 
-    def dItotal_dx(self, x, weights, linear_extrapolate=True):
-        r"""Get derivative of :meth:`Isplines.Itotal` with respect to :math:`x`.
+    def dItotal_dx(self, weights):
+        r"""Deriv :meth:`Isplines_total.Itotal` by :attr:`Isplines_total.x`.
 
         Note
         ----
-        Derivatives calculated from equations in :meth:`Isplines.Itotal` as:
+        Derivatives calculated from equations in :meth:`Isplines_total.Itotal`:
 
         .. math::
 
@@ -357,46 +355,53 @@ class Isplines:
              & \rm{otherwise}.
            \end{cases}
 
+        Note that
+
+        .. math::
+
+           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                      {\partial y}\right\rvert_{y=L}
+            &=&
+            \sum_i w_i \left.\frac{\partial I_i\left(y\right)}{\partial y}
+                       \right\rvert_{y=L}
+            \\
+           \left.\frac{\partial I_{\rm{total}}\left(y\right)}
+                      {\partial y}\right\rvert_{y=U}
+            &=&
+            \sum_i w_i \left.\frac{\partial I_i\left(y\right)}{\partial y}
+                       \right\rvert_{y=U}
+
         Parameters
         ----------
-        x : numpy.ndarray
-            Same meaning as for :meth:`Isplines.Itotal`.
-        weights : numpy.ndarray
-            Same meaning as for :meth:`Isplines.Itotal`.
-        linear_extrapolate : bool
-            Same meaning as for :meth:`Isplines.Itotal`.
+        weights : array-like
+            Same meaning as for :meth:`Isplines_total.Itotal`.
 
         Returns
         -------
         numpy.ndarray
             Derivative :math:`\frac{\partial I_{\rm{total}}}{\partial x}`
-            for each point in `x`.
+            for each point in :attr:`Isplines_total.x`.
 
         """
-        return self._calculate_Itotal_or_dItotal(x, weights, None,
-                                                 linear_extrapolate,
+        return self._calculate_Itotal_or_dItotal(tuple(weights), None,
                                                  'dItotal_dx')
 
-    def dItotal_dweights(self, x, weights, w_lower, linear_extrapolate=True):
-        r"""Derivative of :meth:`Isplines.Itotal` by :math:`w_i`.
+    def dItotal_dweights(self, weights, w_lower):
+        r"""Derivative of :meth:`Isplines_total.Itotal` by :math:`w_i`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            Same meaning as for :meth:`Isplines.Itotal`.
-        weights : numpy.ndarray
+        weights : array-like
             Same meaning as for :meth:`Isplines.Itotal`.
         w_lower : float
-            Same meaning as for :meth:`Isplines.Itotal`.
-        linear_extrapolate : bool
             Same meaning as for :meth:`Isplines.Itotal`.
 
         Returns
         -------
         numpy.ndarray
-            The array is of shape `(len(x), len(weights))`, and element
-            `ix, iweight` gives the derivative with respect to weight
-            `weights[iweight]` evaluated at `x[ix]`.
+            Array is of shape `(len(x), len(weights))`, and element
+            `ix, iweight` gives derivative with respect to weight
+            `weights[iweight]` at element `[ix]` of :attr:`Isplines_total.x`.
 
         Note
         ----
@@ -417,35 +422,172 @@ class Isplines:
             & \rm{if\;} x > U.
            \end{cases}
 
+        Note that:
+
+        .. math::
+
+           I_i\left(L\right) &=& 0 \\
+           I_i\left(U\right) &=& 1.
+
         """
-        return self._calculate_Itotal_or_dItotal(x, weights, w_lower,
-                                                 linear_extrapolate,
+        return self._calculate_Itotal_or_dItotal(tuple(weights), w_lower,
                                                  'dItotal_dweights')
 
-    def dItotal_dw_lower(self, x):
-        r"""Derivative of :meth:`Isplines.Itotal` by :math:`w_{\rm{lower}}`.
-
-        Parameters
-        ----------
-        x : numpy.ndarray
-            Same meaning as for :meth:`Isplines.Itotal`.
+    def dItotal_dw_lower(self):
+        r"""Deriv of :meth:`Isplines_total.Itotal` by :math:`w_{\rm{lower}}`.
 
         Returns
         -------
         numpy.ndarray
             :math:`\frac{\partial{I_{\rm{total}}}}{\partial w_{\rm{lower}}}`,
-            which is just one for all `x`.
+            which is just one for all :attr:`Isplines_total.x`.
 
         """
-        return numpy.ones(x.shape, dtype='float')
+        res = numpy.ones(self.x.shape, dtype='float')
+        res.flags.writeable = False
+        return res
 
-    def I(self, x, i):  # noqa: E743
-        r"""Evaluate spline :math:`I_i` at point(s) :math:`x`.
+
+class Isplines:
+    r"""Implements I-splines (see `Ramsay (1988)`_).
+
+    Parameters
+    ----------
+    order : int
+        Sets :attr:`Isplines.order`.
+    mesh : array-like
+        Sets :attr:`Isplines.mesh`.
+    x : numpy.ndarray
+        Sets :attr:`Isplines.x`.
+
+    Attributes
+    ----------
+    order : int
+        Order of spline, :math:`k` in notation of `Ramsay (1988)`_. Note that
+        the degree of the I-spline is equal to :math:`k`, while the
+        associated M-spline has order :math:`k` but degree :math:`k - 1`.
+    mesh : numpy.ndarray
+        Mesh sequence, :math:`\xi_1 < \ldots < \xi_q` in the notation
+        of `Ramsay (1988)`_. This class implements **fixed** mesh sequences.
+    n : int
+        Number of members in spline, denoted as :math:`n` in `Ramsay (1988)`_.
+        Related to number of points :math:`q` in the mesh and the order
+        :math:`k` by :math:`n = q - 2 + k`.
+    lower : float
+        Lower end of interval spanned by the splines (first point in mesh).
+    upper : float
+        Upper end of interval spanned by the splines (last point in mesh).
+
+    Note
+    ----
+    The methods of this class cache their results and return immutable
+    numpy arrays. Do **not** make these arrays mutable and change their
+    values, as this will lead to invalid caching.
+
+    Example
+    -------
+    Short examples to demonstrate and test :class:`Isplines`:
+
+    .. plot::
+       :context: reset
+
+       >>> import itertools
+       >>> import numpy
+       >>> import pandas as pd
+       >>> import scipy.optimize
+       >>> from dms_variants.ispline import Isplines
+
+       >>> order = 3
+       >>> mesh = [0.0, 0.3, 0.5, 0.6, 1.0]
+       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
+       >>> isplines = Isplines(order, mesh, x)
+       >>> isplines.order
+       3
+       >>> isplines.mesh
+       array([0. , 0.3, 0.5, 0.6, 1. ])
+       >>> isplines.n
+       6
+       >>> isplines.lower
+       0.0
+       >>> isplines.upper
+       1.0
+
+       Evaluate the I-splines at some selected points:
+
+       >>> for i in range(1, isplines.n + 1):
+       ...     print(f"I{i}: {numpy.round(isplines.I(i), 2)}")
+       ... # doctest: +NORMALIZE_WHITESPACE
+       I1: [0.   0.96 1.   1.   1.   1.  ]
+       I2: [0.   0.52 0.84 0.98 1.   1.  ]
+       I3: [0.   0.09 0.3  0.66 1.   1.  ]
+       I4: [0.   0.   0.   0.02 0.94 1.  ]
+       I5: [0.   0.   0.   0.   0.58 1.  ]
+       I6: [0.   0.   0.   0.   0.13 1.  ]
+
+       Check that gradients are correct for :meth:`Isplines.dI_dx`:
+
+       >>> for i, xval in itertools.product(range(1, isplines.n + 1), x):
+       ...     xval = numpy.array([xval])
+       ...     def func(xval):
+       ...         return Isplines(order, mesh, xval).I(i)
+       ...     def dfunc(xval):
+       ...         return Isplines(order, mesh, xval).dI_dx(i)
+       ...     err = scipy.optimize.check_grad(func, dfunc, xval)
+       ...     if err > 1e-5:
+       ...         raise ValueError(f"excess err {err} for {i}, {xval}")
+
+       Plot the I-splines in Fig. 1 of `Ramsay (1988)`_:
+
+       >>> xplot = numpy.linspace(0, 1, 1000)
+       >>> isplines_xplot = Isplines(order, mesh, xplot)
+       >>> data = {'x': xplot}
+       >>> for i in range(1, isplines.n + 1):
+       ...     data[f"I{i}"] = isplines_xplot.I(i)
+       >>> df = pd.DataFrame(data)
+       >>> _ = df.plot(x='x')
+
+    .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
+
+    """
+
+    def __init__(self, order, mesh, x):
+        """See main class docstring."""
+        if not (isinstance(order, int) and order >= 1):
+            raise ValueError(f"`order` not int >= 1: {order}")
+        self.order = order
+
+        self.mesh = numpy.array(mesh, dtype='float')
+        if self.mesh.ndim != 1:
+            raise ValueError(f"`mesh` not array-like of dimension 1: {mesh}")
+        if len(self.mesh) < 2:
+            raise ValueError(f"`mesh` not length >= 2: {mesh}")
+        if not numpy.array_equal(self.mesh, numpy.unique(self.mesh)):
+            raise ValueError(f"`mesh` elements not unique and sorted: {mesh}")
+        self.lower = self.mesh[0]
+        self.upper = self.mesh[-1]
+        assert self.lower < self.upper
+
+        self.n = len(self.mesh) - 2 + self.order
+
+        if not (isinstance(x, numpy.ndarray) and x.ndim == 1):
+            raise ValueError('`x` is not numpy.ndarray of dimension 1')
+        if (x < self.lower).any() or (x > self.upper).any():
+            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
+        self._x = x.copy()
+        self._x.flags.writeable = False
+
+        self._msplines = Msplines(order + 1, mesh, self.x)
+
+    @property
+    def x(self):
+        """numpy.ndarray: Points at which spline is evaluated."""
+        return self._x
+
+    def I(self, i):  # noqa: E743
+        r"""Evaluate spline :math:`I_i` at point(s) :attr:`Isplines.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            One or more points in range covered by the spline.
         i : int
             Spline member :math:`I_i`, where :math:`1 \le i \le`
             :attr:`Isplines.n`.
@@ -453,7 +595,7 @@ class Isplines:
         Returns
         -------
         numpy.ndarray
-            The values of the I-spline at each point in `x`.
+            The values of the I-spline at each point in :attr:`Isplines.x`.
 
         Note
         ----
@@ -482,15 +624,14 @@ class Isplines:
         .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html
 
         """
-        return self._calculate_I_or_dI(x, i, 'I')
+        return self._calculate_I_or_dI(i, 'I')
 
-    def _calculate_I_or_dI(self, x, i, quantity):
+    @methodtools.lru_cache(maxsize=65536)
+    def _calculate_I_or_dI(self, i, quantity):
         """Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            Same meaning as for :meth:`Isplines.I`.
         i : int
             Same meaning as for :meth:`Isplines.I`.
         quantity : {'I', 'dI'}
@@ -519,55 +660,50 @@ class Isplines:
         if not (1 <= i <= self.n):
             raise ValueError(f"invalid spline member `i` of {i}")
 
-        if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` is not numpy.ndarray')
-        if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
-
         k = self.order
 
         # create `sum_terms`, where row m - 1 has the summation term for m
         sum_terms = numpy.vstack(
                 [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
-                 func(x, m, k + 1) / (k + 1)
+                 func(m, k + 1) / (k + 1)
                  for m in range(1, self._msplines.n + 1)])
-        assert sum_terms.shape == (self._msplines.n, len(x))
+        assert sum_terms.shape == (self._msplines.n, len(self.x))
 
         # calculate j for all entries in x
-        j = numpy.searchsorted(self._msplines.knots, x, 'right')
+        j = numpy.searchsorted(self._msplines.knots, self.x, 'right')
         assert all(1 <= j) and all(j <= len(self._msplines.knots))
-        assert x.shape == j.shape
+        assert self.x.shape == j.shape
 
         # create `binary_terms` where entry (m - 1, x) is 1 if and only if
         # the corresponding `sum_terms` entry is part of the sum.
         binary_terms = numpy.vstack(
-                [numpy.zeros(len(x)) if m < i + 1 else (m <= j).astype(int)
-                 for m in range(1, self._msplines.n + 1)])
+               [numpy.zeros(len(self.x)) if m < i + 1 else (m <= j).astype(int)
+                for m in range(1, self._msplines.n + 1)])
         assert binary_terms.shape == sum_terms.shape
 
         # compute sums from `sum_terms` and `binary_terms`
         sums = numpy.sum(sum_terms * binary_terms, axis=0)
-        assert sums.shape == x.shape
+        assert sums.shape == self.x.shape
 
         # return value with sums, 0, or 1
-        return numpy.where(i > j, 0.0,
-                           numpy.where(i < j - k, i_lt_jminusk,
-                                       sums))
+        res = numpy.where(i > j, 0.0,
+                          numpy.where(i < j - k, i_lt_jminusk,
+                                      sums))
+        res.flags.writeable = False
+        return res
 
-    def dI_dx(self, x, i):
-        r"""Get derivative of :meth:`Isplines.I` with respect to `x`.
+    def dI_dx(self, i):
+        r"""Derivative of :meth:`Isplines.I` by :attr:`Isplines.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            Same meaning as for :meth:`Isplines.I`.
         i : int
             Same meaning as for :meth:`Isplines.I`.
 
         Returns
         -------
         numpy.ndarray
-            Derivative of I-spline with respect to `x`.
+            Derivative of I-spline with respect to :attr:`Isplines.x`.
 
         Note
         ----
@@ -586,7 +722,7 @@ class Isplines:
            \end{cases}
 
         """
-        return self._calculate_I_or_dI(x, i, 'dI')
+        return self._calculate_I_or_dI(i, 'dI')
 
 
 class Msplines:
@@ -598,6 +734,8 @@ class Msplines:
         Sets :attr:`Msplines.order`.
     mesh : array-like
         Sets :attr:`Msplines.mesh`.
+    x : numpy.ndarray
+        Sets :attr:`Msplines.x`.
 
     Attributes
     ----------
@@ -619,9 +757,15 @@ class Msplines:
     upper : float
         Upper end of interval spanned by the splines (last point in mesh).
 
+    Note
+    ----
+    The methods of this class cache their results and return immutable
+    numpy arrays. Do **not** make those arrays mutable and change their
+    values as this will lead to invalid caching.
+
     Example
     -------
-    Demonstrate using the example in Fig. 1 of `Ramsay (1988)`_:
+    Demonstrate and test :class:`Msplines`:
 
     .. plot::
        :context: reset
@@ -633,7 +777,10 @@ class Msplines:
        >>> import scipy.optimize
        >>> from dms_variants.ispline import Msplines
 
-       >>> msplines = Msplines(3, [0.0, 0.3, 0.5, 0.6, 1.0])
+       >>> order = 3
+       >>> mesh = [0.0, 0.3, 0.5, 0.6, 1.0]
+       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
+       >>> msplines = Msplines(order, mesh, x)
        >>> msplines.order
        3
        >>> msplines.mesh
@@ -649,9 +796,8 @@ class Msplines:
 
        Evaluate the M-splines at some selected points:
 
-       >>> x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])
        >>> for i in range(1, msplines.n + 1):
-       ...     print(f"M{i}: {numpy.round(msplines.M(x, i), 2)}")
+       ...     print(f"M{i}: {numpy.round(msplines.M(i), 2)}")
        ... # doctest: +NORMALIZE_WHITESPACE
        M1: [10. 1.11 0.  0.   0.   0.  ]
        M2: [0.  3.73 2.4 0.6  0.   0.  ]
@@ -660,30 +806,33 @@ class Msplines:
        M5: [0.  0.   0.  0.   3.3  0.  ]
        M6: [0.  0.   0.  0.   1.88 7.5 ]
 
-       Plot the M-splines:
-
-       >>> xplot = numpy.linspace(0, 1, 1000, endpoint=False)
-       >>> data = {'x': xplot}
-       >>> for i in range(1, msplines.n + 1):
-       ...     data[f"M{i}"] = msplines.M(xplot, i)
-       >>> df = pd.DataFrame(data)
-       >>> _ = df.plot(x='x')
-
        Check that the gradients are correct:
 
        >>> for i, xval in itertools.product(range(1, msplines.n + 1), x):
        ...     xval = numpy.array([xval])
-       ...     mfunc = functools.partial(msplines.M, i=i)
-       ...     dmfunc = functools.partial(msplines.dM_dx, i=i)
-       ...     err = scipy.optimize.check_grad(mfunc, dmfunc, xval)
+       ...     def func(xval):
+       ...         return Msplines(order, mesh, xval).M(i)
+       ...     def dfunc(xval):
+       ...         return Msplines(order, mesh, xval).dM_dx(i)
+       ...     err = scipy.optimize.check_grad(func, dfunc, xval)
        ...     if err > 1e-5:
        ...         raise ValueError(f"excess err {err} for {i}, {xval}")
+
+       Plot the M-splines in in Fig. 1 of `Ramsay (1988)`_:
+
+       >>> xplot = numpy.linspace(0, 1, 1000, endpoint=False)
+       >>> msplines_plot = Msplines(order, mesh, xplot)
+       >>> data = {'x': xplot}
+       >>> for i in range(1, msplines_plot.n + 1):
+       ...     data[f"M{i}"] = msplines_plot.M(i)
+       >>> df = pd.DataFrame(data)
+       >>> _ = df.plot(x='x')
 
     .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395
 
     """
 
-    def __init__(self, order, mesh):
+    def __init__(self, order, mesh, x):
         """See main class docstring."""
         if not (isinstance(order, int) and order >= 1):
             raise ValueError(f"`order` not int >= 1: {order}")
@@ -709,13 +858,23 @@ class Msplines:
         self.n = len(self.knots) - self.order
         assert self.n == len(self.mesh) - 2 + self.order
 
-    def M(self, x, i, k=None, invalid_i='raise'):
-        r"""Evaluate spline :math:`M_i` at point(s) `x`.
+        if not (isinstance(x, numpy.ndarray) and x.ndim == 1):
+            raise ValueError('`x` is not numpy.ndarray of dimension 1')
+        if (x < self.lower).any() or (x > self.upper).any():
+            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
+        self._x = x.copy()
+        self._x.flags.writeable = False
+
+    @property
+    def x(self):
+        """numpy.ndarray: Points at which spline is evaluated."""
+        return self._x
+
+    def M(self, i, k=None, invalid_i='raise'):
+        r"""Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            One or more points in the range covered by the spline.
         i : int
             Spline member :math:`M_i`, where :math:`1 \le i \le`
             :attr:`Msplines.n`.
@@ -727,7 +886,7 @@ class Msplines:
         Returns
         -------
         numpy.ndarray
-            The values of the M-spline at each point in `x`.
+            The values of the M-spline at each point in :attr:`Msplines.x`.
 
         Note
         ----
@@ -753,6 +912,11 @@ class Msplines:
            \end{cases}
 
         """
+        return self._calculate_M(i, k, invalid_i)
+
+    @methodtools.lru_cache(maxsize=65536)
+    def _calculate_M(self, i, k, invalid_i):
+        """Calculate :meth:`Msplines.M` with result caching."""
         if not (1 <= i <= self.n):
             if invalid_i == 'raise':
                 raise ValueError(f"invalid spline member `i` of {i}")
@@ -764,37 +928,37 @@ class Msplines:
             k = self.order
         if not 1 <= k <= self.order:
             raise ValueError(f"invalid spline order `k` of {k}")
-        if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` is not numpy.ndarray')
-        if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti:
-            return numpy.zeros(x.shape, dtype='float')
+            res = numpy.zeros(self.x.shape, dtype='float')
+            res.flags.writeable = False
+            return res
 
         if k == 1:
-            return numpy.where((ti <= x) & (x < tiplusk),
-                               1.0 / (tiplusk - ti),
-                               0.0)
+            res = numpy.where((ti <= self.x) & (self.x < tiplusk),
+                              1.0 / (tiplusk - ti),
+                              0.0)
+            res.flags.writeable = False
+            return res
         else:
             assert k > 1
-            return numpy.where(
-                        (ti <= x) & (x < tiplusk),
-                        (k * ((x - ti) * self.M(x, i, k - 1) +
-                         (tiplusk - x) * self.M(x, i + 1, k - 1,
-                                                invalid_i='zero')
+            res = numpy.where(
+                        (ti <= self.x) & (self.x < tiplusk),
+                        (k * ((self.x - ti) * self.M(i, k - 1) +
+                         (tiplusk - self.x) * self.M(i + 1, k - 1,
+                                                     invalid_i='zero')
                          ) / ((k - 1) * (tiplusk - ti))),
                         0.0)
+            res.flags.writeable = False
+            return res
 
-    def dM_dx(self, x, i, k=None, invalid_i='raise'):
-        r"""Get derivative of :meth:`Msplines.M` with respect to `x`.
+    def dM_dx(self, i, k=None, invalid_i='raise'):
+        r"""Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.
 
         Parameters
         ----------
-        x : numpy.ndarray
-            Same as for :meth:`Msplines.M`.
         i : int
             Same as for :meth:`Msplines.M`.
         k : int or None
@@ -805,7 +969,7 @@ class Msplines:
         Returns
         -------
         numpy.ndarray
-            Derivative of M-spline with respect to `x`.
+            Derivative of M-spline with respect to :attr:`Msplines.x`.
 
         Note
         ----
@@ -835,6 +999,11 @@ class Msplines:
            \end{cases}
 
         """
+        return self._calculate_dM_dx(i, k, invalid_i)
+
+    @methodtools.lru_cache(maxsize=65536)
+    def _calculate_dM_dx(self, i, k, invalid_i):
+        """Calculate :meth:`Msplines.dM_dx` with results caching."""
         if not (1 <= i <= self.n):
             if invalid_i == 'raise':
                 raise ValueError(f"invalid spline member `i` of {i}")
@@ -846,27 +1015,27 @@ class Msplines:
             k = self.order
         if not 1 <= k <= self.order:
             raise ValueError(f"invalid spline order `k` of {k}")
-        if not isinstance(x, numpy.ndarray):
-            raise ValueError('`x` is not numpy.ndarray')
-        if (x < self.lower).any() or (x > self.upper).any():
-            raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
 
         tiplusk = self.knots[i + k - 1]
         ti = self.knots[i - 1]
         if tiplusk == ti or k == 1:
-            return numpy.zeros(x.shape, dtype='float')
+            res = numpy.zeros(self.x.shape, dtype='float')
+            res.flags.writeable = False
+            return res
         else:
             assert k > 1
-            return numpy.where(
-                        (ti <= x) & (x < tiplusk),
-                        (k * ((x - ti) * self.dM_dx(x, i, k - 1) +
-                              self.M(x, i, k - 1) +
-                              (tiplusk - x) * self.dM_dx(x, i + 1, k - 1,
-                                                         invalid_i='zero') -
-                              self.M(x, i + 1, k - 1, invalid_i='zero')
+            res = numpy.where(
+                        (ti <= self.x) & (self.x < tiplusk),
+                        (k * ((self.x - ti) * self.dM_dx(i, k - 1) +
+                              self.M(i, k - 1) +
+                              (tiplusk - self.x) * self.dM_dx(i + 1, k - 1,
+                                                              invalid_i='zero')
+                              - self.M(i + 1, k - 1, invalid_i='zero')
                               ) / ((k - 1) * (tiplusk - ti))
                          ),
                         0.0)
+            res.flags.writeable = False
+            return res
 
 
 if __name__ == '__main__':

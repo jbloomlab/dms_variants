@@ -87,7 +87,7 @@ linear extrapolation outside the spline boundaries:
 where :math:`c_{\alpha}` is an arbitrary number giving the *minimum*
 observed phenotype, the :math:`\alpha_m` coefficients are all :math:`\ge 0`,
 :math:`I_m` indicates a family of I-splines defined via
-:class:`dms_variants.ispline.Isplines`, and :math:`L` and :math:`U` are
+:class:`dms_variants.ispline.Isplines_total`, and :math:`L` and :math:`U` are
 the lower and upper bounds on the regions over which the I-splines are defined.
 Note how when :math:`x` is outside the range of the I-splines, we linearly
 extrapolate :math:`g` from its range boundaries to calculate.
@@ -341,7 +341,8 @@ class AbstractEpistasis(abc.ABC):
                                                          self.epistasis_HOC):
             for key in list(self._cache.keys()):
                 if key not in {'_latent_phenotypes', '_observed_phenotypes',
-                               '_dobserved_phenotype_dlatent'}:
+                               '_dobserved_phenotype_dlatent',
+                               '_isplines_total'}:
                     del self._cache[key]
             self._epistasis_HOC_val = val
 
@@ -357,7 +358,8 @@ class AbstractEpistasis(abc.ABC):
         if ((not hasattr(self, '_epistasis_func_params_val')) or
                 (val != self._epistasis_func_params).any()):
             for key in list(self._cache.keys()):
-                if key not in {'_latent_phenotypes', '_variances'}:
+                if key not in {'_latent_phenotypes', '_variances',
+                               '_isplines_total'}:
                     del self._cache[key]
             self._epistasis_func_params_val = val.copy()
             self._epistasis_func_params_val.flags.writeable = False
@@ -983,12 +985,12 @@ class NoEpistasis(AbstractEpistasis):
 
         Parameters
         -----------
-        latent_phenotype : float or numpy.ndarray
+        latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
 
         Returns
         -------
-        float or numpy.ndarray
+        numpy.ndarray
             Observed phenotype(s) after transforming the latent phenotypes
             using the global epistasis function.
 
@@ -1000,20 +1002,17 @@ class NoEpistasis(AbstractEpistasis):
 
         Parameters
         -----------
-        latent_phenotype : float or numpy.ndarray
+        latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
 
         Returns
         -------
-        float or numpy.ndarray
+        numpy.ndarray
             Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
             latent phenotype evaluated at `latent_phenotype`.
 
         """
-        if isinstance(latent_phenotype, (int, float)):
-            return 1.0
-        else:
-            return numpy.ones(latent_phenotype.shape, dtype='float')
+        return numpy.ones(latent_phenotype.shape, dtype='float')
 
     @property
     def _dloglik_depistasis_func_params(self):
@@ -1094,33 +1093,53 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                  mesh=(0.0, 1 / 3., 2 / 3., 1.0),
                  ):
         """See main class docstring."""
-        self._isplines = dms_variants.ispline.Isplines(spline_order, mesh)
+        self._mesh = mesh
+        self._spline_order = spline_order
         super().__init__(binarymap)
 
     @property
-    def isplines(self):
-        """:class:`dms_variants.ispline.Isplines`: The I-splines."""
-        return self._isplines
+    def _isplines_total(self):
+        """:class:`dms_variants.ispline.Isplines_total`: I-splines.
+
+        The I-spline family is defined with the current values of
+        the latent phenotypes as `x`.
+
+        """
+        key = '_isplines_total'
+        if key not in self._cache:
+            self._cache[key] = dms_variants.ispline.Isplines_total(
+                                        order=self._spline_order,
+                                        mesh=self._mesh,
+                                        x=self._latent_phenotypes)
+        return self._cache[key]
 
     def epistasis_func(self, latent_phenotype):
         """Apply :math:`g` in Eq. :eq:`monotonicspline`.
 
         Parameters
         -----------
-        latent_phenotype : float or numpy.ndarray
+        latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
 
         Returns
         -------
-        float or numpy.ndarray
+        numpy.ndarray
             Observed phenotype(s) after transforming the latent phenotypes
             using the global epistasis function.
 
         """
-        return self.isplines.Itotal(x=latent_phenotype,
-                                    weights=self.alpha_ms,
-                                    w_lower=self.c_alpha,
-                                    linear_extrapolate=True)
+        if not isinstance(latent_phenotype, numpy.ndarray):
+            raise ValueError('`latent_phenotype` not numpy array')
+        if ((latent_phenotype.shape == self._latent_phenotypes.shape) and
+                (all(latent_phenotype == self._latent_phenotypes))):
+            return self._isplines_total.Itotal(weights=self.alpha_ms,
+                                               w_lower=self.c_alpha)
+        else:
+            return dms_variants.ispline.Isplines_total(
+                        order=self._spline_order,
+                        mesh=self._mesh,
+                        x=latent_phenotype).Itotal(weights=self.alpha_ms,
+                                                   w_lower=self.c_alpha)
 
     def _depistasis_func_dlatent(self, latent_phenotype):
         """Get derivative of epistasis function by latent phenotype.
@@ -1137,9 +1156,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             with respect to latent phenotype evaluated at `latent_phenotype`.
 
         """
-        return self.isplines.dItotal_dx(x=latent_phenotype,
-                                        weights=self.alpha_ms,
-                                        linear_extrapolate=True)
+        return self._isplines_total.dItotal_dx(weights=self.alpha_ms)
 
     @property
     def _dloglik_depistasis_func_params(self):
@@ -1157,11 +1174,10 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         assert all(self._epistasis_func_params[1:] == self.alpha_ms)
         dlog_dobs = self._func_score_minus_observed_pheno_over_variance
         dcalpha = dlog_dobs.dot(
-                self.isplines.dItotal_dw_lower(self._latent_phenotypes))
+                self._isplines_total.dItotal_dw_lower())
         dalpham = dlog_dobs.dot(
-                self.isplines.dItotal_dweights(self._latent_phenotypes,
-                                               self.alpha_ms,
-                                               self.c_alpha))
+                self._isplines_total.dItotal_dweights(self.alpha_ms,
+                                                      self.c_alpha))
         deriv = numpy.append(dcalpha, dalpham)
         assert deriv.shape == self._epistasis_func_params.shape
         return deriv
@@ -1175,7 +1191,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         """
         return ['c_alpha'] + [f"alpha_{m}" for m in
-                              range(1, self.isplines.n + 1)]
+                              range(1, self._isplines_total.n + 1)]
 
     @property
     def _epistasis_func_param_bounds(self):
@@ -1186,7 +1202,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         """
         bounds_d = {'c_alpha': (None, None)}
-        for m in range(1, self.isplines.n + 1):
+        for m in range(1, self._isplines_total.n + 1):
             bounds_d[f"alpha_{m}"] = (self._NEARLY_ZERO, None)
         return [bounds_d[name] for name in self._epistasis_func_param_names]
 
@@ -1204,9 +1220,9 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         func_score_min = min(self.binarymap.func_scores)
         func_score_max = max(self.binarymap.func_scores)
         init_d = {'c_alpha': func_score_min}
-        for m in range(1, self.isplines.n + 1):
+        for m in range(1, self._isplines_total.n + 1):
             init_d[f"alpha_{m}"] = ((func_score_max - func_score_min) /
-                                    self.isplines.n)
+                                    self._isplines_total.n)
         return numpy.array([init_d[name] for name in
                             self._epistasis_func_param_names],
                            dtype='float')
@@ -1220,7 +1236,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     def alpha_ms(self):
         r"""numpy.ndarray: :math:`\alpha_m` in Eq. :eq:`monotonicspline`."""
         return numpy.array([self.epistasis_func_params_dict[f"alpha_{m}"]
-                            for m in range(1, self.isplines.n + 1)],
+                            for m in range(1, self._isplines_total.n + 1)],
                            dtype='float')
 
     def _rescale_latent_effects(self):
