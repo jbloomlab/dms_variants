@@ -865,6 +865,33 @@ class Msplines:
         self._x = x.copy()
         self._x.flags.writeable = False
 
+        self._ti_le_x_lt_tiplusk_cache = {}
+
+    def _ti_le_x_lt_tiplusk(self, ti, tiplusk):
+        r"""Indices where :math:`t_i \le x \le t_{i+k}`.
+
+        Parameters
+        ----------
+        ti : float
+            :math:`t_i`
+        tiplusk : float
+            :math:`t_{i+k}`
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of booleans of same length as :attr:`Msplines.x` indicating
+            if :math:`t_i \le x \le t_{i+k}`.
+
+        """
+        key = (ti, tiplusk)
+        if key not in self._ti_le_x_lt_tiplusk_cache:
+            val = (ti <= self.x) & (self.x < tiplusk)
+            val.flags.writeable = False
+            assert val.dtype == bool
+            self._ti_le_x_lt_tiplusk_cache[key] = val
+        return self._ti_le_x_lt_tiplusk_cache[key]
+
     @property
     def x(self):
         """numpy.ndarray: Points at which spline is evaluated."""
@@ -907,7 +934,7 @@ class Msplines:
                         \left(t_{i+k} -x\right) M_{i+1}\left(x \mid k-1\right)
                         \right]}
            {\left(k - 1\right)\left(t_{i + k} - t_i\right)},
-           & \rm{if\;} t_i \le x < t_{i+1} \\
+           & \rm{if\;} t_i \le x < t_{i+k} \\
            0, & \rm{otherwise}
            \end{cases}
 
@@ -934,16 +961,15 @@ class Msplines:
         if tiplusk == ti:
             return 0
 
+        boolindex = self._ti_le_x_lt_tiplusk(ti, tiplusk)
         if k == 1:
-            res = numpy.where((ti <= self.x) & (self.x < tiplusk),
-                              1.0 / (tiplusk - ti),
-                              0.0)
+            res = numpy.where(boolindex, 1.0 / (tiplusk - ti), 0.0)
             res.flags.writeable = False
             return res
         else:
             assert k > 1
             res = numpy.where(
-                        (ti <= self.x) & (self.x < tiplusk),
+                        boolindex,
                         (k * ((self.x - ti) * self.M(i, k - 1) +
                          (tiplusk - self.x) * self.M(i + 1, k - 1,
                                                      invalid_i='zero')
@@ -1020,8 +1046,9 @@ class Msplines:
             return 0
         else:
             assert k > 1
+            boolindex = self._ti_le_x_lt_tiplusk(ti, tiplusk)
             res = numpy.where(
-                        (ti <= self.x) & (self.x < tiplusk),
+                        boolindex,
                         (k * ((self.x - ti) * self.dM_dx(i, k - 1) +
                               self.M(i, k - 1) +
                               (tiplusk - self.x) * self.dM_dx(i + 1, k - 1,
