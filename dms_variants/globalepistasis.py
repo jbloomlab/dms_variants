@@ -98,6 +98,9 @@ points such that the total number of I-splines is :math:`M=5` (although these
 options can be adjusted when initializing a :class:`MonotonicSplineEpistasis`
 model).
 
+The latent effects are scaled so that their mean absolute value is one,
+and the latent phenotype of the wildtype is set to zero.
+
 Fitting of models
 -------------------
 For each variant :math:`v`, we have an experimentally measured functional
@@ -137,8 +140,27 @@ mutations, the latent phenotype :math:`\beta_{\rm{wt}}` of the wildtype
 sequence, the house-of-cards epistasis :math:`\sigma^2_{\rm{HOC}}`,
 and any parameters that define the global epistasis function :math:`g`.
 
-Details of optimization
+Details of fitting
 -------------------------
+
+Fitting workflow
++++++++++++++++++
+The fitting workflow is essentially the same as that described in
+`Otwinoski et al (2018)`_:
+
+ 1. The latent effects are fit under an additive (non-epistatic) model
+    using least squares.
+ 2. If there are any parameters in the epistasis function, they are set
+    to reasonable initial values. For :class:`MonotonicSplineEpistasis`
+    this involves setting the mesh to go from 0 to 1,
+    setting :math:`c_{\alpha}` to the minimum functional
+    score and setting the weights :math:`\alpha_m` to equal values such
+    that the max of the epistasis function is the same as the maximum
+    functional score.
+ 3. The overall model is fit by maximum likelihood.
+ 4. For :class:`MonotonicSplineEpistasis`, the latent effects and wildtype
+    latent phenotype are rescaled so that the mean absolute value latent
+    effect is one and the wildtype latent phenotype is zero.
 
 Vector representation of :math:`\beta_{\rm{wt}}`
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -156,6 +178,11 @@ Then Eq. :eq:`latent_phenotype` can be rewritten as
 
 enabling :math:`\beta_{\rm{wt}}` to just be handled like the other
 :math:`\beta_m` parameters.
+
+Optimization
+++++++++++++
+The optimization performed by :meth:`AbstractEpistasis.fit` uses the
+L-BFGS-B method with gradients.
 
 Gradients
 +++++++++++
@@ -1081,8 +1108,9 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         Contains the variants, their functional scores, and score variances.
     spline_order : int
         Order of the I-splines defining the global epistasis function.
-    mesh : array-like
-        Mesh points for the I-spline defining the global epistasis function.
+    meshpoints : int
+        Number of evenly spaced mesh points for the I-spline defining the
+        global epistasis function.
 
     """
 
@@ -1090,10 +1118,12 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                  binarymap,
                  *,
                  spline_order=3,
-                 mesh=(0.0, 1 / 3., 2 / 3., 1.0),
+                 meshpoints=4,
                  ):
         """See main class docstring."""
-        self._mesh = numpy.array(mesh)
+        if not (isinstance(meshpoints, int) and meshpoints > 1):
+            raise ValueError('`meshpoints` must be int > 1')
+        self._mesh = numpy.linspace(0, 1, meshpoints)
         self._spline_order = spline_order
         super().__init__(binarymap)
 
