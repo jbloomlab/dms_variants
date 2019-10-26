@@ -23,6 +23,8 @@ Changed
 -------
 - Order of rows in data frames from `CodonVariantTable.func_scores`.
 
+- Updated `codonvariant_sim_data.ipynb` to be smaller and fit global epistasis models.
+
 Fixed
 -----
 - Removed use of deprecated `Bio.Alphabet`
