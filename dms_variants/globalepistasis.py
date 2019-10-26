@@ -517,6 +517,9 @@ class AbstractEpistasis(abc.ABC):
                     f"{optres}")
         self._allparams = optres.x
 
+        # postscale parameters to desired range
+        self._postscale_params()
+
         return optres
 
     @property
@@ -942,6 +945,18 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
+    @abc.abstractmethod
+    def _postscale_params(self):
+        """Rescale parameters after the global fitting.
+
+        Note
+        ----
+        This is an abstract method, the actula pre-scaling is done in concrete
+        subclasses.
+
+        """
+        return NotImplementedError
+
 
 class NoEpistasis(AbstractEpistasis):
     """Non-epistatic model.
@@ -1044,6 +1059,10 @@ class NoEpistasis(AbstractEpistasis):
         """Do nothing, as no need to prescale for :class:`NoEpistasis`."""
         pass
 
+    def _postscale_params(self):
+        """Do nothing, as no need to postscale for :class:`NoEpistasis`."""
+        pass
+
 
 class MonotonicSplineEpistasis(AbstractEpistasis):
     """Monotonic spline global epistasis model.
@@ -1074,7 +1093,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                  mesh=(0.0, 1 / 3., 2 / 3., 1.0),
                  ):
         """See main class docstring."""
-        self._mesh = mesh
+        self._mesh = numpy.array(mesh)
         self._spline_order = spline_order
         super().__init__(binarymap)
 
@@ -1221,8 +1240,8 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                            dtype='float')
 
     def _prescale_params(self):
-        """Rescale latent effects so latent phenotypes are between 0 and 1."""
-        rescale_min, rescale_max = 0.0, 1.0
+        """Rescale latent effects so latent phenotypes are within mesh."""
+        rescale_min, rescale_max = min(self._mesh), max(self._mesh)
         rescalerange = rescale_max - rescale_min
         assert rescalerange > 0
         currentrange = (self._latent_phenotypes.max() -
@@ -1241,6 +1260,35 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                  self._latent_phenotypes.min()))
         assert numpy.allclose(rescale_min, self._latent_phenotypes.min())
         assert numpy.allclose(rescale_max, self._latent_phenotypes.max())
+
+    def _postscale_params(self):
+        """Rescale parameters after global epistasis fitting.
+
+        The parameters are re-scaled so that:
+          - The mean absolute value latent effect is 1.
+          - The latent phenotype of wildtype is 0.
+
+        """
+        # make mean absolute latent effect equal to one
+        mean_abs_latent_effect = numpy.abs(self._latenteffects[: -1]).mean()
+        if mean_abs_latent_effect == 0:
+            raise ValueError('latent effects are all 0')
+        oldloglik = self.loglik
+        self._latenteffects = self._latenteffects / mean_abs_latent_effect
+        self._mesh = self._mesh / mean_abs_latent_effect
+        assert numpy.allclose(1, numpy.abs(self._latenteffects[: -1]).mean())
+
+        # make latent phenotype of wildtype equal to 0
+        self._mesh = self._mesh - self._latenteffects[-1]
+        self._latenteffects = numpy.append(self._latenteffects[: -1], 0.0)
+        assert all(0 ==
+                   self.phenotypes_frombinary(numpy.zeros((1, self._nlatent)),
+                                              'latent'))
+
+        # make sure log likelihood hasn't changed too much
+        if not numpy.allclose(self.loglik, oldloglik):
+            raise EpistasisFittingError('post-scaling latent effects changed '
+                                        f"loglik {oldloglik} to {self.loglik}")
 
 
 if __name__ == '__main__':
