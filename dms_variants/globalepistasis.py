@@ -554,7 +554,7 @@ class AbstractEpistasis(abc.ABC):
         """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
         key = 'loglik'
         if key not in self._cache:
-            self._cache[key] = sum(self._loglik_by_variant)
+            self._cache[key] = self._loglik_by_variant.sum()
         return self._cache[key]
 
     def _loglik_by_allparams(self, allparams, negative=True):
@@ -730,7 +730,7 @@ class AbstractEpistasis(abc.ABC):
         key = '_loglik_by_variant'
         if key not in self._cache:
             standard_devs = numpy.sqrt(self._variances)
-            if not all(standard_devs > 0):
+            if not (standard_devs > 0).all():
                 raise ValueError('standard deviations not all > 0')
             self._cache[key] = scipy.stats.norm.logpdf(
                                     self.binarymap.func_scores,
@@ -771,7 +771,7 @@ class AbstractEpistasis(abc.ABC):
                 var = self.binarymap.func_scores_var + self.epistasis_HOC
             else:
                 var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
-            if any(var <= 0):
+            if (var <= 0).any():
                 raise ValueError('variance <= 0')
             self._cache[key] = var
         return self._cache[key]
@@ -836,8 +836,8 @@ class AbstractEpistasis(abc.ABC):
         if key not in self._cache:
             self._cache[key] = (
                 0.5 *
-                sum(self._func_score_minus_observed_pheno_over_variance**2 -
-                    1 / self._variances)
+                (self._func_score_minus_observed_pheno_over_variance**2 -
+                 1 / self._variances).sum()
                 )
         return self._cache[key]
 
@@ -867,7 +867,7 @@ class AbstractEpistasis(abc.ABC):
                                      self._NEARLY_ZERO)
         else:
             self.epistasis_HOC = max((residuals2 -
-                                      sum(self.binarymap.func_scores_var)
+                                      self.binarymap.func_scores_var.sum()
                                       ) / self.binarymap.nvariants,
                                      self._NEARLY_ZERO)
 
@@ -1161,7 +1161,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         if not isinstance(latent_phenotype, numpy.ndarray):
             raise ValueError('`latent_phenotype` not numpy array')
         if ((latent_phenotype.shape == self._latent_phenotypes.shape) and
-                (all(latent_phenotype == self._latent_phenotypes))):
+                (latent_phenotype == self._latent_phenotypes).all()):
             return self._isplines_total.Itotal(weights=self.alpha_ms,
                                                w_lower=self.c_alpha)
         else:
@@ -1201,7 +1201,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         """
         assert self._epistasis_func_params[0] == self.c_alpha
-        assert all(self._epistasis_func_params[1:] == self.alpha_ms)
+        assert (self._epistasis_func_params[1:] == self.alpha_ms).all()
         dlog_dobs = self._func_score_minus_observed_pheno_over_variance
         dcalpha = dlog_dobs.dot(
                 self._isplines_total.dItotal_dw_lower())
@@ -1311,9 +1311,10 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         # make latent phenotype of wildtype equal to 0
         self._mesh = self._mesh - self._latenteffects[-1]
         self._latenteffects = numpy.append(self._latenteffects[: -1], 0.0)
-        assert all(0 ==
-                   self.phenotypes_frombinary(numpy.zeros((1, self._nlatent)),
-                                              'latent'))
+        assert (0 ==
+                self.phenotypes_frombinary(numpy.zeros((1, self._nlatent)),
+                                           'latent')
+                ).all()
 
         # make sure log likelihood hasn't changed too much
         if not numpy.allclose(self.loglik, oldloglik):

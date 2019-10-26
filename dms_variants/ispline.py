@@ -626,6 +626,50 @@ class Isplines:
         """
         return self._calculate_I_or_dI(i, 'I')
 
+    @property
+    def j(self):
+        """numpy.ndarray: :math:`j` as defined in :meth:`Isplines.I`."""
+        if not hasattr(self, '_j'):
+            self._j = numpy.searchsorted(self._msplines.knots, self.x, 'right')
+            assert ((1 <= self._j).all() and
+                    (self._j <= len(self._msplines.knots)).all())
+            assert self.x.shape == self._j.shape
+        return self._j
+
+    @property
+    def _sum_terms_I(self):
+        """numpy.ndarray: sum terms for :meth:`Isplines.I`.
+
+        Row `m - 1` has summation term for `m`.
+
+        """
+        if not hasattr(self, '_sum_terms_I_val'):
+            k = self.order
+            self._sum_terms_I_val = numpy.vstack(
+                [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
+                 self._msplines.M(m, k + 1) / (k + 1)
+                 for m in range(1, self._msplines.n + 1)])
+            assert self._sum_terms_I_val.shape == (self._msplines.n,
+                                                   len(self.x))
+        return self._sum_terms_I_val
+
+    @property
+    def _sum_terms_dI_dx(self):
+        """numpy.ndarray: sum terms for :meth:`Isplines.dI_dx`.
+
+        Row `m - 1` has summation term for `m`.
+
+        """
+        if not hasattr(self, '_sum_terms_dI_dx_val'):
+            k = self.order
+            self._sum_terms_dI_dx_val = numpy.vstack(
+                [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
+                 self._msplines.dM_dx(m, k + 1) / (k + 1)
+                 for m in range(1, self._msplines.n + 1)])
+            assert self._sum_terms_dI_dx_val.shape == (self._msplines.n,
+                                                       len(self.x))
+        return self._sum_terms_dI_dx_val
+
     @methodtools.lru_cache(maxsize=65536)
     def _calculate_I_or_dI(self, i, quantity):
         """Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.
@@ -649,10 +693,10 @@ class Isplines:
 
         """
         if quantity == 'I':
-            func = self._msplines.M
+            sum_terms = self._sum_terms_I
             i_lt_jminusk = 1.0
         elif quantity == 'dI':
-            func = self._msplines.dM_dx
+            sum_terms = self._sum_terms_dI_dx
             i_lt_jminusk = 0.0
         else:
             raise ValueError(f"invalid `quantity` {quantity}")
@@ -662,22 +706,11 @@ class Isplines:
 
         k = self.order
 
-        # create `sum_terms`, where row m - 1 has the summation term for m
-        sum_terms = numpy.vstack(
-                [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
-                 func(m, k + 1) / (k + 1)
-                 for m in range(1, self._msplines.n + 1)])
-        assert sum_terms.shape == (self._msplines.n, len(self.x))
-
-        # calculate j for all entries in x
-        j = numpy.searchsorted(self._msplines.knots, self.x, 'right')
-        assert all(1 <= j) and all(j <= len(self._msplines.knots))
-        assert self.x.shape == j.shape
-
         # create `binary_terms` where entry (m - 1, x) is 1 if and only if
         # the corresponding `sum_terms` entry is part of the sum.
         binary_terms = numpy.vstack(
-               [numpy.zeros(len(self.x)) if m < i + 1 else (m <= j).astype(int)
+               [numpy.zeros(len(self.x)) if m < i + 1
+                else (m <= self.j).astype(int)
                 for m in range(1, self._msplines.n + 1)])
         assert binary_terms.shape == sum_terms.shape
 
@@ -686,8 +719,8 @@ class Isplines:
         assert sums.shape == self.x.shape
 
         # return value with sums, 0, or 1
-        res = numpy.where(i > j, 0.0,
-                          numpy.where(i < j - k, i_lt_jminusk,
+        res = numpy.where(i > self.j, 0.0,
+                          numpy.where(i < self.j - k, i_lt_jminusk,
                                       sums))
         res.flags.writeable = False
         return res
