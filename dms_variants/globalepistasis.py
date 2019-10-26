@@ -181,8 +181,10 @@ enabling :math:`\beta_{\rm{wt}}` to just be handled like the other
 
 Optimization
 ++++++++++++
-The optimization performed by :meth:`AbstractEpistasis.fit` uses the
-L-BFGS-B method with gradients.
+The optimization is performed by :meth:`AbstractEpistasis.fit`.
+There are several options to that method about how to do the optimization;
+by default it uses a L-BFGS-B algorithm with exact gradients
+calculated as below.
 
 Gradients
 +++++++++++
@@ -509,13 +511,18 @@ class AbstractEpistasis(abc.ABC):
     # that store the current state for the variants we are fitting, using the
     # cache so that they don't have to be re-computed needlessly.
     # ------------------------------------------------------------------------
-    def fit(self, *, use_grad=True):
+    def fit(self, *, use_grad=True, optimize_method='L-BFGS-B', ftol=1e-6):
         """Fit all model params to maximum likelihood values.
 
         Parameters
         ----------
         use_grad : bool
             Use analytical gradients to help with fitting.
+        optimize_method : {'L-BFGS-B', 'TNC'}
+            Optimization method used by `scipy.optimize.minimize`.
+        ftol : float
+            Function convergence tolerance for optimization, used by
+            `scipy.optimize.minimize`.
 
         Returns
         -------
@@ -534,8 +541,9 @@ class AbstractEpistasis(abc.ABC):
                         fun=self._loglik_by_allparams,
                         jac=self._dloglik_by_allparams if use_grad else None,
                         x0=self._allparams,
-                        method='L-BFGS-B',
+                        method=optimize_method,
                         bounds=self._allparams_bounds,
+                        options={'ftol': ftol},
                         )
         if not optres.success:
             raise EpistasisFittingError(
