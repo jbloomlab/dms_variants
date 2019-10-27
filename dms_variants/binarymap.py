@@ -64,6 +64,9 @@ class BinaryMap:
         if the variant has the substitution :meth:`BinaryMap.i_to_sub`
         and 0 otherwise. To convert to dense `numpy.ndarray`, use
         `toarray` method of the sparse matrix.
+    substitution_variants : list
+        All variants as substitution strings as provided in `substitutions_col`
+        of `func_scores_df`.
     func_scores : numpy.ndarray of floats
         A 1D array of length `nvariants` giving score for each variant.
     func_scores_var : numpy.ndarray of floats, or None
@@ -71,6 +74,8 @@ class BinaryMap:
         variant, or `None` if no variance estimates provided.
     alphabet : tuple
         Allowed characters (e.g., amino acids or codons).
+    substitutions_col : str
+        Value set when initializing object.
 
     Example
     -------
@@ -95,7 +100,7 @@ class BinaryMap:
     >>> binmap.all_subs
     ['M1A', 'M1C', 'A2*', 'A2C', 'K3A']
 
-    Here are the scores, score variances, and binary representations:
+    Scores, score variances, binary and string representations:
 
     >>> binmap.nvariants
     6
@@ -112,6 +117,10 @@ class BinaryMap:
            [0, 0, 0, 0, 0],
            [0, 0, 0, 1, 1],
            [0, 0, 1, 0, 0]], dtype=int8)
+    >>> binmap.substitution_variants
+    ['', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*']
+    >>> binmap.substitutions_col
+    'aa_substitutions'
 
     Validate binary map interconverts binary representations and substitutions:
 
@@ -164,6 +173,8 @@ class BinaryMap:
         substitutions = func_scores_df[substitutions_col].tolist()
         if not all(isinstance(s, str) for s in substitutions):
             raise ValueError('values in `substitutions_col` not all str')
+        self.substitution_variants = substitutions
+        self.substitutions_col = substitutions_col
 
         # regex that matches substitution
         chars = []
@@ -322,7 +333,7 @@ class BinaryMap:
 
     @property
     def all_subs(self):
-        """list: all substitutions in order encoded in binary map."""
+        """list: All substitutions in order encoded in binary map."""
         if not hasattr(self, '_all_subs'):
             self._all_subs = [self.i_to_sub(i) for i in
                               range(self.binarylength)]
