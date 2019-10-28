@@ -130,6 +130,17 @@ class BinaryMap:
     ...     assert subs_from_df == binmap.binary_to_sub_str(binvar)
     ...     assert all(binvar == binmap.sub_str_to_binary(subs_from_df))
 
+    Demonstrate :meth:`BinaryMap.sub_str_to_indices`:
+
+    >>> for sub in binmap.substitution_variants:
+    ...     print(binmap.sub_str_to_indices(sub))
+    []
+    [0]
+    [1, 4]
+    []
+    [3, 4]
+    [2]
+
     """
 
     def __init__(self,
@@ -221,7 +232,7 @@ class BinaryMap:
         row_ind = []  # row indices of elements that are one
         col_ind = []  # column indices of elements that are one
         for ivariant, subs in enumerate(substitutions):
-            for isub in numpy.flatnonzero(self.sub_str_to_binary(subs)):
+            for isub in self.sub_str_to_indices(subs):
                 row_ind.append(ivariant)
                 col_ind.append(isub)
         self.binary_variants = scipy.sparse.csr_matrix(
@@ -244,8 +255,27 @@ class BinaryMap:
             Binary representation.
 
         """
-        sites = set()
         binrep = numpy.zeros(self.binarylength, dtype='int8')
+        binrep[self.sub_str_to_indices(sub_str)] = 1
+        return binrep
+
+    def sub_str_to_indices(self, sub_str):
+        """Convert space-delimited substitutions to list of non-zero indices.
+
+        Parameters
+        -----------
+        sub_str : str
+            Space-delimited substitutions.
+
+        Returns
+        -------
+        list
+            Contains binary representation index for each mutation, so wildtype
+            is an empty list.
+
+        """
+        sites = set()
+        indices = []
         for sub in sub_str.split():
             m = self._sub_regex.fullmatch(sub)
             if not m:
@@ -254,9 +284,9 @@ class BinaryMap:
             if m.group('site') in sites:
                 raise ValueError("multiple subs at same site in {sub_str}")
             sites.add(m.group('site'))
-            binrep[self.sub_to_i(sub)] = 1
-        assert binrep.sum() == len(sub_str.split())
-        return binrep
+            indices.append(self.sub_to_i(sub))
+        assert len(sites) == len(sub_str.split()) == len(indices)
+        return sorted(indices)
 
     def binary_to_sub_str(self, binary):
         """Convert binary representation to space-delimited substitutions.
