@@ -288,7 +288,10 @@ import collections
 
 import numpy
 
+import pandas as pd
+
 import scipy.optimize
+import scipy.sparse
 import scipy.stats
 
 import dms_variants.ispline
@@ -458,7 +461,7 @@ class AbstractEpistasis(abc.ABC):
                                            self._epistasis_func_params))
 
     # ------------------------------------------------------------------------
-    # Methods to calculate phenotypes given current model state
+    # Methods to get phenotypes / mutational effects given current model state
     # ------------------------------------------------------------------------
     def phenotypes_frombinary(self,
                               binary_variants,
@@ -505,6 +508,120 @@ class AbstractEpistasis(abc.ABC):
             return self.epistasis_func(latent)
         else:
             return ValueError(f"invalid `phenotype` of {phenotype}")
+
+    @property
+    def latent_effects_df(self):
+        """pandas.DataFrame: Latent effects of mutations.
+
+        For each single mutation in :attr:`AbstractEpistasis.binarymap`,
+        gives the current predicted latent effect of that mutation.
+
+        """
+        assert len(self.binarymap.all_subs) == len(self._latenteffects) - 1
+        return pd.DataFrame({'mutation': self.binarymap.all_subs,
+                             'latent_effect': self._latenteffects[: -1]})
+
+    def add_phenotypes_to_df(self,
+                             df,
+                             *,
+                             substitutions_col=None,
+                             latent_phenotype_col='latent_phenotype',
+                             observed_phenotype_col='observed_phenotype',
+                             phenotype_col_overwrite=False,
+                             unknown_as_nan=False,
+                             ):
+        """Add predicted phenotypes to data frame of variants.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            Data frame containing variants.
+        substitutions_col : str or None
+            Column in `df` giving variants as substitution strings in format
+            that can be processed by :attr:`AbstractEpistasis.binarymap`.
+            If `None`, defaults to the `substitutions_col` attribute of
+            that binary map.
+        latent_phenotype_col : str
+            Column added to `df` containing predicted latent phenotypes.
+        observed_phenotype_col : str
+            Column added to `df` containing predicted observed phenotypes.
+        phenotype_col_overwrite : bool
+            If the specified latent or observed phenotype column already
+            exist in `df`, overwrite it? If `False`, raise an error.
+        unknown_as_nan : bool
+            If some of the substitutions in a variant are not present in
+            the model (not in :attr:`AbstractEpistasis.binarymap`) set the
+            phenotypes to `nan` (not a number)? If `False`, raise an error.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A copy of `df` with the phenotypes added. Phenotypes are predicted
+            based on the current state of the model.
+
+        """
+        if substitutions_col is None:
+            substitutions_col = self.binarymap.substitutions_col
+        if substitutions_col not in df.columns:
+            raise ValueError('`df` lacks `substitutions_col` '
+                             f"{substitutions_col}")
+        if 3 != len({substitutions_col, latent_phenotype_col,
+                     observed_phenotype_col}):
+            raise ValueError('repeated name among `latent_phenotype_col`, '
+                             '`observed_phenotype_col`, `substitutions_col`')
+        for col in [latent_phenotype_col, observed_phenotype_col]:
+            if col in df.columns and not phenotype_col_overwrite:
+                if not phenotype_col_overwrite:
+                    raise ValueError(f"`df` already contains column {col}")
+
+        # build binary variants as csr matrix
+        row_ind = []  # row indices of elements that are one
+        col_ind = []  # column indices of elements that are one
+        nan_variant_indices = []  # indices of variants that are nan
+        for ivariant, subs in enumerate(df[substitutions_col].values):
+            try:
+                for isub in self.binarymap.sub_str_to_indices(subs):
+                    row_ind.append(ivariant)
+                    col_ind.append(isub)
+            except ValueError:
+                if unknown_as_nan:
+                    nan_variant_indices.append(ivariant)
+                else:
+                    raise ValueError('Variant has substitutions not in model:'
+                                     f"\n{subs}\nMaybe use `unknown_as_nan`?")
+        binary_variants = scipy.sparse.csr_matrix(
+                            (numpy.ones(len(row_ind), dtype='int8'),
+                             (row_ind, col_ind)),
+                            shape=(len(df), self.binarymap.binarylength),
+                            dtype='int8')
+
+        df = df.copy()
+        for col, phenotype in [(latent_phenotype_col, 'latent'),
+                               (observed_phenotype_col, 'observed')]:
+            vals = self.phenotypes_frombinary(binary_variants, phenotype)
+            assert len(vals) == len(df)
+            vals = vals.copy()  # needed because vals not might be writable
+            vals[nan_variant_indices] = numpy.nan
+            df[col] = vals
+        return df
+
+    @property
+    def phenotypes_df(self):
+        """pandas.DataFrame: Phenotypes of variants used to fit model.
+
+        For each variant in :attr:`AbstractEpistasis.binarymap`, gives
+        the current predicted latent and observed phenotype as well
+        as the functional score and its variance.
+
+        """
+        return pd.DataFrame(
+                {self.binarymap.substitutions_col:
+                    self.binarymap.substitution_variants,
+                 'func_score': self.binarymap.func_scores,
+                 'func_score_var': self.binarymap.func_scores_var,
+                 'latent_phenotype': self._latent_phenotypes,
+                 'observed_phenotype': self._observed_phenotypes,
+                 })
 
     # ------------------------------------------------------------------------
     # Methods / properties used for model fitting. Many of these are properties
