@@ -25,6 +25,11 @@ Changed
 
 - Updated `codonvariant_sim_data.ipynb` to be smaller and fit global epistasis models, and move plot formatting examples to a new dedicated notebook.
 
+- Changed `SigmoidPhenotypeSimulator` so that the **enrichment** is a sigmoidal function of the latent phenotype, and the observed phenotype is the log (base 2) of the latent phenotype. 
+  This change harmonizes the simulator with the definitions in the new `globalepistasis` module.
+  Also changed the input to the `latentPhenotype` and `observedPhenotype` methods.
+  Note that these are backwards-compatibility breaking changes.
+
 Fixed
 -----
 - Removed use of deprecated `Bio.Alphabet`
