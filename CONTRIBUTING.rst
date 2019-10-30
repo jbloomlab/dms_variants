@@ -33,7 +33,7 @@ You may also want to write sphinx_ documentation / examples in docs_ or the note
 You should add tests.
 For simple things, these can be `doctests <https://docs.python.org/3/library/doctest.html>`_ in the code.
 For more elaborate functionality, put unit tests in tests_.
-Note also that the `Jupyter notebooks`_ in notebooks_ are tested via nbval_.
+Note also that the `Jupyter notebooks`_ in notebooks_ and tests_ are tested via nbval_.
 If you are getting errors on these notebook tests due to testing cells that output objects that can't be properly tested (such as widgets), see the *nbval-ignore-output* tag option discussed in the nbval_ docs.
 
 Versions and CHANGELOG
