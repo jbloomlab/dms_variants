@@ -229,8 +229,8 @@ def simulateSampleCounts(*,
     variants : class:`dms_variants.codonvarianttable.CodonVariantTable`
         Holds variants used in simulation.
     phenotype_func : function
-        Takes row from `variants.barcode_variant_df` and returns phenotype
-        as number giving enrichment of variant relative to wildtype. For
+        Takes a space-delimited string of amino-acid substitutions and returns
+        a number giving enrichment of variant relative to wildtype. For
         instance, :meth:`SigmoidPhenotypeSimulator.observedEnrichment`.
     variant_error_rate : float
         Rate at which variants mis-called. Provide the probability that a
@@ -299,8 +299,8 @@ def simulateSampleCounts(*,
                 return ' '.join(muts)
             else:
                 # remove mutation
-                muts = muts.pop(scipy.random.randint(0, len(muts)))
-                return muts
+                _ = muts.pop(scipy.random.randint(0, len(muts)))
+                return ' '.join(muts)
         else:
             return codon_substitutions
     # -----------------------------------------
@@ -309,12 +309,12 @@ def simulateSampleCounts(*,
         variants.barcode_variant_df
         [['library', 'barcode', 'codon_substitutions']]
         .assign(
-            codon_substitutions=(lambda x: x.codon_substitutions
-                                 .apply(_add_variant_errors)),
-            aa_substitutions=(lambda x: x.codon_substitutions
-                              .apply(dms_variants.codonvarianttable
-                                     .CodonVariantTable.codonToAAMuts)),
-            phenotype=lambda x: x.apply(phenotype_func, axis=1)
+            codon_substitutions=(lambda x: x['codon_substitutions']
+                                 .map(_add_variant_errors)),
+            aa_substitutions=(lambda x: x['codon_substitutions']
+                              .map(dms_variants.codonvarianttable
+                                   .CodonVariantTable.codonToAAMuts)),
+            phenotype=lambda x: x['aa_substitutions'].map(phenotype_func)
             )
         [['library', 'barcode', 'phenotype']]
         )
@@ -452,9 +452,15 @@ class SigmoidPhenotypeSimulator:
     .. math::
 
        E_{\rm{observed}}
-       &=& \frac{1 + \exp\left(-p_{\rm{latent, wt}}\right)}
-                {1 + \exp\left(-p_{\rm{latent}}\right)} \\
+       &=& \frac{\left(1 + \exp\left(-p_{\rm{latent, wt}}\right)\right)
+                 \left(1 - E_{\rm{min}}\right)}
+                {1 + \exp\left(-p_{\rm{latent}}\right)} +
+                E_{\rm{min}} \\
        p_{\rm{observed}} &=& \log_2 E_{\rm{observed}}
+
+    where :math:`0 \le E_{\rm{min}} < 1` is the minimum possible observed
+    enrichment. Typically :math:`E_{\rm{min}} > 0` in real experiments
+    as pseudocounts are used so estimates of enrichments can't be zero.
 
     Parameters
     ----------
@@ -469,6 +475,8 @@ class SigmoidPhenotypeSimulator:
         latent phenotype as `(weight, mean, sd)` for each Gaussian.
     stop_effect : float
         Effect of stop codon at any position.
+    min_observed_enrichment : float
+        Minimum possible observed enrichment.
 
     Attributes
     ----------
@@ -480,10 +488,14 @@ class SigmoidPhenotypeSimulator:
     """
 
     def __init__(self, geneseq, *, seed=1, wt_latent=5,
-                 norm_weights=((0.4, -0.5, 1), (0.6, -5, 2.5)),
-                 stop_effect=-10):
+                 norm_weights=((0.4, -0.7, 1.5), (0.6, -7, 3.5)),
+                 stop_effect=-15, min_observed_enrichment=0.001):
         """See main class docstring for how to initialize."""
         self.wt_latent = wt_latent
+
+        if not (0 <= min_observed_enrichment < 1):
+            raise ValueError('not 0 <= `min_observed_enrichment` < 1')
+        self.min_observed_enrichment = min_observed_enrichment
 
         # simulate muteffects from compound normal distribution
         self.muteffects = {}
@@ -534,7 +546,7 @@ class SigmoidPhenotypeSimulator:
             Observed phenotype of variant.
 
         """
-        return -math.log(self.observedEnrichment(subs), 2)
+        return self.latentToObserved(self.latentPhenotype(subs), 'phenotype')
 
     def observedEnrichment(self, subs):
         """Observed enrichment of a variant.
@@ -550,11 +562,34 @@ class SigmoidPhenotypeSimulator:
             Observed enrichment relative to wildtype.
 
         """
-        return self.latentToObservedEnrichment(self.latentPhenotype(subs))
+        return self.latentToObserved(self.latentPhenotype(subs), 'enrichment')
 
-    def latentToObservedEnrichment(self, latent):
-        r"""Observed enrichment from latent phenotype."""
-        return (1 + math.exp(-self.wt_latent)) / (1 + math.exp(-latent))
+    def latentToObserved(self, latent, value):
+        r"""Observed enrichment or observed phenotype from latent phenotype.
+
+        Parameters
+        ----------
+        latent : float or numpy.ndarray
+            The latent phenotype.
+        value : {'enrichment', 'phenotype'}
+            Get the observed enrichment or the observed phenotype?
+
+        Returns
+        -------
+        float or numpy.ndarray
+            The observed enrichment or phenotype.
+
+        """
+        enrichment = ((1 + scipy.exp(-self.wt_latent)) *
+                      (1 - self.min_observed_enrichment) /
+                      (1 + scipy.exp(-latent)) +
+                      self.min_observed_enrichment)
+        if value == 'enrichment':
+            return enrichment
+        elif value == 'phenotype':
+            return scipy.log(enrichment) / scipy.log(2)
+        else:
+            raise ValueError(f"invalid `value` of {value}")
 
     def plotLatentVsObserved(self, value, *, latent_min=-15,
                              latent_max=10, npoints=200,
@@ -563,7 +598,7 @@ class SigmoidPhenotypeSimulator:
 
         Parameters
         ----------
-        value : {'observedEnrichment', 'observedPhenotype'}
+        value : {'enrichment', 'phenotype'}
             Do we plot observed enrichment or observed phenotype?
         latent_min : float
             Smallest value of latent phenotype on plot.
@@ -581,22 +616,16 @@ class SigmoidPhenotypeSimulator:
             phenotype.
 
         """
-        if value not in {'observedPhenotype', 'observedEnrichment'}:
-            raise ValueError(f"invalid `value` of {value}")
-        func = getattr(self, value)
-
         latent = scipy.linspace(latent_min, latent_max, npoints)
+        observed = self.latentToObserved(latent, value)
 
-        p = (p9.ggplot(pd.DataFrame(
-                            {'latent': latent,
-                             'observed': [func(x) for x in latent]
-                             }),
-                       p9.aes('latent', value)
+        p = (p9.ggplot(pd.DataFrame({'latent': latent, 'observed': observed}),
+                       p9.aes('latent', 'observed')
                        ) +
              p9.geom_line() +
              p9.theme(figure_size=(3.5, 2.5)) +
              p9.xlab('latent phenotype') +
-             p9.ylab('value')
+             p9.ylab(f"observed {value}")
              )
 
         if wt_vline:
@@ -636,11 +665,10 @@ class SigmoidPhenotypeSimulator:
             raise ValueError(f"invalid `value` of {value}")
         func = getattr(self, value)
 
-        xlist = [func({'aa_substitutions': m}) for m in
-                 self.muteffects.keys()]
+        xlist = [func(m) for m in self.muteffects.keys()]
 
         p = (p9.ggplot(pd.DataFrame({value: xlist}),
-                       p9.aes('phenotype')) +
+                       p9.aes(value)) +
              p9.geom_histogram(bins=bins) +
              p9.theme(figure_size=(3.5, 2.5)) +
              p9.ylab(f"number of {mutant_order}-mutants")
@@ -648,7 +676,7 @@ class SigmoidPhenotypeSimulator:
 
         if wt_vline:
             p = p + p9.geom_vline(
-                        xintercept=func({'aa_substitutions': ''}),
+                        xintercept=func(''),
                         color=CBPALETTE[1],
                         linetype='dashed')
 
