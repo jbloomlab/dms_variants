@@ -623,6 +623,45 @@ class AbstractEpistasis(abc.ABC):
                  'observed_phenotype': self._observed_phenotypes,
                  })
 
+    def enrichments(self, observed_phenotypes, base=2):
+        r"""Calculated enrichment ratios from observed phenotypes.
+
+        Note
+        ----
+        In many cases, the functional scores used to fit the model are the
+        logarithm (most commonly base 2) of experimentally observed enrichments
+        For example, this is how functional scores are calculated by
+        :meth:`dms_variants.codonvarianttable.CodonVariantTable.func_scores`.
+        In that case, the predicted enrichment value :math:`E\left(v\right)`
+        for each variant :math:`v` can be computed from the observed phenotype
+        :math:`p\left(v\right)` as:
+
+        .. math::
+
+           E\left(v\right) = B^{p\left(v\right) - p\left(\rm{wt}\right)}
+
+        where :math:`p\left(\rm{wt}\right)` is the observed phenotype
+        of wildtype, and :math:`B` is the base for the exponent (by default
+        :math:`B = 2`).
+
+        Parameters
+        ----------
+        observed_phenotypes : float or numpy.ndarray
+            The observed phenotypes.
+        base : float
+            The base for the exponent used to convert observed phenotypes
+            to enrichments.
+
+        Returns
+        -------
+        float or numpy.ndarray
+            The enrichments.
+
+        """
+        observed_phenotype_wt = float(self.epistasis_func(
+                numpy.array([self.latent_phenotype_wt])))
+        return base**(observed_phenotypes - observed_phenotype_wt)
+
     # ------------------------------------------------------------------------
     # Methods / properties used for model fitting. Many of these are properties
     # that store the current state for the variants we are fitting, using the
