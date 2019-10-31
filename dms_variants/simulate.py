@@ -269,6 +269,7 @@ def simulateSampleCounts(*,
     """
     if seed is not None:
         scipy.random.seed(seed)
+        random.seed(seed)
 
     if pre_sample_name in post_samples:
         raise ValueError('`pre_sample_name` is in `post_samples`')
@@ -410,8 +411,10 @@ def simulateSampleCounts(*,
                                  _bottleneck_freqs(x.pre_freq,
                                                    sample_dict['bottleneck'])),
                 # post-selection freqs with noise
-                noise=scipy.clip(scipy.random.normal(1, sample_dict['noise']),
-                                 0, None),
+                noise=lambda x: scipy.clip(
+                                    [random.gauss(1, sample_dict['noise'])
+                                     for _ in range(len(x))],
+                                    0, None),
                 post_freq_nonorm=lambda x: (x.bottleneck_freq *
                                             x.phenotype * x.noise),
                 post_freq=lambda x: (x.post_freq_nonorm /
@@ -500,7 +503,7 @@ class SigmoidPhenotypeSimulator:
         # simulate muteffects from compound normal distribution
         self.muteffects = {}
         if seed is not None:
-            scipy.random.seed(seed)
+            random.seed(seed)
         weights, means, sds = zip(*norm_weights)
         cumweights = scipy.cumsum(weights)
         for icodon in range(len(geneseq) // 3):
@@ -511,9 +514,9 @@ class SigmoidPhenotypeSimulator:
                         muteffect = stop_effect
                     else:
                         # choose Gaussian from compound normal
-                        i = scipy.argmin(cumweights < scipy.random.rand())
+                        i = scipy.argmin(cumweights < random.random())
                         # draw mutational effect from chosen Gaussian
-                        muteffect = scipy.random.normal(means[i], sds[i])
+                        muteffect = random.gauss(means[i], sds[i])
                     self.muteffects[f"{wt_aa}{icodon + 1}{mut_aa}"] = muteffect
 
     def latentPhenotype(self, subs):
