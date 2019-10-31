@@ -667,7 +667,7 @@ class AbstractEpistasis(abc.ABC):
     # that store the current state for the variants we are fitting, using the
     # cache so that they don't have to be re-computed needlessly.
     # ------------------------------------------------------------------------
-    def fit(self, *, use_grad=True, optimize_method='L-BFGS-B', ftol=1e-6):
+    def fit(self, *, use_grad=True, optimize_method='L-BFGS-B', ftol=1e-7):
         """Fit all model params to maximum likelihood values.
 
         Parameters
