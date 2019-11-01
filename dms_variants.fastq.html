@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>fastq &#8212; dms_variants 0.2.0 documentation</title>
+    <title>fastq &#8212; dms_variants 0.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="illuminabarcodeparser" href="dms_variants.illuminabarcodeparser.html" />
+    <link rel="next" title="globalepistasis" href="dms_variants.globalepistasis.html" />
     <link rel="prev" title="constants" href="dms_variants.constants.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -88,7 +88,7 @@ Assumes Casava 1.8 or SRA header format.</p></li>
 <span class="gp">... </span>        <span class="nb">print</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
 <span class="gp">... </span>   <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;ValueError: </span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="gp">... </span><span class="c1"># doctest: +NORMALIZE_WHITESPACE</span>
+<span class="gp">... </span>
 <span class="go">FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
 <span class="go">           seq=&#39;ATGCA&#39;,</span>
 <span class="go">           qs=&#39;GGGGG&#39;,</span>
@@ -103,7 +103,7 @@ Assumes Casava 1.8 or SRA header format.</p></li>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">iterate_fastq</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">qual_format</span><span class="o">=</span><span class="s1">&#39;array&#39;</span><span class="p">):</span>
 <span class="gp">... </span>   <span class="nb">print</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
-<span class="gp">... </span><span class="c1"># doctest: +NORMALIZE_WHITESPACE</span>
+<span class="gp">... </span>
 <span class="go">FastqEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
 <span class="go">           seq=&#39;ATGCAATTG&#39;,</span>
 <span class="go">           qs=array([38, 38, 38, 38, 38, 40, 40, 40, 40]),</span>
@@ -182,7 +182,7 @@ Assumes Casava 1.8 or SRA header format.</p></li>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">iterate_fastq_pair</span><span class="p">(</span><span class="n">f1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">r1trim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">r2trim</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
 <span class="gp">... </span>                              <span class="n">qual_format</span><span class="o">=</span><span class="s1">&#39;array&#39;</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
-<span class="gp">... </span><span class="c1"># doctest: +NORMALIZE_WHITESPACE</span>
+<span class="gp">... </span>
 <span class="go">FastqPairEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
 <span class="go">               r1_seq=&#39;ATGCAATT&#39;,</span>
 <span class="go">               r2_seq=&#39;CAGCA&#39;,</span>
@@ -199,7 +199,7 @@ Assumes Casava 1.8 or SRA header format.</p></li>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">iterate_fastq_pair</span><span class="p">(</span><span class="n">f1</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">f2</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">r1trim</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">r2trim</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">tup</span><span class="p">)</span>
-<span class="gp">... </span><span class="c1"># doctest: +NORMALIZE_WHITESPACE</span>
+<span class="gp">... </span>
 <span class="go">FastqPairEntry(id=&#39;DH1DQQN1:933:HMLH5BCXY:1:1101:2165:1984&#39;,</span>
 <span class="go">               r1_seq=&#39;ATGCAATT&#39;,</span>
 <span class="go">               r2_seq=&#39;CAGCA&#39;,</span>
@@ -313,7 +313,7 @@ Assumes Casava 1.8 or SRA header format.</p></li>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="dms_variants.html">dms_variants package</a><ul>
       <li>Previous: <a href="dms_variants.constants.html" title="previous chapter">constants</a></li>
-      <li>Next: <a href="dms_variants.illuminabarcodeparser.html" title="next chapter">illuminabarcodeparser</a></li>
+      <li>Next: <a href="dms_variants.globalepistasis.html" title="next chapter">globalepistasis</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -344,7 +344,7 @@ Assumes Casava 1.8 or SRA header format.</p></li>
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

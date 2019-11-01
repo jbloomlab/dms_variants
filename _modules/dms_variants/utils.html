@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.utils &#8212; dms_variants 0.2.0 documentation</title>
+    <title>dms_variants.utils &#8212; dms_variants 0.3.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -256,6 +256,149 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
+<div class="viewcode-block" id="tidy_to_corr"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.tidy_to_corr">[docs]</a><span class="k">def</span> <span class="nf">tidy_to_corr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">sample_col</span><span class="p">,</span> <span class="n">label_col</span><span class="p">,</span> <span class="n">value_col</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                 <span class="n">group_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_type</span><span class="o">=</span><span class="s1">&#39;tidy_pairs&#39;</span><span class="p">,</span>
+                 <span class="n">method</span><span class="o">=</span><span class="s1">&#39;pearson&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Pairwise correlations between samples in tidy data frame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Tidy data frame.</span>
+<span class="sd">    sample_col : str</span>
+<span class="sd">        Column in `df` with name of sample.</span>
+<span class="sd">    label_col : str</span>
+<span class="sd">        Column in `df` with labels for variable to correlate.</span>
+<span class="sd">    value_col : str</span>
+<span class="sd">        Column in `df` with values to correlate.</span>
+<span class="sd">    group_cols : None, str, or list</span>
+<span class="sd">        Additional columns used to group results.</span>
+<span class="sd">    return_type : {&#39;tidy_pairs&#39;, &#39;matrix&#39;}</span>
+<span class="sd">        Return results as tidy dataframe of pairwise correlations</span>
+<span class="sd">        or correlation matrix.</span>
+<span class="sd">    method : str</span>
+<span class="sd">        A correlation metho passable to `pandas.DataFrame.corr`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Holds pairwise correlations in format specified by `return_type`.</span>
+<span class="sd">        Correlations only calculated among values with shared label</span>
+<span class="sd">        among samples.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Define data frame with data to correlate:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({</span>
+<span class="sd">    ...        &#39;sample&#39;: [&#39;a&#39;, &#39;a&#39;, &#39;a&#39;, &#39;b&#39;, &#39;b&#39;, &#39;b&#39;, &#39;b&#39;, &#39;c&#39;, &#39;c&#39;, &#39;c&#39;],</span>
+<span class="sd">    ...        &#39;barcode&#39;: [&#39;A&#39;, &#39;C&#39;, &#39;G&#39;, &#39;G&#39;, &#39;A&#39;, &#39;C&#39;, &#39;T&#39;, &#39;G&#39;, &#39;C&#39;, &#39;A&#39;],</span>
+<span class="sd">    ...        &#39;score&#39;: [1, 2, 3, 3, 1.5, 2, 4, 1, 2, 3],</span>
+<span class="sd">    ...        &#39;group&#39;: [&#39;x&#39;, &#39;x&#39;, &#39;x&#39;, &#39;x&#39;, &#39;x&#39;, &#39;x&#39;, &#39;x&#39;, &#39;y&#39;, &#39;y&#39;, &#39;y&#39;],</span>
+<span class="sd">    ...        })</span>
+
+<span class="sd">    Pairwise correlations between all samples ignoring group:</span>
+
+<span class="sd">    &gt;&gt;&gt; tidy_to_corr(df, sample_col=&#39;sample&#39;, label_col=&#39;barcode&#39;,</span>
+<span class="sd">    ...              value_col=&#39;score&#39;)</span>
+<span class="sd">      sample_1 sample_2  correlation</span>
+<span class="sd">    0        a        a     1.000000</span>
+<span class="sd">    1        b        a     0.981981</span>
+<span class="sd">    2        c        a    -1.000000</span>
+<span class="sd">    3        a        b     0.981981</span>
+<span class="sd">    4        b        b     1.000000</span>
+<span class="sd">    5        c        b    -0.981981</span>
+<span class="sd">    6        a        c    -1.000000</span>
+<span class="sd">    7        b        c    -0.981981</span>
+<span class="sd">    8        c        c     1.000000</span>
+
+<span class="sd">    The same but as a matrix rather than in tidy format:</span>
+
+<span class="sd">    &gt;&gt;&gt; tidy_to_corr(df, sample_col=&#39;sample&#39;, label_col=&#39;barcode&#39;,</span>
+<span class="sd">    ...              value_col=&#39;score&#39;, return_type=&#39;matrix&#39;)</span>
+<span class="sd">      sample         a         b         c</span>
+<span class="sd">    0      a  1.000000  0.981981 -1.000000</span>
+<span class="sd">    1      b  0.981981  1.000000 -0.981981</span>
+<span class="sd">    2      c -1.000000 -0.981981  1.000000</span>
+
+<span class="sd">    Now group before computing correlations:</span>
+
+<span class="sd">    &gt;&gt;&gt; tidy_to_corr(df, sample_col=&#39;sample&#39;, label_col=&#39;barcode&#39;,</span>
+<span class="sd">    ...              value_col=&#39;score&#39;, group_cols=&#39;group&#39;)</span>
+<span class="sd">      group sample_1 sample_2  correlation</span>
+<span class="sd">    0     x        a        a     1.000000</span>
+<span class="sd">    1     x        b        a     0.981981</span>
+<span class="sd">    2     x        a        b     0.981981</span>
+<span class="sd">    3     x        b        b     1.000000</span>
+<span class="sd">    4     y        c        c     1.000000</span>
+<span class="sd">    &gt;&gt;&gt; tidy_to_corr(df, sample_col=&#39;sample&#39;, label_col=&#39;barcode&#39;,</span>
+<span class="sd">    ...              value_col=&#39;score&#39;, group_cols=&#39;group&#39;,</span>
+<span class="sd">    ...              return_type=&#39;matrix&#39;)</span>
+<span class="sd">      group sample         a         b    c</span>
+<span class="sd">    0     x      a  1.000000  0.981981  NaN</span>
+<span class="sd">    1     x      b  0.981981  1.000000  NaN</span>
+<span class="sd">    2     y      c       NaN       NaN  1.0</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">group_cols</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_cols</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">group_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample_col</span><span class="p">,</span> <span class="n">value_col</span><span class="p">,</span> <span class="n">label_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span>
+    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` missing some of these columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate column names: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;correlation&#39;</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot have column named `correlation`&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sample_col</span> <span class="o">+</span> <span class="s1">&#39;_2&#39;</span> <span class="ow">in</span> <span class="n">group_cols</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;cannot have column named `</span><span class="si">{sample_col}</span><span class="s2">_2`&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">sample_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="n">label_col</span><span class="p">])</span> <span class="o">!=</span> <span class="n">g</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Entries in `df` column </span><span class="si">{label_col}</span><span class="s2"> not unique &quot;</span>
+                             <span class="s1">&#39;after grouping by: &#39;</span> <span class="o">+</span>
+                             <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">sample_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">))</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span>
+        <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">value_col</span><span class="p">,</span>
+                     <span class="n">columns</span><span class="o">=</span><span class="n">sample_col</span><span class="p">,</span>
+                     <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">,</span>
+                     <span class="p">)</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">group_cols</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)</span>
+
+    <span class="n">corr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">df</span>
+        <span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">how</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+        <span class="p">)</span>
+
+    <span class="k">del</span> <span class="n">corr</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span>  <span class="c1"># remove name of columns index</span>
+
+    <span class="k">if</span> <span class="n">return_type</span> <span class="o">==</span> <span class="s1">&#39;tidy_pairs&#39;</span><span class="p">:</span>
+        <span class="n">corr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">corr</span>
+            <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="n">group_cols</span> <span class="o">+</span> <span class="p">[</span><span class="n">sample_col</span><span class="p">],</span>
+                  <span class="n">var_name</span><span class="o">=</span><span class="n">sample_col</span> <span class="o">+</span> <span class="s1">&#39;_2&#39;</span><span class="p">,</span>
+                  <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;correlation&#39;</span>
+                  <span class="p">)</span>
+            <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="n">sample_col</span><span class="p">:</span> <span class="n">sample_col</span> <span class="o">+</span> <span class="s1">&#39;_1&#39;</span><span class="p">})</span>
+            <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;not correlation.isna()&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">return_type</span> <span class="o">!=</span> <span class="s1">&#39;matrix&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `return_type` of </span><span class="si">{return_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">corr</span></div>
+
+
 <div class="viewcode-block" id="tidy_split"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.tidy_split">[docs]</a><span class="k">def</span> <span class="nf">tidy_split</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Split values of column and expand into new rows.</span>
 
@@ -433,7 +576,7 @@
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

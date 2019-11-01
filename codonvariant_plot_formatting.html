@@ -1,0 +1,746 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Formatting CodonVariantTable plots &#8212; dms_variants 0.3.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Parse barcodes" href="parsebarcodes_sim_data.html" />
+    <link rel="prev" title="Analyze simulated library of codon variants" href="codonvariant_sim_data.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Formatting-CodonVariantTable-plots">
+<h1>Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots<a class="headerlink" href="#Formatting-CodonVariantTable-plots" title="Permalink to this headline">¶</a></h1>
+<p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> generates informative plots about a deep mutational scanning experiment. Here are some tips on how to format those plots.</p>
+<div class="section" id="Setup-for-notebook">
+<h2>Setup for notebook<a class="headerlink" href="#Setup-for-notebook" title="Permalink to this headline">¶</a></h2>
+<p>Import Python modules / packages:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">Image</span>
+
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
+<span class="kn">import</span> <span class="nn">dms_variants.plotnine_themes</span>
+<span class="kn">import</span> <span class="nn">dms_variants.simulate</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
+</pre></div>
+</div>
+</div>
+<p>Hide warnings that clutter output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Simulate-a-CodonVariantTable">
+<h2>Simulate a <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code><a class="headerlink" href="#Simulate-a-CodonVariantTable" title="Permalink to this headline">¶</a></h2>
+<p>We simulate a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> to use to demonstrate the plot formatting. Set parameters that define the simulated data:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
+<span class="n">genelength</span> <span class="o">=</span> <span class="mi">40</span>  <span class="c1"># gene length in codons</span>
+<span class="n">libs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lib_1&#39;</span><span class="p">,</span> <span class="s1">&#39;lib_2&#39;</span><span class="p">]</span>  <span class="c1"># distinct libraries of gene</span>
+<span class="n">variants_per_lib</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">genelength</span>  <span class="c1"># variants per library</span>
+<span class="n">avgmuts</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># average codon mutations per variant</span>
+<span class="n">bclen</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># length of nucleotide barcode for each variant</span>
+<span class="n">variant_error_rate</span> <span class="o">=</span> <span class="mf">0.01</span>  <span class="c1"># rate at which variant sequence mis-called</span>
+<span class="n">avgdepth_per_variant</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># average per-variant sequencing depth</span>
+<span class="n">lib_uniformity</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># uniformity of library pre-selection</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="mf">0.02</span>  <span class="c1"># random noise in selections</span>
+<span class="n">bottlenecks</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># bottlenecks from pre- to post-selection</span>
+        <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Seed random number generator for reproducible output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Simulate wildtype gene sequence:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Wildtype gene of 40 codons:
+AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAACATCCGGCTGATGATGATCCTACACAACTCCGACGCTAGT
+</pre></div></div>
+</div>
+<p>Generate a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">simulate_CodonVariantTable</a> function:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
+                <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+                <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+                <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="n">lib</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
+                                     <span class="s1">&#39;nvariants&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span><span class="p">}</span>
+                               <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">},</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Simulate counts for samples. First, we need a “phenotype” function to simulate the counts for each variant. We define this function using a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span>
+                                            <span class="n">geneseq</span><span class="p">,</span>
+                                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We then use the simulator to simulate some sample counts:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
+        <span class="n">variants</span><span class="o">=</span><span class="n">variants</span><span class="p">,</span>
+        <span class="n">phenotype_func</span><span class="o">=</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">,</span>
+        <span class="n">variant_error_rate</span><span class="o">=</span><span class="n">variant_error_rate</span><span class="p">,</span>
+        <span class="n">pre_sample</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span>
+                        <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
+                    <span class="s1">&#39;uniformity&#39;</span><span class="p">:</span> <span class="n">lib_uniformity</span><span class="p">},</span>
+        <span class="n">pre_sample_name</span><span class="o">=</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+        <span class="n">post_samples</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;noise&#39;</span><span class="p">:</span> <span class="n">noise</span><span class="p">,</span>
+                             <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span>
+                                 <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
+                             <span class="s1">&#39;bottleneck&#39;</span><span class="p">:</span> <span class="n">bottle</span><span class="p">}</span>
+                          <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">bottle</span> <span class="ow">in</span> <span class="n">bottlenecks</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Add these counts to the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we’ve completed the simulation of the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>:</p>
+</div>
+<div class="section" id="Formatting-plots">
+<h2>Formatting plots<a class="headerlink" href="#Formatting-plots" title="Permalink to this headline">¶</a></h2>
+<p>The plots returned by a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> above are all <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> ggplot objects. So you can format them differently by setting a <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/api.html#themes">plotnine theme</a>.</p>
+<p>First make a plot using the default <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> theme:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_20_0.png" src="_images/codonvariant_plot_formatting_20_0.png" />
+</div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">dms_variants</span></code> package defines a gray grid <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html?highlight=themes">plotnine theme</a> in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.plotnine_themes.html">dms_variants.plotnine_themes</a> that gives an especially nice appearance for the plots. Here we set that theme and then re-draw the above plot:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_23_0.png" src="_images/codonvariant_plot_formatting_23_0.png" />
+</div>
+</div>
+<p>The plot looks even cleaner if we get rid of the vertical grid lines:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_25_0.png" src="_images/codonvariant_plot_formatting_25_0.png" />
+</div>
+</div>
+<p>There are also lots of <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html?highlight=themes">other themes defined by plotnine</a>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">theme_bw</span><span class="p">())</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_27_0.png" src="_images/codonvariant_plot_formatting_27_0.png" />
+</div>
+</div>
+<p>Or more silly:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">theme_xkcd</span><span class="p">())</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">heightscale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+                                    <span class="n">widthscale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&#39;] not found. Falling back to DejaVu Sans.
+findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&#39;] not found. Falling back to DejaVu Sans.
+findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&#39;] not found. Falling back to DejaVu Sans.
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_29_1.png" src="_images/codonvariant_plot_formatting_29_1.png" />
+</div>
+</div>
+<p>Note how the above call also used the <code class="docutils literal notranslate"><span class="pre">heightscale</span></code> and <code class="docutils literal notranslate"><span class="pre">widthscale</span></code> options (which exist for all plotting methods of a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>) to make the plot larger.</p>
+<p>You can also set the orientation differently with <code class="docutils literal notranslate"><span class="pre">orientation</span></code>, and rename samples with <code class="docutils literal notranslate"><span class="pre">sample_rename</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>  <span class="c1"># restore gray-grid theme</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span>
+                                    <span class="n">heightscale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">})</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_31_0.png" src="_images/codonvariant_plot_formatting_31_0.png" />
+</div>
+</div>
+<p>Or only show some of the facets. For instance, just show the individual libraries:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">})</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_33_0.png" src="_images/codonvariant_plot_formatting_33_0.png" />
+</div>
+</div>
+<p>Or only the merge of all libraries:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all_only&#39;</span><span class="p">,</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">})</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_35_0.png" src="_images/codonvariant_plot_formatting_35_0.png" />
+</div>
+</div>
+<p>Or only show some samples:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">,</span>
+                                  <span class="n">samples</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span> <span class="s1">&#39;tight_bottle&#39;</span><span class="p">],</span>
+                                  <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span>
+                                  <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
+                                                 <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">})</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_37_0.png" src="_images/codonvariant_plot_formatting_37_0.png" />
+</div>
+</div>
+<p>You can also save the plots to image files using their <code class="docutils literal notranslate"><span class="pre">save</span></code> method. Here we show how to do this, saving the plot as a PNG to a temporary file and then displaying that PNG:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.png&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_39_0.png" src="_images/codonvariant_plot_formatting_39_0.png" />
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="codonvariant_sim_data.html" title="previous chapter">Analyze simulated library of codon variants</a></li>
+      <li>Next: <a href="parsebarcodes_sim_data.html" title="next chapter">Parse barcodes</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/codonvariant_plot_formatting.nblink.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

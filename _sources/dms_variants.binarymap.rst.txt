@@ -1,0 +1,4 @@
+.. automodule:: dms_variants.binarymap
+   :members:
+   :undoc-members:
+   :show-inheritance:

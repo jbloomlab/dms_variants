@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>simulate &#8212; dms_variants 0.2.0 documentation</title>
+    <title>simulate &#8212; dms_variants 0.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -39,19 +39,33 @@
 <p>Simulate data.</p>
 <dl class="class">
 <dt id="dms_variants.simulate.SigmoidPhenotypeSimulator">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">SigmoidPhenotypeSimulator</code><span class="sig-paren">(</span><em class="sig-param">geneseq</em>, <em class="sig-param">*</em>, <em class="sig-param">seed=1</em>, <em class="sig-param">wt_latent=5</em>, <em class="sig-param">norm_weights=((0.4</em>, <em class="sig-param">-0.5</em>, <em class="sig-param">1)</em>, <em class="sig-param">(0.6</em>, <em class="sig-param">-5</em>, <em class="sig-param">2.5))</em>, <em class="sig-param">stop_effect=-10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">SigmoidPhenotypeSimulator</code><span class="sig-paren">(</span><em class="sig-param">geneseq</em>, <em class="sig-param">*</em>, <em class="sig-param">seed=1</em>, <em class="sig-param">wt_latent=5</em>, <em class="sig-param">norm_weights=((0.4</em>, <em class="sig-param">-0.7</em>, <em class="sig-param">1.5)</em>, <em class="sig-param">(0.6</em>, <em class="sig-param">-7</em>, <em class="sig-param">3.5))</em>, <em class="sig-param">stop_effect=-15</em>, <em class="sig-param">min_observed_enrichment=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simulate phenotypes under sigmoid global epistasis model.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Mutational effects on latent phenotype are simulated to follow
 compound normal distribution; latent phenotype maps to observed
-phenotype via sigmoid. This distinction between latent and
-observed phenotype parallel the “global epistasis” models of
+enrichment via sigmoid, and the observed phenotype is the
+<span class="math notranslate nohighlight">\(\log_2\)</span> of the enrichment. This distinction between latent and
+observed phenotype parallels the “global epistasis” models of
 <a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and
 <a class="reference external" href="http://www.genetics.org/content/205/3/1079">Sailer and Harms</a>.</p>
-<p>The exact sigmoid used is defined in
-<a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.latentToObserved()</span></code></a>.</p>
+<p>Specifically, let <span class="math notranslate nohighlight">\(p_{\rm{latent}}\)</span> be the latent phenotype
+of a variant, let <span class="math notranslate nohighlight">\(p_{\rm{observed}}\)</span> be the observed phenotype,
+and let <span class="math notranslate nohighlight">\(E_{\rm{observed}}\)</span> be the observed enrichment. Also
+let <span class="math notranslate nohighlight">\(p_{\rm{latent, wt}}\)</span> be the latent phenotype of the
+wildtype. Then:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}E_{\rm{observed}}
+&amp;=&amp; \frac{\left(1 + \exp\left(-p_{\rm{latent, wt}}\right)\right)
+          \left(1 - E_{\rm{min}}\right)}
+         {1 + \exp\left(-p_{\rm{latent}}\right)} +
+         E_{\rm{min}} \\
+p_{\rm{observed}} &amp;=&amp; \log_2 E_{\rm{observed}}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(0 \le E_{\rm{min}} &lt; 1\)</span> is the minimum possible observed
+enrichment. Typically <span class="math notranslate nohighlight">\(E_{\rm{min}} &gt; 0\)</span> in real experiments
+as pseudocounts are used so estimates of enrichments can’t be zero.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -62,6 +76,7 @@ observed phenotype parallel the “global epistasis” models of
 <li><p><strong>norm_weights</strong> (<em>list</em><em> or </em><em>tuple of tuples</em>) – Specify compound normal distribution of mutational effects on
 latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 <li><p><strong>stop_effect</strong> (<em>float</em>) – Effect of stop codon at any position.</p></li>
+<li><p><strong>min_observed_enrichment</strong> (<em>float</em>) – Minimum possible observed enrichment.</p></li>
 </ul>
 </dd>
 </dl>
@@ -89,12 +104,11 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 
 <dl class="method">
 <dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype">
-<code class="sig-name descname">latentPhenotype</code><span class="sig-paren">(</span><em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">latentPhenotype</code><span class="sig-paren">(</span><em class="sig-param">subs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latent phenotype of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>v</strong> (<em>dict</em><em> or </em><em>row of pandas.DataFrame</em>) – Must have key ‘aa_substitutions’ that gives space-delimited
-amino-acid mutations.</p>
+<dd class="field-odd"><p><strong>subs</strong> (<em>str</em>) – Space-delimited list of amino-acid substitutions.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Latent phenotype of variant.</p>
@@ -107,21 +121,34 @@ amino-acid mutations.</p>
 
 <dl class="method">
 <dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved">
-<em class="property">static </em><code class="sig-name descname">latentToObserved</code><span class="sig-paren">(</span><em class="sig-param">latent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentToObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="Permalink to this definition">¶</a></dt>
-<dd><p>Observed phenotype from latent phenotype.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>The observed phenotype <span class="math notranslate nohighlight">\(p_{obs}\)</span> is calculated from the
-latent phenotype <span class="math notranslate nohighlight">\(p_{latent}\)</span> as:</p>
-<div class="math notranslate nohighlight">
-\[p_{obs} = \frac{1}{1 + e^{-p_{latent}}}\]</div>
-</div>
+<code class="sig-name descname">latentToObserved</code><span class="sig-paren">(</span><em class="sig-param">latent</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentToObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observed enrichment or observed phenotype from latent phenotype.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>latent</strong> (<em>float</em>) – Latent phenotype.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>latent</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – The latent phenotype.</p></li>
+<li><p><strong>value</strong> (<em>{'enrichment'</em><em>, </em><em>'phenotype'}</em>) – Get the observed enrichment or the observed phenotype?</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Observed phenotype.</p>
+<dd class="field-even"><p>The observed enrichment or phenotype.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float or numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment">
+<code class="sig-name descname">observedEnrichment</code><span class="sig-paren">(</span><em class="sig-param">subs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedEnrichment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Observed enrichment of a variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>subs</strong> (<em>str</em>) – Space-delimited list of amino-acid substitutions.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Observed enrichment relative to wildtype.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>float</p>
@@ -131,12 +158,11 @@ latent phenotype <span class="math notranslate nohighlight">\(p_{latent}\)</span
 
 <dl class="method">
 <dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype">
-<code class="sig-name descname">observedPhenotype</code><span class="sig-paren">(</span><em class="sig-param">v</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">observedPhenotype</code><span class="sig-paren">(</span><em class="sig-param">subs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Observed phenotype of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>v</strong> (<em>dict</em><em> or </em><em>row of pandas.DataFrame</em>) – Must have key ‘aa_substitutions’ that gives space-delimited
-amino-acid mutations.</p>
+<dd class="field-odd"><p><strong>subs</strong> (<em>str</em>) – Space-delimited list of amino-acid substitutions.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Observed phenotype of variant.</p>
@@ -149,11 +175,12 @@ amino-acid mutations.</p>
 
 <dl class="method">
 <dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved">
-<code class="sig-name descname">plotLatentVsObserved</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">latent_min=-15</em>, <em class="sig-param">latent_max=10</em>, <em class="sig-param">npoints=200</em>, <em class="sig-param">wt_vline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotLatentVsObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot observed phenotype as function of latent phenotype.</p>
+<code class="sig-name descname">plotLatentVsObserved</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">*</em>, <em class="sig-param">latent_min=-15</em>, <em class="sig-param">latent_max=10</em>, <em class="sig-param">npoints=200</em>, <em class="sig-param">wt_vline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotLatentVsObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot observed enrichment/phenotype as function of latent phenotype.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>{'enrichment'</em><em>, </em><em>'phenotype'}</em>) – Do we plot observed enrichment or observed phenotype?</p></li>
 <li><p><strong>latent_min</strong> (<em>float</em>) – Smallest value of latent phenotype on plot.</p></li>
 <li><p><strong>latent_max</strong> (<em>float</em>) – Largest value of latent phenotype on plot.</p></li>
 <li><p><strong>npoints</strong> (<em>int</em>) – Plot a line fit to this many points.</p></li>
@@ -161,7 +188,8 @@ amino-acid mutations.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Plot of observed phenotype as function of latent phenotype.</p>
+<dd class="field-even"><p>Plot of observed enrichment or phenotype as function of latent
+phenotype.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
@@ -171,12 +199,12 @@ amino-acid mutations.</p>
 
 <dl class="method">
 <dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram">
-<code class="sig-name descname">plotMutsHistogram</code><span class="sig-paren">(</span><em class="sig-param">latent_or_observed</em>, <em class="sig-param">*</em>, <em class="sig-param">mutant_order=1</em>, <em class="sig-param">bins=30</em>, <em class="sig-param">wt_vline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot distribution of phenotype for all mutants.</p>
+<code class="sig-name descname">plotMutsHistogram</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">*</em>, <em class="sig-param">mutant_order=1</em>, <em class="sig-param">bins=30</em>, <em class="sig-param">wt_vline=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot distribution of phenotype for all mutants of a given order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>latent_or_observed</strong> (<em>{'latent'</em><em>, </em><em>'observed'}</em>) – Which type of phenotype to plot.</p></li>
+<li><p><strong>value</strong> (<em>{'latentPhenotype'</em><em>, </em><em>'observedPhenotype'</em><em>, </em><em>'observedEnrichment'}</em>) – What value to plot.</p></li>
 <li><p><strong>mutant_order</strong> (<em>int</em>) – Plot mutations of this order. Currently only works for 1
 (single mutants).</p></li>
 <li><p><strong>bins</strong> (<em>int</em>) – Number of bins in histogram.</p></li>
@@ -278,9 +306,9 @@ amino-acid mutations.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variants</strong> (class:<cite>dms_variants.codonvarianttable.CodonVariantTable</cite>) – Holds variants used in simulation.</p></li>
-<li><p><strong>phenotype_func</strong> (<em>function</em>) – Takes row from <cite>variants.barcode_variant_df</cite> and returns phenotype
-as number giving enrichment of variant relative to wildtype. For
-instance, <a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedPhenotype()</span></code></a>.</p></li>
+<li><p><strong>phenotype_func</strong> (<em>function</em>) – Takes a space-delimited string of amino-acid substitutions and returns
+a number giving enrichment of variant relative to wildtype. For
+instance, <a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment" title="dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedEnrichment()</span></code></a>.</p></li>
 <li><p><strong>variant_error_rate</strong> (<em>float</em>) – Rate at which variants mis-called. Provide the probability that a
 variant has a spuriously called (or missing) codon mutation; each
 variant then has a random codon mutation added or removed with this
@@ -450,7 +478,7 @@ with this mean.</p></li>
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

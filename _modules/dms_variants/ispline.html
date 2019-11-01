@@ -1,0 +1,1240 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.ispline &#8212; dms_variants 0.3.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.ispline</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">=================</span>
+<span class="sd">ispline</span>
+<span class="sd">=================</span>
+
+<span class="sd">Implements :class:`Isplines`, which are monotonic spline functions that are</span>
+<span class="sd">defined in terms of :class:`Msplines`. Also implements :class:`Isplines_total`</span>
+<span class="sd">for the weighted sum of a :class:`Isplines` family.</span>
+
+<span class="sd">See `Ramsay (1988)`_ for details about these splines, and also note the</span>
+<span class="sd">corrections in the `Praat manual`_ to the errors in the I-spline formula</span>
+<span class="sd">by `Ramsay (1988)`_.</span>
+
+<span class="sd">.. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395</span>
+<span class="sd">.. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">methodtools</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="Isplines_total"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total">[docs]</a><span class="k">class</span> <span class="nc">Isplines_total</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate the weighted sum of an I-spline family (see `Ramsay (1988)`_).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Sets :attr:`Isplines_total.order`.</span>
+<span class="sd">    mesh : array-like</span>
+<span class="sd">        Sets :attr:`Isplines_total.mesh`.</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Sets :attr:`Isplines_total.x`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        See :attr:`Isplines.order`.</span>
+<span class="sd">    mesh : numpy.ndarray</span>
+<span class="sd">        See :attr:`Isplines.mesh`.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        See :attr:`Isplines.n`.</span>
+<span class="sd">    lower : float</span>
+<span class="sd">        See :attr:`Isplines.lower`.</span>
+<span class="sd">    upper : float</span>
+<span class="sd">        See :attr:`Isplines.upper`.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Evaluates the full interpolating curve from the I-splines. When</span>
+<span class="sd">    :math:`x` falls within the lower :math:`L` and upper :math:`U`</span>
+<span class="sd">    bounds of the range covered by the I-splines (:math:`L \le x \le U`),</span>
+<span class="sd">    then this curve is defined as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       I_{\rm{total}}\left(x\right)</span>
+<span class="sd">       =</span>
+<span class="sd">       w_{\rm{lower}} + \sum_i w_i I_i\left(x\right).</span>
+
+<span class="sd">    When :math:`x` is outside the range of the mesh covered by the splines,</span>
+<span class="sd">    the values are linearly extrapolated from first derivative at the</span>
+<span class="sd">    bounds. Specifically, if :math:`x &lt; L` then:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       I_{\rm{total}}\left(x\right)</span>
+<span class="sd">       =</span>
+<span class="sd">       I_{\rm{total}}\left(L\right) +</span>
+<span class="sd">       \left(x - L\right)</span>
+<span class="sd">       \left.\frac{\partial I_{\rm{total}}\left(y\right)}</span>
+<span class="sd">                  {\partial y}\right\rvert_{y=L},</span>
+
+<span class="sd">    and if :math:`x &gt; U` then:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       I_{\rm{total}}\left(x\right)</span>
+<span class="sd">       =</span>
+<span class="sd">       I_{\rm{total}}\left(U\right) +</span>
+<span class="sd">       \left(x - U\right)</span>
+<span class="sd">       \left.\frac{\partial I_{\rm{total}}\left(y\right)}</span>
+<span class="sd">                  {\partial y}\right\rvert_{y=U}.</span>
+
+<span class="sd">    Note also that:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       I_{\rm{total}}\left(L\right) &amp;=&amp; w_{\rm{lower}}, \\</span>
+<span class="sd">       I_{\rm{total}}\left(U\right) &amp;=&amp; w_{\rm{lower}} + \sum_i w_i</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Short examples to demonstrate and test :class:`Isplines_total`:</span>
+
+<span class="sd">    .. plot::</span>
+<span class="sd">       :context: reset</span>
+
+<span class="sd">       &gt;&gt;&gt; import itertools</span>
+<span class="sd">       &gt;&gt;&gt; import numpy</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; import scipy.optimize</span>
+<span class="sd">       &gt;&gt;&gt; from dms_variants.ispline import Isplines_total</span>
+
+<span class="sd">       &gt;&gt;&gt; order = 3</span>
+<span class="sd">       &gt;&gt;&gt; mesh = [0.0, 0.3, 0.5, 0.6, 1.0]</span>
+<span class="sd">       &gt;&gt;&gt; x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])</span>
+<span class="sd">       &gt;&gt;&gt; isplines_total = Isplines_total(order, mesh, x)</span>
+<span class="sd">       &gt;&gt;&gt; weights = numpy.array([1.2, 2, 1.2, 1.2, 3, 0]) / 6</span>
+<span class="sd">       &gt;&gt;&gt; numpy.round(isplines_total.Itotal(weights, w_lower=0), 2)</span>
+<span class="sd">       array([0.  , 0.38, 0.54, 0.66, 1.21, 1.43])</span>
+
+<span class="sd">       Now calculate using some points that require linear extrapolation</span>
+<span class="sd">       outside the mesh and also have a nonzero `w_lower`:</span>
+
+<span class="sd">       &gt;&gt;&gt; x2 = numpy.array([-0.5, -0.25, 0, 0.01, 1.0, 1.5])</span>
+<span class="sd">       &gt;&gt;&gt; isplines_total2 = Isplines_total(order, mesh, x2)</span>
+<span class="sd">       &gt;&gt;&gt; numpy.round(isplines_total2.Itotal(weights, w_lower=1), 3)</span>
+<span class="sd">       array([0.   , 0.5  , 1.   , 1.02 , 2.433, 2.433])</span>
+
+<span class="sd">       Test :meth:`Isplines_total.dItotal_dx`:</span>
+
+<span class="sd">       &gt;&gt;&gt; x_deriv = numpy.array([-0.5, -0.25, 0, 0.01, 0.5, 0.7, 1.0, 1.5])</span>
+<span class="sd">       &gt;&gt;&gt; for xval in x_deriv:</span>
+<span class="sd">       ...     xval = numpy.array([xval])</span>
+<span class="sd">       ...     def func(xval):</span>
+<span class="sd">       ...         return Isplines_total(order, mesh, xval).Itotal(weights, 0)</span>
+<span class="sd">       ...     def dfunc(xval):</span>
+<span class="sd">       ...         return Isplines_total(order, mesh, xval).dItotal_dx(weights)</span>
+<span class="sd">       ...     err = scipy.optimize.check_grad(func, dfunc, xval)</span>
+<span class="sd">       ...     if err &gt; 1e-5:</span>
+<span class="sd">       ...         raise ValueError(f&quot;excess err {err} for {xval}&quot;)</span>
+
+<span class="sd">       &gt;&gt;&gt; (isplines_total.dItotal_dw_lower() == numpy.ones(x.shape)).all()</span>
+<span class="sd">       True</span>
+
+<span class="sd">       Test :meth:`Isplines_total.dItotal_dweights`:</span>
+
+<span class="sd">       &gt;&gt;&gt; isplines_total3 = Isplines_total(order, mesh, x_deriv)</span>
+<span class="sd">       &gt;&gt;&gt; wl = 1.5</span>
+<span class="sd">       &gt;&gt;&gt; (isplines_total3.dItotal_dweights(weights, wl).shape ==</span>
+<span class="sd">       ...  (len(x_deriv), len(weights)))</span>
+<span class="sd">       True</span>
+<span class="sd">       &gt;&gt;&gt; weightslist = list(weights)</span>
+<span class="sd">       &gt;&gt;&gt; for ix, iw in itertools.product(range(len(x_deriv)),</span>
+<span class="sd">       ...                                 range(len(weights))):</span>
+<span class="sd">       ...     w = numpy.array([weightslist[iw]])</span>
+<span class="sd">       ...     def func(w):</span>
+<span class="sd">       ...         iweights = numpy.array(weightslist[: iw] +</span>
+<span class="sd">       ...                                list(w) +</span>
+<span class="sd">       ...                                weightslist[iw + 1:])</span>
+<span class="sd">       ...         return isplines_total3.Itotal(iweights, wl)[ix]</span>
+<span class="sd">       ...     def dfunc(w):</span>
+<span class="sd">       ...         iweights = numpy.array(weightslist[: iw] +</span>
+<span class="sd">       ...                                list(w) +</span>
+<span class="sd">       ...                                weightslist[iw + 1:])</span>
+<span class="sd">       ...         return isplines_total3.dItotal_dweights(iweights, wl)[ix,</span>
+<span class="sd">       ...                                                               iw]</span>
+<span class="sd">       ...     err = scipy.optimize.check_grad(func, dfunc, w)</span>
+<span class="sd">       ...     if err &gt; 1e-6:</span>
+<span class="sd">       ...         raise ValueError(f&quot;excess err {err} for {ix, iw}&quot;)</span>
+
+<span class="sd">       Plot the total of the I-spline family shown in Fig. 1 of</span>
+<span class="sd">       `Ramsay (1988)`_, adding some linear extrapolation outside the</span>
+<span class="sd">       mesh range:</span>
+
+<span class="sd">       &gt;&gt;&gt; xplot = numpy.linspace(-0.2, 1.2, 1000)</span>
+<span class="sd">       &gt;&gt;&gt; isplines_totalplot = Isplines_total(order, mesh, xplot)</span>
+<span class="sd">       &gt;&gt;&gt; df = pd.DataFrame({&#39;x&#39;: xplot,</span>
+<span class="sd">       ...                    &#39;Itotal&#39;: isplines_totalplot.Itotal(weights, 0)})</span>
+<span class="sd">       &gt;&gt;&gt; _ = df.plot(x=&#39;x&#39;, y=&#39;Itotal&#39;)</span>
+
+<span class="sd">    .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{order}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` not array-like of dimension 1: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` not length &gt;= 2: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` elements not unique and sorted: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># indices of `x` in, above, or below I-spline range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span>
+                       <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">),</span>
+                       <span class="s1">&#39;in&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">&amp;</span>
+                                               <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">))</span>
+                       <span class="p">}</span>
+
+        <span class="c1"># values of x in each range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span> <span class="o">=</span> <span class="p">{</span><span class="n">rangename</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">rangename</span><span class="p">,</span> <span class="n">index</span>
+                           <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="c1"># Isplines for each range: for lower and upper it is value at bound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;in&#39;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]),</span>
+                          <span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
+                                            <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">])),</span>
+                          <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
+                                            <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">])),</span>
+                          <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
+
+<div class="viewcode-block" id="Isplines_total.Itotal"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.Itotal">[docs]</a>    <span class="k">def</span> <span class="nf">Itotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Weighted sum of spline family at points :attr:`Isplines_total.x`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        weights : array-like</span>
+<span class="sd">            Nonnegative weights :math:`w_i` of members :math:`I_i` of spline</span>
+<span class="sd">            family, should be of length equal to :attr:`Isplines.n`.</span>
+<span class="sd">        w_lower : float</span>
+<span class="sd">            The value at the lower bound :math:`L` of the spline range,</span>
+<span class="sd">            :math:`w_{\rm{lower}}`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`I_{\rm{total}}` for each point in :attr:`Isplines_total.x`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span>
+                                                 <span class="s1">&#39;Itotal&#39;</span><span class="p">)</span></div>
+
+    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">,</span>
+                                     <span class="n">quantity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.Itotal` or derivatives.</span>
+
+<span class="sd">        Parameters have same meaning as for :meth:`Isplines.Itotal`</span>
+<span class="sd">        except for `quantity`, which should be</span>
+
+<span class="sd">          - &#39;Itotal&#39; to compute :meth:`Isplines.Itotal`</span>
+<span class="sd">          - &#39;dItotal_dx&#39; to compute :meth:`Isplines.dItotal_dx`</span>
+<span class="sd">          - &#39;dItotal_dweights` to compute :meth:`Isplines.dItotal_dweights`</span>
+
+<span class="sd">        Also, `weights` must be hashable (e.g., a tuple).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check validity of `weights`</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid length of `weights`: </span><span class="si">{weights}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">weight</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">weight</span> <span class="ow">in</span> <span class="n">weights</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`weights` not all non-negative: </span><span class="si">{weights}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># compute return values for each category of indices</span>
+        <span class="n">returnvals</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;Itotal&#39;</span><span class="p">:</span>
+            <span class="n">returnshape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]):</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
+                                              <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
+                                             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">w_lower</span>
+            <span class="c1"># values of Itotal at limits</span>
+            <span class="n">Itotal_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">w_lower</span><span class="p">,</span>
+                             <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">w_lower</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
+                    <span class="k">continue</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Itotal_limits</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span>
+                                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span> <span class="o">*</span>
+                                    <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
+                                        <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                                    <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;dItotal_dx&#39;</span><span class="p">:</span>
+            <span class="n">returnshape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]):</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
+                                              <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
+                                             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
+                    <span class="k">continue</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
+                                       <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;dItotal_dweights&#39;</span><span class="p">:</span>
+            <span class="n">returnshape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]):</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span>
+                                                  <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+                                    <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            <span class="c1"># values of I at limits</span>
+            <span class="n">I_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
+                    <span class="k">continue</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+                                    <span class="p">[</span><span class="n">I_limits</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span>
+                                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span> <span class="o">*</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                                     <span class="p">]</span>
+                                    <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `quantity` </span><span class="si">{quantity}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># reconstruct single return value from indices and returnvalues</span>
+        <span class="n">returnval</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">returnshape</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">name_index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name_index</span><span class="p">):</span>
+                <span class="n">returnval</span><span class="p">[</span><span class="n">name_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">returnval</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span>
+        <span class="n">returnval</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">returnval</span>
+
+<div class="viewcode-block" id="Isplines_total.dItotal_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv :meth:`Isplines_total.Itotal` by :attr:`Isplines_total.x`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Derivatives calculated from equations in :meth:`Isplines_total.Itotal`:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           \frac{\partial I_{\rm{total}}\left(x\right)}{\partial x}</span>
+<span class="sd">           =</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           \sum_i w_i \frac{\partial I_i\left(x\right)}{\partial x}</span>
+<span class="sd">             &amp; \rm{if\;} L \le x \le U, \\</span>
+<span class="sd">           \left.\frac{\partial I_{\rm{total}}\left(y\right)}</span>
+<span class="sd">                      {\partial y}\right\rvert_{y=L}</span>
+<span class="sd">             &amp; \rm{if\;} x &lt; L, \\</span>
+<span class="sd">           \left.\frac{\partial I_{\rm{total}}\left(y\right)}</span>
+<span class="sd">                      {\partial y}\right\rvert_{y=U}</span>
+<span class="sd">             &amp; \rm{otherwise}.</span>
+<span class="sd">           \end{cases}</span>
+
+<span class="sd">        Note that</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           \left.\frac{\partial I_{\rm{total}}\left(y\right)}</span>
+<span class="sd">                      {\partial y}\right\rvert_{y=L}</span>
+<span class="sd">            &amp;=&amp;</span>
+<span class="sd">            \sum_i w_i \left.\frac{\partial I_i\left(y\right)}{\partial y}</span>
+<span class="sd">                       \right\rvert_{y=L}</span>
+<span class="sd">            \\</span>
+<span class="sd">           \left.\frac{\partial I_{\rm{total}}\left(y\right)}</span>
+<span class="sd">                      {\partial y}\right\rvert_{y=U}</span>
+<span class="sd">            &amp;=&amp;</span>
+<span class="sd">            \sum_i w_i \left.\frac{\partial I_i\left(y\right)}{\partial y}</span>
+<span class="sd">                       \right\rvert_{y=U}</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        weights : array-like</span>
+<span class="sd">            Same meaning as for :meth:`Isplines_total.Itotal`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Derivative :math:`\frac{\partial I_{\rm{total}}}{\partial x}`</span>
+<span class="sd">            for each point in :attr:`Isplines_total.x`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span>
+                                                 <span class="s1">&#39;dItotal_dx&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Isplines_total.dItotal_dweights"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dweights">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dweights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines_total.Itotal` by :math:`w_i`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        weights : array-like</span>
+<span class="sd">            Same meaning as for :meth:`Isplines.Itotal`.</span>
+<span class="sd">        w_lower : float</span>
+<span class="sd">            Same meaning as for :meth:`Isplines.Itotal`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Array is of shape `(len(x), len(weights))`, and element</span>
+<span class="sd">            `ix, iweight` gives derivative with respect to weight</span>
+<span class="sd">            `weights[iweight]` at element `[ix]` of :attr:`Isplines_total.x`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The derivative is:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           \frac{\partial I_{\rm{total}}\left(x\right)}{\partial w_i}</span>
+<span class="sd">           =</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           I_i\left(x\right)</span>
+<span class="sd">            &amp; \rm{if\;} L \le x \le U, \\</span>
+<span class="sd">           I_i\left(L\right) + \left(x-L\right)</span>
+<span class="sd">           \left.\frac{\partial I_i\left(y\right)}{\partial y}\right\vert_{y=L}</span>
+<span class="sd">            &amp; \rm{if\;} x &lt; L, \\</span>
+<span class="sd">           I_i\left(U\right) + \left(x-U\right)</span>
+<span class="sd">           \left.\frac{\partial I_i\left(y\right)}{\partial y}\right\vert_{y=U}</span>
+<span class="sd">            &amp; \rm{if\;} x &gt; U.</span>
+<span class="sd">           \end{cases}</span>
+
+<span class="sd">        Note that:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           I_i\left(L\right) &amp;=&amp; 0 \\</span>
+<span class="sd">           I_i\left(U\right) &amp;=&amp; 1.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span>
+                                                 <span class="s1">&#39;dItotal_dweights&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Isplines_total.dItotal_dw_lower"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dw_lower">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dw_lower</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv of :meth:`Isplines_total.Itotal` by :math:`w_{\rm{lower}}`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            :math:`\frac{\partial{I_{\rm{total}}}}{\partial w_{\rm{lower}}}`,</span>
+<span class="sd">            which is just one for all :attr:`Isplines_total.x`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">res</span></div></div>
+
+
+<div class="viewcode-block" id="Isplines"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines">[docs]</a><span class="k">class</span> <span class="nc">Isplines</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements I-splines (see `Ramsay (1988)`_).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Sets :attr:`Isplines.order`.</span>
+<span class="sd">    mesh : array-like</span>
+<span class="sd">        Sets :attr:`Isplines.mesh`.</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Sets :attr:`Isplines.x`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Order of spline, :math:`k` in notation of `Ramsay (1988)`_. Note that</span>
+<span class="sd">        the degree of the I-spline is equal to :math:`k`, while the</span>
+<span class="sd">        associated M-spline has order :math:`k` but degree :math:`k - 1`.</span>
+<span class="sd">    mesh : numpy.ndarray</span>
+<span class="sd">        Mesh sequence, :math:`\xi_1 &lt; \ldots &lt; \xi_q` in the notation</span>
+<span class="sd">        of `Ramsay (1988)`_. This class implements **fixed** mesh sequences.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of members in spline, denoted as :math:`n` in `Ramsay (1988)`_.</span>
+<span class="sd">        Related to number of points :math:`q` in the mesh and the order</span>
+<span class="sd">        :math:`k` by :math:`n = q - 2 + k`.</span>
+<span class="sd">    lower : float</span>
+<span class="sd">        Lower end of interval spanned by the splines (first point in mesh).</span>
+<span class="sd">    upper : float</span>
+<span class="sd">        Upper end of interval spanned by the splines (last point in mesh).</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The methods of this class cache their results and return immutable</span>
+<span class="sd">    numpy arrays. Do **not** make these arrays mutable and change their</span>
+<span class="sd">    values, as this will lead to invalid caching.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Short examples to demonstrate and test :class:`Isplines`:</span>
+
+<span class="sd">    .. plot::</span>
+<span class="sd">       :context: reset</span>
+
+<span class="sd">       &gt;&gt;&gt; import itertools</span>
+<span class="sd">       &gt;&gt;&gt; import numpy</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; import scipy.optimize</span>
+<span class="sd">       &gt;&gt;&gt; from dms_variants.ispline import Isplines</span>
+
+<span class="sd">       &gt;&gt;&gt; order = 3</span>
+<span class="sd">       &gt;&gt;&gt; mesh = [0.0, 0.3, 0.5, 0.6, 1.0]</span>
+<span class="sd">       &gt;&gt;&gt; x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])</span>
+<span class="sd">       &gt;&gt;&gt; isplines = Isplines(order, mesh, x)</span>
+<span class="sd">       &gt;&gt;&gt; isplines.order</span>
+<span class="sd">       3</span>
+<span class="sd">       &gt;&gt;&gt; isplines.mesh</span>
+<span class="sd">       array([0. , 0.3, 0.5, 0.6, 1. ])</span>
+<span class="sd">       &gt;&gt;&gt; isplines.n</span>
+<span class="sd">       6</span>
+<span class="sd">       &gt;&gt;&gt; isplines.lower</span>
+<span class="sd">       0.0</span>
+<span class="sd">       &gt;&gt;&gt; isplines.upper</span>
+<span class="sd">       1.0</span>
+
+<span class="sd">       Evaluate the I-splines at some selected points:</span>
+
+<span class="sd">       &gt;&gt;&gt; for i in range(1, isplines.n + 1):</span>
+<span class="sd">       ...     print(f&quot;I{i}: {numpy.round(isplines.I(i), 2)}&quot;)</span>
+<span class="sd">       ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">       I1: [0.   0.96 1.   1.   1.   1.  ]</span>
+<span class="sd">       I2: [0.   0.52 0.84 0.98 1.   1.  ]</span>
+<span class="sd">       I3: [0.   0.09 0.3  0.66 1.   1.  ]</span>
+<span class="sd">       I4: [0.   0.   0.   0.02 0.94 1.  ]</span>
+<span class="sd">       I5: [0.   0.   0.   0.   0.58 1.  ]</span>
+<span class="sd">       I6: [0.   0.   0.   0.   0.13 1.  ]</span>
+
+<span class="sd">       Check that gradients are correct for :meth:`Isplines.dI_dx`:</span>
+
+<span class="sd">       &gt;&gt;&gt; for i, xval in itertools.product(range(1, isplines.n + 1), x):</span>
+<span class="sd">       ...     xval = numpy.array([xval])</span>
+<span class="sd">       ...     def func(xval):</span>
+<span class="sd">       ...         return Isplines(order, mesh, xval).I(i)</span>
+<span class="sd">       ...     def dfunc(xval):</span>
+<span class="sd">       ...         return Isplines(order, mesh, xval).dI_dx(i)</span>
+<span class="sd">       ...     err = scipy.optimize.check_grad(func, dfunc, xval)</span>
+<span class="sd">       ...     if err &gt; 1e-5:</span>
+<span class="sd">       ...         raise ValueError(f&quot;excess err {err} for {i}, {xval}&quot;)</span>
+
+<span class="sd">       Plot the I-splines in Fig. 1 of `Ramsay (1988)`_:</span>
+
+<span class="sd">       &gt;&gt;&gt; xplot = numpy.linspace(0, 1, 1000)</span>
+<span class="sd">       &gt;&gt;&gt; isplines_xplot = Isplines(order, mesh, xplot)</span>
+<span class="sd">       &gt;&gt;&gt; data = {&#39;x&#39;: xplot}</span>
+<span class="sd">       &gt;&gt;&gt; for i in range(1, isplines.n + 1):</span>
+<span class="sd">       ...     data[f&quot;I{i}&quot;] = isplines_xplot.I(i)</span>
+<span class="sd">       &gt;&gt;&gt; df = pd.DataFrame(data)</span>
+<span class="sd">       &gt;&gt;&gt; _ = df.plot(x=&#39;x&#39;)</span>
+
+<span class="sd">    .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{order}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` not array-like of dimension 1: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` not length &gt;= 2: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` elements not unique and sorted: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`x` is not numpy.ndarray of dimension 1&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`x` outside </span><span class="si">{self.lower}</span><span class="s2"> and </span><span class="si">{self.upper}</span><span class="s2">: </span><span class="si">{x}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span> <span class="o">=</span> <span class="n">Msplines</span><span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
+
+<div class="viewcode-block" id="Isplines.I"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines.I">[docs]</a>    <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>  <span class="c1"># noqa: E743</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`I_i` at point(s) :attr:`Isplines.x`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            Spline member :math:`I_i`, where :math:`1 \le i \le`</span>
+<span class="sd">            :attr:`Isplines.n`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The values of the I-spline at each point in :attr:`Isplines.x`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The spline is evaluated using the formula given in the</span>
+<span class="sd">        `Praat manual`_, which corrects some errors in the formula</span>
+<span class="sd">        provided by `Ramsay (1988)`_:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           I_i\left(x\right)</span>
+<span class="sd">           =</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           0 &amp; \rm{if\;} i &gt; j, \\</span>
+<span class="sd">           1 &amp; \rm{if\;} i &lt; j - k, \\</span>
+<span class="sd">           \sum_{m=i+1}^j \left(t_{m+k+1} - t_m\right)</span>
+<span class="sd">                          M_m\left(x \mid k + 1\right) / \left(k + 1 \right)</span>
+<span class="sd">             &amp; \rm{otherwise},</span>
+<span class="sd">           \end{cases}</span>
+
+<span class="sd">        where :math:`j` is the index such that :math:`t_j \le x &lt; t_{j+1}`</span>
+<span class="sd">        (the :math:`\left\{t_j\right\}` are the :attr:`Msplines.knots` for a</span>
+<span class="sd">        M-spline of order :math:`k + 1`) and :math:`k` is</span>
+<span class="sd">        :attr:`Isplines.order`.</span>
+
+<span class="sd">        .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395</span>
+<span class="sd">        .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">j</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: :math:`j` as defined in :meth:`Isplines.I`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_j&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">((</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_sum_terms_I</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: sum terms for :meth:`Isplines.I`.</span>
+
+<span class="sd">        Row `m - 1` has summation term for `m`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_sum_terms_I_val&#39;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+                <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+                                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_sum_terms_dI_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: sum terms for :meth:`Isplines.dI_dx`.</span>
+
+<span class="sd">        Row `m - 1` has summation term for `m`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_sum_terms_dI_dx_val&#39;</span><span class="p">):</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+                <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
+                                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span>
+
+    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_calculate_I_or_dI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            Same meaning as for :meth:`Isplines.I`.</span>
+<span class="sd">        quantity : {&#39;I&#39;, &#39;dI&#39;}</span>
+<span class="sd">            Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`?</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The return value of :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        Most calculations for :meth:`Isplines.I` and :meth:`Isplines.dI_dx`</span>
+<span class="sd">        are the same, so this method implements both.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span>
+            <span class="n">sum_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I</span>
+            <span class="n">i_lt_jminusk</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;dI&#39;</span><span class="p">:</span>
+            <span class="n">sum_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx</span>
+            <span class="n">i_lt_jminusk</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `quantity` </span><span class="si">{quantity}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+
+        <span class="c1"># create `binary_terms` where entry (m - 1, x) is 1 if and only if</span>
+        <span class="c1"># the corresponding `sum_terms` entry is part of the sum.</span>
+        <span class="n">binary_terms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+               <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span> <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span> <span class="p">(</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+        <span class="k">assert</span> <span class="n">binary_terms</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">sum_terms</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># compute sums from `sum_terms` and `binary_terms`</span>
+        <span class="n">sums</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sum_terms</span> <span class="o">*</span> <span class="n">binary_terms</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">sums</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># return value with sums, 0, or 1</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
+                          <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">i_lt_jminusk</span><span class="p">,</span>
+                                      <span class="n">sums</span><span class="p">))</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+<div class="viewcode-block" id="Isplines.dI_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines.dI_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dI_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines.I` by :attr:`Isplines.x`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            Same meaning as for :meth:`Isplines.I`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Derivative of I-spline with respect to :attr:`Isplines.x`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The derivative is calculated from the equation in :meth:`Isplines.I`:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           \frac{\partial I_i\left(x\right)}{\partial x}</span>
+<span class="sd">           =</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           0 &amp; \rm{if\;} i &gt; j \rm{\; or \;} i &lt; j - k, \\</span>
+<span class="sd">           \sum_{m=i+1}^j\left(t_{m+k+1} - t_m\right)</span>
+<span class="sd">                         \frac{\partial M_m\left(x \mid k+1\right)}{\partial x}</span>
+<span class="sd">                         \frac{1}{k + 1}</span>
+<span class="sd">             &amp; \rm{otherwise}.</span>
+<span class="sd">           \end{cases}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;dI&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Msplines"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines">[docs]</a><span class="k">class</span> <span class="nc">Msplines</span><span class="p">:</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements M-splines (see `Ramsay (1988)`_).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Sets :attr:`Msplines.order`.</span>
+<span class="sd">    mesh : array-like</span>
+<span class="sd">        Sets :attr:`Msplines.mesh`.</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Sets :attr:`Msplines.x`.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    order : int</span>
+<span class="sd">        Order of spline, :math:`k` in notation of `Ramsay (1988)`_.</span>
+<span class="sd">        Polynomials are of degree :math:`k - 1`.</span>
+<span class="sd">    mesh : numpy.ndarray</span>
+<span class="sd">        Mesh sequence, :math:`\xi_1 &lt; \ldots &lt; \xi_q` in the notation</span>
+<span class="sd">        of `Ramsay (1988)`_. This class implements **fixed** mesh sequences.</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of members in spline, denoted as :math:`n` in `Ramsay (1988)`_.</span>
+<span class="sd">        Related to number of points :math:`q` in the mesh and the order</span>
+<span class="sd">        :math:`k` by :math:`n = q - 2 + k`.</span>
+<span class="sd">    knots : numpy.ndarray</span>
+<span class="sd">        The knot sequence, :math:`t_1, \ldots, t_{n + k}` in the notation of</span>
+<span class="sd">        `Ramsay (1988)`_.</span>
+<span class="sd">    lower : float</span>
+<span class="sd">        Lower end of interval spanned by the splines (first point in mesh).</span>
+<span class="sd">    upper : float</span>
+<span class="sd">        Upper end of interval spanned by the splines (last point in mesh).</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The methods of this class cache their results and return immutable</span>
+<span class="sd">    numpy arrays. Do **not** make those arrays mutable and change their</span>
+<span class="sd">    values as this will lead to invalid caching.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Demonstrate and test :class:`Msplines`:</span>
+
+<span class="sd">    .. plot::</span>
+<span class="sd">       :context: reset</span>
+
+<span class="sd">       &gt;&gt;&gt; import functools</span>
+<span class="sd">       &gt;&gt;&gt; import itertools</span>
+<span class="sd">       &gt;&gt;&gt; import numpy</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; import scipy.optimize</span>
+<span class="sd">       &gt;&gt;&gt; from dms_variants.ispline import Msplines</span>
+
+<span class="sd">       &gt;&gt;&gt; order = 3</span>
+<span class="sd">       &gt;&gt;&gt; mesh = [0.0, 0.3, 0.5, 0.6, 1.0]</span>
+<span class="sd">       &gt;&gt;&gt; x = numpy.array([0, 0.2, 0.3, 0.4, 0.8, 0.99999])</span>
+<span class="sd">       &gt;&gt;&gt; msplines = Msplines(order, mesh, x)</span>
+<span class="sd">       &gt;&gt;&gt; msplines.order</span>
+<span class="sd">       3</span>
+<span class="sd">       &gt;&gt;&gt; msplines.mesh</span>
+<span class="sd">       array([0. , 0.3, 0.5, 0.6, 1. ])</span>
+<span class="sd">       &gt;&gt;&gt; msplines.n</span>
+<span class="sd">       6</span>
+<span class="sd">       &gt;&gt;&gt; msplines.knots</span>
+<span class="sd">       array([0. , 0. , 0. , 0.3, 0.5, 0.6, 1. , 1. , 1. ])</span>
+<span class="sd">       &gt;&gt;&gt; msplines.lower</span>
+<span class="sd">       0.0</span>
+<span class="sd">       &gt;&gt;&gt; msplines.upper</span>
+<span class="sd">       1.0</span>
+
+<span class="sd">       Evaluate the M-splines at some selected points:</span>
+
+<span class="sd">       &gt;&gt;&gt; for i in range(1, msplines.n + 1):</span>
+<span class="sd">       ...     print(f&quot;M{i}: {numpy.round(msplines.M(i), 2)}&quot;)</span>
+<span class="sd">       ... # doctest: +NORMALIZE_WHITESPACE</span>
+<span class="sd">       M1: [10. 1.11 0.  0.   0.   0.  ]</span>
+<span class="sd">       M2: [0.  3.73 2.4 0.6  0.   0.  ]</span>
+<span class="sd">       M3: [0.  1.33 3.  3.67 0.   0.  ]</span>
+<span class="sd">       M4: [0.  0.   0.  0.71 0.86 0.  ]</span>
+<span class="sd">       M5: [0.  0.   0.  0.   3.3  0.  ]</span>
+<span class="sd">       M6: [0.  0.   0.  0.   1.88 7.5 ]</span>
+
+<span class="sd">       Check that the gradients are correct:</span>
+
+<span class="sd">       &gt;&gt;&gt; for i, xval in itertools.product(range(1, msplines.n + 1), x):</span>
+<span class="sd">       ...     xval = numpy.array([xval])</span>
+<span class="sd">       ...     def func(xval):</span>
+<span class="sd">       ...         return Msplines(order, mesh, xval).M(i)</span>
+<span class="sd">       ...     def dfunc(xval):</span>
+<span class="sd">       ...         return Msplines(order, mesh, xval).dM_dx(i)</span>
+<span class="sd">       ...     err = scipy.optimize.check_grad(func, dfunc, xval)</span>
+<span class="sd">       ...     if err &gt; 1e-5:</span>
+<span class="sd">       ...         raise ValueError(f&quot;excess err {err} for {i}, {xval}&quot;)</span>
+
+<span class="sd">       Plot the M-splines in in Fig. 1 of `Ramsay (1988)`_:</span>
+
+<span class="sd">       &gt;&gt;&gt; xplot = numpy.linspace(0, 1, 1000, endpoint=False)</span>
+<span class="sd">       &gt;&gt;&gt; msplines_plot = Msplines(order, mesh, xplot)</span>
+<span class="sd">       &gt;&gt;&gt; data = {&#39;x&#39;: xplot}</span>
+<span class="sd">       &gt;&gt;&gt; for i in range(1, msplines_plot.n + 1):</span>
+<span class="sd">       ...     data[f&quot;M{i}&quot;] = msplines_plot.M(i)</span>
+<span class="sd">       &gt;&gt;&gt; df = pd.DataFrame(data)</span>
+<span class="sd">       &gt;&gt;&gt; _ = df.plot(x=&#39;x&#39;)</span>
+
+<span class="sd">    .. _`Ramsay (1988)`: https://www.jstor.org/stable/2245395</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{order}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` not array-like of dimension 1: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` not length &gt;= 2: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`mesh` elements not unique and sorted: </span><span class="si">{mesh}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">knots</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span>
+                        <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span>
+                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+                        <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`x` is not numpy.ndarray of dimension 1&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`x` outside </span><span class="si">{self.lower}</span><span class="s2"> and </span><span class="si">{self.upper}</span><span class="s2">: </span><span class="si">{x}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_ti_le_x_lt_tiplusk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Indices where :math:`t_i \le x \le t_{i+k}`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ti : float</span>
+<span class="sd">            :math:`t_i`</span>
+<span class="sd">        tiplusk : float</span>
+<span class="sd">            :math:`t_{i+k}`</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Array of booleans of same length as :attr:`Msplines.x` indicating</span>
+<span class="sd">            if :math:`t_i \le x \le t_{i+k}`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="p">(</span><span class="n">ti</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">tiplusk</span><span class="p">)</span>
+            <span class="n">val</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">assert</span> <span class="n">val</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
+
+<div class="viewcode-block" id="Msplines.M"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.M">[docs]</a>    <span class="k">def</span> <span class="nf">M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;raise&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            Spline member :math:`M_i`, where :math:`1 \le i \le`</span>
+<span class="sd">            :attr:`Msplines.n`.</span>
+<span class="sd">        k : int or None</span>
+<span class="sd">            Order of spline. If `None`, assumed to be :attr:`Msplines.order`.</span>
+<span class="sd">        invalid_i : {&#39;raise&#39;, &#39;zero&#39;}</span>
+<span class="sd">            If `i` is invalid, do we raise an error or return 0?</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The values of the M-spline at each point in :attr:`Msplines.x`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The spline is evaluated using the recursive relationship given by</span>
+<span class="sd">        `Ramsay (1988) &lt;https://www.jstor.org/stable/2245395&gt;`_:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           M_i\left(x \mid k=1\right)</span>
+<span class="sd">           &amp;=&amp;</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           1 / \left(t_{i+1} - t_i\right), &amp; \rm{if\;} t_i \le x &lt; t_{i+1} \\</span>
+<span class="sd">           0, &amp; \rm{otherwise}</span>
+<span class="sd">           \end{cases} \\</span>
+<span class="sd">           M_i\left(x \mid k &gt; 1\right) &amp;=&amp;</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           \frac{k\left[\left(x - t_i\right) M_i\left(x \mid k-1\right) +</span>
+<span class="sd">                        \left(t_{i+k} -x\right) M_{i+1}\left(x \mid k-1\right)</span>
+<span class="sd">                        \right]}</span>
+<span class="sd">           {\left(k - 1\right)\left(t_{i + k} - t_i\right)},</span>
+<span class="sd">           &amp; \rm{if\;} t_i \le x &lt; t_{i+k} \\</span>
+<span class="sd">           0, &amp; \rm{otherwise}</span>
+<span class="sd">           \end{cases}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">)</span></div>
+
+    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_calculate_M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.M` with result caching.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;zero&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `invalid_i` of </span><span class="si">{invalid_i}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid spline order `k` of </span><span class="si">{k}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">tiplusk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">ti</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">tiplusk</span> <span class="o">==</span> <span class="n">ti</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="n">boolindex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk</span><span class="p">(</span><span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">boolindex</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="n">res</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">boolindex</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ti</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                         <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                                                     <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;zero&#39;</span><span class="p">)</span>
+                         <span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">))),</span>
+                        <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="n">res</span>
+
+<div class="viewcode-block" id="Msplines.dM_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.dM_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;raise&#39;</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        i : int</span>
+<span class="sd">            Same as for :meth:`Msplines.M`.</span>
+<span class="sd">        k : int or None</span>
+<span class="sd">            Same as for :meth:`Msplines.M`.</span>
+<span class="sd">        invalid_i : {&#39;raise&#39;, &#39;zero&#39;}</span>
+<span class="sd">            Same as for :meth:`Msplines.M`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            Derivative of M-spline with respect to :attr:`Msplines.x`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The derivative is calculated from the equation in :meth:`Msplines.M`:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           \frac{\partial M_i\left(x \mid k=1\right)}{\partial x} &amp;=&amp; 0</span>
+<span class="sd">           \\</span>
+<span class="sd">           \frac{\partial M_i\left(x \mid k &gt; 1\right)}{\partial x}</span>
+<span class="sd">           &amp;=&amp;</span>
+<span class="sd">           \begin{cases}</span>
+<span class="sd">           \frac{k\left[\left(x - t_i\right)</span>
+<span class="sd">                        \frac{\partial M_i\left(x \mid k-1\right)}{\partial x}</span>
+<span class="sd">                        +</span>
+<span class="sd">                        M_i\left(x \mid k-1\right)</span>
+<span class="sd">                        +</span>
+<span class="sd">                        \left(t_{i+k} -x\right)</span>
+<span class="sd">                        \frac{\partial M_{i+1}\left(x \mid k-1\right)}</span>
+<span class="sd">                             {\partial x}</span>
+<span class="sd">                        -</span>
+<span class="sd">                        M_{i+1}\left(x \mid k-1\right)</span>
+<span class="sd">                        \right]}</span>
+<span class="sd">           {\left(k - 1\right)\left(t_{i + k} - t_i\right)},</span>
+<span class="sd">           &amp; \rm{if\;} t_i \le x &lt; t_{i+1} \\</span>
+<span class="sd">           0, &amp; \rm{otherwise}</span>
+<span class="sd">           \end{cases}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dM_dx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">)</span></div>
+
+    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_calculate_dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.dM_dx` with results caching.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;zero&#39;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `invalid_i` of </span><span class="si">{invalid_i}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">k</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid spline order `k` of </span><span class="si">{k}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">tiplusk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">ti</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">tiplusk</span> <span class="o">==</span> <span class="n">ti</span> <span class="ow">or</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span>
+            <span class="n">boolindex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk</span><span class="p">(</span><span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                        <span class="n">boolindex</span><span class="p">,</span>
+                        <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ti</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+                              <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
+                                                              <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;zero&#39;</span><span class="p">)</span>
+                              <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;zero&#39;</span><span class="p">)</span>
+                              <span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">))</span>
+                         <span class="p">),</span>
+                        <span class="mf">0.0</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="n">res</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

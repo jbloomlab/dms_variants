@@ -12,10 +12,13 @@ Submodules
 .. toctree::
 
    dms_variants.barcodes
+   dms_variants.binarymap
    dms_variants.codonvarianttable
    dms_variants.constants
    dms_variants.fastq
+   dms_variants.globalepistasis
    dms_variants.illuminabarcodeparser
+   dms_variants.ispline
    dms_variants.plotnine_themes
    dms_variants.simulate
    dms_variants.utils

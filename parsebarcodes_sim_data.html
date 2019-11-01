@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Parse simulated barcodes &#8212; dms_variants 0.2.0 documentation</title>
+    <title>Parse barcodes &#8212; dms_variants 0.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="dms_variants package" href="dms_variants.html" />
-    <link rel="prev" title="Analyze simulated library of codon variants" href="codonvariant_sim_data.html" />
+    <link rel="prev" title="Formatting CodonVariantTable plots" href="codonvariant_plot_formatting.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -234,8 +234,8 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Parse-simulated-barcodes">
-<h1>Parse simulated barcodes<a class="headerlink" href="#Parse-simulated-barcodes" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Parse-barcodes">
+<h1>Parse barcodes<a class="headerlink" href="#Parse-barcodes" title="Permalink to this headline">¶</a></h1>
 <p>Simulate some Illumina reads giving barcode counts of variants, parse them from the simulated FASTQ files, and add them to a variant table. Primarily designed to illustrate how to use an <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a> to parse barcode counts and add them to a
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>.</p>
 <div class="section" id="Setup-for-analysis">
@@ -359,7 +359,7 @@ div.rendered_html tbody tr:hover {
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>lib_1</td>
       <td>ATTCCCGT</td>
       <td>1</td>
@@ -369,7 +369,7 @@ div.rendered_html tbody tr:hover {
       <td>2</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>lib_1</td>
       <td>TACGATTA</td>
       <td>1</td>
@@ -379,7 +379,7 @@ div.rendered_html tbody tr:hover {
       <td>1</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>lib_1</td>
       <td>TCACAACC</td>
       <td>1</td>
@@ -466,19 +466,19 @@ div.rendered_html tbody tr:hover {
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>lib_1</td>
       <td>ATTCCCGT</td>
       <td>2</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>lib_1</td>
       <td>TACGATTA</td>
       <td>1</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>lib_1</td>
       <td>TCACAACC</td>
       <td>2</td>
@@ -702,21 +702,21 @@ ATTCCCGTTCGTATCATG
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>ATTCCCGT</td>
       <td>2</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>TCACAACC</td>
       <td>2</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>TACGATTA</td>
       <td>1</td>
       <td>lib_1</td>
@@ -767,35 +767,35 @@ ATTCCCGTTCGTATCATG
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>valid barcode</td>
       <td>5</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>invalid barcode</td>
       <td>3</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>unparseable barcode</td>
       <td>2</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <th>3</th>
+      <td>3</td>
       <td>low quality barcode</td>
       <td>1</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <th>4</th>
+      <td>4</td>
       <td>failed chastity filter</td>
       <td>0</td>
       <td>lib_1</td>
@@ -865,7 +865,7 @@ Here are the counts added to the variant table:
   </thead>
   <tbody>
     <tr>
-      <th>0</th>
+      <td>0</td>
       <td>ATTCCCGT</td>
       <td>2</td>
       <td>lib_1</td>
@@ -877,7 +877,7 @@ Here are the counts added to the variant table:
       <td>2</td>
     </tr>
     <tr>
-      <th>1</th>
+      <td>1</td>
       <td>TCACAACC</td>
       <td>2</td>
       <td>lib_1</td>
@@ -889,7 +889,7 @@ Here are the counts added to the variant table:
       <td>0</td>
     </tr>
     <tr>
-      <th>2</th>
+      <td>2</td>
       <td>TACGATTA</td>
       <td>1</td>
       <td>lib_1</td>
@@ -1037,7 +1037,8 @@ Here are the counts added to the variant table:
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Parse simulated barcodes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Parse barcodes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
@@ -1050,7 +1051,7 @@ Here are the counts added to the variant table:
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="examples.html">Examples</a><ul>
-      <li>Previous: <a href="codonvariant_sim_data.html" title="previous chapter">Analyze simulated library of codon variants</a></li>
+      <li>Previous: <a href="codonvariant_plot_formatting.html" title="previous chapter">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
       <li>Next: <a href="dms_variants.html" title="next chapter">dms_variants package</a></li>
   </ul></li>
   </ul></li>
@@ -1082,7 +1083,7 @@ Here are the counts added to the variant table:
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

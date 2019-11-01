@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants package &#8212; dms_variants 0.2.0 documentation</title>
+    <title>dms_variants package &#8212; dms_variants 0.3.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -17,7 +17,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="barcodes" href="dms_variants.barcodes.html" />
-    <link rel="prev" title="Parse simulated barcodes" href="parsebarcodes_sim_data.html" />
+    <link rel="prev" title="Parse barcodes" href="parsebarcodes_sim_data.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -46,10 +46,29 @@ variants of genes.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.barcodes.html">barcodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.binarymap.html">binarymap</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.codonvarianttable.html">codonvarianttable</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html">constants</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.fastq.html">fastq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html">globalepistasis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#definition-of-models">Definition of models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#non-epistatic-model">Non-epistatic model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#monotonic-spline-epistasis-model">Monotonic spline epistasis model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#fitting-of-models">Fitting of models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#details-of-fitting">Details of fitting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#fitting-workflow">Fitting workflow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#vector-representation-of-beta-rm-wt">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#optimization">Optimization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#gradients">Gradients</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#api-implementing-models">API implementing models</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html">illuminabarcodeparser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.ispline.html">ispline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.plotnine_themes.html">plotnine_themes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html">simulate</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html">utils</a></li>
@@ -122,7 +141,7 @@ variants of genes.</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="parsebarcodes_sim_data.html" title="previous chapter">Parse simulated barcodes</a></li>
+      <li>Previous: <a href="parsebarcodes_sim_data.html" title="previous chapter">Parse barcodes</a></li>
       <li>Next: <a href="dms_variants.barcodes.html" title="next chapter">barcodes</a></li>
   </ul></li>
 </ul>
@@ -153,7 +172,7 @@ variants of genes.</p>
       &copy;2019--2019.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
