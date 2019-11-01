@@ -6,12 +6,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-0.3.dev0
+0.3.0
 -----
 
 Added
 -----
-- Added `utils.tidy_to_corr`. 
+- Added `utils.tidy_to_corr`.
+
+- Added `binarymap` module.
+
+- Added `globalepistasis` module.
+
+- Added `ispline` module.
+
+Changed
+-------
+- Order of rows in data frames from `CodonVariantTable.func_scores`.
+
+- Updated `codonvariant_sim_data.ipynb` to be smaller and fit global epistasis models, and move plot formatting examples to a new dedicated notebook.
+
+- Changed `SigmoidPhenotypeSimulator` so that the **enrichment** is a sigmoidal function of the latent phenotype, and the observed phenotype is the log (base 2) of the latent phenotype. 
+  This change harmonizes the simulator with the definitions in the new `globalepistasis` module.
+  Also changed the input to the `latentPhenotype` and `observedPhenotype` methods.
+  Note that these are backwards-compatibility breaking changes.
 
 Fixed
 -----

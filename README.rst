@@ -11,7 +11,7 @@ dms_variants
 .. image:: https://mybinder.org/badge_logo.svg
         :target: https://mybinder.org/v2/gh/jbloomlab/dms_variants/master?filepath=notebooks
 
-Analyze deep mutational scanning of barcoded variants.
+Analyze deep mutational scanning of barcoded variants and fit global epistasis models.
 
 ``dms_variants`` is a Python package written by `the Bloom lab <https://research.fhcrc.org/bloom/en.html>`_.
 
