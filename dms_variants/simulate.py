@@ -163,7 +163,7 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
     genelength = len(geneseq) // 3
 
     barcode_variant_dict = collections.defaultdict(list)
-    for lib, specs_dict in library_specs.items():
+    for lib, specs_dict in sorted(library_specs.items()):
 
         nvariants = specs_dict['nvariants']
         avgmuts = specs_dict['avgmuts']
@@ -278,9 +278,9 @@ def simulateSampleCounts(*,
     # internal function
     def _add_variant_errors(codon_substitutions):
         """Add errors to variant according to `variant_error_rate`."""
-        if scipy.random.random() < variant_error_rate:
+        if random.random() < variant_error_rate:
             muts = codon_substitutions.split()
-            if len(muts) == 0 or scipy.random.random() < 0.5:
+            if len(muts) == 0 or random.random() < 0.5:
                 # add mutation
                 mutatedsites = set(map(int,
                                        [re.match(f"^({'|'.join(CODONS)})"
@@ -292,15 +292,14 @@ def simulateSampleCounts(*,
                                   if r not in mutatedsites]
                 if not unmutatedsites:
                     raise RuntimeError("variant already has all mutations")
-                errorsite = scipy.random.choice(unmutatedsites)
+                errorsite = random.choice(unmutatedsites)
                 wtcodon = variants.codons[errorsite]
-                mutcodon = scipy.random.choice([c for c in CODONS
-                                                if c != wtcodon])
+                mutcodon = random.choice([c for c in CODONS if c != wtcodon])
                 muts.append(f'{wtcodon}{errorsite}{mutcodon}')
                 return ' '.join(muts)
             else:
                 # remove mutation
-                _ = muts.pop(scipy.random.randint(0, len(muts)))
+                _ = muts.pop(random.randint(0, len(muts) - 1))
                 return ' '.join(muts)
         else:
             return codon_substitutions
