@@ -755,7 +755,7 @@ class AbstractEpistasis(abc.ABC):
 
         Note
         ----
-        Calling this method alters the interal model parameters, so only
+        Calling this method alters the internal model parameters, so only
         use if you understand what you are doing.
 
         Parameters
@@ -842,36 +842,6 @@ class AbstractEpistasis(abc.ABC):
             return -val
         else:
             return val
-
-    def _dloglik_by_epistasis_func_params(self, epistasis_func_params,
-                                          negative=True):
-        """(Negative) derivative of log likelihood by epistasis func params.
-
-        Note
-        ----
-        Calling this method alters the interal model parameters, so only
-        use if you understand what you are doing.
-
-        Parameters
-        ----------
-        epistasis_func_params : numpy.ndarray
-            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.
-        negative : bool
-            Return negative log likelihood. Useful if using a minimizer to
-            optimize.
-
-        Returns
-        --------
-        numpy.ndarray
-            (Negative) derivative of log likelihood with respect to
-            :meth:`AbstractEpistasis._epistasis_func_params`.
-
-        """
-        self._epistasis_func_params = epistasis_func_params
-        if negative:
-            return -self._dloglik_depistasis_func_params
-        else:
-            return self._dloglik_depistasis_func_params
 
     @property
     def _allparams(self):
