@@ -140,7 +140,7 @@ capture in the variance estimates). So the overall log likelihood of
 the model is
 
 .. math::
-   :label: loglik
+   :label: loglik_gaussian
 
    \mathcal{L} = \sum_{v=1}^V \ln\left[N\left(y_v \mid p\left(v\right),
                  \sigma^2_{y_v} + \sigma^2_{\rm{HOC}}\right)\right]
@@ -153,12 +153,6 @@ distribution defined by
 
    N\left(y \mid \mu, \sigma^2\right) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp
                     \left(-\frac{\left(y - \mu\right)^2}{2 \sigma^2}\right).
-
-To fit the model, we maximize the log likelihood in Eq. :eq:`loglik` with
-respect to all model parameters: the latent effects :math:`\beta_m` of all
-mutations, the latent phenotype :math:`\beta_{\rm{wt}}` of the wildtype
-sequence, the house-of-cards epistasis :math:`\sigma^2_{\rm{HOC}}`,
-and any parameters that define the global epistasis function :math:`g`.
 
 Details of fitting
 -------------------------
@@ -206,16 +200,20 @@ There are several options to that method about how to do the optimization;
 by default it uses a L-BFGS-B algorithm with exact gradients
 calculated as below.
 
-Gradients
-+++++++++++
+Gradients used in optimization
++++++++++++++++++++++++++++++++
 
 For the optimization, we use the following gradients:
+
+Gradient of latent phenotype with respect to latent effects:
 
 .. math::
    :label: dlatent_phenotype_dlatent_effect
 
    \frac{\partial \phi\left(v\right)}{\partial \beta_m} =
    b\left(v_m\right)
+
+Gradient of observed phenotype with respect to latent phenotypes:
 
 .. math::
    :label: dobserved_phenotype_dlatent_effect
@@ -227,15 +225,11 @@ For the optimization, we use the following gradients:
    &=& \left.\frac{\partial g\left(x\right)}{\partial x}
        \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
 
-.. math::
-   :label: dnormaldist_dmu
-
-   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
-        {\partial \mu} =
-   \frac{y - \mu}{\sigma^2}
+Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
+respect latent effects:
 
 .. math::
-   :label: dloglik_dlatent_effect
+   :label: dloglik_gaussian_dlatent_effect
 
    \frac{\partial \mathcal{L}}{\partial \beta_m}
    &=& \sum_{v=1}^V \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
@@ -246,24 +240,19 @@ For the optimization, we use the following gradients:
                          {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
                     \frac{\partial p\left(v\right)}{\partial \beta_m}
 
-.. math::
-   :label: dnormaldist_dsigma2
-
-   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
-        {\partial \sigma^2} = \frac{1}{2}\left[\left(\frac{y - \mu}{\sigma^2}
-                                                     \right)^2 -
-                                              \frac{1}{\sigma^2}\right]
+Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
+respect to house-of-cards epistasis:
 
 .. math::
-   :label: dloglik_depistasis_HOC
+   :label: dloglik_gaussian_depistasis_HOC
 
    \frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V
    \frac{1}{2} \left[\left(\frac{y_v - p\left(v\right)}
                                 {\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2}\right)^2
                      - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]
 
-For derivatives of log likelihood with respect to the parameters of
-:math:`g` as defined in Eq. :eq:`monotonicspline`:
+Derivative of `Monotonic spline epistasis model`_ with respect to its
+parameters:
 
 .. math::
 
@@ -272,6 +261,8 @@ For derivatives of log likelihood with respect to the parameters of
 .. math::
 
    \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
+
+**Here**
 
 .. math::
    :label: dloglik_dcalpha
@@ -737,7 +728,7 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def loglik(self):
-        """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
+        """float: Current log likelihood from Eq. :eq:`loglik_gaussian`."""
         key = 'loglik'
         if key not in self._cache:
             standard_devs = numpy.sqrt(self._variances)
@@ -911,7 +902,8 @@ class AbstractEpistasis(abc.ABC):
     def _variances(self):
         r"""numpy.ndarray: Functional score variance plus HOC epistasis.
 
-        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in Eq. :eq:`loglik`.
+        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in
+        Eq. :eq:`loglik_gaussian`.
 
         """
         key = '_variances'
@@ -951,7 +943,8 @@ class AbstractEpistasis(abc.ABC):
 
         The quantity :math:`\frac{y_v - p\left(v\right)}
         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}`, which appears in Eq.
-        :eq:`dloglik_dlatent_effect` and :eq:`dloglik_depistasis_HOC`.
+        :eq:`dloglik_gaussian_dlatent_effect` and
+        :eq:`dloglik_gaussian_depistasis_HOC`.
 
         """
         key = '_func_score_minus_observed_pheno_over_variance'
@@ -964,7 +957,7 @@ class AbstractEpistasis(abc.ABC):
     def _dloglik_dlatent(self):
         """numpy.ndarray: Derivative log likelihood by latent effects.
 
-        See Eq. :eq:`dloglik_dlatent_effect`.
+        See Eq. :eq:`dloglik_gaussian_dlatent_effect`.
 
         """
         key = '_dloglik_dlatent'
@@ -978,7 +971,7 @@ class AbstractEpistasis(abc.ABC):
     def _dloglik_depistasis_HOC(self):
         """float: Derivative of log likelihood by HOC epistasis.
 
-        See Eq. :eq:`dloglik_depistasis_HOC`.
+        See Eq. :eq:`dloglik_gaussian_depistasis_HOC`.
 
         """
         key = '_dloglik_depistasis_HOC'
