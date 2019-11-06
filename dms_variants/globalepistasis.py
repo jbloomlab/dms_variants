@@ -11,10 +11,11 @@ See also `Sailer and Harms (2017)`_ and `Otwinoski (2018)`_.
    :local:
    :depth: 2
 
-Global epistasis models
-------------------------
+Global epistasis functions
+---------------------------
 
-The models are defined as follows. Let :math:`v` be a variant. We convert
+The global epistasis functions are defined as follows.
+Let :math:`v` be a variant. We convert
 :math:`v` into a binary representation with respect to some wildtype
 sequence. This representation is a vector :math:`\mathbf{b}\left(v\right)`
 with element :math:`b\left(v\right)_m` equal to 1 if the variant has mutation
@@ -44,12 +45,11 @@ latent phenotype:
 
 where :math:`g` is the *global epistasis function*.
 
-We define epistasis models with the following global epistasis functions:
+We define the following global epistasis functions:
 
-Non-epistatic model
-+++++++++++++++++++++
-This model has no epistasis, so the observed phenotype is just the latent
-phenotype. In other words:
+Non-epistatic function
++++++++++++++++++++++++
+No epistasis, so the observed phenotype is just the latent phenotype:
 
 .. math::
    :label: noepistasis
@@ -58,9 +58,9 @@ phenotype. In other words:
 
 This model is implemented as :class:`NoEpistasis`.
 
-Monotonic spline epistasis model
-+++++++++++++++++++++++++++++++++
-This is the model used in `Otwinoski et al (2018)`_. It transforms
+Monotonic spline epistasis function
+++++++++++++++++++++++++++++++++++++
+This is the function used in `Otwinoski et al (2018)`_. It transforms
 the latent phenotype to the observed phenotype using monotonic I-splines with
 linear extrapolation outside the spline boundaries:
 
@@ -107,14 +107,14 @@ Likelihood calculations
 ---------------------------------------
 We defined a *likelihood* capturing how well the model describes the
 actual data, and then fit the models by finding the parameters that
-maximize this likelihood. This means that different models
-(as described in `Global epistasis models`_) can be compared via
+maximize this likelihood. This means that different epistasis functions
+(as described in `Global epistasis functions`_) can be compared via
 their likelihoods after correcting for the number of parameters
 (e.g. by `AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_).
 
 We consider several different forms for calculating the likelihood.
-Note that models can only be compared within the same form of likelihood
-calculations--you cannot compare likelihoods calculated using different
+Note that epistasis functions can only be compared within the same form of
+the likelihood--you cannot compare likelihoods calculated using different
 functional forms.
 
 Gaussian likelihood
@@ -225,20 +225,25 @@ Gradient of observed phenotype with respect to latent phenotypes:
    &=& \left.\frac{\partial g\left(x\right)}{\partial x}
        \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
 
-Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
-respect latent effects:
+Derivative of the likelihood with respect to latent effects:
 
 .. math::
-   :label: dloglik_gaussian_dlatent_effect
+   :label: dloglik_dlatent_effect
 
    \frac{\partial \mathcal{L}}{\partial \beta_m}
-   &=& \sum_{v=1}^V \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
-                          \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}
-                         {\partial p\left(v\right)} \times
-                    \frac{\partial p\left(v\right)}{\partial \beta_m} \\
-   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
-                    \frac{\partial p\left(v\right)}{\partial \beta_m}
+   = \sum_{v=1}^V \frac{\mathcal{L}}
+                       {\partial p\left(v\right)} \times
+                  \frac{\partial p\left(v\right)}{\partial \beta_m}.
+
+Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
+respect observed phenotype:
+
+.. math::
+   :label: dloglik_gaussian_dobserved_phenotype
+
+   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+   = \frac{y_v - p\left(v\right)}
+          {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}.
 
 Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
 respect to house-of-cards epistasis:
@@ -247,43 +252,22 @@ respect to house-of-cards epistasis:
    :label: dloglik_gaussian_depistasis_HOC
 
    \frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V
-   \frac{1}{2} \left[\left(\frac{y_v - p\left(v\right)}
-                                {\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2}\right)^2
+   \frac{1}{2} \left[\left(\frac{\partial \mathcal{L}}
+                                {\partial p\left(v\right)}\right)^2
                      - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]
 
-Derivative of `Monotonic spline epistasis model`_ with respect to its
+Derivative of `Monotonic spline epistasis function`_ with respect to its
 parameters:
 
 .. math::
+   :label: dspline_epistasis_dcalpha
 
    \frac{g\left(x\right)}{\partial c_{\alpha}} = 1
 
 .. math::
+   :label: dspline_epistasis_dalpham
 
    \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
-
-**Here**
-
-.. math::
-   :label: dloglik_dcalpha
-
-   \frac{\mathcal{L}}{\partial c_{\alpha}}
-   &=&
-   \frac{\mathcal{L}}{\partial p\left(v\right)}
-   \frac{\partial p\left(v\right)}{\partial c_{\alpha}} \\
-   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
-
-.. math::
-   :label: dloglik_dalpham
-
-   \frac{\mathcal{L}}{\partial \alpha_m}
-   &=&
-   \frac{\mathcal{L}}{\partial p\left(v\right)}
-   \frac{\partial p\left(v\right)}{\partial \alpha_m} \\
-   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
-       I_m\left(\phi\left(v\right)\right)
 
 
 API implementing models
@@ -938,16 +922,13 @@ class AbstractEpistasis(abc.ABC):
         return self._cache[key]
 
     @property
-    def _func_score_minus_observed_pheno_over_variance(self):
-        r"""numpy.ndarray: Scores minus observed phenotypes over variance.
+    def _dloglik_dobserved_phenotype(self):
+        r"""numpy.ndarray: Derivative of log likelihood by observed phenotype.
 
-        The quantity :math:`\frac{y_v - p\left(v\right)}
-        {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}`, which appears in Eq.
-        :eq:`dloglik_gaussian_dlatent_effect` and
-        :eq:`dloglik_gaussian_depistasis_HOC`.
+        Calculated using Eq. :eq:`dloglik_gaussian_dobserved_phenotype`.
 
         """
-        key = '_func_score_minus_observed_pheno_over_variance'
+        key = '_dloglik_dobserved_phenotype'
         if key not in self._cache:
             self._cache[key] = (self.binarymap.func_scores -
                                 self._observed_phenotypes) / self._variances
@@ -957,13 +938,13 @@ class AbstractEpistasis(abc.ABC):
     def _dloglik_dlatent(self):
         """numpy.ndarray: Derivative log likelihood by latent effects.
 
-        See Eq. :eq:`dloglik_gaussian_dlatent_effect`.
+        See Eq. :eq:`dloglik_dlatent_effect`.
 
         """
         key = '_dloglik_dlatent'
         if key not in self._cache:
             self._cache[key] = self._dobserved_phenotypes_dlatent.dot(
-                    self._func_score_minus_observed_pheno_over_variance)
+                    self._dloglik_dobserved_phenotype)
             assert self._cache[key].shape == (self._nlatent + 1,)
         return self._cache[key]
 
@@ -978,7 +959,7 @@ class AbstractEpistasis(abc.ABC):
         if key not in self._cache:
             self._cache[key] = (
                 0.5 *
-                (self._func_score_minus_observed_pheno_over_variance**2 -
+                (self._dloglik_dobserved_phenotype**2 -
                  1 / self._variances).sum()
                 )
         return self._cache[key]
@@ -1344,15 +1325,15 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         Note
         ----
-        See Eqs. and :eq:`dloglik_dcalpha` and :eq:`dloglik_dalpham`.
+        See Eqs. :eq:`dspline_epistasis_dcalpha` and
+        :eq:`dspline_epistasis_dalpham`.
 
         """
         assert self._epistasis_func_params[0] == self.c_alpha
         assert (self._epistasis_func_params[1:] == self.alpha_ms).all()
-        dlog_dobs = self._func_score_minus_observed_pheno_over_variance
-        dcalpha = dlog_dobs.dot(
+        dcalpha = self._dloglik_dobserved_phenotype.dot(
                 self._isplines_total.dItotal_dw_lower())
-        dalpham = dlog_dobs.dot(
+        dalpham = self._dloglik_dobserved_phenotype.dot(
                 self._isplines_total.dItotal_dweights(self.alpha_ms,
                                                       self.c_alpha))
         deriv = numpy.append(dcalpha, dalpham)
