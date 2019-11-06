@@ -3,14 +3,16 @@ r"""
 globalepistasis
 =================
 
-Implements global epistasis models based on `Otwinoski et al (2018)`_.
+Implements global epistasis models that are based on (but extend in some
+ways) those described in `Otwinoski et al (2018)`_.
+See also `Sailer and Harms (2017)`_ and `Otwinoski (2018)`_.
 
 .. contents:: Contents
    :local:
    :depth: 2
 
-Definition of models
----------------------
+Global epistasis models
+------------------------
 
 The models are defined as follows. Let :math:`v` be a variant. We convert
 :math:`v` into a binary representation with respect to some wildtype
@@ -101,8 +103,26 @@ model).
 The latent effects are scaled so that their mean absolute value is one,
 and the latent phenotype of the wildtype is set to zero.
 
-Fitting of models
--------------------
+Likelihood calculations
+---------------------------------------
+We defined a *likelihood* capturing how well the model describes the
+actual data, and then fit the models by finding the parameters that
+maximize this likelihood. This means that different models
+(as described in `Global epistasis models`_) can be compared via
+their likelihoods after correcting for the number of parameters
+(e.g. by `AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_).
+
+We consider several different forms for calculating the likelihood.
+Note that models can only be compared within the same form of likelihood
+calculations--you cannot compare likelihoods calculated using different
+functional forms.
+
+Gaussian likelihood
+++++++++++++++++++++
+This is the form of the likelihood used in `Otwinoski et al (2018)`_. It is
+most appropriate when we have functional scores for variants along with
+good estimates of normally distributed errors on these functional scores.
+
 For each variant :math:`v`, we have an experimentally measured functional
 score :math:`y_v` and optionally an estimate of the error (variance)
 :math:`\sigma^2_{y_v}` in this functional score measurement. If no error
@@ -279,6 +299,8 @@ API implementing models
 --------------------------
 
 .. _`Otwinoski et al (2018)`: https://www.pnas.org/content/115/32/E7550
+.. _`Sailer and Harms (2017)`: https://www.genetics.org/content/205/3/1079
+.. _`Otwinoski (2018)`: https://doi.org/10.1093/molbev/msy141
 
 """
 
@@ -718,7 +740,14 @@ class AbstractEpistasis(abc.ABC):
         """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
         key = 'loglik'
         if key not in self._cache:
-            self._cache[key] = self._loglik_by_variant.sum()
+            standard_devs = numpy.sqrt(self._variances)
+            if not (standard_devs > 0).all():
+                raise ValueError('standard deviations not all > 0')
+            self._cache[key] = (scipy.stats.norm.logpdf(
+                                    self.binarymap.func_scores,
+                                    loc=self._observed_phenotypes,
+                                    scale=standard_devs)
+                                ).sum()
         return self._cache[key]
 
     def _loglik_by_allparams(self, allparams, negative=True):
@@ -889,20 +918,6 @@ class AbstractEpistasis(abc.ABC):
         return bounds
 
     @property
-    def _loglik_by_variant(self):
-        """numpy.ndarray: Log likelihoods per variant (Eq. :eq:`loglik`)."""
-        key = '_loglik_by_variant'
-        if key not in self._cache:
-            standard_devs = numpy.sqrt(self._variances)
-            if not (standard_devs > 0).all():
-                raise ValueError('standard deviations not all > 0')
-            self._cache[key] = scipy.stats.norm.logpdf(
-                                    self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
-                                    scale=standard_devs)
-        return self._cache[key]
-
-    @property
     def _latent_phenotypes(self):
         """numpy.ndarray: Latent phenotypes, Eq. :eq:`latent_phenotype`."""
         key = '_latent_phenotypes'
@@ -1037,6 +1052,7 @@ class AbstractEpistasis(abc.ABC):
 
     # ------------------------------------------------------------------------
     # Abstract methods for global epistasis func, must implement in subclasses
+    # specific for that epistasis model.
     # ------------------------------------------------------------------------
     @abc.abstractmethod
     def epistasis_func(self, latent_phenotype):
@@ -1147,6 +1163,10 @@ class AbstractEpistasis(abc.ABC):
 
         """
         return NotImplementedError
+
+    # ------------------------------------------------------------------------
+    # Abstract methods for likelihood calculations, implement in subclasses
+    # ------------------------------------------------------------------------
 
 
 class NoEpistasis(AbstractEpistasis):
