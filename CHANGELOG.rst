@@ -6,8 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-0.3.dev1
+0.4.dev0
 --------
+
+Added
+++++++
+- Added forms of likelihood function beyond the normal distribution one to the global epistasis models. This involves substantial re-factoring the epistasis models in `globalepistasis`.
+
+- Added the `narrow_bottleneck.ipynb` notebook.
 
 Fixed
 ++++++++
