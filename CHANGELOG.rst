@@ -6,11 +6,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.3.dev1
+--------
+
+Fixed
+++++++++
+- Some minor fixes to `codonvariat_sim_data.ipynb`.
+
 0.3.0
 -----
 
 Added
------
+++++++++
 - Added `utils.tidy_to_corr`.
 
 - Added `binarymap` module.
@@ -20,7 +27,7 @@ Added
 - Added `ispline` module.
 
 Changed
--------
+++++++++
 - Order of rows in data frames from `CodonVariantTable.func_scores`.
 
 - Updated `codonvariant_sim_data.ipynb` to be smaller and fit global epistasis models, and move plot formatting examples to a new dedicated notebook.
@@ -31,14 +38,14 @@ Changed
   Note that these are backwards-compatibility breaking changes.
 
 Fixed
------
+++++++
 - Removed use of deprecated `Bio.Alphabet`
 
 0.2.0
 --------
 
 Added
------
+++++++
 - Capabilities to parse barcodes from Illumina data: FASTQ readers and `IlluminaBarcodeParser`.
 
 - `CodonVariantTable.numCodonMutsByType` method to get numerical values for codon mutations per variant.
