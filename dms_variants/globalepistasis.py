@@ -1111,9 +1111,19 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     # Abstract methods for likelihood calculations, implement in subclasses
     # ------------------------------------------------------------------------
+    @abc.abstractmethod
+    def dummy_loglik(self):
+        """Dummy method for testing."""
+        return NotImplementedError
 
 
-class NoEpistasis(AbstractEpistasis):
+class GaussianLikelihood(AbstractEpistasis):
+
+    def dummy_loglik(self):
+        pass
+
+
+class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
     """Non-epistatic model.
 
     Note
@@ -1219,7 +1229,7 @@ class NoEpistasis(AbstractEpistasis):
         pass
 
 
-class MonotonicSplineEpistasis(AbstractEpistasis):
+class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
     """Monotonic spline global epistasis model.
 
     Note
