@@ -11,10 +11,12 @@ See also `Sailer and Harms (2017)`_ and `Otwinoski (2018)`_.
    :local:
    :depth: 2
 
-Global epistasis functions
+.. _global_epistasis_function:
+
+Global epistasis function
 ---------------------------
 
-The global epistasis functions are defined as follows.
+The global epistasis function is defined as follows.
 Let :math:`v` be a variant. We convert
 :math:`v` into a binary representation with respect to some wildtype
 sequence. This representation is a vector :math:`\mathbf{b}\left(v\right)`
@@ -47,7 +49,9 @@ where :math:`g` is the *global epistasis function*.
 
 We define the following global epistasis functions:
 
-Non-epistatic function
+.. _no_epistasis_function:
+
+No epistasis function
 +++++++++++++++++++++++
 No epistasis, so the observed phenotype is just the latent phenotype:
 
@@ -56,7 +60,9 @@ No epistasis, so the observed phenotype is just the latent phenotype:
 
    g\left(x\right) = x.
 
-This model is implemented as :class:`NoEpistasis`.
+This function is implemented as :class:`NoEpistasis`.
+
+.. _monotonic_spline_epistasis_function:
 
 Monotonic spline epistasis function
 ++++++++++++++++++++++++++++++++++++
@@ -94,7 +100,7 @@ the lower and upper bounds on the regions over which the I-splines are defined.
 Note how when :math:`x` is outside the range of the I-splines, we linearly
 extrapolate :math:`g` from its range boundaries to calculate.
 
-This model is implemented as :class:`MonotonicSplineEpistasis`. By default,
+This function is implemented as :class:`MonotonicSplineEpistasis`. By default,
 the I-splines are of order 3 and are defined on a mesh of four evenly spaced
 points such that the total number of I-splines is :math:`M=5` (although these
 options can be adjusted when initializing a :class:`MonotonicSplineEpistasis`
@@ -103,19 +109,23 @@ model).
 The latent effects are scaled so that their mean absolute value is one,
 and the latent phenotype of the wildtype is set to zero.
 
-Likelihood calculations
+.. _likelihood_calculation:
+
+Likelihood calculation
 ---------------------------------------
 We defined a *likelihood* capturing how well the model describes the
 actual data, and then fit the models by finding the parameters that
 maximize this likelihood. This means that different epistasis functions
-(as described in `Global epistasis functions`_) can be compared via
+(as described in `Global epistasis function`_) can be compared via
 their likelihoods after correcting for the number of parameters
 (e.g. by `AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_).
 
 We consider several different forms for calculating the likelihood.
 Note that epistasis functions can only be compared within the same form of
-the likelihood--you cannot compare likelihoods calculated using different
-functional forms.
+the likelihood on the same dataset--you **cannot** compare likelihoods
+calculated using different methods, or on different datasets.
+
+.. _gaussian_likelihood:
 
 Gaussian likelihood
 ++++++++++++++++++++
@@ -153,6 +163,8 @@ distribution defined by
 
    N\left(y \mid \mu, \sigma^2\right) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp
                     \left(-\frac{\left(y - \mu\right)^2}{2 \sigma^2}\right).
+
+This likelihood calculation is implemented as :class:`GaussianLikelihood`.
 
 Details of fitting
 -------------------------
@@ -235,7 +247,7 @@ Derivative of the likelihood with respect to latent effects:
                        {\partial p\left(v\right)} \times
                   \frac{\partial p\left(v\right)}{\partial \beta_m}.
 
-Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
+Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
 respect observed phenotype:
 
 .. math::
@@ -245,7 +257,7 @@ respect observed phenotype:
    = \frac{y_v - p\left(v\right)}
           {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}.
 
-Derivative of `Gaussian likelihood`_ (Eq. :eq:`loglik_gaussian`) with
+Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
 respect to house-of-cards epistasis:
 
 .. math::
@@ -256,7 +268,7 @@ respect to house-of-cards epistasis:
                                 {\partial p\left(v\right)}\right)^2
                      - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]
 
-Derivative of `Monotonic spline epistasis function`_ with respect to its
+Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its
 parameters:
 
 .. math::
@@ -311,8 +323,8 @@ class AbstractEpistasis(abc.ABC):
     Note
     ----
     This is an abstract base class. It implements most of the epistasis model
-    functionality, but does not define the actual functional form of
-    the global epistasis function :meth:`AbstractEpistasis.epistasis_func`.
+    functionality, but requires subclasses to define the actual
+    :ref:`global_epistasis_function` and :ref:`likelihood_calculation`.
 
     """
 
@@ -1118,6 +1130,14 @@ class AbstractEpistasis(abc.ABC):
 
 
 class GaussianLikelihood(AbstractEpistasis):
+    """Gaussian likelihood calculation.
+
+    Note
+    ----
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`gaussian_likelihood`.
+
+    """
 
     def dummy_loglik(self):
         pass
@@ -1128,16 +1148,8 @@ class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
 
     Note
     ----
-    Model when there is no epistasis, which is when the global epistasis
-    function :math:`g` is defined by Eq. :eq:`noepistasis`.
-
-    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
-    of that abstract base class for details on most properties and methods.
-
-    Parameters
-    ----------
-    binarymap : :class:`dms_variants.binarymap.BinaryMap`
-        Contains the variants, their functional scores, and score variances.
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`no_epistasis_function`.
 
     """
 
@@ -1234,11 +1246,8 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
 
     Note
     ----
-    Models global epistasis function :math:`g` via monotonic splines as
-    defined in Eq. :eq:`monotonicspline`.
-
-    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
-    of that abstract base class for details on most properties and methods.
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`monotonic_spline_epistasis_function`.
 
     Parameters
     ----------
