@@ -293,7 +293,6 @@ API implementing models
 
 
 import abc
-import collections
 
 import numpy
 
@@ -341,7 +340,7 @@ class AbstractEpistasis(abc.ABC):
 
         # initialize params
         self._latenteffects = numpy.zeros(self._nlatent + 1, dtype='float')
-        self.epistasis_HOC = 1.0
+        self._likelihood_calc_params = self._init_likelihood_calc_params
         self._epistasis_func_params = self._init_epistasis_func_params
 
     # ------------------------------------------------------------------------
@@ -370,18 +369,19 @@ class AbstractEpistasis(abc.ABC):
             self._latenteffects_val.flags.writeable = False
 
     @property
-    def epistasis_HOC(self):
-        r"""float: House of cards epistasis, :math:`\sigma^2_{\rm{HOC}}`."""
-        return self._epistasis_HOC_val
+    def _likelihood_calc_params(self):
+        """numpy.ndarray: Parameters for likelihood calculation."""
+        return self._likelihood_calc_params_val
 
-    @epistasis_HOC.setter
-    def epistasis_HOC(self, val):
-        if val <= 0:
-            raise ValueError(f"`epistasis_HOC` must be > 0: {val}")
-        if (not hasattr(self, '_epistasis_HOC_val')) or (val !=
-                                                         self.epistasis_HOC):
+    @_likelihood_calc_params.setter
+    def _likelihood_calc_params(self, val):
+        if len(val) != len(self._likelihood_calc_param_names):
+            raise ValueError('invalid length for `_likelihood_calc_params`')
+        if ((not hasattr(self, '_likelihood_calc_params_val')) or
+                (val != self._likelihood_calc_params).any()):
             self._cache = {}
-            self._epistasis_HOC_val = val
+            self._likelihood_calc_params_val = val.copy()
+            self._likelihood_calc_params_val.flags.writeable = False
 
     @property
     def _epistasis_func_params(self):
@@ -431,10 +431,7 @@ class AbstractEpistasis(abc.ABC):
     @property
     def nparams(self):
         """int: Total number of parameters in model."""
-        return (len(self._latenteffects) +  # latent effects, wt latent pheno
-                1 +  # HOC epistasis
-                len(self._epistasis_func_params)  # params of epistasic func
-                )
+        return len(self._allparams)
 
     @property
     def latent_phenotype_wt(self):
@@ -447,20 +444,29 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def epistasis_func_params_dict(self):
-        """OrderedDict: :meth:`AbstractEpistasis.epistasis_func` param values.
+        """dict: Parameters for the :ref:`global_epistasis_function`.
 
         Maps names of parameters defining the global epistasis function to
-        current values. These parameters are all arguments to
-        :meth:`AbstractEpistasis.epistasis_func` **except** `latent_phenotype`
-        (which is the function input, not a parameter defining the function).
+        their current values.
 
         """
-        if not self._epistasis_func_param_names:
-            return collections.OrderedDict()
         assert (len(self._epistasis_func_params) ==
                 len(self._epistasis_func_param_names))
-        return collections.OrderedDict(zip(self._epistasis_func_param_names,
-                                           self._epistasis_func_params))
+        return dict(zip(self._epistasis_func_param_names,
+                        self._epistasis_func_params))
+
+    @property
+    def likelihood_calc_params_dict(self):
+        """dict: Parameters for the :ref:`likelihood_calculation`.
+
+        Maps names of parameters defining the likelihood calculation to
+        their current values.
+
+        """
+        assert (len(self._likelihood_calc_params) ==
+                len(self._likelihood_calc_param_names))
+        return dict(zip(self._likelihood_calc_param_names,
+                        self._likelihood_calc_params))
 
     # ------------------------------------------------------------------------
     # Methods to get phenotypes / mutational effects given current model state
@@ -758,42 +764,12 @@ class AbstractEpistasis(abc.ABC):
         else:
             return self.loglik
 
-    def _loglik_by_epistasis_func_params(self, epistasis_func_params,
-                                         negative=True):
-        """(Negative) log likelihood after setting epistasis func params.
-
-        Note
-        ----
-        Calling this method alters the interal model parameters, so only
-        use if you understand what you are doing.
-
-        Parameters
-        ----------
-        epistasis_func_params : numpy.ndarray
-            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.
-        negative : bool
-            Return negative log likelihood. Useful if using a minimizer to
-            optimize.
-
-        Returns
-        -------
-        float
-            (Negative) log likelihood after setting epistasis func params
-            to `epistasis_func_params`.
-
-        """
-        self._epistasis_func_params = epistasis_func_params
-        if negative:
-            return -self.loglik
-        else:
-            return self.loglik
-
     def _dloglik_by_allparams(self, allparams, negative=True):
         """(Negative) derivative of log likelihood with respect to all params.
 
         Note
         ----
-        Calling this method alters the interal model parameters, so only
+        Calling this method alters the internal model parameters, so only
         use if you understand what you are doing.
 
         Parameters
@@ -811,9 +787,10 @@ class AbstractEpistasis(abc.ABC):
             :meth:`AbstractEpistasis._allparams`.
 
         """
+        # INTEGRATE THIS AND _loglik_by_allparams INTO fit
         self._allparams = allparams
         val = numpy.concatenate((self._dloglik_dlatent,
-                                 [self._dloglik_depistasis_HOC],
+                                 self._dloglik_dlikelihood_calc_params,
                                  self._dloglik_depistasis_func_params,
                                  )
                                 )
@@ -837,21 +814,28 @@ class AbstractEpistasis(abc.ABC):
 
         """
         val = numpy.concatenate((self._latenteffects,
-                                 [self.epistasis_HOC],
+                                 self._likelihood_calc_params,
                                  self._epistasis_func_params,
                                  )
                                 )
-        assert val.shape == (self.nparams,)
         return val
 
     @_allparams.setter
     def _allparams(self, val):
         if val.shape != (self.nparams,):
             raise ValueError(f"invalid `_allparams`: {val}")
-        self._latenteffects = val[: len(self._latenteffects)]
-        self.epistasis_HOC = val[len(self._latenteffects)]
-        if len(self._epistasis_func_params):
-            self._epistasis_func_params = val[len(self._latenteffects) + 1:]
+
+        istart = 0
+        iend = len(self._latenteffects)
+        self._latenteffects = val[istart: iend]
+
+        istart = iend
+        iend = iend + len(self._likelihood_calc_params)
+        self._likelihood_calc_params = val[istart: iend]
+
+        istart = iend
+        iend = iend + len(self._epistasis_func_params)
+        self._epistasis_func_params = val[istart: iend]
 
     @property
     def _allparams_bounds(self):
@@ -861,7 +845,7 @@ class AbstractEpistasis(abc.ABC):
 
         """
         bounds = ([(None, None)] * len(self._latenteffects) +
-                  [(self._NEARLY_ZERO, None)] +  # HOC epistasis must be > 0
+                  self._likelihood_calc_param_bounds +
                   self._epistasis_func_param_bounds
                   )
         assert len(bounds) == len(self._allparams)
@@ -897,10 +881,11 @@ class AbstractEpistasis(abc.ABC):
         """
         key = '_variances'
         if key not in self._cache:
+            epistasis_HOC = self.likelihood_calc_params_dict['epistasis_HOC']
             if self.binarymap.func_scores_var is not None:
-                var = self.binarymap.func_scores_var + self.epistasis_HOC
+                var = self.binarymap.func_scores_var + epistasis_HOC
             else:
-                var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
+                var = numpy.full(self.binarymap.nvariants, epistasis_HOC)
             if (var <= 0).any():
                 raise ValueError('variance <= 0')
             self._cache[key] = var
@@ -950,23 +935,24 @@ class AbstractEpistasis(abc.ABC):
         if key not in self._cache:
             self._cache[key] = self._dobserved_phenotypes_dlatent.dot(
                     self._dloglik_dobserved_phenotype)
-            assert self._cache[key].shape == (self._nlatent + 1,)
+        assert self._cache[key].shape == (self._nlatent + 1,)
         return self._cache[key]
 
     @property
-    def _dloglik_depistasis_HOC(self):
-        """float: Derivative of log likelihood by HOC epistasis.
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarra: Derivative log likelihood by `_likelihood_calc_params`.
 
         See Eq. :eq:`dloglik_gaussian_depistasis_HOC`.
 
         """
-        key = '_dloglik_depistasis_HOC'
+        key = '_dloglik_dlikelihood_calc_params'
         if key not in self._cache:
-            self._cache[key] = (
+            self._cache[key] = numpy.array([
                 0.5 *
                 (self._dloglik_dobserved_phenotype**2 -
                  1 / self._variances).sum()
-                )
+                ])
+        assert self._cache[key].shape == self._likelihood_calc_params.shape
         return self._cache[key]
 
     def _fit_latent_leastsquares(self):
@@ -991,13 +977,14 @@ class AbstractEpistasis(abc.ABC):
         # estimate HOC epistasis as residuals not from func_score variance
         residuals2 = fitres[3]**2
         if self.binarymap.func_scores_var is None:
-            self.epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
-                                     self._NEARLY_ZERO)
+            epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
+                                self._NEARLY_ZERO)
         else:
-            self.epistasis_HOC = max((residuals2 -
-                                      self.binarymap.func_scores_var.sum()
-                                      ) / self.binarymap.nvariants,
-                                     self._NEARLY_ZERO)
+            epistasis_HOC = max((residuals2 -
+                                 self.binarymap.func_scores_var.sum()
+                                 ) / self.binarymap.nvariants,
+                                self._NEARLY_ZERO)
+        self._likelihood_calc_params = numpy.array([epistasis_HOC])
 
     # ------------------------------------------------------------------------
     # Abstract methods for global epistasis func, must implement in subclasses
@@ -1005,28 +992,36 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     @abc.abstractmethod
     def epistasis_func(self, latent_phenotype):
-        """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
+        """The :ref:`global_epistasis_function` :math:`g`.
 
-        Note
-        ----
-        This is an abstract method for the :class:`AbstractEpistasis` class.
-        The actual functional forms for specific models are defined in
-        concrete subclasses. Those concrete implementations will also have
-        additional parameters used by the function.
+        Parameters
+        -----------
+        latent_phenotype : numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        numpy.ndarray
+            Observed phenotype(s) after transforming the latent phenotypes
+            using the global epistasis function.
 
         """
         return NotImplementedError
 
     @abc.abstractmethod
     def _depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative of epistasis function by latent phenotype.
+        """Derivative of epistasis function by latent phenotype.
 
-        Note
-        ----
-        This is the derivative of :meth:`AbstractEpistasis.epistasis_func`
-        with respect to the latent phenotype. It is an abstract method;
-        the actual functional forms for specific models are defined in
-        concrete subclasses.
+        Parameters
+        -----------
+        latent_phenotype : numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        numpy.ndarray
+            Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
+            latent phenotype evaluated at `latent_phenotype`.
 
         """
         return NotImplementedError
@@ -1034,29 +1029,13 @@ class AbstractEpistasis(abc.ABC):
     @property
     @abc.abstractmethod
     def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Derivative log likelihood by epistasis func params.
-
-        Note
-        ----
-        Derivative of :meth:`AbstractEpistasis.loglik` with respect to
-        :meth:`AbstractEpistasis._epistasis_func_params`. It is an abstract
-        property, the actual functional forms for specific models are defined
-        in concrete subclasses.
-
-        """
+        """numpy.ndarray: Deriv log likelihood by `_epistasis_func_params`."""
         return NotImplementedError
 
     @property
     @abc.abstractmethod
     def _epistasis_func_param_names(self):
-        """list: Names of :meth:`AbstractEpistasis.epistasis_func_params`.
-
-        Note
-        ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
-
-        """
+        """list: Names of :meth:`AbstractEpistasis._epistasis_func_params`."""
         return NotImplementedError
 
     @property
@@ -1068,37 +1047,18 @@ class AbstractEpistasis(abc.ABC):
         a 2-tuple gives the lower and upper bound for optimization by
         `scipy.optimize.minimize`.
 
-        Note
-        ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
-
         """
         return NotImplementedError
 
     @property
     @abc.abstractmethod
     def _init_epistasis_func_params(self):
-        """numpy.ndarray: Init :meth:`AbstractEpistasis._epistasis_func_params`
-
-        Note
-        ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
-
-        """
+        """numpy.ndarray: Initial `_epistasis_func_params` values."""
         return NotImplementedError
 
     @abc.abstractmethod
     def _prescale_params(self):
-        """Rescale parameters prior to the global fitting.
-
-        Note
-        ----
-        This is an abstract method, the actula pre-scaling is done in concrete
-        subclasses.
-
-        """
+        """Rescale parameters prior to the global fitting."""
         return NotImplementedError
 
     @abc.abstractmethod
@@ -1116,9 +1076,28 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     # Abstract methods for likelihood calculations, implement in subclasses
     # ------------------------------------------------------------------------
+    @property
     @abc.abstractmethod
-    def dummy_loglik(self):
-        """Dummy method for testing."""
+    def _likelihood_calc_param_names(self):
+        """list: Names of :meth:`AbstractEpistasis._likelihood_calc_params`."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _init_likelihood_calc_params(self):
+        """numpy.ndarray: Initial `_likelihood_calc_params` values."""
+        return NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _likelihood_calc_param_bounds(self):
+        """list: Bounds for the likelihood calculation parameters.
+
+        For entries in :meth:`AbstractEpistasis._likelihood_calc_param_names`,
+        a 2-tuple gives the lower and upper bound for optimization by
+        `scipy.optimize.minimize`.
+
+        """
         return NotImplementedError
 
 
@@ -1132,8 +1111,37 @@ class GaussianLikelihood(AbstractEpistasis):
 
     """
 
-    def dummy_loglik(self):
-        pass
+    @property
+    def _likelihood_calc_param_names(self):
+        r"""list: Likelihood calculation parameter names.
+
+        For :class:`GaussianLikelihood`, this :math:`\sigma^2_{\rm{HOC}}`.
+
+        """
+        return ['epistasis_HOC']
+
+    @property
+    def _init_likelihood_calc_params(self):
+        r"""numpy.ndarray: Initial `_likelihood_calc_params`.
+
+        The initial HOC epistasis (:math:`\sigma^2_{\rm{HOC}}` is 1.
+
+        """
+        init_d = {'epistasis_HOC': 1.0}
+        return numpy.array([init_d[name] for name in
+                            self._likelihood_calc_param_names],
+                           dtype='float')
+
+    @property
+    def _likelihood_calc_param_bounds(self):
+        r"""list: Bounds for likelihood calculation parameters.
+
+        For :class:`GaussianLikelihood`, :math:`\sigma^2_{\rm{HOC}}` must
+        be > 0.
+
+        """
+        bounds_d = {'epistasis_HOC': (self._NEARLY_ZERO, None)}
+        return [bounds_d[name] for name in self._likelihood_calc_param_names]
 
 
 class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
@@ -1147,35 +1155,18 @@ class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
     """
 
     def epistasis_func(self, latent_phenotype):
-        """Apply :math:`g` in Eq. :eq:`noepistasis`.
+        """Global epistasis function :math:`g` in Eq. :eq:`noepistasis`.
 
-        Parameters
-        -----------
-        latent_phenotype : numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        numpy.ndarray
-            Observed phenotype(s) after transforming the latent phenotypes
-            using the global epistasis function.
+        Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.
 
         """
         return latent_phenotype
 
     def _depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative of epistasis function by latent phenotype.
+        """Derivative of `epistasis_func` by latent phenotype.
 
-        Parameters
-        -----------
-        latent_phenotype : numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        numpy.ndarray
-            Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
-            latent phenotype evaluated at `latent_phenotype`.
+        Concrete implementation of
+        :meth:`AbstractEpistasis._depistasis_func_dlatent`.
 
         """
         return numpy.ones(latent_phenotype.shape, dtype='float')
@@ -1184,6 +1175,11 @@ class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
     def _dloglik_depistasis_func_params(self):
         """numpy.ndarray: Derivative of log likelihood by epistasis fun params.
 
+        Concrete implementation of
+        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.
+
+        Note
+        ----
         For :class:`NoEpistasis` models, this is just an empty array as there
         are no epistasis function parameters.
 
@@ -1195,7 +1191,7 @@ class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
     def _epistasis_func_param_names(self):
         """list: Epistasis function parameter names.
 
-        For :class:`NoEpistasis`, this is just an emptly list as there are
+        For :class:`NoEpistasis`, this is just an empty list as there are
         no epistasis function parameters.
 
         """
@@ -1284,18 +1280,9 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
         return self._cache[key]
 
     def epistasis_func(self, latent_phenotype):
-        """Apply :math:`g` in Eq. :eq:`monotonicspline`.
+        """Global epistasis function :math:`g` in Eq. :eq:`monotonicspline`.
 
-        Parameters
-        -----------
-        latent_phenotype : numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        numpy.ndarray
-            Observed phenotype(s) after transforming the latent phenotypes
-            using the global epistasis function.
+        Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.
 
         """
         if not isinstance(latent_phenotype, numpy.ndarray):
@@ -1312,18 +1299,10 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
                                                    w_lower=self.c_alpha)
 
     def _depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative of epistasis function by latent phenotype.
+        """Derivative of `epistasis_func` by latent phenotype.
 
-        Parameters
-        -----------
-        latent_phenotype : float or numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Derivative of :meth:`MonotonicSplineEpistasis.epistasis_func` with
-            with respect to latent phenotype evaluated at `latent_phenotype`.
+        Concrete implementation of
+        :meth:`AbstractEpistasis._depistasis_func_dlatent`.
 
         """
         return self._isplines_total.dItotal_dx(weights=self.alpha_ms)
@@ -1332,8 +1311,8 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
     def _dloglik_depistasis_func_params(self):
         r"""numpy.ndarray: Derivative of epistasis function by its params.
 
-        Derivative of :meth:`AbstractEpistasis.loglik` with respect to
-        :meth:`AbstractEpistasis._epistasis_func_params`.
+        Concrete implementation of
+        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.
 
         Note
         ----
@@ -1400,11 +1379,13 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
     @property
     def c_alpha(self):
         r"""float: :math:`c_{\alpha}` in Eq. :eq:`monotonicspline`."""
+        # IS THIS NEEDED, OR CAN WE JUST ACCESS FROM DICT?
         return self.epistasis_func_params_dict['c_alpha']
 
     @property
     def alpha_ms(self):
         r"""numpy.ndarray: :math:`\alpha_m` in Eq. :eq:`monotonicspline`."""
+        # IS THIS NEEDED, OR CAN WE JUST ACCESS FROM DICT?
         return numpy.array([self.epistasis_func_params_dict[f"alpha_{m}"]
                             for m in range(1, self._isplines_total.n + 1)],
                            dtype='float')
