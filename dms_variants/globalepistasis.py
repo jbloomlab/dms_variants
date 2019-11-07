@@ -695,7 +695,7 @@ class AbstractEpistasis(abc.ABC):
 
         """
         # least squares fit of latent effects for reasonable initial values
-        self._fit_latent_leastsquares()
+        _ = self._fit_latent_leastsquares()
 
         # prescale parameters to desired range
         self._prescale_params()
@@ -720,21 +720,6 @@ class AbstractEpistasis(abc.ABC):
         self._postscale_params()
 
         return optres
-
-    @property
-    def loglik(self):
-        """float: Current log likelihood from Eq. :eq:`loglik_gaussian`."""
-        key = 'loglik'
-        if key not in self._cache:
-            standard_devs = numpy.sqrt(self._variances)
-            if not (standard_devs > 0).all():
-                raise ValueError('standard deviations not all > 0')
-            self._cache[key] = (scipy.stats.norm.logpdf(
-                                    self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
-                                    scale=standard_devs)
-                                ).sum()
-        return self._cache[key]
 
     def _loglik_by_allparams(self, allparams, negative=True):
         """(Negative) log likelihood after setting all parameters.
@@ -787,7 +772,6 @@ class AbstractEpistasis(abc.ABC):
             :meth:`AbstractEpistasis._allparams`.
 
         """
-        # INTEGRATE THIS AND _loglik_by_allparams INTO fit
         self._allparams = allparams
         val = numpy.concatenate((self._dloglik_dlatent,
                                  self._dloglik_dlikelihood_calc_params,
@@ -872,26 +856,6 @@ class AbstractEpistasis(abc.ABC):
         return self._cache[key]
 
     @property
-    def _variances(self):
-        r"""numpy.ndarray: Functional score variance plus HOC epistasis.
-
-        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in
-        Eq. :eq:`loglik_gaussian`.
-
-        """
-        key = '_variances'
-        if key not in self._cache:
-            epistasis_HOC = self.likelihood_calc_params_dict['epistasis_HOC']
-            if self.binarymap.func_scores_var is not None:
-                var = self.binarymap.func_scores_var + epistasis_HOC
-            else:
-                var = numpy.full(self.binarymap.nvariants, epistasis_HOC)
-            if (var <= 0).any():
-                raise ValueError('variance <= 0')
-            self._cache[key] = var
-        return self._cache[key]
-
-    @property
     def _dobserved_phenotypes_dlatent(self):
         """scipy.parse.csr_matrix: Derivative observed pheno by latent effects.
 
@@ -912,19 +876,6 @@ class AbstractEpistasis(abc.ABC):
         return self._cache[key]
 
     @property
-    def _dloglik_dobserved_phenotype(self):
-        r"""numpy.ndarray: Derivative of log likelihood by observed phenotype.
-
-        Calculated using Eq. :eq:`dloglik_gaussian_dobserved_phenotype`.
-
-        """
-        key = '_dloglik_dobserved_phenotype'
-        if key not in self._cache:
-            self._cache[key] = (self.binarymap.func_scores -
-                                self._observed_phenotypes) / self._variances
-        return self._cache[key]
-
-    @property
     def _dloglik_dlatent(self):
         """numpy.ndarray: Derivative log likelihood by latent effects.
 
@@ -938,30 +889,14 @@ class AbstractEpistasis(abc.ABC):
         assert self._cache[key].shape == (self._nlatent + 1,)
         return self._cache[key]
 
-    @property
-    def _dloglik_dlikelihood_calc_params(self):
-        """numpy.ndarra: Derivative log likelihood by `_likelihood_calc_params`.
-
-        See Eq. :eq:`dloglik_gaussian_depistasis_HOC`.
-
-        """
-        key = '_dloglik_dlikelihood_calc_params'
-        if key not in self._cache:
-            self._cache[key] = numpy.array([
-                0.5 *
-                (self._dloglik_dobserved_phenotype**2 -
-                 1 / self._variances).sum()
-                ])
-        assert self._cache[key].shape == self._likelihood_calc_params.shape
-        return self._cache[key]
-
     def _fit_latent_leastsquares(self):
-        """Fit latent effects and HOC epistasis by least squares.
+        """Least-squares fit latent effects for quick "reasonable" values.
 
-        Note
-        ----
-        This is a useful way to quickly get "reasonable" initial values for
-        `_latenteffects` and `epistasis_HOC`.
+        Returns
+        -------
+        tuple
+            Results of fitting described here:
+            https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.lsqr.html
 
         """
         # fit by least squares
@@ -974,17 +909,7 @@ class AbstractEpistasis(abc.ABC):
         # use fit result to update latenteffects
         self._latenteffects = fitres[0]
 
-        # estimate HOC epistasis as residuals not from func_score variance
-        residuals2 = fitres[3]**2
-        if self.binarymap.func_scores_var is None:
-            epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
-                                self._NEARLY_ZERO)
-        else:
-            epistasis_HOC = max((residuals2 -
-                                 self.binarymap.func_scores_var.sum()
-                                 ) / self.binarymap.nvariants,
-                                self._NEARLY_ZERO)
-        self._likelihood_calc_params = numpy.array([epistasis_HOC])
+        return fitres
 
     # ------------------------------------------------------------------------
     # Abstract methods for global epistasis func, must implement in subclasses
@@ -1078,6 +1003,12 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     @property
     @abc.abstractmethod
+    def loglik(self):
+        """float: Current log likelihood of model."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
     def _likelihood_calc_param_names(self):
         """list: Names of :meth:`AbstractEpistasis._likelihood_calc_params`."""
         raise NotImplementedError
@@ -1100,6 +1031,18 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def _dloglik_dobserved_phenotype(self):
+        """numpy.ndarray: Derivative log likelihood by observed phenotype."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`."""
+        raise NotImplementedError
+
 
 class GaussianLikelihood(AbstractEpistasis):
     """Gaussian likelihood calculation.
@@ -1110,6 +1053,41 @@ class GaussianLikelihood(AbstractEpistasis):
     :ref:`gaussian_likelihood`.
 
     """
+
+    @property
+    def loglik(self):
+        """float: Current log likelihood from Eq. :eq:`loglik_gaussian`."""
+        key = 'loglik'
+        if key not in self._cache:
+            standard_devs = numpy.sqrt(self._variances)
+            if not (standard_devs > 0).all():
+                raise ValueError('standard deviations not all > 0')
+            self._cache[key] = (scipy.stats.norm.logpdf(
+                                    self.binarymap.func_scores,
+                                    loc=self._observed_phenotypes,
+                                    scale=standard_devs)
+                                ).sum()
+        return self._cache[key]
+
+    def _fit_latent_leastsquares(self):
+        r"""Also get initial value for HOC epistasis.
+
+        Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
+        to make initial estimate of :math:`\sigma^2_{\rm{HOC}}` as
+        residual not from functional score variance.
+
+        """
+        fitres = super()._fit_latent_leastsquares()
+        residuals2 = fitres[3]**2
+        if self.binarymap.func_scores_var is None:
+            epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
+                                self._NEARLY_ZERO)
+        else:
+            epistasis_HOC = max((residuals2 -
+                                 self.binarymap.func_scores_var.sum()
+                                 ) / self.binarymap.nvariants,
+                                self._NEARLY_ZERO)
+        self._likelihood_calc_params = numpy.array([epistasis_HOC])
 
     @property
     def _likelihood_calc_param_names(self):
@@ -1142,6 +1120,56 @@ class GaussianLikelihood(AbstractEpistasis):
         """
         bounds_d = {'epistasis_HOC': (self._NEARLY_ZERO, None)}
         return [bounds_d[name] for name in self._likelihood_calc_param_names]
+
+    @property
+    def _dloglik_dobserved_phenotype(self):
+        r"""numpy.ndarray: Derivative of log likelihood by observed phenotype.
+
+        Calculated using Eq. :eq:`dloglik_gaussian_dobserved_phenotype`.
+
+        """
+        key = '_dloglik_dobserved_phenotype'
+        if key not in self._cache:
+            self._cache[key] = (self.binarymap.func_scores -
+                                self._observed_phenotypes) / self._variances
+        return self._cache[key]
+
+    @property
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.
+
+        See Eq. :eq:`dloglik_gaussian_depistasis_HOC`.
+
+        """
+        key = '_dloglik_dlikelihood_calc_params'
+        if key not in self._cache:
+            self._cache[key] = numpy.array([
+                0.5 *
+                (self._dloglik_dobserved_phenotype**2 -
+                 1 / self._variances).sum()
+                ])
+        assert self._cache[key].shape == self._likelihood_calc_params.shape
+        return self._cache[key]
+
+    @property
+    def _variances(self):
+        r"""numpy.ndarray: Functional score variance plus HOC epistasis.
+
+        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in
+        Eq. :eq:`loglik_gaussian`.
+
+        """
+        key = '_variances'
+        if key not in self._cache:
+            epistasis_HOC = self.likelihood_calc_params_dict['epistasis_HOC']
+            if self.binarymap.func_scores_var is not None:
+                var = self.binarymap.func_scores_var + epistasis_HOC
+            else:
+                var = numpy.full(self.binarymap.nvariants, epistasis_HOC)
+            if (var <= 0).any():
+                raise ValueError('variance <= 0')
+            self._cache[key] = var
+        return self._cache[key]
 
 
 class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
