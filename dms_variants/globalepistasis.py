@@ -380,11 +380,7 @@ class AbstractEpistasis(abc.ABC):
             raise ValueError(f"`epistasis_HOC` must be > 0: {val}")
         if (not hasattr(self, '_epistasis_HOC_val')) or (val !=
                                                          self.epistasis_HOC):
-            for key in list(self._cache.keys()):
-                if key not in {'_latent_phenotypes', '_observed_phenotypes',
-                               '_dobserved_phenotype_dlatent',
-                               '_isplines_total'}:
-                    del self._cache[key]
+            self._cache = {}
             self._epistasis_HOC_val = val
 
     @property
@@ -398,10 +394,7 @@ class AbstractEpistasis(abc.ABC):
             raise ValueError('invalid length for `_epistasis_func_params`')
         if ((not hasattr(self, '_epistasis_func_params_val')) or
                 (val != self._epistasis_func_params).any()):
-            for key in list(self._cache.keys()):
-                if key not in {'_latent_phenotypes', '_variances',
-                               '_isplines_total'}:
-                    del self._cache[key]
+            self._cache = {}
             self._epistasis_func_params_val = val.copy()
             self._epistasis_func_params_val.flags.writeable = False
 
