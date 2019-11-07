@@ -1379,13 +1379,11 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
     @property
     def c_alpha(self):
         r"""float: :math:`c_{\alpha}` in Eq. :eq:`monotonicspline`."""
-        # IS THIS NEEDED, OR CAN WE JUST ACCESS FROM DICT?
         return self.epistasis_func_params_dict['c_alpha']
 
     @property
     def alpha_ms(self):
         r"""numpy.ndarray: :math:`\alpha_m` in Eq. :eq:`monotonicspline`."""
-        # IS THIS NEEDED, OR CAN WE JUST ACCESS FROM DICT?
         return numpy.array([self.epistasis_func_params_dict[f"alpha_{m}"]
                             for m in range(1, self._isplines_total.n + 1)],
                            dtype='float')
