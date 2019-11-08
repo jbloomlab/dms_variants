@@ -166,6 +166,45 @@ distribution defined by
 
 This likelihood calculation is implemented as :class:`GaussianLikelihood`.
 
+.. _cauchy_likelihood:
+
+Cauchy likelihood
++++++++++++++++++++
+This form of the likelihood assumes that the difference between the
+measured functional scores and the model's observed phenotypes follows a
+`Cauchy distribution <https://en.wikipedia.org/wiki/Cauchy_distribution>`_.
+
+A potential advantage over the :ref:`gaussian_likelihood` is the
+`fatter tails <https://en.wikipedia.org/wiki/Fat-tailed_distribution>`_
+of the Cauchy distribution relative to the Gaussian distribution.
+This could be advantageous if some measurements are very large outliers
+(either due to un-modeled epistasis or experimental factors such as
+mis-calling of variant sequences or bottlenecks) in ways that are not
+capture in the functional score variance estimates :math:`\sigma^2_{y_v}`.
+Such outlier measurements will have less influence on the overall model
+fit for the Cauchy likelihood relative to the :ref:`gaussian_likelihood`.
+
+Specifically, we compute the overall log likelihood as
+
+.. math::
+   :label: loglik_cauchy
+
+   \mathcal{L} = -\sum_{v=1}^V
+                 \ln\left[\pi \left(\gamma + \sigma_{y_v}\right)
+                          \left(1 + \frac{\left[y_v - p\left(v\right)\right]^2}
+                                         {\gamma^2 + \sigma^2_{y_v}}
+                          \right)
+                     \right]
+
+where :math:`\gamma` is the scale parameters, and the functional score
+variance estimates :math:`\sigma^2_{y_v}` are incorporated in heuristic way
+(with no real theoretical basis)
+that qualitatively captures the fact that larger variance estimates give a
+broader distribution. If variance estimates are not available then
+:math:`\sigma^2_{y_v}` is set to zero.
+
+This likelihood calculation is implemented as :class:`CauchyLikelihood`.
+
 Details of fitting
 -------------------------
 
@@ -248,7 +287,7 @@ Derivative of the likelihood with respect to latent effects:
                   \frac{\partial p\left(v\right)}{\partial \beta_m}.
 
 Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
-respect observed phenotype:
+respect to observed phenotype:
 
 .. math::
    :label: dloglik_gaussian_dobserved_phenotype
@@ -266,7 +305,33 @@ respect to house-of-cards epistasis:
    \frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V
    \frac{1}{2} \left[\left(\frac{\partial \mathcal{L}}
                                 {\partial p\left(v\right)}\right)^2
-                     - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]
+                     - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right].
+
+Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with
+respect to observed phenotype:
+
+.. math::
+   :label: dloglik_cauchy_dobserved_phenotype
+
+   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+   =
+   2 \sum_{v=1}^{V} \frac{y_v - p\left(v\right)}
+                         {\gamma^2 + \sigma^2_{y_v} +
+                          \left[y_v - p\left(v\right)\right]^2}.
+
+Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with
+respect to scale parameter:
+
+.. math::
+   :label: dloglik_cauchy_dscale_parameter
+
+   \frac{\partial \mathcal{L}}{\partial \gamma}
+   =
+   \sum_{v=1}^{V}\left[\frac{1}{\gamma + \sigma_{y_v}} -
+                       \frac{2\gamma}
+                            {\gamma^2 + \sigma^2_{y_v} +
+                             \left[y_v - p\left(v\right)\right]^2}
+                 \right]
 
 Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its
 parameters:
