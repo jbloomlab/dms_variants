@@ -214,7 +214,9 @@ The fitting workflow is essentially the same as that described in
 `Otwinoski et al (2018)`_:
 
  1. The latent effects are fit under an additive (non-epistatic) model
-    using least squares.
+    using least squares. The residuals from this fit are then used to
+    estimate :math:`\sigma^2_{\rm{HOC}}` for :ref:`gaussian_likelihood`,
+    or :math:`\gamma^2` for :ref:`cauchy_likelihood`.
  2. If there are any parameters in the epistasis function, they are set
     to reasonable initial values. For :class:`MonotonicSplineEpistasis`
     this involves setting the mesh to go from 0 to 1,
@@ -315,9 +317,9 @@ respect to observed phenotype:
 
    \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
    =
-   2 \sum_{v=1}^{V} \frac{y_v - p\left(v\right)}
-                         {\gamma^2 + \sigma^2_{y_v} +
-                          \left[y_v - p\left(v\right)\right]^2}.
+   \frac{2\left[y_v - p\left(v\right)\right]}
+        {\gamma^2 + \sigma^2_{y_v} +
+         \left[y_v - p\left(v\right)\right]^2}.
 
 Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with
 respect to scale parameter:
@@ -1109,6 +1111,141 @@ class AbstractEpistasis(abc.ABC):
         raise NotImplementedError
 
 
+class CauchyLikelihood(AbstractEpistasis):
+    """Cauchy likelihood calculation.
+
+    Note
+    ----
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`cauchy_likelihood`.
+
+    """
+
+    @property
+    def loglik(self):
+        """float: Current log likelihood from Eq. :eq:`loglik_cauchy`."""
+        key = 'loglik'
+        if key not in self._cache:
+            scales = numpy.sqrt(self._pseudo_variances)
+            if not (scales > 0).all():
+                raise ValueError('scales not all > 0')
+            self._cache[key] = (scipy.stats.cauchy.logpdf(
+                                    self.binarymap.func_scores,
+                                    loc=self._observed_phenotypes,
+                                    scale=scales)
+                                ).sum()
+        return self._cache[key]
+
+    def _fit_latent_leastsquares(self):
+        r"""Also get initial value for scale parameter.
+
+        Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
+        to make initial estimate of :math:`\gamma^2` as residual not
+        from functional score variance. This is based on the supposition
+        that the scale parameter can be treated like the variance for
+        a Gaussian distribution (not sure how good this supposition is...).
+
+        """
+        fitres = super()._fit_latent_leastsquares()
+        residuals2 = fitres[3]**2
+        if self.binarymap.func_scores_var is None:
+            scale_param2 = max(residuals2 / self.binarymap.nvariants,
+                               self._NEARLY_ZERO)
+        else:
+            scale_param2 = max((residuals2 -
+                                self.binarymap.func_scores_var.sum()
+                                ) / self.binarymap.nvariants,
+                               self._NEARLY_ZERO)
+        self._likelihood_calc_params = numpy.sqrt([scale_param2])
+
+    @property
+    def _likelihood_calc_param_names(self):
+        r"""list: Likelihood calculation parameter names.
+
+        For :class:`CauchyLikelihood`, this is the scale parameter
+        :math:`\gamma`.
+
+        """
+        return ['scale_parameter']
+
+    @property
+    def _init_likelihood_calc_params(self):
+        r"""numpy.ndarray: Initial `_likelihood_calc_params`.
+
+        The initial scale parameter :math:`\gamma` is 1.
+
+        """
+        init_d = {'scale_parameter': 1.0}
+        return numpy.array([init_d[name] for name in
+                            self._likelihood_calc_param_names],
+                           dtype='float')
+
+    @property
+    def _likelihood_calc_param_bounds(self):
+        r"""list: Bounds for likelihood calculation parameters.
+
+        For :class:`CauchyLikelihood`, :math:`\gamma` must be > 0.
+
+        """
+        bounds_d = {'scale_parameter': (self._NEARLY_ZERO, None)}
+        return [bounds_d[name] for name in self._likelihood_calc_param_names]
+
+    @property
+    def _dloglik_dobserved_phenotype(self):
+        r"""numpy.ndarray: Derivative of log likelihood by observed phenotype.
+
+        Calculated using Eq. :eq:`dloglik_cauchy_dobserved_phenotype`.
+
+        """
+        key = '_dloglik_dobserved_phenotype'
+        if key not in self._cache:
+            diff = self.binarymap.func_scores - self._observed_phenotypes
+            self._cache[key] = 2 * diff / (self._pseudo_variances + diff**2)
+        return self._cache[key]
+
+    @property
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.
+
+        See Eq. :eq:`dloglik_cauchy_dscale_parameter`.
+
+        """
+        key = '_dloglik_dlikelihood_calc_params'
+        if key not in self._cache:
+            scales = numpy.sqrt(self._pseudo_variances)
+            scale_param = self.likelihood_calc_params_dict['scale_parameter']
+            diff = self.binarymap.func_scores - self._observed_phenotypes
+            if not (scales > 0).all():
+                raise ValueError('scales not all > 0')
+            self._cache[key] = numpy.array([
+                                (scales -
+                                 2 * scale_param / (self._pseudo_variances +
+                                                    diff**2)
+                                 ).sum()
+                                ])
+        assert self._cache[key].shape == self._likelihood_calc_params.shape
+        return self._cache[key]
+
+    @property
+    def _pseudo_variances(self):
+        r"""numpy.ndarray: Functional score variance plus scale param squared.
+
+        :math:`\sigma_{y_v}^2 + \gamma^2` in Eq. :eq:`loglik_cauchy`.
+
+        """
+        key = '_pseudo_variances'
+        if key not in self._cache:
+            scale_param = self.likelihood_calc_params_dict['scale_parameter']
+            if self.binarymap.func_scores_var is not None:
+                var = self.binarymap.func_scores_var + scale_param**2
+            else:
+                var = numpy.full(self.binarymap.nvariants, scale_param**2)
+            if (var <= 0).any():
+                raise ValueError('variance <= 0')
+            self._cache[key] = var
+        return self._cache[key]
+
+
 class GaussianLikelihood(AbstractEpistasis):
     """Gaussian likelihood calculation.
 
@@ -1167,7 +1304,7 @@ class GaussianLikelihood(AbstractEpistasis):
     def _init_likelihood_calc_params(self):
         r"""numpy.ndarray: Initial `_likelihood_calc_params`.
 
-        The initial HOC epistasis (:math:`\sigma^2_{\rm{HOC}}` is 1.
+        The initial HOC epistasis :math:`\sigma^2_{\rm{HOC}}` is 1.
 
         """
         init_d = {'epistasis_HOC': 1.0}
@@ -1536,13 +1673,29 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
 class MonotonicSplineEpistasisGaussianLikelihood(MonotonicSplineEpistasis,
                                                  GaussianLikelihood):
-    """Monotonic spline global epistasis model with Gaussian likelihoods.
+    """Monotonic spline global epistasis model with Gaussian likelihood.
 
     Note
     ----
     This class implements the :ref:`monotonic_spline_epistasis_function`
-    with a :ref:`gaussian_likelihood. See documentation for the base
+    with a :ref:`gaussian_likelihood`. See documentation for the base
     classes :class:`MonotonicSplineEpistasis`, :class:`GaussianLikelihood`,
+    and :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class MonotonicSplineEpistasisCauchyLikelihood(MonotonicSplineEpistasis,
+                                               CauchyLikelihood):
+    """Monotonic spline global epistasis model with Cauchy likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`monotonic_spline_epistasis_function`
+    with a :ref:`cauchy_likelihood`. See documentation for the base
+    classes :class:`MonotonicSplineEpistasis`, :class:`CauchyLikelihood`,
     and :class:`AbstractEpistasis` for details.
 
     """
@@ -1552,13 +1705,29 @@ class MonotonicSplineEpistasisGaussianLikelihood(MonotonicSplineEpistasis,
 
 class NoEpistasisGaussianLikelihood(NoEpistasis,
                                     GaussianLikelihood):
-    """No-epistasis model with Gaussian likelihoods.
+    """No-epistasis model with Gaussian likelihood.
 
     Note
     ----
     This class implements the :ref:`no_epistasis_function` with a
-    :ref:`gaussian_likelihood. See documentation for the base classes
+    :ref:`gaussian_likelihood`. See documentation for the base classes
     :class:`NoEpistasis`, :class:`GaussianLikelihood`, and
+    :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class NoEpistasisCauchyLikelihood(NoEpistasis,
+                                  CauchyLikelihood):
+    """No-epistasis model with Cauchy likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`no_epistasis_function` with a
+    :ref:`cauchy_likelihood`. See documentation for the base classes
+    :class:`NoEpistasis`, :class:`CauchyLikelihood`, and
     :class:`AbstractEpistasis` for details.
 
     """
