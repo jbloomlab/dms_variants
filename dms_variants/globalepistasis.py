@@ -1237,7 +1237,7 @@ class GaussianLikelihood(AbstractEpistasis):
         return self._cache[key]
 
 
-class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
+class NoEpistasis(AbstractEpistasis):
     """Non-epistatic model.
 
     Note
@@ -1323,7 +1323,7 @@ class NoEpistasis(GaussianLikelihood, AbstractEpistasis):
         pass
 
 
-class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
+class MonotonicSplineEpistasis(AbstractEpistasis):
     """Monotonic spline global epistasis model.
 
     Note
@@ -1532,6 +1532,38 @@ class MonotonicSplineEpistasis(GaussianLikelihood, AbstractEpistasis):
         if not numpy.allclose(self.loglik, oldloglik):
             raise EpistasisFittingError('post-scaling latent effects changed '
                                         f"loglik {oldloglik} to {self.loglik}")
+
+
+class MonotonicSplineEpistasisGaussianLikelihood(MonotonicSplineEpistasis,
+                                                 GaussianLikelihood):
+    """Monotonic spline global epistasis model with Gaussian likelihoods.
+
+    Note
+    ----
+    This class implements the :ref:`monotonic_spline_epistasis_function`
+    with a :ref:`gaussian_likelihood. See documentation for the base
+    classes :class:`MonotonicSplineEpistasis`, :class:`GaussianLikelihood`,
+    and :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class NoEpistasisGaussianLikelihood(NoEpistasis,
+                                    GaussianLikelihood):
+    """No-epistasis model with Gaussian likelihoods.
+
+    Note
+    ----
+    This class implements the :ref:`no_epistasis_function` with a
+    :ref:`gaussian_likelihood. See documentation for the base classes
+    :class:`NoEpistasis`, :class:`GaussianLikelihood`, and
+    :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
 
 
 if __name__ == '__main__':
