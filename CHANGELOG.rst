@@ -11,7 +11,11 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Added
 ++++++
-- Added forms of likelihood function beyond the normal distribution one to the global epistasis models. This involves substantial re-factoring the epistasis models in `globalepistasis`.
+- Added additional forms of likelihood function to the global epistasis models. This involves substantial re-factoring the epistasis models in `globalepistasis`.
+  In particular, the `MonotonicSplineEpistasis` and `NoEpistasis` classes no longer are fully concrete subclasses of `AbstractEpistasis`.
+  Instead, there are also likelihood calculation subclasses (`GaussianLikelihood` and `CauchyLikelihood`), and the concrete subclasses inherit from both an epistasis function and likelihood calculation subclass.
+  So for instance, what was previously `MonotonicSplineEpistasis` (with Gaussian likelihood assumed) is now `MonotonicSplineEpistasisGaussianLikelihood`.
+  **Note that this an API-breaking change.**
 
 - Added the `narrow_bottleneck.ipynb` notebook.
 
