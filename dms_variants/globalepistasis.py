@@ -190,7 +190,7 @@ Specifically, we compute the overall log likelihood as
    :label: loglik_cauchy
 
    \mathcal{L} = -\sum_{v=1}^V
-                 \ln\left[\pi \left(\gamma + \sigma_{y_v}\right)
+                 \ln\left[\pi \sqrt{\gamma^2 + \sigma^2_{y_v}}
                           \left(1 + \frac{\left[y_v - p\left(v\right)\right]^2}
                                          {\gamma^2 + \sigma^2_{y_v}}
                           \right)
@@ -329,11 +329,13 @@ respect to scale parameter:
 
    \frac{\partial \mathcal{L}}{\partial \gamma}
    =
-   \sum_{v=1}^{V}\left[\frac{1}{\gamma + \sigma_{y_v}} -
-                       \frac{2\gamma}
-                            {\gamma^2 + \sigma^2_{y_v} +
-                             \left[y_v - p\left(v\right)\right]^2}
-                 \right]
+   \sum_{v=1}^{V} \frac{\gamma\left(\left[y_v - p\left(v\right)\right]^2 -
+                                    \gamma^2 - \sigma^2_{y_v}
+                              \right)}
+                       {\left(\gamma^2 + \sigma^2_{y_v}\right)
+                        \left(\gamma^2 + \sigma^2_{y_v} +
+                              \left[y_v - p\left(v\right)\right]^2\right)
+                        }
 
 Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its
 parameters:
@@ -1212,15 +1214,13 @@ class CauchyLikelihood(AbstractEpistasis):
         """
         key = '_dloglik_dlikelihood_calc_params'
         if key not in self._cache:
-            scales = numpy.sqrt(self._pseudo_variances)
             scale_param = self.likelihood_calc_params_dict['scale_parameter']
-            diff = self.binarymap.func_scores - self._observed_phenotypes
-            if not (scales > 0).all():
-                raise ValueError('scales not all > 0')
+            diff2 = (self.binarymap.func_scores - self._observed_phenotypes)**2
             self._cache[key] = numpy.array([
-                                (scales -
-                                 2 * scale_param / (self._pseudo_variances +
-                                                    diff**2)
+                                (scale_param * (diff2 - self._pseudo_variances)
+                                 / (self._pseudo_variances *
+                                    (self._pseudo_variances + diff2)
+                                    )
                                  ).sum()
                                 ])
         assert self._cache[key].shape == self._likelihood_calc_params.shape
