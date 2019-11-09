@@ -8,6 +8,7 @@ Here are a series of examples that illustrate usage of the package:
    :maxdepth: 1
 
    codonvariant_sim_data
+   narrow_bottleneck
    codonvariant_plot_formatting
    parsebarcodes_sim_data
 
