@@ -46,8 +46,6 @@ def rand_seq(seqlen, *, exclude=None, nseqs=1):
     str or list
         A random sequence or list of them depending on value of `nseqs`.
 
-    Note
-    ----
     Seed `random.seed` for reproducible output.
 
     Example
@@ -97,8 +95,6 @@ def mutate_seq(seq, nmuts):
     str
         Mutagenized sequence, all upper-case.
 
-    Note
-    ----
     Seed `random.seed` for reproducible output.
 
     Example
@@ -116,6 +112,53 @@ def mutate_seq(seq, nmuts):
     for r in sites:
         seq[r] = random.choice([nt for nt in NTS if nt != seq[r]])
     return ''.join(seq)
+
+
+def codon_muts(codonseq, nmuts, nvariants):
+    """Get random codon mutations to sequence.
+
+    Parameters
+    ----------
+    codonseq : str
+        A valid codon sequence
+    nmuts : int
+        Number of mutations to make per variant.
+    nvariants : int
+        Number of variants to generate. There is no guarantee that the
+        variants are unique.
+
+    Returns
+    -------
+    list
+        List of mutations in each of the `nvariants` mutated variants
+        in the form 'ATG1TAC GGC3GGG' where the number refers to the
+        **codon** position.
+
+    Seed `random.seed` for reproducible output.
+
+    Example
+    -------
+    >>> codonseq = 'ATGGAAGGGCATGGA'
+    >>> random.seed(1)
+    >>> codon_muts(codonseq, nmuts=2, nvariants=3)
+    ['ATG1CAC GAA2ACT', 'CAT4CTT GGA5GGG', 'GAA2ACG CAT4GAA']
+
+    """
+    if not re.fullmatch(f"(?:{'|'.join(CODONS)})+", codonseq):
+        raise ValueError(f"`codonseq` not valid codon sequence:\n{codonseq}")
+    assert len(codonseq) % 3 == 0
+    codons = {i + 1: codonseq[3 * i: 3 * i + 3]
+              for i in range(len(codonseq) // 3)}
+    if nmuts > len(codons):
+        raise ValueError('`nmuts` greater than number of codons in `codonseq`')
+    mutlist = []
+    for _ in range(nvariants):
+        sitemuts = []
+        for site, wt in sorted(random.sample(codons.items(), nmuts)):
+            mut = random.choice([c for c in CODONS if c != wt])
+            sitemuts.append(f"{wt}{site}{mut}")
+        mutlist.append(' '.join(sitemuts))
+    return mutlist
 
 
 def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,

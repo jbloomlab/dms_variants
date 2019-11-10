@@ -19,6 +19,8 @@ Added
 
 - Added the `narrow_bottleneck.ipynb` notebook to demonstrate use of the Cauchy likelihood for analysis of experiments with a lot of noise.
 
+- Added `simulate.codon_muts`.
+
 Fixed
 ++++++++
 - Some minor fixes to `codonvariat_sim_data.ipynb`.
