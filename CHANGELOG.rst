@@ -17,7 +17,7 @@ Added
   So for instance, what was previously `MonotonicSplineEpistasis` (with Gaussian likelihood assumed) is now `MonotonicSplineEpistasisGaussianLikelihood`.
   **Note that this an API-breaking change.**
 
-- Added the `narrow_bottleneck.ipynb` notebook.
+- Added the `narrow_bottleneck.ipynb` notebook to demonstrate use of the Cauchy likelihood for analysis of experiments with a lot of noise.
 
 Fixed
 ++++++++

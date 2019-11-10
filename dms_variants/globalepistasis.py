@@ -205,6 +205,34 @@ broader distribution. If variance estimates are not available then
 
 This likelihood calculation is implemented as :class:`CauchyLikelihood`.
 
+The model classes
+------------------
+The epistasis models are defined in a set of classes. All these classes
+inherit their main functionality from the :class:`AbstractEpistasis`
+abstract base class.
+
+There are subclasses of :class:`AbstractEpistasis` that implement the
+global epistasis functions and likelihood calculation methods. Specifically,
+the following classes implement a :ref:`global_epistasis_function`:
+
+  - :class:`NoEpistasis`
+  - :class:`MonotonicSplineEpistasis`
+
+and the following classes each implement at :ref:`likelihood_calculation`:
+  - :class:`GaussianLikelihood`
+  - :class:`CauchyLikelihood`
+
+However, those classes can still not be directly instantianted, as a fully
+concrete model subclass must have **both** a global epistasis function and
+a likelihood calculation method.
+The following classes implement both, and so can be directly instantiated
+for use in analyses:
+
+  - :class:`NoEpistasisGaussianLikelihood`
+  - :class:`NoEpistasisCauchyLikelihood`
+  - :class:`MonotonicSplineEpistasisGaussianLikelihood`
+  - :class:`MonotonicSplineEpistasisCauchyLikelihood`
+
 Details of fitting
 -------------------------
 
@@ -351,8 +379,8 @@ parameters:
    \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
 
 
-API implementing models
---------------------------
+Detailed documentation of models
+---------------------------------
 
 .. _`Otwinoski et al (2018)`: https://www.pnas.org/content/115/32/E7550
 .. _`Sailer and Harms (2017)`: https://www.genetics.org/content/205/3/1079
