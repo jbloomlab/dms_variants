@@ -6,8 +6,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-0.3.dev1
+0.4.dev0
 --------
+
+Added
+++++++
+- Added additional forms of likelihood function to the global epistasis models. This involves substantial re-factoring the epistasis models in `globalepistasis`.
+  In particular, the `MonotonicSplineEpistasis` and `NoEpistasis` classes no longer are fully concrete subclasses of `AbstractEpistasis`.
+  Instead, there are also likelihood calculation subclasses (`GaussianLikelihood` and `CauchyLikelihood`), and the concrete subclasses inherit from both an epistasis function and likelihood calculation subclass.
+  So for instance, what was previously `MonotonicSplineEpistasis` (with Gaussian likelihood assumed) is now `MonotonicSplineEpistasisGaussianLikelihood`.
+  **Note that this an API-breaking change.**
+
+- Added the `narrow_bottleneck.ipynb` notebook to demonstrate use of the Cauchy likelihood for analysis of experiments with a lot of noise.
 
 Fixed
 ++++++++

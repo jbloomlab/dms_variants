@@ -3,16 +3,21 @@ r"""
 globalepistasis
 =================
 
-Implements global epistasis models based on `Otwinoski et al (2018)`_.
+Implements global epistasis models that are based on (but extend in some
+ways) those described in `Otwinoski et al (2018)`_.
+See also `Sailer and Harms (2017)`_ and `Otwinoski (2018)`_.
 
 .. contents:: Contents
    :local:
    :depth: 2
 
-Definition of models
----------------------
+.. _global_epistasis_function:
 
-The models are defined as follows. Let :math:`v` be a variant. We convert
+Global epistasis function
+---------------------------
+
+The global epistasis function is defined as follows.
+Let :math:`v` be a variant. We convert
 :math:`v` into a binary representation with respect to some wildtype
 sequence. This representation is a vector :math:`\mathbf{b}\left(v\right)`
 with element :math:`b\left(v\right)_m` equal to 1 if the variant has mutation
@@ -42,23 +47,26 @@ latent phenotype:
 
 where :math:`g` is the *global epistasis function*.
 
-We define epistasis models with the following global epistasis functions:
+We define the following global epistasis functions:
 
-Non-epistatic model
-+++++++++++++++++++++
-This model has no epistasis, so the observed phenotype is just the latent
-phenotype. In other words:
+.. _no_epistasis_function:
+
+No epistasis function
++++++++++++++++++++++++
+No epistasis, so the observed phenotype is just the latent phenotype:
 
 .. math::
    :label: noepistasis
 
    g\left(x\right) = x.
 
-This model is implemented as :class:`NoEpistasis`.
+This function is implemented as :class:`NoEpistasis`.
 
-Monotonic spline epistasis model
-+++++++++++++++++++++++++++++++++
-This is the model used in `Otwinoski et al (2018)`_. It transforms
+.. _monotonic_spline_epistasis_function:
+
+Monotonic spline epistasis function
+++++++++++++++++++++++++++++++++++++
+This is the function used in `Otwinoski et al (2018)`_. It transforms
 the latent phenotype to the observed phenotype using monotonic I-splines with
 linear extrapolation outside the spline boundaries:
 
@@ -92,7 +100,7 @@ the lower and upper bounds on the regions over which the I-splines are defined.
 Note how when :math:`x` is outside the range of the I-splines, we linearly
 extrapolate :math:`g` from its range boundaries to calculate.
 
-This model is implemented as :class:`MonotonicSplineEpistasis`. By default,
+This function is implemented as :class:`MonotonicSplineEpistasis`. By default,
 the I-splines are of order 3 and are defined on a mesh of four evenly spaced
 points such that the total number of I-splines is :math:`M=5` (although these
 options can be adjusted when initializing a :class:`MonotonicSplineEpistasis`
@@ -101,8 +109,30 @@ model).
 The latent effects are scaled so that their mean absolute value is one,
 and the latent phenotype of the wildtype is set to zero.
 
-Fitting of models
--------------------
+.. _likelihood_calculation:
+
+Likelihood calculation
+---------------------------------------
+We defined a *likelihood* capturing how well the model describes the
+actual data, and then fit the models by finding the parameters that
+maximize this likelihood. This means that different epistasis functions
+(as described in `Global epistasis function`_) can be compared via
+their likelihoods after correcting for the number of parameters
+(e.g. by `AIC <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_).
+
+We consider several different forms for calculating the likelihood.
+Note that epistasis functions can only be compared within the same form of
+the likelihood on the same dataset--you **cannot** compare likelihoods
+calculated using different methods, or on different datasets.
+
+.. _gaussian_likelihood:
+
+Gaussian likelihood
+++++++++++++++++++++
+This is the form of the likelihood used in `Otwinoski et al (2018)`_. It is
+most appropriate when we have functional scores for variants along with
+good estimates of normally distributed errors on these functional scores.
+
 For each variant :math:`v`, we have an experimentally measured functional
 score :math:`y_v` and optionally an estimate of the error (variance)
 :math:`\sigma^2_{y_v}` in this functional score measurement. If no error
@@ -120,7 +150,7 @@ capture in the variance estimates). So the overall log likelihood of
 the model is
 
 .. math::
-   :label: loglik
+   :label: loglik_gaussian
 
    \mathcal{L} = \sum_{v=1}^V \ln\left[N\left(y_v \mid p\left(v\right),
                  \sigma^2_{y_v} + \sigma^2_{\rm{HOC}}\right)\right]
@@ -134,11 +164,74 @@ distribution defined by
    N\left(y \mid \mu, \sigma^2\right) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp
                     \left(-\frac{\left(y - \mu\right)^2}{2 \sigma^2}\right).
 
-To fit the model, we maximize the log likelihood in Eq. :eq:`loglik` with
-respect to all model parameters: the latent effects :math:`\beta_m` of all
-mutations, the latent phenotype :math:`\beta_{\rm{wt}}` of the wildtype
-sequence, the house-of-cards epistasis :math:`\sigma^2_{\rm{HOC}}`,
-and any parameters that define the global epistasis function :math:`g`.
+This likelihood calculation is implemented as :class:`GaussianLikelihood`.
+
+.. _cauchy_likelihood:
+
+Cauchy likelihood
++++++++++++++++++++
+This form of the likelihood assumes that the difference between the
+measured functional scores and the model's observed phenotypes follows a
+`Cauchy distribution <https://en.wikipedia.org/wiki/Cauchy_distribution>`_.
+
+A potential advantage over the :ref:`gaussian_likelihood` is the
+`fatter tails <https://en.wikipedia.org/wiki/Fat-tailed_distribution>`_
+of the Cauchy distribution relative to the Gaussian distribution.
+This could be advantageous if some measurements are very large outliers
+(either due to un-modeled epistasis or experimental factors such as
+mis-calling of variant sequences or bottlenecks) in ways that are not
+capture in the functional score variance estimates :math:`\sigma^2_{y_v}`.
+Such outlier measurements will have less influence on the overall model
+fit for the Cauchy likelihood relative to the :ref:`gaussian_likelihood`.
+
+Specifically, we compute the overall log likelihood as
+
+.. math::
+   :label: loglik_cauchy
+
+   \mathcal{L} = -\sum_{v=1}^V
+                 \ln\left[\pi \sqrt{\gamma^2 + \sigma^2_{y_v}}
+                          \left(1 + \frac{\left[y_v - p\left(v\right)\right]^2}
+                                         {\gamma^2 + \sigma^2_{y_v}}
+                          \right)
+                     \right]
+
+where :math:`\gamma` is the scale parameters, and the functional score
+variance estimates :math:`\sigma^2_{y_v}` are incorporated in heuristic way
+(with no real theoretical basis)
+that qualitatively captures the fact that larger variance estimates give a
+broader distribution. If variance estimates are not available then
+:math:`\sigma^2_{y_v}` is set to zero.
+
+This likelihood calculation is implemented as :class:`CauchyLikelihood`.
+
+The model classes
+------------------
+The epistasis models are defined in a set of classes. All these classes
+inherit their main functionality from the :class:`AbstractEpistasis`
+abstract base class.
+
+There are subclasses of :class:`AbstractEpistasis` that implement the
+global epistasis functions and likelihood calculation methods. Specifically,
+the following classes implement a :ref:`global_epistasis_function`:
+
+  - :class:`NoEpistasis`
+  - :class:`MonotonicSplineEpistasis`
+
+and the following classes each implement at :ref:`likelihood_calculation`:
+  - :class:`GaussianLikelihood`
+  - :class:`CauchyLikelihood`
+
+However, those classes can still not be directly instantianted, as a fully
+concrete model subclass must have **both** a global epistasis function and
+a likelihood calculation method.
+The following classes implement both, and so can be directly instantiated
+for use in analyses:
+
+  - :class:`NoEpistasisGaussianLikelihood`
+  - :class:`NoEpistasisCauchyLikelihood`
+  - :class:`MonotonicSplineEpistasisGaussianLikelihood`
+  - :class:`MonotonicSplineEpistasisCauchyLikelihood`
 
 Details of fitting
 -------------------------
@@ -149,7 +242,9 @@ The fitting workflow is essentially the same as that described in
 `Otwinoski et al (2018)`_:
 
  1. The latent effects are fit under an additive (non-epistatic) model
-    using least squares.
+    using least squares. The residuals from this fit are then used to
+    estimate :math:`\sigma^2_{\rm{HOC}}` for :ref:`gaussian_likelihood`,
+    or :math:`\gamma^2` for :ref:`cauchy_likelihood`.
  2. If there are any parameters in the epistasis function, they are set
     to reasonable initial values. For :class:`MonotonicSplineEpistasis`
     this involves setting the mesh to go from 0 to 1,
@@ -186,16 +281,20 @@ There are several options to that method about how to do the optimization;
 by default it uses a L-BFGS-B algorithm with exact gradients
 calculated as below.
 
-Gradients
-+++++++++++
+Gradients used in optimization
++++++++++++++++++++++++++++++++
 
 For the optimization, we use the following gradients:
+
+Gradient of latent phenotype with respect to latent effects:
 
 .. math::
    :label: dlatent_phenotype_dlatent_effect
 
    \frac{\partial \phi\left(v\right)}{\partial \beta_m} =
    b\left(v_m\right)
+
+Gradient of observed phenotype with respect to latent phenotypes:
 
 .. math::
    :label: dobserved_phenotype_dlatent_effect
@@ -207,84 +306,90 @@ For the optimization, we use the following gradients:
    &=& \left.\frac{\partial g\left(x\right)}{\partial x}
        \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
 
-.. math::
-   :label: dnormaldist_dmu
-
-   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
-        {\partial \mu} =
-   \frac{y - \mu}{\sigma^2}
+Derivative of the likelihood with respect to latent effects:
 
 .. math::
    :label: dloglik_dlatent_effect
 
    \frac{\partial \mathcal{L}}{\partial \beta_m}
-   &=& \sum_{v=1}^V \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
-                          \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}
-                         {\partial p\left(v\right)} \times
-                    \frac{\partial p\left(v\right)}{\partial \beta_m} \\
-   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
-                    \frac{\partial p\left(v\right)}{\partial \beta_m}
+   = \sum_{v=1}^V \frac{\mathcal{L}}
+                       {\partial p\left(v\right)} \times
+                  \frac{\partial p\left(v\right)}{\partial \beta_m}.
+
+Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
+respect to observed phenotype:
 
 .. math::
-   :label: dnormaldist_dsigma2
+   :label: dloglik_gaussian_dobserved_phenotype
 
-   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
-        {\partial \sigma^2} = \frac{1}{2}\left[\left(\frac{y - \mu}{\sigma^2}
-                                                     \right)^2 -
-                                              \frac{1}{\sigma^2}\right]
+   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+   = \frac{y_v - p\left(v\right)}
+          {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}.
+
+Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
+respect to house-of-cards epistasis:
 
 .. math::
-   :label: dloglik_depistasis_HOC
+   :label: dloglik_gaussian_depistasis_HOC
 
    \frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V
-   \frac{1}{2} \left[\left(\frac{y_v - p\left(v\right)}
-                                {\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2}\right)^2
-                     - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]
+   \frac{1}{2} \left[\left(\frac{\partial \mathcal{L}}
+                                {\partial p\left(v\right)}\right)^2
+                     - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right].
 
-For derivatives of log likelihood with respect to the parameters of
-:math:`g` as defined in Eq. :eq:`monotonicspline`:
+Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with
+respect to observed phenotype:
 
 .. math::
+   :label: dloglik_cauchy_dobserved_phenotype
+
+   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+   =
+   \frac{2\left[y_v - p\left(v\right)\right]}
+        {\gamma^2 + \sigma^2_{y_v} +
+         \left[y_v - p\left(v\right)\right]^2}.
+
+Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with
+respect to scale parameter:
+
+.. math::
+   :label: dloglik_cauchy_dscale_parameter
+
+   \frac{\partial \mathcal{L}}{\partial \gamma}
+   =
+   \sum_{v=1}^{V} \frac{\gamma\left(\left[y_v - p\left(v\right)\right]^2 -
+                                    \gamma^2 - \sigma^2_{y_v}
+                              \right)}
+                       {\left(\gamma^2 + \sigma^2_{y_v}\right)
+                        \left(\gamma^2 + \sigma^2_{y_v} +
+                              \left[y_v - p\left(v\right)\right]^2\right)
+                        }
+
+Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its
+parameters:
+
+.. math::
+   :label: dspline_epistasis_dcalpha
 
    \frac{g\left(x\right)}{\partial c_{\alpha}} = 1
 
 .. math::
+   :label: dspline_epistasis_dalpham
 
    \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
 
-.. math::
-   :label: dloglik_dcalpha
 
-   \frac{\mathcal{L}}{\partial c_{\alpha}}
-   &=&
-   \frac{\mathcal{L}}{\partial p\left(v\right)}
-   \frac{\partial p\left(v\right)}{\partial c_{\alpha}} \\
-   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
-
-.. math::
-   :label: dloglik_dalpham
-
-   \frac{\mathcal{L}}{\partial \alpha_m}
-   &=&
-   \frac{\mathcal{L}}{\partial p\left(v\right)}
-   \frac{\partial p\left(v\right)}{\partial \alpha_m} \\
-   &=& \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
-       I_m\left(\phi\left(v\right)\right)
-
-
-API implementing models
---------------------------
+Detailed documentation of models
+---------------------------------
 
 .. _`Otwinoski et al (2018)`: https://www.pnas.org/content/115/32/E7550
+.. _`Sailer and Harms (2017)`: https://www.genetics.org/content/205/3/1079
+.. _`Otwinoski (2018)`: https://doi.org/10.1093/molbev/msy141
 
 """
 
 
 import abc
-import collections
 
 import numpy
 
@@ -314,8 +419,8 @@ class AbstractEpistasis(abc.ABC):
     Note
     ----
     This is an abstract base class. It implements most of the epistasis model
-    functionality, but does not define the actual functional form of
-    the global epistasis function :meth:`AbstractEpistasis.epistasis_func`.
+    functionality, but requires subclasses to define the actual
+    :ref:`global_epistasis_function` and :ref:`likelihood_calculation`.
 
     """
 
@@ -332,7 +437,7 @@ class AbstractEpistasis(abc.ABC):
 
         # initialize params
         self._latenteffects = numpy.zeros(self._nlatent + 1, dtype='float')
-        self.epistasis_HOC = 1.0
+        self._likelihood_calc_params = self._init_likelihood_calc_params
         self._epistasis_func_params = self._init_epistasis_func_params
 
     # ------------------------------------------------------------------------
@@ -361,22 +466,19 @@ class AbstractEpistasis(abc.ABC):
             self._latenteffects_val.flags.writeable = False
 
     @property
-    def epistasis_HOC(self):
-        r"""float: House of cards epistasis, :math:`\sigma^2_{\rm{HOC}}`."""
-        return self._epistasis_HOC_val
+    def _likelihood_calc_params(self):
+        """numpy.ndarray: Parameters for likelihood calculation."""
+        return self._likelihood_calc_params_val
 
-    @epistasis_HOC.setter
-    def epistasis_HOC(self, val):
-        if val <= 0:
-            raise ValueError(f"`epistasis_HOC` must be > 0: {val}")
-        if (not hasattr(self, '_epistasis_HOC_val')) or (val !=
-                                                         self.epistasis_HOC):
-            for key in list(self._cache.keys()):
-                if key not in {'_latent_phenotypes', '_observed_phenotypes',
-                               '_dobserved_phenotype_dlatent',
-                               '_isplines_total'}:
-                    del self._cache[key]
-            self._epistasis_HOC_val = val
+    @_likelihood_calc_params.setter
+    def _likelihood_calc_params(self, val):
+        if len(val) != len(self._likelihood_calc_param_names):
+            raise ValueError('invalid length for `_likelihood_calc_params`')
+        if ((not hasattr(self, '_likelihood_calc_params_val')) or
+                (val != self._likelihood_calc_params).any()):
+            self._cache = {}
+            self._likelihood_calc_params_val = val.copy()
+            self._likelihood_calc_params_val.flags.writeable = False
 
     @property
     def _epistasis_func_params(self):
@@ -389,10 +491,7 @@ class AbstractEpistasis(abc.ABC):
             raise ValueError('invalid length for `_epistasis_func_params`')
         if ((not hasattr(self, '_epistasis_func_params_val')) or
                 (val != self._epistasis_func_params).any()):
-            for key in list(self._cache.keys()):
-                if key not in {'_latent_phenotypes', '_variances',
-                               '_isplines_total'}:
-                    del self._cache[key]
+            self._cache = {}
             self._epistasis_func_params_val = val.copy()
             self._epistasis_func_params_val.flags.writeable = False
 
@@ -429,10 +528,7 @@ class AbstractEpistasis(abc.ABC):
     @property
     def nparams(self):
         """int: Total number of parameters in model."""
-        return (len(self._latenteffects) +  # latent effects, wt latent pheno
-                1 +  # HOC epistasis
-                len(self._epistasis_func_params)  # params of epistasic func
-                )
+        return len(self._allparams)
 
     @property
     def latent_phenotype_wt(self):
@@ -445,20 +541,29 @@ class AbstractEpistasis(abc.ABC):
 
     @property
     def epistasis_func_params_dict(self):
-        """OrderedDict: :meth:`AbstractEpistasis.epistasis_func` param values.
+        """dict: Parameters for the :ref:`global_epistasis_function`.
 
         Maps names of parameters defining the global epistasis function to
-        current values. These parameters are all arguments to
-        :meth:`AbstractEpistasis.epistasis_func` **except** `latent_phenotype`
-        (which is the function input, not a parameter defining the function).
+        their current values.
 
         """
-        if not self._epistasis_func_param_names:
-            return collections.OrderedDict()
         assert (len(self._epistasis_func_params) ==
                 len(self._epistasis_func_param_names))
-        return collections.OrderedDict(zip(self._epistasis_func_param_names,
-                                           self._epistasis_func_params))
+        return dict(zip(self._epistasis_func_param_names,
+                        self._epistasis_func_params))
+
+    @property
+    def likelihood_calc_params_dict(self):
+        """dict: Parameters for the :ref:`likelihood_calculation`.
+
+        Maps names of parameters defining the likelihood calculation to
+        their current values.
+
+        """
+        assert (len(self._likelihood_calc_params) ==
+                len(self._likelihood_calc_param_names))
+        return dict(zip(self._likelihood_calc_param_names,
+                        self._likelihood_calc_params))
 
     # ------------------------------------------------------------------------
     # Methods to get phenotypes / mutational effects given current model state
@@ -687,7 +792,7 @@ class AbstractEpistasis(abc.ABC):
 
         """
         # least squares fit of latent effects for reasonable initial values
-        self._fit_latent_leastsquares()
+        _ = self._fit_latent_leastsquares()
 
         # prescale parameters to desired range
         self._prescale_params()
@@ -713,20 +818,12 @@ class AbstractEpistasis(abc.ABC):
 
         return optres
 
-    @property
-    def loglik(self):
-        """float: Current log likelihood as defined in Eq. :eq:`loglik`."""
-        key = 'loglik'
-        if key not in self._cache:
-            self._cache[key] = self._loglik_by_variant.sum()
-        return self._cache[key]
-
     def _loglik_by_allparams(self, allparams, negative=True):
         """(Negative) log likelihood after setting all parameters.
 
         Note
         ----
-        Calling this method alters the interal model parameters, so only
+        Calling this method alters the internal model parameters, so only
         use if you understand what you are doing.
 
         Parameters
@@ -749,42 +846,12 @@ class AbstractEpistasis(abc.ABC):
         else:
             return self.loglik
 
-    def _loglik_by_epistasis_func_params(self, epistasis_func_params,
-                                         negative=True):
-        """(Negative) log likelihood after setting epistasis func params.
-
-        Note
-        ----
-        Calling this method alters the interal model parameters, so only
-        use if you understand what you are doing.
-
-        Parameters
-        ----------
-        epistasis_func_params : numpy.ndarray
-            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.
-        negative : bool
-            Return negative log likelihood. Useful if using a minimizer to
-            optimize.
-
-        Returns
-        -------
-        float
-            (Negative) log likelihood after setting epistasis func params
-            to `epistasis_func_params`.
-
-        """
-        self._epistasis_func_params = epistasis_func_params
-        if negative:
-            return -self.loglik
-        else:
-            return self.loglik
-
     def _dloglik_by_allparams(self, allparams, negative=True):
         """(Negative) derivative of log likelihood with respect to all params.
 
         Note
         ----
-        Calling this method alters the interal model parameters, so only
+        Calling this method alters the internal model parameters, so only
         use if you understand what you are doing.
 
         Parameters
@@ -804,7 +871,7 @@ class AbstractEpistasis(abc.ABC):
         """
         self._allparams = allparams
         val = numpy.concatenate((self._dloglik_dlatent,
-                                 [self._dloglik_depistasis_HOC],
+                                 self._dloglik_dlikelihood_calc_params,
                                  self._dloglik_depistasis_func_params,
                                  )
                                 )
@@ -813,36 +880,6 @@ class AbstractEpistasis(abc.ABC):
             return -val
         else:
             return val
-
-    def _dloglik_by_epistasis_func_params(self, epistasis_func_params,
-                                          negative=True):
-        """(Negative) derivative of log likelihood by epistasis func params.
-
-        Note
-        ----
-        Calling this method alters the interal model parameters, so only
-        use if you understand what you are doing.
-
-        Parameters
-        ----------
-        epistasis_func_params : numpy.ndarray
-            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.
-        negative : bool
-            Return negative log likelihood. Useful if using a minimizer to
-            optimize.
-
-        Returns
-        --------
-        numpy.ndarray
-            (Negative) derivative of log likelihood with respect to
-            :meth:`AbstractEpistasis._epistasis_func_params`.
-
-        """
-        self._epistasis_func_params = epistasis_func_params
-        if negative:
-            return -self._dloglik_depistasis_func_params
-        else:
-            return self._dloglik_depistasis_func_params
 
     @property
     def _allparams(self):
@@ -858,21 +895,28 @@ class AbstractEpistasis(abc.ABC):
 
         """
         val = numpy.concatenate((self._latenteffects,
-                                 [self.epistasis_HOC],
+                                 self._likelihood_calc_params,
                                  self._epistasis_func_params,
                                  )
                                 )
-        assert val.shape == (self.nparams,)
         return val
 
     @_allparams.setter
     def _allparams(self, val):
         if val.shape != (self.nparams,):
             raise ValueError(f"invalid `_allparams`: {val}")
-        self._latenteffects = val[: len(self._latenteffects)]
-        self.epistasis_HOC = val[len(self._latenteffects)]
-        if len(self._epistasis_func_params):
-            self._epistasis_func_params = val[len(self._latenteffects) + 1:]
+
+        istart = 0
+        iend = len(self._latenteffects)
+        self._latenteffects = val[istart: iend]
+
+        istart = iend
+        iend = iend + len(self._likelihood_calc_params)
+        self._likelihood_calc_params = val[istart: iend]
+
+        istart = iend
+        iend = iend + len(self._epistasis_func_params)
+        self._epistasis_func_params = val[istart: iend]
 
     @property
     def _allparams_bounds(self):
@@ -882,25 +926,11 @@ class AbstractEpistasis(abc.ABC):
 
         """
         bounds = ([(None, None)] * len(self._latenteffects) +
-                  [(self._NEARLY_ZERO, None)] +  # HOC epistasis must be > 0
+                  self._likelihood_calc_param_bounds +
                   self._epistasis_func_param_bounds
                   )
         assert len(bounds) == len(self._allparams)
         return bounds
-
-    @property
-    def _loglik_by_variant(self):
-        """numpy.ndarray: Log likelihoods per variant (Eq. :eq:`loglik`)."""
-        key = '_loglik_by_variant'
-        if key not in self._cache:
-            standard_devs = numpy.sqrt(self._variances)
-            if not (standard_devs > 0).all():
-                raise ValueError('standard deviations not all > 0')
-            self._cache[key] = scipy.stats.norm.logpdf(
-                                    self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
-                                    scale=standard_devs)
-        return self._cache[key]
 
     @property
     def _latent_phenotypes(self):
@@ -920,24 +950,6 @@ class AbstractEpistasis(abc.ABC):
         key = '_observed_phenotypes'
         if key not in self._cache:
             self._cache[key] = self.epistasis_func(self._latent_phenotypes)
-        return self._cache[key]
-
-    @property
-    def _variances(self):
-        r"""numpy.ndarray: Functional score variance plus HOC epistasis.
-
-        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in Eq. :eq:`loglik`.
-
-        """
-        key = '_variances'
-        if key not in self._cache:
-            if self.binarymap.func_scores_var is not None:
-                var = self.binarymap.func_scores_var + self.epistasis_HOC
-            else:
-                var = numpy.full(self.binarymap.nvariants, self.epistasis_HOC)
-            if (var <= 0).any():
-                raise ValueError('variance <= 0')
-            self._cache[key] = var
         return self._cache[key]
 
     @property
@@ -961,21 +973,6 @@ class AbstractEpistasis(abc.ABC):
         return self._cache[key]
 
     @property
-    def _func_score_minus_observed_pheno_over_variance(self):
-        r"""numpy.ndarray: Scores minus observed phenotypes over variance.
-
-        The quantity :math:`\frac{y_v - p\left(v\right)}
-        {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}`, which appears in Eq.
-        :eq:`dloglik_dlatent_effect` and :eq:`dloglik_depistasis_HOC`.
-
-        """
-        key = '_func_score_minus_observed_pheno_over_variance'
-        if key not in self._cache:
-            self._cache[key] = (self.binarymap.func_scores -
-                                self._observed_phenotypes) / self._variances
-        return self._cache[key]
-
-    @property
     def _dloglik_dlatent(self):
         """numpy.ndarray: Derivative log likelihood by latent effects.
 
@@ -985,33 +982,18 @@ class AbstractEpistasis(abc.ABC):
         key = '_dloglik_dlatent'
         if key not in self._cache:
             self._cache[key] = self._dobserved_phenotypes_dlatent.dot(
-                    self._func_score_minus_observed_pheno_over_variance)
-            assert self._cache[key].shape == (self._nlatent + 1,)
-        return self._cache[key]
-
-    @property
-    def _dloglik_depistasis_HOC(self):
-        """float: Derivative of log likelihood by HOC epistasis.
-
-        See Eq. :eq:`dloglik_depistasis_HOC`.
-
-        """
-        key = '_dloglik_depistasis_HOC'
-        if key not in self._cache:
-            self._cache[key] = (
-                0.5 *
-                (self._func_score_minus_observed_pheno_over_variance**2 -
-                 1 / self._variances).sum()
-                )
+                    self._dloglik_dobserved_phenotype)
+        assert self._cache[key].shape == (self._nlatent + 1,)
         return self._cache[key]
 
     def _fit_latent_leastsquares(self):
-        """Fit latent effects and HOC epistasis by least squares.
+        """Least-squares fit latent effects for quick "reasonable" values.
 
-        Note
-        ----
-        This is a useful way to quickly get "reasonable" initial values for
-        `_latenteffects` and `epistasis_HOC`.
+        Returns
+        -------
+        tuple
+            Results of fitting described here:
+            https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.lsqr.html
 
         """
         # fit by least squares
@@ -1024,44 +1006,44 @@ class AbstractEpistasis(abc.ABC):
         # use fit result to update latenteffects
         self._latenteffects = fitres[0]
 
-        # estimate HOC epistasis as residuals not from func_score variance
-        residuals2 = fitres[3]**2
-        if self.binarymap.func_scores_var is None:
-            self.epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
-                                     self._NEARLY_ZERO)
-        else:
-            self.epistasis_HOC = max((residuals2 -
-                                      self.binarymap.func_scores_var.sum()
-                                      ) / self.binarymap.nvariants,
-                                     self._NEARLY_ZERO)
+        return fitres
 
     # ------------------------------------------------------------------------
     # Abstract methods for global epistasis func, must implement in subclasses
+    # specific for that epistasis model.
     # ------------------------------------------------------------------------
     @abc.abstractmethod
     def epistasis_func(self, latent_phenotype):
-        """Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.
+        """The :ref:`global_epistasis_function` :math:`g`.
 
-        Note
-        ----
-        This is an abstract method for the :class:`AbstractEpistasis` class.
-        The actual functional forms for specific models are defined in
-        concrete subclasses. Those concrete implementations will also have
-        additional parameters used by the function.
+        Parameters
+        -----------
+        latent_phenotype : numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        numpy.ndarray
+            Observed phenotype(s) after transforming the latent phenotypes
+            using the global epistasis function.
 
         """
         return NotImplementedError
 
     @abc.abstractmethod
     def _depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative of epistasis function by latent phenotype.
+        """Derivative of epistasis function by latent phenotype.
 
-        Note
-        ----
-        This is the derivative of :meth:`AbstractEpistasis.epistasis_func`
-        with respect to the latent phenotype. It is an abstract method;
-        the actual functional forms for specific models are defined in
-        concrete subclasses.
+        Parameters
+        -----------
+        latent_phenotype : numpy.ndarray
+            Latent phenotype(s) of one or more variants.
+
+        Returns
+        -------
+        numpy.ndarray
+            Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
+            latent phenotype evaluated at `latent_phenotype`.
 
         """
         return NotImplementedError
@@ -1069,29 +1051,13 @@ class AbstractEpistasis(abc.ABC):
     @property
     @abc.abstractmethod
     def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Derivative log likelihood by epistasis func params.
-
-        Note
-        ----
-        Derivative of :meth:`AbstractEpistasis.loglik` with respect to
-        :meth:`AbstractEpistasis._epistasis_func_params`. It is an abstract
-        property, the actual functional forms for specific models are defined
-        in concrete subclasses.
-
-        """
+        """numpy.ndarray: Deriv log likelihood by `_epistasis_func_params`."""
         return NotImplementedError
 
     @property
     @abc.abstractmethod
     def _epistasis_func_param_names(self):
-        """list: Names of :meth:`AbstractEpistasis.epistasis_func_params`.
-
-        Note
-        ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
-
-        """
+        """list: Names of :meth:`AbstractEpistasis._epistasis_func_params`."""
         return NotImplementedError
 
     @property
@@ -1103,37 +1069,18 @@ class AbstractEpistasis(abc.ABC):
         a 2-tuple gives the lower and upper bound for optimization by
         `scipy.optimize.minimize`.
 
-        Note
-        ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
-
         """
         return NotImplementedError
 
     @property
     @abc.abstractmethod
     def _init_epistasis_func_params(self):
-        """numpy.ndarray: Init :meth:`AbstractEpistasis._epistasis_func_params`
-
-        Note
-        ----
-        This is an abstract property; the actual bounds for specific models are
-        defined in concrete subclasses.
-
-        """
+        """numpy.ndarray: Initial `_epistasis_func_params` values."""
         return NotImplementedError
 
     @abc.abstractmethod
     def _prescale_params(self):
-        """Rescale parameters prior to the global fitting.
-
-        Note
-        ----
-        This is an abstract method, the actula pre-scaling is done in concrete
-        subclasses.
-
-        """
+        """Rescale parameters prior to the global fitting."""
         return NotImplementedError
 
     @abc.abstractmethod
@@ -1148,55 +1095,336 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
+    # ------------------------------------------------------------------------
+    # Abstract methods for likelihood calculations, implement in subclasses
+    # ------------------------------------------------------------------------
+    @property
+    @abc.abstractmethod
+    def loglik(self):
+        """float: Current log likelihood of model."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _likelihood_calc_param_names(self):
+        """list: Names of :meth:`AbstractEpistasis._likelihood_calc_params`."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _init_likelihood_calc_params(self):
+        """numpy.ndarray: Initial `_likelihood_calc_params` values."""
+        return NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _likelihood_calc_param_bounds(self):
+        """list: Bounds for the likelihood calculation parameters.
+
+        For entries in :meth:`AbstractEpistasis._likelihood_calc_param_names`,
+        a 2-tuple gives the lower and upper bound for optimization by
+        `scipy.optimize.minimize`.
+
+        """
+        return NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _dloglik_dobserved_phenotype(self):
+        """numpy.ndarray: Derivative log likelihood by observed phenotype."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`."""
+        raise NotImplementedError
+
+
+class CauchyLikelihood(AbstractEpistasis):
+    """Cauchy likelihood calculation.
+
+    Note
+    ----
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`cauchy_likelihood`.
+
+    """
+
+    @property
+    def loglik(self):
+        """float: Current log likelihood from Eq. :eq:`loglik_cauchy`."""
+        key = 'loglik'
+        if key not in self._cache:
+            scales = numpy.sqrt(self._pseudo_variances)
+            if not (scales > 0).all():
+                raise ValueError('scales not all > 0')
+            self._cache[key] = (scipy.stats.cauchy.logpdf(
+                                    self.binarymap.func_scores,
+                                    loc=self._observed_phenotypes,
+                                    scale=scales)
+                                ).sum()
+        return self._cache[key]
+
+    def _fit_latent_leastsquares(self):
+        r"""Also get initial value for scale parameter.
+
+        Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
+        to make initial estimate of :math:`\gamma^2` as residual not
+        from functional score variance. This is based on the supposition
+        that the scale parameter can be treated like the variance for
+        a Gaussian distribution (not sure how good this supposition is...).
+
+        """
+        fitres = super()._fit_latent_leastsquares()
+        residuals2 = fitres[3]**2
+        if self.binarymap.func_scores_var is None:
+            scale_param2 = max(residuals2 / self.binarymap.nvariants,
+                               self._NEARLY_ZERO)
+        else:
+            scale_param2 = max((residuals2 -
+                                self.binarymap.func_scores_var.sum()
+                                ) / self.binarymap.nvariants,
+                               self._NEARLY_ZERO)
+        self._likelihood_calc_params = numpy.sqrt([scale_param2])
+
+    @property
+    def _likelihood_calc_param_names(self):
+        r"""list: Likelihood calculation parameter names.
+
+        For :class:`CauchyLikelihood`, this is the scale parameter
+        :math:`\gamma`.
+
+        """
+        return ['scale_parameter']
+
+    @property
+    def _init_likelihood_calc_params(self):
+        r"""numpy.ndarray: Initial `_likelihood_calc_params`.
+
+        The initial scale parameter :math:`\gamma` is 1.
+
+        """
+        init_d = {'scale_parameter': 1.0}
+        return numpy.array([init_d[name] for name in
+                            self._likelihood_calc_param_names],
+                           dtype='float')
+
+    @property
+    def _likelihood_calc_param_bounds(self):
+        r"""list: Bounds for likelihood calculation parameters.
+
+        For :class:`CauchyLikelihood`, :math:`\gamma` must be > 0.
+
+        """
+        bounds_d = {'scale_parameter': (self._NEARLY_ZERO, None)}
+        return [bounds_d[name] for name in self._likelihood_calc_param_names]
+
+    @property
+    def _dloglik_dobserved_phenotype(self):
+        r"""numpy.ndarray: Derivative of log likelihood by observed phenotype.
+
+        Calculated using Eq. :eq:`dloglik_cauchy_dobserved_phenotype`.
+
+        """
+        key = '_dloglik_dobserved_phenotype'
+        if key not in self._cache:
+            diff = self.binarymap.func_scores - self._observed_phenotypes
+            self._cache[key] = 2 * diff / (self._pseudo_variances + diff**2)
+        return self._cache[key]
+
+    @property
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.
+
+        See Eq. :eq:`dloglik_cauchy_dscale_parameter`.
+
+        """
+        key = '_dloglik_dlikelihood_calc_params'
+        if key not in self._cache:
+            scale_param = self.likelihood_calc_params_dict['scale_parameter']
+            diff2 = (self.binarymap.func_scores - self._observed_phenotypes)**2
+            self._cache[key] = numpy.array([
+                                (scale_param * (diff2 - self._pseudo_variances)
+                                 / (self._pseudo_variances *
+                                    (self._pseudo_variances + diff2)
+                                    )
+                                 ).sum()
+                                ])
+        assert self._cache[key].shape == self._likelihood_calc_params.shape
+        return self._cache[key]
+
+    @property
+    def _pseudo_variances(self):
+        r"""numpy.ndarray: Functional score variance plus scale param squared.
+
+        :math:`\sigma_{y_v}^2 + \gamma^2` in Eq. :eq:`loglik_cauchy`.
+
+        """
+        key = '_pseudo_variances'
+        if key not in self._cache:
+            scale_param = self.likelihood_calc_params_dict['scale_parameter']
+            if self.binarymap.func_scores_var is not None:
+                var = self.binarymap.func_scores_var + scale_param**2
+            else:
+                var = numpy.full(self.binarymap.nvariants, scale_param**2)
+            if (var <= 0).any():
+                raise ValueError('variance <= 0')
+            self._cache[key] = var
+        return self._cache[key]
+
+
+class GaussianLikelihood(AbstractEpistasis):
+    """Gaussian likelihood calculation.
+
+    Note
+    ----
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`gaussian_likelihood`.
+
+    """
+
+    @property
+    def loglik(self):
+        """float: Current log likelihood from Eq. :eq:`loglik_gaussian`."""
+        key = 'loglik'
+        if key not in self._cache:
+            standard_devs = numpy.sqrt(self._variances)
+            if not (standard_devs > 0).all():
+                raise ValueError('standard deviations not all > 0')
+            self._cache[key] = (scipy.stats.norm.logpdf(
+                                    self.binarymap.func_scores,
+                                    loc=self._observed_phenotypes,
+                                    scale=standard_devs)
+                                ).sum()
+        return self._cache[key]
+
+    def _fit_latent_leastsquares(self):
+        r"""Also get initial value for HOC epistasis.
+
+        Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
+        to make initial estimate of :math:`\sigma^2_{\rm{HOC}}` as
+        residual not from functional score variance.
+
+        """
+        fitres = super()._fit_latent_leastsquares()
+        residuals2 = fitres[3]**2
+        if self.binarymap.func_scores_var is None:
+            epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
+                                self._NEARLY_ZERO)
+        else:
+            epistasis_HOC = max((residuals2 -
+                                 self.binarymap.func_scores_var.sum()
+                                 ) / self.binarymap.nvariants,
+                                self._NEARLY_ZERO)
+        self._likelihood_calc_params = numpy.array([epistasis_HOC])
+
+    @property
+    def _likelihood_calc_param_names(self):
+        r"""list: Likelihood calculation parameter names.
+
+        For :class:`GaussianLikelihood`, this :math:`\sigma^2_{\rm{HOC}}`.
+
+        """
+        return ['epistasis_HOC']
+
+    @property
+    def _init_likelihood_calc_params(self):
+        r"""numpy.ndarray: Initial `_likelihood_calc_params`.
+
+        The initial HOC epistasis :math:`\sigma^2_{\rm{HOC}}` is 1.
+
+        """
+        init_d = {'epistasis_HOC': 1.0}
+        return numpy.array([init_d[name] for name in
+                            self._likelihood_calc_param_names],
+                           dtype='float')
+
+    @property
+    def _likelihood_calc_param_bounds(self):
+        r"""list: Bounds for likelihood calculation parameters.
+
+        For :class:`GaussianLikelihood`, :math:`\sigma^2_{\rm{HOC}}` must
+        be > 0.
+
+        """
+        bounds_d = {'epistasis_HOC': (self._NEARLY_ZERO, None)}
+        return [bounds_d[name] for name in self._likelihood_calc_param_names]
+
+    @property
+    def _dloglik_dobserved_phenotype(self):
+        r"""numpy.ndarray: Derivative of log likelihood by observed phenotype.
+
+        Calculated using Eq. :eq:`dloglik_gaussian_dobserved_phenotype`.
+
+        """
+        key = '_dloglik_dobserved_phenotype'
+        if key not in self._cache:
+            self._cache[key] = (self.binarymap.func_scores -
+                                self._observed_phenotypes) / self._variances
+        return self._cache[key]
+
+    @property
+    def _dloglik_dlikelihood_calc_params(self):
+        """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.
+
+        See Eq. :eq:`dloglik_gaussian_depistasis_HOC`.
+
+        """
+        key = '_dloglik_dlikelihood_calc_params'
+        if key not in self._cache:
+            self._cache[key] = numpy.array([
+                0.5 *
+                (self._dloglik_dobserved_phenotype**2 -
+                 1 / self._variances).sum()
+                ])
+        assert self._cache[key].shape == self._likelihood_calc_params.shape
+        return self._cache[key]
+
+    @property
+    def _variances(self):
+        r"""numpy.ndarray: Functional score variance plus HOC epistasis.
+
+        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in
+        Eq. :eq:`loglik_gaussian`.
+
+        """
+        key = '_variances'
+        if key not in self._cache:
+            epistasis_HOC = self.likelihood_calc_params_dict['epistasis_HOC']
+            if self.binarymap.func_scores_var is not None:
+                var = self.binarymap.func_scores_var + epistasis_HOC
+            else:
+                var = numpy.full(self.binarymap.nvariants, epistasis_HOC)
+            if (var <= 0).any():
+                raise ValueError('variance <= 0')
+            self._cache[key] = var
+        return self._cache[key]
+
 
 class NoEpistasis(AbstractEpistasis):
     """Non-epistatic model.
 
     Note
     ----
-    Model when there is no epistasis, which is when the global epistasis
-    function :math:`g` is defined by Eq. :eq:`noepistasis`.
-
-    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
-    of that abstract base class for details on most properties and methods.
-
-    Parameters
-    ----------
-    binarymap : :class:`dms_variants.binarymap.BinaryMap`
-        Contains the variants, their functional scores, and score variances.
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`no_epistasis_function`.
 
     """
 
     def epistasis_func(self, latent_phenotype):
-        """Apply :math:`g` in Eq. :eq:`noepistasis`.
+        """Global epistasis function :math:`g` in Eq. :eq:`noepistasis`.
 
-        Parameters
-        -----------
-        latent_phenotype : numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        numpy.ndarray
-            Observed phenotype(s) after transforming the latent phenotypes
-            using the global epistasis function.
+        Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.
 
         """
         return latent_phenotype
 
     def _depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative of epistasis function by latent phenotype.
+        """Derivative of `epistasis_func` by latent phenotype.
 
-        Parameters
-        -----------
-        latent_phenotype : numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        numpy.ndarray
-            Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
-            latent phenotype evaluated at `latent_phenotype`.
+        Concrete implementation of
+        :meth:`AbstractEpistasis._depistasis_func_dlatent`.
 
         """
         return numpy.ones(latent_phenotype.shape, dtype='float')
@@ -1205,6 +1433,11 @@ class NoEpistasis(AbstractEpistasis):
     def _dloglik_depistasis_func_params(self):
         """numpy.ndarray: Derivative of log likelihood by epistasis fun params.
 
+        Concrete implementation of
+        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.
+
+        Note
+        ----
         For :class:`NoEpistasis` models, this is just an empty array as there
         are no epistasis function parameters.
 
@@ -1216,7 +1449,7 @@ class NoEpistasis(AbstractEpistasis):
     def _epistasis_func_param_names(self):
         """list: Epistasis function parameter names.
 
-        For :class:`NoEpistasis`, this is just an emptly list as there are
+        For :class:`NoEpistasis`, this is just an empty list as there are
         no epistasis function parameters.
 
         """
@@ -1260,11 +1493,8 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
     Note
     ----
-    Models global epistasis function :math:`g` via monotonic splines as
-    defined in Eq. :eq:`monotonicspline`.
-
-    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs
-    of that abstract base class for details on most properties and methods.
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`monotonic_spline_epistasis_function`.
 
     Parameters
     ----------
@@ -1308,18 +1538,9 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         return self._cache[key]
 
     def epistasis_func(self, latent_phenotype):
-        """Apply :math:`g` in Eq. :eq:`monotonicspline`.
+        """Global epistasis function :math:`g` in Eq. :eq:`monotonicspline`.
 
-        Parameters
-        -----------
-        latent_phenotype : numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        numpy.ndarray
-            Observed phenotype(s) after transforming the latent phenotypes
-            using the global epistasis function.
+        Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.
 
         """
         if not isinstance(latent_phenotype, numpy.ndarray):
@@ -1336,18 +1557,10 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                                                    w_lower=self.c_alpha)
 
     def _depistasis_func_dlatent(self, latent_phenotype):
-        """Get derivative of epistasis function by latent phenotype.
+        """Derivative of `epistasis_func` by latent phenotype.
 
-        Parameters
-        -----------
-        latent_phenotype : float or numpy.ndarray
-            Latent phenotype(s) of one or more variants.
-
-        Returns
-        -------
-        float or numpy.ndarray
-            Derivative of :meth:`MonotonicSplineEpistasis.epistasis_func` with
-            with respect to latent phenotype evaluated at `latent_phenotype`.
+        Concrete implementation of
+        :meth:`AbstractEpistasis._depistasis_func_dlatent`.
 
         """
         return self._isplines_total.dItotal_dx(weights=self.alpha_ms)
@@ -1356,20 +1569,20 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     def _dloglik_depistasis_func_params(self):
         r"""numpy.ndarray: Derivative of epistasis function by its params.
 
-        Derivative of :meth:`AbstractEpistasis.loglik` with respect to
-        :meth:`AbstractEpistasis._epistasis_func_params`.
+        Concrete implementation of
+        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.
 
         Note
         ----
-        See Eqs. and :eq:`dloglik_dcalpha` and :eq:`dloglik_dalpham`.
+        See Eqs. :eq:`dspline_epistasis_dcalpha` and
+        :eq:`dspline_epistasis_dalpham`.
 
         """
         assert self._epistasis_func_params[0] == self.c_alpha
         assert (self._epistasis_func_params[1:] == self.alpha_ms).all()
-        dlog_dobs = self._func_score_minus_observed_pheno_over_variance
-        dcalpha = dlog_dobs.dot(
+        dcalpha = self._dloglik_dobserved_phenotype.dot(
                 self._isplines_total.dItotal_dw_lower())
-        dalpham = dlog_dobs.dot(
+        dalpham = self._dloglik_dobserved_phenotype.dot(
                 self._isplines_total.dItotal_dweights(self.alpha_ms,
                                                       self.c_alpha))
         deriv = numpy.append(dcalpha, dalpham)
@@ -1484,6 +1697,70 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         if not numpy.allclose(self.loglik, oldloglik):
             raise EpistasisFittingError('post-scaling latent effects changed '
                                         f"loglik {oldloglik} to {self.loglik}")
+
+
+class MonotonicSplineEpistasisGaussianLikelihood(MonotonicSplineEpistasis,
+                                                 GaussianLikelihood):
+    """Monotonic spline global epistasis model with Gaussian likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`monotonic_spline_epistasis_function`
+    with a :ref:`gaussian_likelihood`. See documentation for the base
+    classes :class:`MonotonicSplineEpistasis`, :class:`GaussianLikelihood`,
+    and :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class MonotonicSplineEpistasisCauchyLikelihood(MonotonicSplineEpistasis,
+                                               CauchyLikelihood):
+    """Monotonic spline global epistasis model with Cauchy likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`monotonic_spline_epistasis_function`
+    with a :ref:`cauchy_likelihood`. See documentation for the base
+    classes :class:`MonotonicSplineEpistasis`, :class:`CauchyLikelihood`,
+    and :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class NoEpistasisGaussianLikelihood(NoEpistasis,
+                                    GaussianLikelihood):
+    """No-epistasis model with Gaussian likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`no_epistasis_function` with a
+    :ref:`gaussian_likelihood`. See documentation for the base classes
+    :class:`NoEpistasis`, :class:`GaussianLikelihood`, and
+    :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class NoEpistasisCauchyLikelihood(NoEpistasis,
+                                  CauchyLikelihood):
+    """No-epistasis model with Cauchy likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`no_epistasis_function` with a
+    :ref:`cauchy_likelihood`. See documentation for the base classes
+    :class:`NoEpistasis`, :class:`CauchyLikelihood`, and
+    :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
 
 
 if __name__ == '__main__':
