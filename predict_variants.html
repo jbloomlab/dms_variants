@@ -1,0 +1,1441 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Predict unseen variants using global epistasis models &#8212; dms_variants 0.4.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Formatting CodonVariantTable plots" href="codonvariant_plot_formatting.html" />
+    <link rel="prev" title="Fitting gobal epistasis models with experimental “noise”" href="narrow_bottleneck.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Predict-unseen-variants-using-global-epistasis-models">
+<h1>Predict unseen variants using global epistasis models<a class="headerlink" href="#Predict-unseen-variants-using-global-epistasis-models" title="Permalink to this headline">¶</a></h1>
+<p>In this example, we simulate deep mutational scanning libraries with a variety of mutation rates, assuming the variant phenotypes can be described by a global epistasis model. We then fit a global epistasis model to the data, and see how well we are able to estimate the latent effects of mutations. Finally, we test how well the models fit to the data can predict the phenotypes of new <em>unseen</em> multiple-mutant variants.</p>
+<p>So overall, the example is designed to address the following questions:</p>
+<ol class="arabic simple">
+<li><p>How well can fitting global epistasis models predict variant phenotypes (assuming the variants are actually describable by these models)?</p></li>
+<li><p>What is the optimal mutation rate for a deep mutational scanning library if we want to predict the phenotypes of unseen variants?</p></li>
+</ol>
+<div class="section" id="Setup-for-analysis">
+<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Import Python modules / packages:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">dms_variants.binarymap</span>
+<span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
+<span class="kn">import</span> <span class="nn">dms_variants.globalepistasis</span>
+<span class="kn">import</span> <span class="nn">dms_variants.plotnine_themes</span>
+<span class="kn">import</span> <span class="nn">dms_variants.simulate</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
+</pre></div>
+</div>
+</div>
+<p>Now we set the parameters that define the simulation. We try to choose parameters typical of a Bloom lab viral deep mutational scanning project. There is a modest rate of errors in the variant calling, and a moderate bottleneck going from pre- to post-selection. We use a reasonably long gene (several hundred codons) as the results might be different for realistic-sized proteins compared to the “mini-proteins” used in some of the other examples. Crucially, we test libraries with a variety of
+mutation rates (average number of codon substitutions per variant):</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
+<span class="n">genelength</span> <span class="o">=</span> <span class="mi">300</span>  <span class="c1"># gene length in codons</span>
+<span class="n">variants_per_lib</span> <span class="o">=</span> <span class="mi">300</span> <span class="o">*</span> <span class="n">genelength</span>  <span class="c1"># variants per library</span>
+<span class="n">bclen</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># length of nucleotide barcode for each variant</span>
+<span class="n">variant_error_rate</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># rate at which variant sequence mis-called</span>
+<span class="n">avgdepth_per_variant</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># average per-variant sequencing depth</span>
+<span class="n">lib_uniformity</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># uniformity of library pre-selection</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="mf">0.02</span>  <span class="c1"># random noise in selections</span>
+<span class="n">bottleneck</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># bottleneck from pre- to post-selection as multiple of variants_per_lib</span>
+
+<span class="c1"># Try libraries with a variety of mutation rates, defined</span>
+<span class="c1"># as average codon mutations per variant.</span>
+<span class="n">avgmuts_list</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>Seed random number generator for reproducible output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Set pandas display options to show large chunks of Data Frames in this example:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Hide warnings that clutter output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Set the gray grid <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html?highlight=themes">plotnine theme</a> defined in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.plotnine_themes.html">dms_variants.plotnine_themes</a> as this gives a nice appearance for the plots:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Simulate-library-of-variants">
+<h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Permalink to this headline">¶</a></h2>
+<p>Simulate libraries of codon variants with each of the average mutation rates.</p>
+<p>Simulate wildtype gene sequence:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Wildtype gene of 300 codons:
+AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAACATCCGGCTGATGATGATCCTACACAACTCCGACGCTAGTTTTTCGACTCCAGTAGGTTTACGCTCAGGACAGGATTCTTCCCTGGATAAGATGTACCGCAGGGACGGGGGCCCGCGGCTTGTTCTTCCTCTCAACAAGGGGTTGGCACGAAGGCTGTTGGTTGAATCGATGCTTTTCGATCTACAAGACTTCAAAGTTTCATGCGTCTATCTTGAGCGCAATTCTGAGATACTGCTCCCCCCCGAAGCGGCCCGTAACATGAGGGATTCGTACTACTATATTTCCGGCACCAACAAAGTGATTACGGCGCCCACAAGCGAAAGGCAAGGTCGTCATCTAAACCCTCGCAGTACGTGCCTTATAGCATATAACAACAGAGGTAGCGGGGGCGACATCTTGTACCTTATCGCTCGAGATCATGCGAATCAGTTGTCTCAGTCGCAGTTAGTCCGCATTAAATCTAAGTATTTCGAGAGGTCGTTGGGGCTTCCTCCCATAGGCCGGAGTACGGGACAGCTGCATTCTTGCAACATACATTTTGTTCCAATAGGCTCCTGTCCATCTGGCCTCTTTATGGTAACCAGGTGGATAGTGGCATCCCCGCCACACTCGGCATTCTGCAGAGACACGAAGACATCGTACTCACCAGCCGTTCCTGAGATCACACAATGCGAGTGTCGTCAATACTCAAAAGGAACCACTTCTAAGATGTTTCGCACTAGGATGGTCACGTGGCCTTTGTGGCACATTCTCACGGCTAAGAAATTGCAGGCACGTCATAATTGGTTGTTGACGATCGCCTTGGACGGCGGAATTGAC
+</pre></div></div>
+</div>
+<p>Generate a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">simulate_CodonVariantTable</a> function, with different libraries for each mutation rate:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
+                <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+                <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+                <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;&lt;m&gt; = </span><span class="si">{avgmuts:.1f}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
+                                                         <span class="s1">&#39;nvariants&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span><span class="p">}</span>
+                               <span class="k">for</span> <span class="n">avgmuts</span> <span class="ow">in</span> <span class="n">avgmuts_list</span><span class="p">},</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Plot the number of amino-acid mutations per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span>
+                                  <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                  <span class="n">max_muts</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">avgmuts_list</span><span class="p">)),</span>
+                                  <span class="n">widthscale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+                                  <span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_17_0.png" src="_images/predict_variants_17_0.png" />
+</div>
+</div>
+<p>Average number of codon mutations of each type per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_19_0.png" src="_images/predict_variants_19_0.png" />
+</div>
+</div>
+<p>Examine how well amino-acid mutations are sampled in the library by looking at the fraction of mutations seen &lt;= some number of times, making separate plots for single mutants and all mutants. As expected, the libraries with lower mutation rates sample mutations somewhat better among <strong>single</strong>-mutant variants, but much worse among all variants.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span>
+                                      <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span>
+                                      <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                      <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_21_0.png" src="_images/predict_variants_21_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_21_1.png" src="_images/predict_variants_21_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Simulate-counts-for-samples">
+<h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Permalink to this headline">¶</a></h2>
+<p>Now we simulate the counts of each variant after selection.</p>
+<p>First, we define a “phenotype” function using a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, which follow the “global epistasis” concepts of <a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and <a class="reference external" href="https://doi.org/10.1534/genetics.116.195214">Sailer and Harms</a> to define the phenotype in two steps: an underlying latent phenotype that mutations affect additively, and then an
+observed phenotype that is a non-linear function of the latent phenotype. The variants are then simulated according to their observed enrichments, which are the exponentials of the observed phenotypes:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span>
+                                            <span class="n">geneseq</span><span class="p">,</span>
+                                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                                            <span class="n">wt_latent</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                            <span class="n">stop_effect</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
+                                            <span class="n">norm_weights</span><span class="o">=</span><span class="p">((</span><span class="mf">0.35</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.25</span><span class="p">,</span> <span class="mf">1.25</span><span class="p">),</span>
+                                                          <span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="o">-</span><span class="mf">5.5</span><span class="p">,</span> <span class="mf">2.25</span><span class="p">))</span>
+                                            <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Plot the simulated relationship of the latent phenotype with the observed enrichment and phenotype, with a dashed vertical line indicating the wildtype latent phenotype:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;enrichment&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotLatentVsObserved</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_25_0.png" src="_images/predict_variants_25_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_25_1.png" src="_images/predict_variants_25_1.png" />
+</div>
+</div>
+<p>Plot the latent phenotype, observed phenotype, and observed enrichment of all single amino-acid mutants, with a dashed vertical line indicating the wildtype:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;latentPhenotype&#39;</span><span class="p">,</span> <span class="s1">&#39;observedPhenotype&#39;</span><span class="p">,</span> <span class="s1">&#39;observedEnrichment&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotMutsHistogram</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_27_0.png" src="_images/predict_variants_27_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_27_1.png" src="_images/predict_variants_27_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_27_2.png" src="_images/predict_variants_27_2.png" />
+</div>
+</div>
+<p>Use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulateSampleCounts">simulateSampleCounts</a> to simulate counts of variants when selection on each variant is proportional to its observed enrichment:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
+        <span class="n">variants</span><span class="o">=</span><span class="n">variants</span><span class="p">,</span>
+        <span class="n">phenotype_func</span><span class="o">=</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">,</span>
+        <span class="n">variant_error_rate</span><span class="o">=</span><span class="n">variant_error_rate</span><span class="p">,</span>
+        <span class="n">pre_sample</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="n">avgdepth_per_variant</span><span class="p">,</span>
+                    <span class="s1">&#39;uniformity&#39;</span><span class="p">:</span> <span class="n">lib_uniformity</span><span class="p">},</span>
+        <span class="n">pre_sample_name</span><span class="o">=</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+        <span class="n">post_samples</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;post-selection&#39;</span><span class="p">:</span>
+                          <span class="p">{</span><span class="s1">&#39;noise&#39;</span><span class="p">:</span> <span class="n">noise</span><span class="p">,</span>
+                           <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="n">avgdepth_per_variant</span><span class="p">,</span>
+                           <span class="s1">&#39;bottleneck&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="n">bottleneck</span><span class="p">}</span>
+                      <span class="p">},</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Add the simulated counts for each library to the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Plot the number of counts for each variant in each sample. The horizontal dashed line shows the total number of variants. The plot shows that all variants are well-sampled in the pre-selection libraries, but that post- selection some variants are sampled more or less. This is expected since selection will decrease and increase the frequency of variants:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_33_0.png" src="_images/predict_variants_33_0.png" />
+</div>
+</div>
+<p>Distribution of the number of amino-acid mutations per variant in each sample. As expected, mutations go down after selection:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span>
+                                  <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                  <span class="n">max_muts</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">avgmuts_list</span><span class="p">)),</span>
+                                  <span class="n">widthscale</span><span class="o">=</span><span class="mf">1.2</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_35_0.png" src="_images/predict_variants_35_0.png" />
+</div>
+</div>
+<p>Average number of mutations per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_37_0.png" src="_images/predict_variants_37_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Functional-scores-for-variants">
+<h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Permalink to this headline">¶</a></h2>
+<p>Use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">CodonVariantTable.func_scores</a> to calculates a functional score for each variant based on its change in frequency from pre- to post-selection:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+                                   <span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Classify variants by the “types” of mutations they have using the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants">CodonVariantTable.classifyVariants</a>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span><span class="n">func_scores</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Plot the distributions of scores, coloring by the variant class. As expected, the multiple amino-acid mutant variants tend to have lower scores for the libraries with higher mutation rates, since in those libraries the multiple mutants tend to have more mutations (which are generally deleterious):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">ggplot</span><span class="p">(</span><span class="n">func_scores</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;variant_class&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">))</span> <span class="o">+</span>
+    <span class="n">geom_violin</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s1">&#39;variant_class&#39;</span><span class="p">))</span> <span class="o">+</span>
+    <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;functional score&#39;</span><span class="p">)</span> <span class="o">+</span>
+    <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
+    <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+    <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
+          <span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
+          <span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">(),</span>  <span class="c1"># no vertical grid lines</span>
+          <span class="p">)</span> <span class="o">+</span>
+    <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span> <span class="p">:],</span> <span class="n">guide</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_43_0.png" src="_images/predict_variants_43_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Fit-global-epistasis-models">
+<h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
+<p>Now we fit global epistasis models.</p>
+<p>We fit two different types of epistasis functions: - <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> models, which model global epistasis in the way described in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. - <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis">NoEpistasis</a> models, which
+assume mutations contribute additively to the functional scores.</p>
+<p>We just use one way to calculate the likelihood, the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.GaussianLikelihood">GaussianLikelihood</a>. That’s because this likelihood calculation method words best for experiments with only modest noise like the one simulated here. If you had more experimental noise, you might also try the
+<a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.GaussianLikelihood">CauchyLikelihood</a>, which is more robust to noise.</p>
+<p>See the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/codonvariant_sim_data.html">globalepistasis module documentation</a> for more details on all these models.</p>
+<p>Below we fit each model and save it in a <code class="docutils literal notranslate"><span class="pre">dict</span></code> to use later:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># store models, keyed by `(epistasis function, library)`</span>
+
+<span class="k">for</span> <span class="n">library</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">func_scores</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="n">bmap</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">epistasis_func</span><span class="p">,</span> <span class="n">Model</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;global epistasis&#39;</span><span class="p">,</span>
+             <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">MonotonicSplineEpistasisGaussianLikelihood</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">,</span>
+             <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">NoEpistasisGaussianLikelihood</span><span class="p">),</span>
+            <span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Fitting </span><span class="si">{epistasis_func}</span><span class="s2"> model to library </span><span class="si">{library}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+
+        <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">bmap</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;fitting took {time.time() - start:.1f} sec.&quot;</span><span class="p">)</span>
+        <span class="n">models</span><span class="p">[(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Fitting global epistasis model to library &lt;m&gt; = 1.0... fitting took 35.8 sec.
+Fitting no epistasis model to library &lt;m&gt; = 1.0... fitting took 2.8 sec.
+Fitting global epistasis model to library &lt;m&gt; = 2.0... fitting took 117.8 sec.
+Fitting no epistasis model to library &lt;m&gt; = 2.0... fitting took 1.9 sec.
+Fitting global epistasis model to library &lt;m&gt; = 3.0... fitting took 83.7 sec.
+Fitting no epistasis model to library &lt;m&gt; = 3.0... fitting took 1.4 sec.
+Fitting global epistasis model to library &lt;m&gt; = 4.0... fitting took 109.5 sec.
+Fitting no epistasis model to library &lt;m&gt; = 4.0... fitting took 1.3 sec.
+Fitting global epistasis model to library &lt;m&gt; = 5.0... fitting took 91.5 sec.
+Fitting no epistasis model to library &lt;m&gt; = 5.0... fitting took 1.3 sec.
+</pre></div></div>
+</div>
+<p>We first simply want to confirm that for all libraries, the global epistasis model outperforms the no-epistasis model. To do this, we get the log likelihood along with the number of model parameters and use it to calculate the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better. We compute the <span class="math notranslate nohighlight">\(\Delta\)</span>AIC between the global epistasis model and no-epistasis model: positive <span class="math notranslate nohighlight">\(\Delta\)</span>AIC values indicate that the global epistasis
+model is better.</p>
+<p>Below we see that in all cases, the global epistasis model is better than the no-epistasis model:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">logliks_df</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nparams</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">loglik</span><span class="p">)</span> <span class="k">for</span>
+             <span class="p">(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">),</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span>
+            <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;epistasis_function&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;n_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;log_likelihood&#39;</span><span class="p">]</span>
+            <span class="p">)</span>
+    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AIC</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_parameters&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">,</span>
+                 <span class="n">values</span><span class="o">=</span><span class="s1">&#39;AIC&#39;</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;epistasis_function&#39;</span><span class="p">,</span>
+                 <span class="p">)</span>
+    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">deltaAIC</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;global epistasis&#39;</span><span class="p">])</span>
+    <span class="p">)</span>
+
+<span class="n">logliks_df</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>epistasis_function</th>
+      <th>global epistasis</th>
+      <th>no epistasis</th>
+      <th>deltaAIC</th>
+    </tr>
+    <tr>
+      <th>library</th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>&lt;m&gt; = 1.0</th>
+      <td>207492.1</td>
+      <td>245222.2</td>
+      <td>37730.1</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 2.0</th>
+      <td>238179.6</td>
+      <td>345893.2</td>
+      <td>107713.6</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 3.0</th>
+      <td>253916.9</td>
+      <td>406091.6</td>
+      <td>152174.7</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 4.0</th>
+      <td>258687.1</td>
+      <td>423592.2</td>
+      <td>164905.1</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 5.0</th>
+      <td>250088.8</td>
+      <td>417489.9</td>
+      <td>167401.1</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Next examine the epistasis model fit on the variants used to fit the model. We use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.phenotypes_df">AbstractEpistasis.phenotypes_df</a> to get a data frame of all the variants used to fit each global epistasis model along with their functional scores and the latent and observed phenotypes predicted by the model. We then plot the relationship between latent and observed
+phenotype. We only do this for the global epistasis model (not the no-epistasis model) as the relationship is trivial for the no-epistasis model:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">phenotypes_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">library</span><span class="o">=</span><span class="n">library</span><span class="p">)</span>
+         <span class="k">for</span> <span class="p">(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">),</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+         <span class="k">if</span> <span class="n">epistasis_func</span> <span class="o">==</span> <span class="s1">&#39;global epistasis&#39;</span><span class="p">],</span>
+        <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">variants_df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;latent_phenotype&#39;</span><span class="p">,</span> <span class="s1">&#39;observed_phenotype&#39;</span><span class="p">))</span> <span class="o">+</span>
+     <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">variants_df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(),</span> <span class="mi">2</span><span class="p">))</span>
+     <span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_50_0.png" src="_images/predict_variants_50_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="How-well-do-the-models-infer-the-latent-effects-of-mutations?">
+<h2>How well do the models infer the latent effects of mutations?<a class="headerlink" href="#How-well-do-the-models-infer-the-latent-effects-of-mutations?" title="Permalink to this headline">¶</a></h2>
+<p>In order to accurately predict the observed phenotypes of unseen variants, it will be important to accurately have inferred the latent effects of mutations.</p>
+<p>Here we get the predicted latent effect of each mutation for each library / epistasis function using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.latent_effects_df">AbstractEpistasis.latent_effects_df</a>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">latent_df_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">),</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">latent_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">latent_effects_df</span>
+        <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;latent_effect&#39;</span><span class="p">:</span> <span class="s1">&#39;predicted_latent_effect&#39;</span><span class="p">})</span>
+        <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">library</span><span class="o">=</span><span class="n">library</span><span class="p">,</span>
+                <span class="n">epistasis_func</span><span class="o">=</span><span class="n">epistasis_func</span><span class="p">)</span>
+        <span class="p">)</span>
+
+<span class="n">latent_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">latent_df_list</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Because we simulated the experiments using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, we can also get the <strong>true</strong> latent effect of each mutation. (Obviously in real non-simulated experiments the true latent phenotypes are unknown.) Below we get these true latent effects:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">latent_df</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">latent_df</span>
+    <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+        <span class="n">true_latent_effect</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;mutation&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">muteffects</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we calculate the correlations between the true and model-predicted latent effects:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">latent_corr</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">latent_df</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;epistasis_func&#39;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;predicted_latent_effect&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;true_latent_effect&#39;</span><span class="p">]))</span>
+    <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;correlation&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">,</span>
+                 <span class="n">values</span><span class="o">=</span><span class="s1">&#39;correlation&#39;</span><span class="p">,</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;epistasis_func&#39;</span><span class="p">,</span>
+                 <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">latent_corr</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>epistasis_func</th>
+      <th>global epistasis</th>
+      <th>no epistasis</th>
+    </tr>
+    <tr>
+      <th>library</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>&lt;m&gt; = 1.0</th>
+      <td>0.97</td>
+      <td>0.95</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 2.0</th>
+      <td>0.96</td>
+      <td>0.95</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 3.0</th>
+      <td>0.94</td>
+      <td>0.90</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 4.0</th>
+      <td>0.99</td>
+      <td>0.85</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 5.0</th>
+      <td>0.98</td>
+      <td>0.80</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The correlations above show that the global epistasis models do a better job of inferring the latent effects than the no-epistasis model, and that the best inferences are made when the average number of mutations per variant is between 3 and 4. However, the correlation coefficients don’t really do justice to the data, since these correlations are dominate by the very low and very high values. Below we plot the correlations between the model-predicted and true values. Those plots make clear that
+the global epistasis models do a much better job than the no-epistasis models, particularly for the mutation rates of 3 or 4. When looking at the plots, keep in mind the most critical region is the moderately deleterious to beneficial mutations, since highly deleterious mutations don’t really need to have their latent effects inferred accurately other than correctly inferring that they are highly deleterious:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">latent_df</span><span class="p">,</span>
+            <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;true_latent_effect&#39;</span><span class="p">,</span> <span class="s1">&#39;predicted_latent_effect&#39;</span><span class="p">))</span> <span class="o">+</span>
+     <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">facet_grid</span><span class="p">(</span><span class="s1">&#39;epistasis_func ~ library&#39;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s1">&#39;free_y&#39;</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">latent_df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(),</span>
+                        <span class="mi">2</span> <span class="o">*</span> <span class="n">latent_df</span><span class="p">[</span><span class="s1">&#39;epistasis_func&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">())</span>
+           <span class="p">)</span>
+     <span class="p">)</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_58_0.png" src="_images/predict_variants_58_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Predict-phenotypes-of-unseen-variants">
+<h2>Predict phenotypes of unseen variants<a class="headerlink" href="#Predict-phenotypes-of-unseen-variants" title="Permalink to this headline">¶</a></h2>
+<p>Now we are going to test how well the models can predict the phenotypes of unseen variants that have a modest number of mutations relative to the wildtype sequence used in the experiments.</p>
+<p>We will test the predictions in terms of the <em>enrichment</em> of the variants after selection (recall this is the exponential of the observed phenotype), since this enrichment is the number that best quantifies how well the unseen variants actually would perform in an experiment.</p>
+<p>Below we generate a set of new variants with a modest number of mutations relative to wildtype, and then calculate their <em>true</em> enrichment under the simulator used to simulate the experiments above:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">nmuts</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># predict variants with this many mutations relative to wildtype</span>
+<span class="n">npredict</span> <span class="o">=</span> <span class="mi">50000</span>  <span class="c1"># make predictions for this many variants</span>
+
+<span class="n">rand_variants_df</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">:</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">codon_muts</span><span class="p">(</span><span class="n">geneseq</span><span class="p">,</span>
+                                                                          <span class="n">nmuts</span><span class="p">,</span>
+                                                                          <span class="n">npredict</span><span class="p">)</span>
+                  <span class="p">})</span>
+    <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+        <span class="n">aa_substitutions</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">codonToAAMuts</span><span class="p">),</span>
+        <span class="n">true_enrichment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                <span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we calculate the predicted enrichments from the model for these variants. Note that when calling <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.add_phenotypes_to_df">AbstractEpistasis.add_phenotypes_to_df</a>, we set the phenotypes of unknown variants to <code class="docutils literal notranslate"><span class="pre">nan</span></code> (unknown variants are ones that contain a mutation that was not observed at all in the set of variants used to fit the modle). We then drop such variants.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">rand_variants_df_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">),</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">rand_variants_df_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">add_phenotypes_to_df</span><span class="p">(</span><span class="n">rand_variants_df</span><span class="p">,</span>
+                                   <span class="n">latent_phenotype_col</span><span class="o">=</span><span class="s1">&#39;predicted_latent_phenotype&#39;</span><span class="p">,</span>
+                                   <span class="n">observed_phenotype_col</span><span class="o">=</span><span class="s1">&#39;predicted_observed_phenotype&#39;</span><span class="p">,</span>
+                                   <span class="n">unknown_as_nan</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                   <span class="p">)</span>
+        <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+            <span class="n">library</span><span class="o">=</span><span class="n">library</span><span class="p">,</span>
+            <span class="n">epistasis_func</span><span class="o">=</span><span class="n">epistasis_func</span><span class="p">,</span>
+            <span class="n">predicted_enrichment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">enrichments</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;predicted_observed_phenotype&#39;</span><span class="p">]),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+<span class="n">rand_variants_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">rand_variants_df_list</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now look at the correlation between the predicted and true phenotypes for the unseen variants. We also tally how many variants there are (after dropping the ones with unknown phenotypes) that can be predicted by each model:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">rand_variants_corr</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">rand_variants_df</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;epistasis_func&#39;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;predicted_enrichment&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;true_enrichment&#39;</span><span class="p">]))</span>
+    <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;correlation&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rand_variants_df</span>
+           <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;epistasis_func&#39;</span><span class="p">])</span>
+           <span class="o">.</span><span class="n">size</span><span class="p">()</span>
+           <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;num_variants&#39;</span><span class="p">)</span>
+           <span class="p">)</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;num_variants&#39;</span><span class="p">],</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;epistasis_func&#39;</span><span class="p">,</span>
+                 <span class="n">values</span><span class="o">=</span><span class="s1">&#39;correlation&#39;</span><span class="p">,</span>
+                 <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">rand_variants_corr</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epistasis_func</th>
+      <th>global epistasis</th>
+      <th>no epistasis</th>
+    </tr>
+    <tr>
+      <th>library</th>
+      <th>num_variants</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>&lt;m&gt; = 1.0</th>
+      <th>49919</th>
+      <td>0.89</td>
+      <td>0.84</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 2.0</th>
+      <th>50000</th>
+      <td>0.95</td>
+      <td>0.85</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 3.0</th>
+      <th>50000</th>
+      <td>0.99</td>
+      <td>0.75</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 4.0</th>
+      <th>50000</th>
+      <td>0.99</td>
+      <td>0.72</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 5.0</th>
+      <th>50000</th>
+      <td>0.98</td>
+      <td>0.63</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>The correlation coefficients above shows that the predictions are best using the global epistasis model with between 3 and 4 mutations per variant. This point becomes even more clear if we look at the actual correlation scatter plots, which are shown below. (Note that for the plotting we clip predicted enrichments &gt; 2 to 2 to avoid outliers distorting the plot scales):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">rand_variants_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">predicted_enrichment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+                                    <span class="n">scipy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;predicted_enrichment&#39;</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;true_enrichment&#39;</span><span class="p">,</span> <span class="s1">&#39;predicted_enrichment&#39;</span><span class="p">))</span> <span class="o">+</span>
+     <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">facet_grid</span><span class="p">(</span><span class="s1">&#39;epistasis_func ~ library&#39;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s1">&#39;free_y&#39;</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">rand_variants_df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(),</span>
+                        <span class="mf">2.5</span> <span class="o">*</span> <span class="n">rand_variants_df</span><span class="p">[</span><span class="s1">&#39;epistasis_func&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(),</span>
+                        <span class="p">)</span>
+           <span class="p">)</span>
+     <span class="p">)</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_66_0.png" src="_images/predict_variants_66_0.png" />
+</div>
+</div>
+<p>Perhaps even more salient is to look at the predictions only on the variants that are at least somewhat functional. This is because much of the correlations in the plot above come from the low end of variants with very low enrichments–but those variants are dead so we don’t care so much about predicting them. So below we repeat the analysis after first filtering for variants with at least a modestly high enrichment:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">rand_variants_filtered_df</span> <span class="o">=</span> <span class="n">rand_variants_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;true_enrichment &gt; 0.1&#39;</span><span class="p">)</span>
+
+<span class="n">rand_variants_filtered_corr</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">rand_variants_filtered_df</span>
+    <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;epistasis_func&#39;</span><span class="p">])</span>
+    <span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;predicted_enrichment&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;true_enrichment&#39;</span><span class="p">]))</span>
+    <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;correlation&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">rand_variants_filtered_df</span>
+           <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;epistasis_func&#39;</span><span class="p">])</span>
+           <span class="o">.</span><span class="n">size</span><span class="p">()</span>
+           <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;num_variants&#39;</span><span class="p">)</span>
+           <span class="p">)</span>
+    <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;num_variants&#39;</span><span class="p">],</span>
+                 <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;epistasis_func&#39;</span><span class="p">,</span>
+                 <span class="n">values</span><span class="o">=</span><span class="s1">&#39;correlation&#39;</span><span class="p">,</span>
+                 <span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="n">rand_variants_filtered_corr</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>epistasis_func</th>
+      <th>global epistasis</th>
+      <th>no epistasis</th>
+    </tr>
+    <tr>
+      <th>library</th>
+      <th>num_variants</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>&lt;m&gt; = 1.0</th>
+      <th>2338</th>
+      <td>0.75</td>
+      <td>0.67</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 2.0</th>
+      <th>2343</th>
+      <td>0.88</td>
+      <td>0.69</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 3.0</th>
+      <th>2343</th>
+      <td>0.96</td>
+      <td>0.56</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 4.0</th>
+      <th>2343</th>
+      <td>0.96</td>
+      <td>0.55</td>
+    </tr>
+    <tr>
+      <th>&lt;m&gt; = 5.0</th>
+      <th>2343</th>
+      <td>0.94</td>
+      <td>0.51</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">rand_variants_filtered_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">predicted_enrichment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
+                                             <span class="n">scipy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;predicted_enrichment&#39;</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+            <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;true_enrichment&#39;</span><span class="p">,</span> <span class="s1">&#39;predicted_enrichment&#39;</span><span class="p">))</span> <span class="o">+</span>
+     <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">facet_grid</span><span class="p">(</span><span class="s1">&#39;epistasis_func ~ library&#39;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s1">&#39;free_y&#39;</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.5</span> <span class="o">*</span> <span class="n">rand_variants_df</span><span class="p">[</span><span class="s1">&#39;library&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(),</span>
+                        <span class="mf">2.5</span> <span class="o">*</span> <span class="n">rand_variants_df</span><span class="p">[</span><span class="s1">&#39;epistasis_func&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">(),</span>
+                        <span class="p">)</span>
+           <span class="p">)</span>
+     <span class="p">)</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/predict_variants_69_0.png" src="_images/predict_variants_69_0.png" />
+</div>
+</div>
+<p>The table and plot above shows that the superiority of the global epistasis models using libraries with mutation rates between 3 and 4 is even more obvious if we look at the variants filtered for at least some functionality.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Predict unseen variants using global epistasis models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="narrow_bottleneck.html" title="previous chapter">Fitting gobal epistasis models with experimental “noise”</a></li>
+      <li>Next: <a href="codonvariant_plot_formatting.html" title="next chapter">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2019.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/predict_variants.nblink.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.simulate &#8212; dms_variants 0.3.0 documentation</title>
+    <title>dms_variants.simulate &#8212; dms_variants 0.4.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -81,8 +81,6 @@
 <span class="sd">    str or list</span>
 <span class="sd">        A random sequence or list of them depending on value of `nseqs`.</span>
 
-<span class="sd">    Note</span>
-<span class="sd">    ----</span>
 <span class="sd">    Seed `random.seed` for reproducible output.</span>
 
 <span class="sd">    Example</span>
@@ -132,8 +130,6 @@
 <span class="sd">    str</span>
 <span class="sd">        Mutagenized sequence, all upper-case.</span>
 
-<span class="sd">    Note</span>
-<span class="sd">    ----</span>
 <span class="sd">    Seed `random.seed` for reproducible output.</span>
 
 <span class="sd">    Example</span>
@@ -151,6 +147,53 @@
     <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">sites</span><span class="p">:</span>
         <span class="n">seq</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">nt</span> <span class="k">for</span> <span class="n">nt</span> <span class="ow">in</span> <span class="n">NTS</span> <span class="k">if</span> <span class="n">nt</span> <span class="o">!=</span> <span class="n">seq</span><span class="p">[</span><span class="n">r</span><span class="p">]])</span>
     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="codon_muts"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.codon_muts">[docs]</a><span class="k">def</span> <span class="nf">codon_muts</span><span class="p">(</span><span class="n">codonseq</span><span class="p">,</span> <span class="n">nmuts</span><span class="p">,</span> <span class="n">nvariants</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get random codon mutations to sequence.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    codonseq : str</span>
+<span class="sd">        A valid codon sequence</span>
+<span class="sd">    nmuts : int</span>
+<span class="sd">        Number of mutations to make per variant.</span>
+<span class="sd">    nvariants : int</span>
+<span class="sd">        Number of variants to generate. There is no guarantee that the</span>
+<span class="sd">        variants are unique.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list</span>
+<span class="sd">        List of mutations in each of the `nvariants` mutated variants</span>
+<span class="sd">        in the form &#39;ATG1TAC GGC3GGG&#39; where the number refers to the</span>
+<span class="sd">        **codon** position.</span>
+
+<span class="sd">    Seed `random.seed` for reproducible output.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; codonseq = &#39;ATGGAAGGGCATGGA&#39;</span>
+<span class="sd">    &gt;&gt;&gt; random.seed(1)</span>
+<span class="sd">    &gt;&gt;&gt; codon_muts(codonseq, nmuts=2, nvariants=3)</span>
+<span class="sd">    [&#39;ATG1CAC GAA2ACT&#39;, &#39;CAT4CTT GGA5GGG&#39;, &#39;GAA2ACG CAT4GAA&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;(?:{&#39;|&#39;.join(CODONS)})+&quot;</span><span class="p">,</span> <span class="n">codonseq</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`codonseq` not valid codon sequence:</span><span class="se">\n</span><span class="si">{codonseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">codonseq</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="n">codons</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span> <span class="n">codonseq</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">i</span><span class="p">:</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">]</span>
+              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">codonseq</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span><span class="p">)}</span>
+    <span class="k">if</span> <span class="n">nmuts</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">codons</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`nmuts` greater than number of codons in `codonseq`&#39;</span><span class="p">)</span>
+    <span class="n">mutlist</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nvariants</span><span class="p">):</span>
+        <span class="n">sitemuts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">site</span><span class="p">,</span> <span class="n">wt</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">codons</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">nmuts</span><span class="p">)):</span>
+            <span class="n">mut</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">CODONS</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">wt</span><span class="p">])</span>
+            <span class="n">sitemuts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{wt}{site}{mut}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">mutlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sitemuts</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">mutlist</span></div>
 
 
 <div class="viewcode-block" id="simulate_CodonVariantTable"><a class="viewcode-back" href="../../dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">[docs]</a><span class="k">def</span> <span class="nf">simulate_CodonVariantTable</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span> <span class="n">bclen</span><span class="p">,</span> <span class="n">library_specs</span><span class="p">,</span>

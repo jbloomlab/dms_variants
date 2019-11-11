@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Examples &#8212; dms_variants 0.3.0 documentation</title>
+    <title>Examples &#8212; dms_variants 0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -36,15 +36,27 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<p>Here are a series of examples that illustrate usage of the package:</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">dms_variants</span></code> package is designed to aid in the analysis of deep mutational scanning of barcoded variants of genes.
+It contains many Python functions and classes that you can use in scripts or Jupyter notebooks.
+Major functionality includes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>The <a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a> class for managing and analyze libraries of barcoded codon variants of genes.</p></li>
+<li><p>The <a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser" title="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.illuminabarcodeparser.IlluminaBarcodeParser</span></code></a> for easily parsing Illumina barcode sequencing that counts variants.</p></li>
+<li><p>The <a class="reference internal" href="dms_variants.globalepistasis.html#module-dms_variants.globalepistasis" title="dms_variants.globalepistasis"><code class="xref py py-mod docutils literal notranslate"><span class="pre">dms_variants.globalepistasis</span></code></a> module for fitting global epistasis models to experiments on variants with multiple mutations.</p></li>
+</ul>
+</div></blockquote>
+<p>Below are a series of examples that illustrate usage of this functionality and other aspects of the <code class="docutils literal notranslate"><span class="pre">dms_variants</span></code> package.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
+<li class="toctree-l1"><a class="reference internal" href="predict_variants.html">Predict unseen variants using global epistasis models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
 <li class="toctree-l1"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
 </ul>
 </div>
-<p>These examples can be run as interactive Jupyter notebooks on <a class="reference external" href="https://mybinder.readthedocs.io">mybinder</a> by going to the <a class="reference external" href="https://mybinder.org/v2/gh/jbloomlab/dms_variants/master?filepath=notebooks">following link</a> and then opening the notebook you want to run.</p>
+<p>The above examples can be run as interactive Jupyter notebooks on <a class="reference external" href="https://mybinder.readthedocs.io">mybinder</a> by going to the <a class="reference external" href="https://mybinder.org/v2/gh/jbloomlab/dms_variants/master?filepath=notebooks">following link</a> (it may take a minute to load) and then opening the notebook you want to run.</p>
 </div>
 
 
@@ -99,6 +111,8 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="predict_variants.html">Predict unseen variants using global epistasis models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
 </ul>

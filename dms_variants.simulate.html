@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>simulate &#8212; dms_variants 0.3.0 documentation</title>
+    <title>simulate &#8212; dms_variants 0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -223,6 +223,38 @@ phenotype.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="dms_variants.simulate.codon_muts">
+<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">codon_muts</code><span class="sig-paren">(</span><em class="sig-param">codonseq</em>, <em class="sig-param">nmuts</em>, <em class="sig-param">nvariants</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#codon_muts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.codon_muts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get random codon mutations to sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>codonseq</strong> (<em>str</em>) – A valid codon sequence</p></li>
+<li><p><strong>nmuts</strong> (<em>int</em>) – Number of mutations to make per variant.</p></li>
+<li><p><strong>nvariants</strong> (<em>int</em>) – Number of variants to generate. There is no guarantee that the
+variants are unique.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>list</em> – List of mutations in each of the <cite>nvariants</cite> mutated variants
+in the form ‘ATG1TAC GGC3GGG’ where the number refers to the
+<strong>codon</strong> position.</p></li>
+<li><p>Seed <cite>random.seed</cite> for reproducible output.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">codonseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGAAGGGCATGGA&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codon_muts</span><span class="p">(</span><span class="n">codonseq</span><span class="p">,</span> <span class="n">nmuts</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">nvariants</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">[&#39;ATG1CAC GAA2ACT&#39;, &#39;CAT4CTT GGA5GGG&#39;, &#39;GAA2ACG CAT4GAA&#39;]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="dms_variants.simulate.mutate_seq">
 <code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">mutate_seq</code><span class="sig-paren">(</span><em class="sig-param">seq</em>, <em class="sig-param">nmuts</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#mutate_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.mutate_seq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mutate a nucleotide sequence.</p>
@@ -234,16 +266,13 @@ phenotype.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Mutagenized sequence, all upper-case.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>str</em> – Mutagenized sequence, all upper-case.</p></li>
+<li><p>Seed <cite>random.seed</cite> for reproducible output.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Seed <cite>random.seed</cite> for reproducible output.</p>
-</div>
 <p class="rubric">Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">mutate_seq</span><span class="p">(</span><span class="s1">&#39;ATGCAA&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -265,16 +294,13 @@ phenotype.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>A random sequence or list of them depending on value of <cite>nseqs</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>str or list</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>str or list</em> – A random sequence or list of them depending on value of <cite>nseqs</cite>.</p></li>
+<li><p>Seed <cite>random.seed</cite> for reproducible output.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Seed <cite>random.seed</cite> for reproducible output.</p>
-</div>
 <p class="rubric">Example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">rand_seq</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>

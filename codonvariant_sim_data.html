@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.3.0 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Formatting CodonVariantTable plots" href="codonvariant_plot_formatting.html" />
+    <link rel="next" title="Fitting gobal epistasis models with experimental “noise”" href="narrow_bottleneck.html" />
     <link rel="prev" title="Examples" href="examples.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -983,7 +983,7 @@ First few barcodes for library lib_2:
 </table>
 </div></div>
 </div>
-<p>Examine how well amino-acid mutations are sampled in the library by looking at the fraction of mutations seen &lt;= some number of times. Here we do that for codon and amino- acid mutations, making separate plots for single mutants and all mutants:</p>
+<p>Examine how well amino-acid mutations are sampled in the library by looking at the fraction of mutations seen &lt;= some number of times. Here we do that for amino- acid mutations, making separate plots for single mutants and all mutants:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
@@ -2400,10 +2400,9 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="section" id="Fit-global-epistasis-models">
 <h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
 <p>We now fit global epistasis models to the functional scores from each simulated experiment. For background on these models, see <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. The models we fits are implemented in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a>, which has extensive documentation.</p>
-<p>The primary model of interest is <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a>, which assumes that the observed phenotype is a monotonic non-linear function of an underlying additive latent phenotype. As a control, we also fit a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis">NoEpistasis</a> model, which assumes
-that mutations simply contribute additively to the observed phenotype:</p>
-<p>For the fitting, we first convert the set of functional scores into a binary representation using a <a class="reference external" href="(https://jbloomlab.github.io/dms_variants/dms_variants.binarymap.html#dms_variants.binarymap.BinaryMap)">BinaryMap</a>. Then we create the model, fit it, and store it.</p>
-<p>Note that in the fitting below we increase <code class="docutils literal notranslate"><span class="pre">ftol</span></code> above the default value in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.fit">AbstractEpistasis</a>. This is <strong>only</strong> to increase reproducibility across platforms for tests, and is <strong>not</strong> something you should need to do (just use the default):</p>
+<p>The primary model of interest is <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood">MonotonicSplineEpistasisGaussianLikelihood</a>, which assumes that the observed phenotype is a monotonic non-linear function of an underlying additive latent phenotype. As a control, we also fit a
+<a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">NoEpistasisGaussianLikelihood</a> model, which assumes that mutations simply contribute additively to the observed phenotype. Note that for both models we are using the Gaussian-likelihood calculation method to determine model fit (see <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a> for details).</p>
+<p>For the fitting, we first convert the set of functional scores into a binary representation using a <a class="reference external" href="(https://jbloomlab.github.io/dms_variants/dms_variants.binarymap.html#dms_variants.binarymap.BinaryMap)">BinaryMap</a>. Then we create the model, fit it, and store it:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
@@ -2419,14 +2418,16 @@ that mutations simply contribute additively to the observed phenotype:</p>
     <span class="n">bmap</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">modeltype</span><span class="p">,</span> <span class="n">EpistasisModel</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="p">(</span><span class="s1">&#39;global epistasis&#39;</span><span class="p">,</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">MonotonicSplineEpistasis</span><span class="p">),</span>
-            <span class="p">(</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">,</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">NoEpistasis</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;global epistasis&#39;</span><span class="p">,</span>
+             <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">MonotonicSplineEpistasisGaussianLikelihood</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">,</span>
+             <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">NoEpistasisGaussianLikelihood</span><span class="p">),</span>
             <span class="p">]:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Fitting </span><span class="si">{modeltype}</span><span class="s2"> model to </span><span class="si">{sample}</span><span class="s2">, </span><span class="si">{lib}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
 
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">EpistasisModel</span><span class="p">(</span><span class="n">bmap</span><span class="p">)</span>
-        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">ftol</span><span class="o">=</span><span class="mf">1e-7</span><span class="p">)</span>  <span class="c1"># do NOT change ftol in normal use, this is just for test</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;fitting took {time.time() - start:.1f} sec.&quot;</span><span class="p">)</span>
         <span class="n">models</span><span class="p">[(</span><span class="n">modeltype</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model</span>
 </pre></div>
@@ -3816,6 +3817,8 @@ model-predicted enrichments for each variant (recall that the functional score /
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="predict_variants.html">Predict unseen variants using global epistasis models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
 <li class="toctree-l2"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
 </ul>
@@ -3831,7 +3834,7 @@ model-predicted enrichments for each variant (recall that the functional score /
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="examples.html">Examples</a><ul>
       <li>Previous: <a href="examples.html" title="previous chapter">Examples</a></li>
-      <li>Next: <a href="codonvariant_plot_formatting.html" title="next chapter">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+      <li>Next: <a href="narrow_bottleneck.html" title="next chapter">Fitting gobal epistasis models with experimental “noise”</a></li>
   </ul></li>
   </ul></li>
 </ul>

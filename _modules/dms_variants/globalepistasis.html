@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.globalepistasis &#8212; dms_variants 0.3.0 documentation</title>
+    <title>dms_variants.globalepistasis &#8212; dms_variants 0.4.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -38,16 +38,21 @@
 <span class="sd">globalepistasis</span>
 <span class="sd">=================</span>
 
-<span class="sd">Implements global epistasis models based on `Otwinoski et al (2018)`_.</span>
+<span class="sd">Implements global epistasis models that are based on (but extend in some</span>
+<span class="sd">ways) those described in `Otwinoski et al (2018)`_.</span>
+<span class="sd">See also `Sailer and Harms (2017)`_ and `Otwinoski (2018)`_.</span>
 
 <span class="sd">.. contents:: Contents</span>
 <span class="sd">   :local:</span>
 <span class="sd">   :depth: 2</span>
 
-<span class="sd">Definition of models</span>
-<span class="sd">---------------------</span>
+<span class="sd">.. _global_epistasis_function:</span>
 
-<span class="sd">The models are defined as follows. Let :math:`v` be a variant. We convert</span>
+<span class="sd">Global epistasis function</span>
+<span class="sd">---------------------------</span>
+
+<span class="sd">The global epistasis function is defined as follows.</span>
+<span class="sd">Let :math:`v` be a variant. We convert</span>
 <span class="sd">:math:`v` into a binary representation with respect to some wildtype</span>
 <span class="sd">sequence. This representation is a vector :math:`\mathbf{b}\left(v\right)`</span>
 <span class="sd">with element :math:`b\left(v\right)_m` equal to 1 if the variant has mutation</span>
@@ -77,23 +82,26 @@
 
 <span class="sd">where :math:`g` is the *global epistasis function*.</span>
 
-<span class="sd">We define epistasis models with the following global epistasis functions:</span>
+<span class="sd">We define the following global epistasis functions:</span>
 
-<span class="sd">Non-epistatic model</span>
-<span class="sd">+++++++++++++++++++++</span>
-<span class="sd">This model has no epistasis, so the observed phenotype is just the latent</span>
-<span class="sd">phenotype. In other words:</span>
+<span class="sd">.. _no_epistasis_function:</span>
+
+<span class="sd">No epistasis function</span>
+<span class="sd">+++++++++++++++++++++++</span>
+<span class="sd">No epistasis, so the observed phenotype is just the latent phenotype:</span>
 
 <span class="sd">.. math::</span>
 <span class="sd">   :label: noepistasis</span>
 
 <span class="sd">   g\left(x\right) = x.</span>
 
-<span class="sd">This model is implemented as :class:`NoEpistasis`.</span>
+<span class="sd">This function is implemented as :class:`NoEpistasis`.</span>
 
-<span class="sd">Monotonic spline epistasis model</span>
-<span class="sd">+++++++++++++++++++++++++++++++++</span>
-<span class="sd">This is the model used in `Otwinoski et al (2018)`_. It transforms</span>
+<span class="sd">.. _monotonic_spline_epistasis_function:</span>
+
+<span class="sd">Monotonic spline epistasis function</span>
+<span class="sd">++++++++++++++++++++++++++++++++++++</span>
+<span class="sd">This is the function used in `Otwinoski et al (2018)`_. It transforms</span>
 <span class="sd">the latent phenotype to the observed phenotype using monotonic I-splines with</span>
 <span class="sd">linear extrapolation outside the spline boundaries:</span>
 
@@ -127,7 +135,7 @@
 <span class="sd">Note how when :math:`x` is outside the range of the I-splines, we linearly</span>
 <span class="sd">extrapolate :math:`g` from its range boundaries to calculate.</span>
 
-<span class="sd">This model is implemented as :class:`MonotonicSplineEpistasis`. By default,</span>
+<span class="sd">This function is implemented as :class:`MonotonicSplineEpistasis`. By default,</span>
 <span class="sd">the I-splines are of order 3 and are defined on a mesh of four evenly spaced</span>
 <span class="sd">points such that the total number of I-splines is :math:`M=5` (although these</span>
 <span class="sd">options can be adjusted when initializing a :class:`MonotonicSplineEpistasis`</span>
@@ -136,8 +144,30 @@
 <span class="sd">The latent effects are scaled so that their mean absolute value is one,</span>
 <span class="sd">and the latent phenotype of the wildtype is set to zero.</span>
 
-<span class="sd">Fitting of models</span>
-<span class="sd">-------------------</span>
+<span class="sd">.. _likelihood_calculation:</span>
+
+<span class="sd">Likelihood calculation</span>
+<span class="sd">---------------------------------------</span>
+<span class="sd">We defined a *likelihood* capturing how well the model describes the</span>
+<span class="sd">actual data, and then fit the models by finding the parameters that</span>
+<span class="sd">maximize this likelihood. This means that different epistasis functions</span>
+<span class="sd">(as described in `Global epistasis function`_) can be compared via</span>
+<span class="sd">their likelihoods after correcting for the number of parameters</span>
+<span class="sd">(e.g. by `AIC &lt;https://en.wikipedia.org/wiki/Akaike_information_criterion&gt;`_).</span>
+
+<span class="sd">We consider several different forms for calculating the likelihood.</span>
+<span class="sd">Note that epistasis functions can only be compared within the same form of</span>
+<span class="sd">the likelihood on the same dataset--you **cannot** compare likelihoods</span>
+<span class="sd">calculated using different methods, or on different datasets.</span>
+
+<span class="sd">.. _gaussian_likelihood:</span>
+
+<span class="sd">Gaussian likelihood</span>
+<span class="sd">++++++++++++++++++++</span>
+<span class="sd">This is the form of the likelihood used in `Otwinoski et al (2018)`_. It is</span>
+<span class="sd">most appropriate when we have functional scores for variants along with</span>
+<span class="sd">good estimates of normally distributed errors on these functional scores.</span>
+
 <span class="sd">For each variant :math:`v`, we have an experimentally measured functional</span>
 <span class="sd">score :math:`y_v` and optionally an estimate of the error (variance)</span>
 <span class="sd">:math:`\sigma^2_{y_v}` in this functional score measurement. If no error</span>
@@ -155,7 +185,7 @@
 <span class="sd">the model is</span>
 
 <span class="sd">.. math::</span>
-<span class="sd">   :label: loglik</span>
+<span class="sd">   :label: loglik_gaussian</span>
 
 <span class="sd">   \mathcal{L} = \sum_{v=1}^V \ln\left[N\left(y_v \mid p\left(v\right),</span>
 <span class="sd">                 \sigma^2_{y_v} + \sigma^2_{\rm{HOC}}\right)\right]</span>
@@ -169,11 +199,74 @@
 <span class="sd">   N\left(y \mid \mu, \sigma^2\right) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp</span>
 <span class="sd">                    \left(-\frac{\left(y - \mu\right)^2}{2 \sigma^2}\right).</span>
 
-<span class="sd">To fit the model, we maximize the log likelihood in Eq. :eq:`loglik` with</span>
-<span class="sd">respect to all model parameters: the latent effects :math:`\beta_m` of all</span>
-<span class="sd">mutations, the latent phenotype :math:`\beta_{\rm{wt}}` of the wildtype</span>
-<span class="sd">sequence, the house-of-cards epistasis :math:`\sigma^2_{\rm{HOC}}`,</span>
-<span class="sd">and any parameters that define the global epistasis function :math:`g`.</span>
+<span class="sd">This likelihood calculation is implemented as :class:`GaussianLikelihood`.</span>
+
+<span class="sd">.. _cauchy_likelihood:</span>
+
+<span class="sd">Cauchy likelihood</span>
+<span class="sd">+++++++++++++++++++</span>
+<span class="sd">This form of the likelihood assumes that the difference between the</span>
+<span class="sd">measured functional scores and the model&#39;s observed phenotypes follows a</span>
+<span class="sd">`Cauchy distribution &lt;https://en.wikipedia.org/wiki/Cauchy_distribution&gt;`_.</span>
+
+<span class="sd">A potential advantage over the :ref:`gaussian_likelihood` is the</span>
+<span class="sd">`fatter tails &lt;https://en.wikipedia.org/wiki/Fat-tailed_distribution&gt;`_</span>
+<span class="sd">of the Cauchy distribution relative to the Gaussian distribution.</span>
+<span class="sd">This could be advantageous if some measurements are very large outliers</span>
+<span class="sd">(either due to un-modeled epistasis or experimental factors such as</span>
+<span class="sd">mis-calling of variant sequences or bottlenecks) in ways that are not</span>
+<span class="sd">capture in the functional score variance estimates :math:`\sigma^2_{y_v}`.</span>
+<span class="sd">Such outlier measurements will have less influence on the overall model</span>
+<span class="sd">fit for the Cauchy likelihood relative to the :ref:`gaussian_likelihood`.</span>
+
+<span class="sd">Specifically, we compute the overall log likelihood as</span>
+
+<span class="sd">.. math::</span>
+<span class="sd">   :label: loglik_cauchy</span>
+
+<span class="sd">   \mathcal{L} = -\sum_{v=1}^V</span>
+<span class="sd">                 \ln\left[\pi \sqrt{\gamma^2 + \sigma^2_{y_v}}</span>
+<span class="sd">                          \left(1 + \frac{\left[y_v - p\left(v\right)\right]^2}</span>
+<span class="sd">                                         {\gamma^2 + \sigma^2_{y_v}}</span>
+<span class="sd">                          \right)</span>
+<span class="sd">                     \right]</span>
+
+<span class="sd">where :math:`\gamma` is the scale parameters, and the functional score</span>
+<span class="sd">variance estimates :math:`\sigma^2_{y_v}` are incorporated in heuristic way</span>
+<span class="sd">(with no real theoretical basis)</span>
+<span class="sd">that qualitatively captures the fact that larger variance estimates give a</span>
+<span class="sd">broader distribution. If variance estimates are not available then</span>
+<span class="sd">:math:`\sigma^2_{y_v}` is set to zero.</span>
+
+<span class="sd">This likelihood calculation is implemented as :class:`CauchyLikelihood`.</span>
+
+<span class="sd">The model classes</span>
+<span class="sd">------------------</span>
+<span class="sd">The epistasis models are defined in a set of classes. All these classes</span>
+<span class="sd">inherit their main functionality from the :class:`AbstractEpistasis`</span>
+<span class="sd">abstract base class.</span>
+
+<span class="sd">There are subclasses of :class:`AbstractEpistasis` that implement the</span>
+<span class="sd">global epistasis functions and likelihood calculation methods. Specifically,</span>
+<span class="sd">the following classes implement a :ref:`global_epistasis_function`:</span>
+
+<span class="sd">  - :class:`NoEpistasis`</span>
+<span class="sd">  - :class:`MonotonicSplineEpistasis`</span>
+
+<span class="sd">and the following classes each implement at :ref:`likelihood_calculation`:</span>
+<span class="sd">  - :class:`GaussianLikelihood`</span>
+<span class="sd">  - :class:`CauchyLikelihood`</span>
+
+<span class="sd">However, those classes can still not be directly instantianted, as a fully</span>
+<span class="sd">concrete model subclass must have **both** a global epistasis function and</span>
+<span class="sd">a likelihood calculation method.</span>
+<span class="sd">The following classes implement both, and so can be directly instantiated</span>
+<span class="sd">for use in analyses:</span>
+
+<span class="sd">  - :class:`NoEpistasisGaussianLikelihood`</span>
+<span class="sd">  - :class:`NoEpistasisCauchyLikelihood`</span>
+<span class="sd">  - :class:`MonotonicSplineEpistasisGaussianLikelihood`</span>
+<span class="sd">  - :class:`MonotonicSplineEpistasisCauchyLikelihood`</span>
 
 <span class="sd">Details of fitting</span>
 <span class="sd">-------------------------</span>
@@ -184,7 +277,9 @@
 <span class="sd">`Otwinoski et al (2018)`_:</span>
 
 <span class="sd"> 1. The latent effects are fit under an additive (non-epistatic) model</span>
-<span class="sd">    using least squares.</span>
+<span class="sd">    using least squares. The residuals from this fit are then used to</span>
+<span class="sd">    estimate :math:`\sigma^2_{\rm{HOC}}` for :ref:`gaussian_likelihood`,</span>
+<span class="sd">    or :math:`\gamma^2` for :ref:`cauchy_likelihood`.</span>
 <span class="sd"> 2. If there are any parameters in the epistasis function, they are set</span>
 <span class="sd">    to reasonable initial values. For :class:`MonotonicSplineEpistasis`</span>
 <span class="sd">    this involves setting the mesh to go from 0 to 1,</span>
@@ -221,16 +316,20 @@
 <span class="sd">by default it uses a L-BFGS-B algorithm with exact gradients</span>
 <span class="sd">calculated as below.</span>
 
-<span class="sd">Gradients</span>
-<span class="sd">+++++++++++</span>
+<span class="sd">Gradients used in optimization</span>
+<span class="sd">+++++++++++++++++++++++++++++++</span>
 
 <span class="sd">For the optimization, we use the following gradients:</span>
+
+<span class="sd">Gradient of latent phenotype with respect to latent effects:</span>
 
 <span class="sd">.. math::</span>
 <span class="sd">   :label: dlatent_phenotype_dlatent_effect</span>
 
 <span class="sd">   \frac{\partial \phi\left(v\right)}{\partial \beta_m} =</span>
 <span class="sd">   b\left(v_m\right)</span>
+
+<span class="sd">Gradient of observed phenotype with respect to latent phenotypes:</span>
 
 <span class="sd">.. math::</span>
 <span class="sd">   :label: dobserved_phenotype_dlatent_effect</span>
@@ -242,84 +341,90 @@
 <span class="sd">   &amp;=&amp; \left.\frac{\partial g\left(x\right)}{\partial x}</span>
 <span class="sd">       \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)</span>
 
-<span class="sd">.. math::</span>
-<span class="sd">   :label: dnormaldist_dmu</span>
-
-<span class="sd">   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}</span>
-<span class="sd">        {\partial \mu} =</span>
-<span class="sd">   \frac{y - \mu}{\sigma^2}</span>
+<span class="sd">Derivative of the likelihood with respect to latent effects:</span>
 
 <span class="sd">.. math::</span>
 <span class="sd">   :label: dloglik_dlatent_effect</span>
 
 <span class="sd">   \frac{\partial \mathcal{L}}{\partial \beta_m}</span>
-<span class="sd">   &amp;=&amp; \sum_{v=1}^V \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),</span>
-<span class="sd">                          \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}</span>
-<span class="sd">                         {\partial p\left(v\right)} \times</span>
-<span class="sd">                    \frac{\partial p\left(v\right)}{\partial \beta_m} \\</span>
-<span class="sd">   &amp;=&amp; \sum_{v=1}^V \frac{y_v - p\left(v\right)}</span>
-<span class="sd">                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times</span>
-<span class="sd">                    \frac{\partial p\left(v\right)}{\partial \beta_m}</span>
+<span class="sd">   = \sum_{v=1}^V \frac{\mathcal{L}}</span>
+<span class="sd">                       {\partial p\left(v\right)} \times</span>
+<span class="sd">                  \frac{\partial p\left(v\right)}{\partial \beta_m}.</span>
+
+<span class="sd">Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with</span>
+<span class="sd">respect to observed phenotype:</span>
 
 <span class="sd">.. math::</span>
-<span class="sd">   :label: dnormaldist_dsigma2</span>
+<span class="sd">   :label: dloglik_gaussian_dobserved_phenotype</span>
 
-<span class="sd">   \frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}</span>
-<span class="sd">        {\partial \sigma^2} = \frac{1}{2}\left[\left(\frac{y - \mu}{\sigma^2}</span>
-<span class="sd">                                                     \right)^2 -</span>
-<span class="sd">                                              \frac{1}{\sigma^2}\right]</span>
+<span class="sd">   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}</span>
+<span class="sd">   = \frac{y_v - p\left(v\right)}</span>
+<span class="sd">          {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}.</span>
+
+<span class="sd">Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with</span>
+<span class="sd">respect to house-of-cards epistasis:</span>
 
 <span class="sd">.. math::</span>
-<span class="sd">   :label: dloglik_depistasis_HOC</span>
+<span class="sd">   :label: dloglik_gaussian_depistasis_HOC</span>
 
 <span class="sd">   \frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V</span>
-<span class="sd">   \frac{1}{2} \left[\left(\frac{y_v - p\left(v\right)}</span>
-<span class="sd">                                {\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2}\right)^2</span>
-<span class="sd">                     - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]</span>
+<span class="sd">   \frac{1}{2} \left[\left(\frac{\partial \mathcal{L}}</span>
+<span class="sd">                                {\partial p\left(v\right)}\right)^2</span>
+<span class="sd">                     - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right].</span>
 
-<span class="sd">For derivatives of log likelihood with respect to the parameters of</span>
-<span class="sd">:math:`g` as defined in Eq. :eq:`monotonicspline`:</span>
+<span class="sd">Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with</span>
+<span class="sd">respect to observed phenotype:</span>
 
 <span class="sd">.. math::</span>
+<span class="sd">   :label: dloglik_cauchy_dobserved_phenotype</span>
+
+<span class="sd">   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}</span>
+<span class="sd">   =</span>
+<span class="sd">   \frac{2\left[y_v - p\left(v\right)\right]}</span>
+<span class="sd">        {\gamma^2 + \sigma^2_{y_v} +</span>
+<span class="sd">         \left[y_v - p\left(v\right)\right]^2}.</span>
+
+<span class="sd">Derivative of :ref:`cauchy_likelihood` (Eq. :eq:`loglik_cauchy`) with</span>
+<span class="sd">respect to scale parameter:</span>
+
+<span class="sd">.. math::</span>
+<span class="sd">   :label: dloglik_cauchy_dscale_parameter</span>
+
+<span class="sd">   \frac{\partial \mathcal{L}}{\partial \gamma}</span>
+<span class="sd">   =</span>
+<span class="sd">   \sum_{v=1}^{V} \frac{\gamma\left(\left[y_v - p\left(v\right)\right]^2 -</span>
+<span class="sd">                                    \gamma^2 - \sigma^2_{y_v}</span>
+<span class="sd">                              \right)}</span>
+<span class="sd">                       {\left(\gamma^2 + \sigma^2_{y_v}\right)</span>
+<span class="sd">                        \left(\gamma^2 + \sigma^2_{y_v} +</span>
+<span class="sd">                              \left[y_v - p\left(v\right)\right]^2\right)</span>
+<span class="sd">                        }</span>
+
+<span class="sd">Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its</span>
+<span class="sd">parameters:</span>
+
+<span class="sd">.. math::</span>
+<span class="sd">   :label: dspline_epistasis_dcalpha</span>
 
 <span class="sd">   \frac{g\left(x\right)}{\partial c_{\alpha}} = 1</span>
 
 <span class="sd">.. math::</span>
+<span class="sd">   :label: dspline_epistasis_dalpham</span>
 
 <span class="sd">   \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)</span>
 
-<span class="sd">.. math::</span>
-<span class="sd">   :label: dloglik_dcalpha</span>
 
-<span class="sd">   \frac{\mathcal{L}}{\partial c_{\alpha}}</span>
-<span class="sd">   &amp;=&amp;</span>
-<span class="sd">   \frac{\mathcal{L}}{\partial p\left(v\right)}</span>
-<span class="sd">   \frac{\partial p\left(v\right)}{\partial c_{\alpha}} \\</span>
-<span class="sd">   &amp;=&amp; \sum_{v=1}^V \frac{y_v - p\left(v\right)}</span>
-<span class="sd">                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}</span>
-
-<span class="sd">.. math::</span>
-<span class="sd">   :label: dloglik_dalpham</span>
-
-<span class="sd">   \frac{\mathcal{L}}{\partial \alpha_m}</span>
-<span class="sd">   &amp;=&amp;</span>
-<span class="sd">   \frac{\mathcal{L}}{\partial p\left(v\right)}</span>
-<span class="sd">   \frac{\partial p\left(v\right)}{\partial \alpha_m} \\</span>
-<span class="sd">   &amp;=&amp; \sum_{v=1}^V \frac{y_v - p\left(v\right)}</span>
-<span class="sd">                         {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}</span>
-<span class="sd">       I_m\left(\phi\left(v\right)\right)</span>
-
-
-<span class="sd">API implementing models</span>
-<span class="sd">--------------------------</span>
+<span class="sd">Detailed documentation of models</span>
+<span class="sd">---------------------------------</span>
 
 <span class="sd">.. _`Otwinoski et al (2018)`: https://www.pnas.org/content/115/32/E7550</span>
+<span class="sd">.. _`Sailer and Harms (2017)`: https://www.genetics.org/content/205/3/1079</span>
+<span class="sd">.. _`Otwinoski (2018)`: https://doi.org/10.1093/molbev/msy141</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
 
 
 <span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">import</span> <span class="nn">collections</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 
@@ -349,8 +454,8 @@
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
 <span class="sd">    This is an abstract base class. It implements most of the epistasis model</span>
-<span class="sd">    functionality, but does not define the actual functional form of</span>
-<span class="sd">    the global epistasis function :meth:`AbstractEpistasis.epistasis_func`.</span>
+<span class="sd">    functionality, but requires subclasses to define the actual</span>
+<span class="sd">    :ref:`global_epistasis_function` and :ref:`likelihood_calculation`.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -367,7 +472,7 @@
 
         <span class="c1"># initialize params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nlatent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_likelihood_calc_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_epistasis_func_params</span>
 
     <span class="c1"># ------------------------------------------------------------------------</span>
@@ -396,22 +501,19 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects_val</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">epistasis_HOC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;float: House of cards epistasis, :math:`\sigma^2_{\rm{HOC}}`.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_HOC_val</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Parameters for likelihood calculation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params_val</span>
 
-    <span class="nd">@epistasis_HOC</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">epistasis_HOC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">val</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`epistasis_HOC` must be &gt; 0: </span><span class="si">{val}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_epistasis_HOC_val&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">val</span> <span class="o">!=</span>
-                                                         <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_latent_phenotypes&#39;</span><span class="p">,</span> <span class="s1">&#39;_observed_phenotypes&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;_dobserved_phenotype_dlatent&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;_isplines_total&#39;</span><span class="p">}:</span>
-                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_HOC_val</span> <span class="o">=</span> <span class="n">val</span>
+    <span class="nd">@_likelihood_calc_params</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid length for `_likelihood_calc_params`&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">((</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_likelihood_calc_params_val&#39;</span><span class="p">))</span> <span class="ow">or</span>
+                <span class="p">(</span><span class="n">val</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params_val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params_val</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_epistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -424,10 +526,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;invalid length for `_epistasis_func_params`&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">((</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_epistasis_func_params_val&#39;</span><span class="p">))</span> <span class="ow">or</span>
                 <span class="p">(</span><span class="n">val</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()):</span>
-            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
-                <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;_latent_phenotypes&#39;</span><span class="p">,</span> <span class="s1">&#39;_variances&#39;</span><span class="p">,</span>
-                               <span class="s1">&#39;_isplines_total&#39;</span><span class="p">}:</span>
-                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params_val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params_val</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -464,10 +563,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">nparams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;int: Total number of parameters in model.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">)</span> <span class="o">+</span>  <span class="c1"># latent effects, wt latent pheno</span>
-                <span class="mi">1</span> <span class="o">+</span>  <span class="c1"># HOC epistasis</span>
-                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">)</span>  <span class="c1"># params of epistasic func</span>
-                <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_allparams</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">latent_phenotype_wt</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -480,20 +576,29 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">epistasis_func_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;OrderedDict: :meth:`AbstractEpistasis.epistasis_func` param values.</span>
+        <span class="sd">&quot;&quot;&quot;dict: Parameters for the :ref:`global_epistasis_function`.</span>
 
 <span class="sd">        Maps names of parameters defining the global epistasis function to</span>
-<span class="sd">        current values. These parameters are all arguments to</span>
-<span class="sd">        :meth:`AbstractEpistasis.epistasis_func` **except** `latent_phenotype`</span>
-<span class="sd">        (which is the function input, not a parameter defining the function).</span>
+<span class="sd">        their current values.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_param_names</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">()</span>
         <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">)</span> <span class="o">==</span>
                 <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_param_names</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_param_names</span><span class="p">,</span>
-                                           <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_param_names</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">likelihood_calc_params_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;dict: Parameters for the :ref:`likelihood_calculation`.</span>
+
+<span class="sd">        Maps names of parameters defining the likelihood calculation to</span>
+<span class="sd">        their current values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="p">)</span> <span class="o">==</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="p">))</span>
 
     <span class="c1"># ------------------------------------------------------------------------</span>
     <span class="c1"># Methods to get phenotypes / mutational effects given current model state</span>
@@ -722,7 +827,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># least squares fit of latent effects for reasonable initial values</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fit_latent_leastsquares</span><span class="p">()</span>
+        <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fit_latent_leastsquares</span><span class="p">()</span>
 
         <span class="c1"># prescale parameters to desired range</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_prescale_params</span><span class="p">()</span>
@@ -748,20 +853,12 @@
 
         <span class="k">return</span> <span class="n">optres</span></div>
 
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;float: Current log likelihood as defined in Eq. :eq:`loglik`.&quot;&quot;&quot;</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;loglik&#39;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loglik_by_variant</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
     <span class="k">def</span> <span class="nf">_loglik_by_allparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allparams</span><span class="p">,</span> <span class="n">negative</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;(Negative) log likelihood after setting all parameters.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
-<span class="sd">        Calling this method alters the interal model parameters, so only</span>
+<span class="sd">        Calling this method alters the internal model parameters, so only</span>
 <span class="sd">        use if you understand what you are doing.</span>
 
 <span class="sd">        Parameters</span>
@@ -784,42 +881,12 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglik</span>
 
-    <span class="k">def</span> <span class="nf">_loglik_by_epistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epistasis_func_params</span><span class="p">,</span>
-                                         <span class="n">negative</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;(Negative) log likelihood after setting epistasis func params.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        Calling this method alters the interal model parameters, so only</span>
-<span class="sd">        use if you understand what you are doing.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        epistasis_func_params : numpy.ndarray</span>
-<span class="sd">            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.</span>
-<span class="sd">        negative : bool</span>
-<span class="sd">            Return negative log likelihood. Useful if using a minimizer to</span>
-<span class="sd">            optimize.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float</span>
-<span class="sd">            (Negative) log likelihood after setting epistasis func params</span>
-<span class="sd">            to `epistasis_func_params`.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span> <span class="o">=</span> <span class="n">epistasis_func_params</span>
-        <span class="k">if</span> <span class="n">negative</span><span class="p">:</span>
-            <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglik</span>
-
     <span class="k">def</span> <span class="nf">_dloglik_by_allparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allparams</span><span class="p">,</span> <span class="n">negative</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;(Negative) derivative of log likelihood with respect to all params.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
-<span class="sd">        Calling this method alters the interal model parameters, so only</span>
+<span class="sd">        Calling this method alters the internal model parameters, so only</span>
 <span class="sd">        use if you understand what you are doing.</span>
 
 <span class="sd">        Parameters</span>
@@ -839,7 +906,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_allparams</span> <span class="o">=</span> <span class="n">allparams</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_dlatent</span><span class="p">,</span>
-                                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_depistasis_HOC</span><span class="p">],</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_dlikelihood_calc_params</span><span class="p">,</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_depistasis_func_params</span><span class="p">,</span>
                                  <span class="p">)</span>
                                 <span class="p">)</span>
@@ -848,36 +915,6 @@
             <span class="k">return</span> <span class="o">-</span><span class="n">val</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">val</span>
-
-    <span class="k">def</span> <span class="nf">_dloglik_by_epistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epistasis_func_params</span><span class="p">,</span>
-                                          <span class="n">negative</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;(Negative) derivative of log likelihood by epistasis func params.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        Calling this method alters the interal model parameters, so only</span>
-<span class="sd">        use if you understand what you are doing.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        epistasis_func_params : numpy.ndarray</span>
-<span class="sd">            Used to set :meth:`AbstractEpistasis._epistasis_func_params`.</span>
-<span class="sd">        negative : bool</span>
-<span class="sd">            Return negative log likelihood. Useful if using a minimizer to</span>
-<span class="sd">            optimize.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        --------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            (Negative) derivative of log likelihood with respect to</span>
-<span class="sd">            :meth:`AbstractEpistasis._epistasis_func_params`.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span> <span class="o">=</span> <span class="n">epistasis_func_params</span>
-        <span class="k">if</span> <span class="n">negative</span><span class="p">:</span>
-            <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_depistasis_func_params</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_depistasis_func_params</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_allparams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -893,21 +930,28 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">,</span>
-                                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span><span class="p">],</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="p">,</span>
                                  <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">,</span>
                                  <span class="p">)</span>
                                 <span class="p">)</span>
-        <span class="k">assert</span> <span class="n">val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nparams</span><span class="p">,)</span>
         <span class="k">return</span> <span class="n">val</span>
 
     <span class="nd">@_allparams</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">_allparams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">val</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nparams</span><span class="p">,):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `_allparams`: </span><span class="si">{val}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span> <span class="o">=</span> <span class="n">val</span><span class="p">[:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">)]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">)]</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span>
+
+        <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">iend</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">istart</span><span class="p">:</span> <span class="n">iend</span><span class="p">]</span>
+
+        <span class="n">istart</span> <span class="o">=</span> <span class="n">iend</span>
+        <span class="n">iend</span> <span class="o">=</span> <span class="n">iend</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">istart</span><span class="p">:</span> <span class="n">iend</span><span class="p">]</span>
+
+        <span class="n">istart</span> <span class="o">=</span> <span class="n">iend</span>
+        <span class="n">iend</span> <span class="o">=</span> <span class="n">iend</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">istart</span><span class="p">:</span> <span class="n">iend</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_allparams_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -917,25 +961,11 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">bounds</span> <span class="o">=</span> <span class="p">([(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span><span class="p">)</span> <span class="o">+</span>
-                  <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">,</span> <span class="kc">None</span><span class="p">)]</span> <span class="o">+</span>  <span class="c1"># HOC epistasis must be &gt; 0</span>
+                  <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_bounds</span> <span class="o">+</span>
                   <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_param_bounds</span>
                   <span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bounds</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_allparams</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">bounds</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_loglik_by_variant</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Log likelihoods per variant (Eq. :eq:`loglik`).&quot;&quot;&quot;</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_loglik_by_variant&#39;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-            <span class="n">standard_devs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variances</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">standard_devs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;standard deviations not all &gt; 0&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span>
-                                    <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span><span class="p">,</span>
-                                    <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">,</span>
-                                    <span class="n">scale</span><span class="o">=</span><span class="n">standard_devs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_latent_phenotypes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -955,24 +985,6 @@
         <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_observed_phenotypes&#39;</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_latent_phenotypes</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_variances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Functional score variance plus HOC epistasis.</span>
-
-<span class="sd">        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in Eq. :eq:`loglik`.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_variances&#39;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">var</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variance &lt;= 0&#39;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="nd">@property</span>
@@ -996,21 +1008,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_func_score_minus_observed_pheno_over_variance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Scores minus observed phenotypes over variance.</span>
-
-<span class="sd">        The quantity :math:`\frac{y_v - p\left(v\right)}</span>
-<span class="sd">        {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}`, which appears in Eq.</span>
-<span class="sd">        :eq:`dloglik_dlatent_effect` and :eq:`dloglik_depistasis_HOC`.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_func_score_minus_observed_pheno_over_variance&#39;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span> <span class="o">-</span>
-                                <span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variances</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_dloglik_dlatent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative log likelihood by latent effects.</span>
 
@@ -1020,33 +1017,18 @@
         <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_dloglik_dlatent&#39;</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dobserved_phenotypes_dlatent</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_func_score_minus_observed_pheno_over_variance</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nlatent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">_dloglik_depistasis_HOC</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;float: Derivative of log likelihood by HOC epistasis.</span>
-
-<span class="sd">        See Eq. :eq:`dloglik_depistasis_HOC`.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_dloglik_depistasis_HOC&#39;</span>
-        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="mf">0.5</span> <span class="o">*</span>
-                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_func_score_minus_observed_pheno_over_variance</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span>
-                 <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variances</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_dobserved_phenotype</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_nlatent</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">_fit_latent_leastsquares</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Fit latent effects and HOC epistasis by least squares.</span>
+        <span class="sd">&quot;&quot;&quot;Least-squares fit latent effects for quick &quot;reasonable&quot; values.</span>
 
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is a useful way to quickly get &quot;reasonable&quot; initial values for</span>
-<span class="sd">        `_latenteffects` and `epistasis_HOC`.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            Results of fitting described here:</span>
+<span class="sd">            https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.lsqr.html</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># fit by least squares</span>
@@ -1059,151 +1041,15 @@
         <span class="c1"># use fit result to update latenteffects</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_latenteffects</span> <span class="o">=</span> <span class="n">fitres</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="c1"># estimate HOC epistasis as residuals not from func_score variance</span>
-        <span class="n">residuals2</span> <span class="o">=</span> <span class="n">fitres</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">residuals2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">residuals2</span> <span class="o">-</span>
-                                      <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-                                      <span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fitres</span>
 
     <span class="c1"># ------------------------------------------------------------------------</span>
     <span class="c1"># Abstract methods for global epistasis func, must implement in subclasses</span>
+    <span class="c1"># specific for that epistasis model.</span>
     <span class="c1"># ------------------------------------------------------------------------</span>
 <div class="viewcode-block" id="AbstractEpistasis.epistasis_func"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">epistasis_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Global epistasis function :math:`g` in Eq. :eq:`observed_phenotype`.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is an abstract method for the :class:`AbstractEpistasis` class.</span>
-<span class="sd">        The actual functional forms for specific models are defined in</span>
-<span class="sd">        concrete subclasses. Those concrete implementations will also have</span>
-<span class="sd">        additional parameters used by the function.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
-
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_depistasis_func_dlatent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get derivative of epistasis function by latent phenotype.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is the derivative of :meth:`AbstractEpistasis.epistasis_func`</span>
-<span class="sd">        with respect to the latent phenotype. It is an abstract method;</span>
-<span class="sd">        the actual functional forms for specific models are defined in</span>
-<span class="sd">        concrete subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_dloglik_depistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative log likelihood by epistasis func params.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        Derivative of :meth:`AbstractEpistasis.loglik` with respect to</span>
-<span class="sd">        :meth:`AbstractEpistasis._epistasis_func_params`. It is an abstract</span>
-<span class="sd">        property, the actual functional forms for specific models are defined</span>
-<span class="sd">        in concrete subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_epistasis_func_param_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;list: Names of :meth:`AbstractEpistasis.epistasis_func_params`.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is an abstract property; the actual bounds for specific models are</span>
-<span class="sd">        defined in concrete subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_epistasis_func_param_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;list: Bounds for the epistasis function parameters.</span>
-
-<span class="sd">        For each entry in :meth:`AbstractEpistasis._epistasis_func_param_names`</span>
-<span class="sd">        a 2-tuple gives the lower and upper bound for optimization by</span>
-<span class="sd">        `scipy.optimize.minimize`.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is an abstract property; the actual bounds for specific models are</span>
-<span class="sd">        defined in concrete subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span>
-
-    <span class="nd">@property</span>
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_init_epistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Init :meth:`AbstractEpistasis._epistasis_func_params`</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is an abstract property; the actual bounds for specific models are</span>
-<span class="sd">        defined in concrete subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span>
-
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_prescale_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Rescale parameters prior to the global fitting.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is an abstract method, the actula pre-scaling is done in concrete</span>
-<span class="sd">        subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span>
-
-    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">_postscale_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Rescale parameters after the global fitting.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        This is an abstract method, the actula pre-scaling is done in concrete</span>
-<span class="sd">        subclasses.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
-
-
-<div class="viewcode-block" id="NoEpistasis"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis">[docs]</a><span class="k">class</span> <span class="nc">NoEpistasis</span><span class="p">(</span><span class="n">AbstractEpistasis</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Non-epistatic model.</span>
-
-<span class="sd">    Note</span>
-<span class="sd">    ----</span>
-<span class="sd">    Model when there is no epistasis, which is when the global epistasis</span>
-<span class="sd">    function :math:`g` is defined by Eq. :eq:`noepistasis`.</span>
-
-<span class="sd">    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs</span>
-<span class="sd">    of that abstract base class for details on most properties and methods.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    binarymap : :class:`dms_variants.binarymap.BinaryMap`</span>
-<span class="sd">        Contains the variants, their functional scores, and score variances.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="NoEpistasis.epistasis_func"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis.epistasis_func">[docs]</a>    <span class="k">def</span> <span class="nf">epistasis_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Apply :math:`g` in Eq. :eq:`noepistasis`.</span>
+        <span class="sd">&quot;&quot;&quot;The :ref:`global_epistasis_function` :math:`g`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1217,10 +1063,11 @@
 <span class="sd">            using the global epistasis function.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">latent_phenotype</span></div>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span></div>
 
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
     <span class="k">def</span> <span class="nf">_depistasis_func_dlatent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get derivative of epistasis function by latent phenotype.</span>
+        <span class="sd">&quot;&quot;&quot;Derivative of epistasis function by latent phenotype.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1234,12 +1081,398 @@
 <span class="sd">            latent phenotype evaluated at `latent_phenotype`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_dloglik_depistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Deriv log likelihood by `_epistasis_func_params`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_epistasis_func_param_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;list: Names of :meth:`AbstractEpistasis._epistasis_func_params`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_epistasis_func_param_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;list: Bounds for the epistasis function parameters.</span>
+
+<span class="sd">        For each entry in :meth:`AbstractEpistasis._epistasis_func_param_names`</span>
+<span class="sd">        a 2-tuple gives the lower and upper bound for optimization by</span>
+<span class="sd">        `scipy.optimize.minimize`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_init_epistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Initial `_epistasis_func_params` values.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_prescale_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rescale parameters prior to the global fitting.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_postscale_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rescale parameters after the global fitting.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This is an abstract method, the actula pre-scaling is done in concrete</span>
+<span class="sd">        subclasses.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="c1"># ------------------------------------------------------------------------</span>
+    <span class="c1"># Abstract methods for likelihood calculations, implement in subclasses</span>
+    <span class="c1"># ------------------------------------------------------------------------</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;float: Current log likelihood of model.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_param_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;list: Names of :meth:`AbstractEpistasis._likelihood_calc_params`.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_init_likelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Initial `_likelihood_calc_params` values.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_param_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;list: Bounds for the likelihood calculation parameters.</span>
+
+<span class="sd">        For entries in :meth:`AbstractEpistasis._likelihood_calc_param_names`,</span>
+<span class="sd">        a 2-tuple gives the lower and upper bound for optimization by</span>
+<span class="sd">        `scipy.optimize.minimize`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_dloglik_dobserved_phenotype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative log likelihood by observed phenotype.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">_dloglik_dlikelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
+
+
+<div class="viewcode-block" id="CauchyLikelihood"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.CauchyLikelihood">[docs]</a><span class="k">class</span> <span class="nc">CauchyLikelihood</span><span class="p">(</span><span class="n">AbstractEpistasis</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cauchy likelihood calculation.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Subclass of :class:`AbstractEpistasis` that implements the</span>
+<span class="sd">    :ref:`cauchy_likelihood`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;float: Current log likelihood from Eq. :eq:`loglik_cauchy`.&quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;loglik&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="n">scales</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudo_variances</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">scales</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;scales not all &gt; 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">cauchy</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span><span class="p">,</span>
+                                    <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">,</span>
+                                    <span class="n">scale</span><span class="o">=</span><span class="n">scales</span><span class="p">)</span>
+                                <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_fit_latent_leastsquares</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Also get initial value for scale parameter.</span>
+
+<span class="sd">        Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`</span>
+<span class="sd">        to make initial estimate of :math:`\gamma^2` as residual not</span>
+<span class="sd">        from functional score variance. This is based on the supposition</span>
+<span class="sd">        that the scale parameter can be treated like the variance for</span>
+<span class="sd">        a Gaussian distribution (not sure how good this supposition is...).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fitres</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_fit_latent_leastsquares</span><span class="p">()</span>
+        <span class="n">residuals2</span> <span class="o">=</span> <span class="n">fitres</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">scale_param2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">residuals2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">scale_param2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">residuals2</span> <span class="o">-</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                                <span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">([</span><span class="n">scale_param2</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_param_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;list: Likelihood calculation parameter names.</span>
+
+<span class="sd">        For :class:`CauchyLikelihood`, this is the scale parameter</span>
+<span class="sd">        :math:`\gamma`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;scale_parameter&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_init_likelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Initial `_likelihood_calc_params`.</span>
+
+<span class="sd">        The initial scale parameter :math:`\gamma` is 1.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">init_d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;scale_parameter&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">init_d</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">],</span>
+                           <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_param_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;list: Bounds for likelihood calculation parameters.</span>
+
+<span class="sd">        For :class:`CauchyLikelihood`, :math:`\gamma` must be &gt; 0.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bounds_d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;scale_parameter&#39;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">,</span> <span class="kc">None</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">bounds_d</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_dloglik_dobserved_phenotype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative of log likelihood by observed phenotype.</span>
+
+<span class="sd">        Calculated using Eq. :eq:`dloglik_cauchy_dobserved_phenotype`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_dloglik_dobserved_phenotype&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">diff</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudo_variances</span> <span class="o">+</span> <span class="n">diff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_dloglik_dlikelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.</span>
+
+<span class="sd">        See Eq. :eq:`dloglik_cauchy_dscale_parameter`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_dloglik_dlikelihood_calc_params&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="n">scale_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood_calc_params_dict</span><span class="p">[</span><span class="s1">&#39;scale_parameter&#39;</span><span class="p">]</span>
+            <span class="n">diff2</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                                <span class="p">(</span><span class="n">scale_param</span> <span class="o">*</span> <span class="p">(</span><span class="n">diff2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pseudo_variances</span><span class="p">)</span>
+                                 <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudo_variances</span> <span class="o">*</span>
+                                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pseudo_variances</span> <span class="o">+</span> <span class="n">diff2</span><span class="p">)</span>
+                                    <span class="p">)</span>
+                                 <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                                <span class="p">])</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_pseudo_variances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Functional score variance plus scale param squared.</span>
+
+<span class="sd">        :math:`\sigma_{y_v}^2 + \gamma^2` in Eq. :eq:`loglik_cauchy`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_pseudo_variances&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="n">scale_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood_calc_params_dict</span><span class="p">[</span><span class="s1">&#39;scale_parameter&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="o">+</span> <span class="n">scale_param</span><span class="o">**</span><span class="mi">2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span> <span class="n">scale_param</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variance &lt;= 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="GaussianLikelihood"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.GaussianLikelihood">[docs]</a><span class="k">class</span> <span class="nc">GaussianLikelihood</span><span class="p">(</span><span class="n">AbstractEpistasis</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gaussian likelihood calculation.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Subclass of :class:`AbstractEpistasis` that implements the</span>
+<span class="sd">    :ref:`gaussian_likelihood`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loglik</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;float: Current log likelihood from Eq. :eq:`loglik_gaussian`.&quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;loglik&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="n">standard_devs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variances</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">standard_devs</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;standard deviations not all &gt; 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span><span class="p">,</span>
+                                    <span class="n">loc</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">,</span>
+                                    <span class="n">scale</span><span class="o">=</span><span class="n">standard_devs</span><span class="p">)</span>
+                                <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_fit_latent_leastsquares</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Also get initial value for HOC epistasis.</span>
+
+<span class="sd">        Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`</span>
+<span class="sd">        to make initial estimate of :math:`\sigma^2_{\rm{HOC}}` as</span>
+<span class="sd">        residual not from functional score variance.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fitres</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_fit_latent_leastsquares</span><span class="p">()</span>
+        <span class="n">residuals2</span> <span class="o">=</span> <span class="n">fitres</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">residuals2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="nb">max</span><span class="p">((</span><span class="n">residuals2</span> <span class="o">-</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                                 <span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">epistasis_HOC</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_param_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;list: Likelihood calculation parameter names.</span>
+
+<span class="sd">        For :class:`GaussianLikelihood`, this :math:`\sigma^2_{\rm{HOC}}`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;epistasis_HOC&#39;</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_init_likelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Initial `_likelihood_calc_params`.</span>
+
+<span class="sd">        The initial HOC epistasis :math:`\sigma^2_{\rm{HOC}}` is 1.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">init_d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;epistasis_HOC&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">init_d</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">],</span>
+                           <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_likelihood_calc_param_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;list: Bounds for likelihood calculation parameters.</span>
+
+<span class="sd">        For :class:`GaussianLikelihood`, :math:`\sigma^2_{\rm{HOC}}` must</span>
+<span class="sd">        be &gt; 0.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bounds_d</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;epistasis_HOC&#39;</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_NEARLY_ZERO</span><span class="p">,</span> <span class="kc">None</span><span class="p">)}</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">bounds_d</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_param_names</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_dloglik_dobserved_phenotype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative of log likelihood by observed phenotype.</span>
+
+<span class="sd">        Calculated using Eq. :eq:`dloglik_gaussian_dobserved_phenotype`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_dloglik_dobserved_phenotype&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores</span> <span class="o">-</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variances</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_dloglik_dlikelihood_calc_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative log lik by `_likelihood_calc_params`.</span>
+
+<span class="sd">        See Eq. :eq:`dloglik_gaussian_depistasis_HOC`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_dloglik_dlikelihood_calc_params&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="mf">0.5</span> <span class="o">*</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_dobserved_phenotype</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span>
+                 <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variances</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="p">])</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_likelihood_calc_params</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_variances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Functional score variance plus HOC epistasis.</span>
+
+<span class="sd">        :math:`\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2` in</span>
+<span class="sd">        Eq. :eq:`loglik_gaussian`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;_variances&#39;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">likelihood_calc_params_dict</span><span class="p">[</span><span class="s1">&#39;epistasis_HOC&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="o">+</span> <span class="n">epistasis_HOC</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">var</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span> <span class="n">epistasis_HOC</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">var</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;variance &lt;= 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">var</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NoEpistasis"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis">[docs]</a><span class="k">class</span> <span class="nc">NoEpistasis</span><span class="p">(</span><span class="n">AbstractEpistasis</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Non-epistatic model.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    Subclass of :class:`AbstractEpistasis` that implements the</span>
+<span class="sd">    :ref:`no_epistasis_function`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="NoEpistasis.epistasis_func"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis.epistasis_func">[docs]</a>    <span class="k">def</span> <span class="nf">epistasis_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Global epistasis function :math:`g` in Eq. :eq:`noepistasis`.</span>
+
+<span class="sd">        Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">latent_phenotype</span></div>
+
+    <span class="k">def</span> <span class="nf">_depistasis_func_dlatent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Derivative of `epistasis_func` by latent phenotype.</span>
+
+<span class="sd">        Concrete implementation of</span>
+<span class="sd">        :meth:`AbstractEpistasis._depistasis_func_dlatent`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">latent_phenotype</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_dloglik_depistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative of log likelihood by epistasis fun params.</span>
 
+<span class="sd">        Concrete implementation of</span>
+<span class="sd">        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
 <span class="sd">        For :class:`NoEpistasis` models, this is just an empty array as there</span>
 <span class="sd">        are no epistasis function parameters.</span>
 
@@ -1251,7 +1484,7 @@
     <span class="k">def</span> <span class="nf">_epistasis_func_param_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;list: Epistasis function parameter names.</span>
 
-<span class="sd">        For :class:`NoEpistasis`, this is just an emptly list as there are</span>
+<span class="sd">        For :class:`NoEpistasis`, this is just an empty list as there are</span>
 <span class="sd">        no epistasis function parameters.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1295,11 +1528,8 @@
 
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
-<span class="sd">    Models global epistasis function :math:`g` via monotonic splines as</span>
-<span class="sd">    defined in Eq. :eq:`monotonicspline`.</span>
-
-<span class="sd">    This is a concrete subclass of :class:`AbstractEpistasis`, so see the docs</span>
-<span class="sd">    of that abstract base class for details on most properties and methods.</span>
+<span class="sd">    Subclass of :class:`AbstractEpistasis` that implements the</span>
+<span class="sd">    :ref:`monotonic_spline_epistasis_function`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -1343,18 +1573,9 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 <div class="viewcode-block" id="MonotonicSplineEpistasis.epistasis_func"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis.epistasis_func">[docs]</a>    <span class="k">def</span> <span class="nf">epistasis_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Apply :math:`g` in Eq. :eq:`monotonicspline`.</span>
+        <span class="sd">&quot;&quot;&quot;Global epistasis function :math:`g` in Eq. :eq:`monotonicspline`.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        latent_phenotype : numpy.ndarray</span>
-<span class="sd">            Latent phenotype(s) of one or more variants.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            Observed phenotype(s) after transforming the latent phenotypes</span>
-<span class="sd">            using the global epistasis function.</span>
+<span class="sd">        Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">latent_phenotype</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -1371,18 +1592,10 @@
                                                    <span class="n">w_lower</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">c_alpha</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_depistasis_func_dlatent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latent_phenotype</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get derivative of epistasis function by latent phenotype.</span>
+        <span class="sd">&quot;&quot;&quot;Derivative of `epistasis_func` by latent phenotype.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        latent_phenotype : float or numpy.ndarray</span>
-<span class="sd">            Latent phenotype(s) of one or more variants.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        float or numpy.ndarray</span>
-<span class="sd">            Derivative of :meth:`MonotonicSplineEpistasis.epistasis_func` with</span>
-<span class="sd">            with respect to latent phenotype evaluated at `latent_phenotype`.</span>
+<span class="sd">        Concrete implementation of</span>
+<span class="sd">        :meth:`AbstractEpistasis._depistasis_func_dlatent`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isplines_total</span><span class="o">.</span><span class="n">dItotal_dx</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_ms</span><span class="p">)</span>
@@ -1391,20 +1604,20 @@
     <span class="k">def</span> <span class="nf">_dloglik_depistasis_func_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Derivative of epistasis function by its params.</span>
 
-<span class="sd">        Derivative of :meth:`AbstractEpistasis.loglik` with respect to</span>
-<span class="sd">        :meth:`AbstractEpistasis._epistasis_func_params`.</span>
+<span class="sd">        Concrete implementation of</span>
+<span class="sd">        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
-<span class="sd">        See Eqs. and :eq:`dloglik_dcalpha` and :eq:`dloglik_dalpham`.</span>
+<span class="sd">        See Eqs. :eq:`dspline_epistasis_dcalpha` and</span>
+<span class="sd">        :eq:`dspline_epistasis_dalpham`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_alpha</span>
         <span class="k">assert</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_epistasis_func_params</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_ms</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-        <span class="n">dlog_dobs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func_score_minus_observed_pheno_over_variance</span>
-        <span class="n">dcalpha</span> <span class="o">=</span> <span class="n">dlog_dobs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+        <span class="n">dcalpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_dobserved_phenotype</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_isplines_total</span><span class="o">.</span><span class="n">dItotal_dw_lower</span><span class="p">())</span>
-        <span class="n">dalpham</span> <span class="o">=</span> <span class="n">dlog_dobs</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+        <span class="n">dalpham</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dloglik_dobserved_phenotype</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_isplines_total</span><span class="o">.</span><span class="n">dItotal_dweights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_ms</span><span class="p">,</span>
                                                       <span class="bp">self</span><span class="o">.</span><span class="n">c_alpha</span><span class="p">))</span>
         <span class="n">deriv</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dcalpha</span><span class="p">,</span> <span class="n">dalpham</span><span class="p">)</span>
@@ -1519,6 +1732,70 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">oldloglik</span><span class="p">):</span>
             <span class="k">raise</span> <span class="n">EpistasisFittingError</span><span class="p">(</span><span class="s1">&#39;post-scaling latent effects changed &#39;</span>
                                         <span class="n">f</span><span class="s2">&quot;loglik </span><span class="si">{oldloglik}</span><span class="s2"> to </span><span class="si">{self.loglik}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MonotonicSplineEpistasisGaussianLikelihood"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood">[docs]</a><span class="k">class</span> <span class="nc">MonotonicSplineEpistasisGaussianLikelihood</span><span class="p">(</span><span class="n">MonotonicSplineEpistasis</span><span class="p">,</span>
+                                                 <span class="n">GaussianLikelihood</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Monotonic spline global epistasis model with Gaussian likelihood.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    This class implements the :ref:`monotonic_spline_epistasis_function`</span>
+<span class="sd">    with a :ref:`gaussian_likelihood`. See documentation for the base</span>
+<span class="sd">    classes :class:`MonotonicSplineEpistasis`, :class:`GaussianLikelihood`,</span>
+<span class="sd">    and :class:`AbstractEpistasis` for details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MonotonicSplineEpistasisCauchyLikelihood"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisCauchyLikelihood">[docs]</a><span class="k">class</span> <span class="nc">MonotonicSplineEpistasisCauchyLikelihood</span><span class="p">(</span><span class="n">MonotonicSplineEpistasis</span><span class="p">,</span>
+                                               <span class="n">CauchyLikelihood</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Monotonic spline global epistasis model with Cauchy likelihood.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    This class implements the :ref:`monotonic_spline_epistasis_function`</span>
+<span class="sd">    with a :ref:`cauchy_likelihood`. See documentation for the base</span>
+<span class="sd">    classes :class:`MonotonicSplineEpistasis`, :class:`CauchyLikelihood`,</span>
+<span class="sd">    and :class:`AbstractEpistasis` for details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="NoEpistasisGaussianLikelihood"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">[docs]</a><span class="k">class</span> <span class="nc">NoEpistasisGaussianLikelihood</span><span class="p">(</span><span class="n">NoEpistasis</span><span class="p">,</span>
+                                    <span class="n">GaussianLikelihood</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;No-epistasis model with Gaussian likelihood.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    This class implements the :ref:`no_epistasis_function` with a</span>
+<span class="sd">    :ref:`gaussian_likelihood`. See documentation for the base classes</span>
+<span class="sd">    :class:`NoEpistasis`, :class:`GaussianLikelihood`, and</span>
+<span class="sd">    :class:`AbstractEpistasis` for details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="NoEpistasisCauchyLikelihood"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisCauchyLikelihood">[docs]</a><span class="k">class</span> <span class="nc">NoEpistasisCauchyLikelihood</span><span class="p">(</span><span class="n">NoEpistasis</span><span class="p">,</span>
+                                  <span class="n">CauchyLikelihood</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;No-epistasis model with Cauchy likelihood.</span>
+
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    This class implements the :ref:`no_epistasis_function` with a</span>
+<span class="sd">    :ref:`cauchy_likelihood`. See documentation for the base classes</span>
+<span class="sd">    :class:`NoEpistasis`, :class:`CauchyLikelihood`, and</span>
+<span class="sd">    :class:`AbstractEpistasis` for details.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

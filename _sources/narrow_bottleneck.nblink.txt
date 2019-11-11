@@ -1,0 +1,3 @@
+{
+    "path": "../notebooks/narrow_bottleneck.ipynb"
+}

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>globalepistasis &#8212; dms_variants 0.3.0 documentation</title>
+    <title>globalepistasis &#8212; dms_variants 0.4.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -36,31 +36,40 @@
             
   <span class="target" id="module-dms_variants.globalepistasis"></span><div class="section" id="globalepistasis">
 <h1>globalepistasis<a class="headerlink" href="#globalepistasis" title="Permalink to this headline">¶</a></h1>
-<p>Implements global epistasis models based on <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>.</p>
+<p>Implements global epistasis models that are based on (but extend in some
+ways) those described in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>.
+See also <a class="reference external" href="https://www.genetics.org/content/205/3/1079">Sailer and Harms (2017)</a> and <a class="reference external" href="https://doi.org/10.1093/molbev/msy141">Otwinoski (2018)</a>.</p>
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#definition-of-models" id="id1">Definition of models</a></p>
+<li><p><a class="reference internal" href="#global-epistasis-function" id="id7">Global epistasis function</a></p>
 <ul>
-<li><p><a class="reference internal" href="#non-epistatic-model" id="id2">Non-epistatic model</a></p></li>
-<li><p><a class="reference internal" href="#monotonic-spline-epistasis-model" id="id3">Monotonic spline epistasis model</a></p></li>
+<li><p><a class="reference internal" href="#no-epistasis-function" id="id8">No epistasis function</a></p></li>
+<li><p><a class="reference internal" href="#monotonic-spline-epistasis-function" id="id9">Monotonic spline epistasis function</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#fitting-of-models" id="id4">Fitting of models</a></p></li>
-<li><p><a class="reference internal" href="#details-of-fitting" id="id5">Details of fitting</a></p>
+<li><p><a class="reference internal" href="#likelihood-calculation" id="id10">Likelihood calculation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#fitting-workflow" id="id6">Fitting workflow</a></p></li>
-<li><p><a class="reference internal" href="#vector-representation-of-beta-rm-wt" id="id7">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a></p></li>
-<li><p><a class="reference internal" href="#optimization" id="id8">Optimization</a></p></li>
-<li><p><a class="reference internal" href="#gradients" id="id9">Gradients</a></p></li>
+<li><p><a class="reference internal" href="#gaussian-likelihood" id="id11">Gaussian likelihood</a></p></li>
+<li><p><a class="reference internal" href="#cauchy-likelihood" id="id12">Cauchy likelihood</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#api-implementing-models" id="id10">API implementing models</a></p></li>
+<li><p><a class="reference internal" href="#the-model-classes" id="id13">The model classes</a></p></li>
+<li><p><a class="reference internal" href="#details-of-fitting" id="id14">Details of fitting</a></p>
+<ul>
+<li><p><a class="reference internal" href="#fitting-workflow" id="id15">Fitting workflow</a></p></li>
+<li><p><a class="reference internal" href="#vector-representation-of-beta-rm-wt" id="id16">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a></p></li>
+<li><p><a class="reference internal" href="#optimization" id="id17">Optimization</a></p></li>
+<li><p><a class="reference internal" href="#gradients-used-in-optimization" id="id18">Gradients used in optimization</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#detailed-documentation-of-models" id="id19">Detailed documentation of models</a></p></li>
 </ul>
 </div>
-<div class="section" id="definition-of-models">
-<h2><a class="toc-backref" href="#id1">Definition of models</a><a class="headerlink" href="#definition-of-models" title="Permalink to this headline">¶</a></h2>
-<p>The models are defined as follows. Let <span class="math notranslate nohighlight">\(v\)</span> be a variant. We convert
+<div class="section" id="global-epistasis-function">
+<span id="id1"></span><h2><a class="toc-backref" href="#id7">Global epistasis function</a><a class="headerlink" href="#global-epistasis-function" title="Permalink to this headline">¶</a></h2>
+<p>The global epistasis function is defined as follows.
+Let <span class="math notranslate nohighlight">\(v\)</span> be a variant. We convert
 <span class="math notranslate nohighlight">\(v\)</span> into a binary representation with respect to some wildtype
 sequence. This representation is a vector <span class="math notranslate nohighlight">\(\mathbf{b}\left(v\right)\)</span>
 with element <span class="math notranslate nohighlight">\(b\left(v\right)_m\)</span> equal to 1 if the variant has mutation
@@ -80,18 +89,17 @@ latent phenotype:</p>
 <div class="math notranslate nohighlight" id="equation-observed-phenotype">
 <span class="eqno">(2)<a class="headerlink" href="#equation-observed-phenotype" title="Permalink to this equation">¶</a></span>\[p\left(v\right) = g\left(\phi\left(v\right)\right)\]</div>
 <p>where <span class="math notranslate nohighlight">\(g\)</span> is the <em>global epistasis function</em>.</p>
-<p>We define epistasis models with the following global epistasis functions:</p>
-<div class="section" id="non-epistatic-model">
-<h3><a class="toc-backref" href="#id2">Non-epistatic model</a><a class="headerlink" href="#non-epistatic-model" title="Permalink to this headline">¶</a></h3>
-<p>This model has no epistasis, so the observed phenotype is just the latent
-phenotype. In other words:</p>
+<p>We define the following global epistasis functions:</p>
+<div class="section" id="no-epistasis-function">
+<span id="id2"></span><h3><a class="toc-backref" href="#id8">No epistasis function</a><a class="headerlink" href="#no-epistasis-function" title="Permalink to this headline">¶</a></h3>
+<p>No epistasis, so the observed phenotype is just the latent phenotype:</p>
 <div class="math notranslate nohighlight" id="equation-noepistasis">
 <span class="eqno">(3)<a class="headerlink" href="#equation-noepistasis" title="Permalink to this equation">¶</a></span>\[g\left(x\right) = x.\]</div>
-<p>This model is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a>.</p>
+<p>This function is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a>.</p>
 </div>
-<div class="section" id="monotonic-spline-epistasis-model">
-<h3><a class="toc-backref" href="#id3">Monotonic spline epistasis model</a><a class="headerlink" href="#monotonic-spline-epistasis-model" title="Permalink to this headline">¶</a></h3>
-<p>This is the model used in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. It transforms
+<div class="section" id="monotonic-spline-epistasis-function">
+<span id="id3"></span><h3><a class="toc-backref" href="#id9">Monotonic spline epistasis function</a><a class="headerlink" href="#monotonic-spline-epistasis-function" title="Permalink to this headline">¶</a></h3>
+<p>This is the function used in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. It transforms
 the latent phenotype to the observed phenotype using monotonic I-splines with
 linear extrapolation outside the spline boundaries:</p>
 <div class="math notranslate nohighlight" id="equation-monotonicspline">
@@ -120,7 +128,7 @@ observed phenotype, the <span class="math notranslate nohighlight">\(\alpha_m\)<
 the lower and upper bounds on the regions over which the I-splines are defined.
 Note how when <span class="math notranslate nohighlight">\(x\)</span> is outside the range of the I-splines, we linearly
 extrapolate <span class="math notranslate nohighlight">\(g\)</span> from its range boundaries to calculate.</p>
-<p>This model is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a>. By default,
+<p>This function is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a>. By default,
 the I-splines are of order 3 and are defined on a mesh of four evenly spaced
 points such that the total number of I-splines is <span class="math notranslate nohighlight">\(M=5\)</span> (although these
 options can be adjusted when initializing a <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a>
@@ -129,8 +137,23 @@ model).</p>
 and the latent phenotype of the wildtype is set to zero.</p>
 </div>
 </div>
-<div class="section" id="fitting-of-models">
-<h2><a class="toc-backref" href="#id4">Fitting of models</a><a class="headerlink" href="#fitting-of-models" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="likelihood-calculation">
+<span id="id4"></span><h2><a class="toc-backref" href="#id10">Likelihood calculation</a><a class="headerlink" href="#likelihood-calculation" title="Permalink to this headline">¶</a></h2>
+<p>We defined a <em>likelihood</em> capturing how well the model describes the
+actual data, and then fit the models by finding the parameters that
+maximize this likelihood. This means that different epistasis functions
+(as described in <a class="reference internal" href="#id1">Global epistasis function</a>) can be compared via
+their likelihoods after correcting for the number of parameters
+(e.g. by <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>).</p>
+<p>We consider several different forms for calculating the likelihood.
+Note that epistasis functions can only be compared within the same form of
+the likelihood on the same dataset–you <strong>cannot</strong> compare likelihoods
+calculated using different methods, or on different datasets.</p>
+<div class="section" id="gaussian-likelihood">
+<span id="id5"></span><h3><a class="toc-backref" href="#id11">Gaussian likelihood</a><a class="headerlink" href="#gaussian-likelihood" title="Permalink to this headline">¶</a></h3>
+<p>This is the form of the likelihood used in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. It is
+most appropriate when we have functional scores for variants along with
+good estimates of normally distributed errors on these functional scores.</p>
 <p>For each variant <span class="math notranslate nohighlight">\(v\)</span>, we have an experimentally measured functional
 score <span class="math notranslate nohighlight">\(y_v\)</span> and optionally an estimate of the error (variance)
 <span class="math notranslate nohighlight">\(\sigma^2_{y_v}\)</span> in this functional score measurement. If no error
@@ -145,30 +168,94 @@ with variance <span class="math notranslate nohighlight">\(\sigma^2_{y_v} + \sig
 (although in practice it could also represent experimental noise not
 capture in the variance estimates). So the overall log likelihood of
 the model is</p>
-<div class="math notranslate nohighlight" id="equation-loglik">
-<span class="eqno">(5)<a class="headerlink" href="#equation-loglik" title="Permalink to this equation">¶</a></span>\[\mathcal{L} = \sum_{v=1}^V \ln\left[N\left(y_v \mid p\left(v\right),
+<div class="math notranslate nohighlight" id="equation-loglik-gaussian">
+<span class="eqno">(5)<a class="headerlink" href="#equation-loglik-gaussian" title="Permalink to this equation">¶</a></span>\[\mathcal{L} = \sum_{v=1}^V \ln\left[N\left(y_v \mid p\left(v\right),
               \sigma^2_{y_v} + \sigma^2_{\rm{HOC}}\right)\right]\]</div>
 <p>where <span class="math notranslate nohighlight">\(V\)</span> is the number of variants and <span class="math notranslate nohighlight">\(N\)</span> is the normal
 distribution defined by</p>
 <div class="math notranslate nohighlight" id="equation-normaldist">
 <span class="eqno">(6)<a class="headerlink" href="#equation-normaldist" title="Permalink to this equation">¶</a></span>\[N\left(y \mid \mu, \sigma^2\right) = \frac{1}{\sqrt{2 \pi \sigma^2}} \exp
                  \left(-\frac{\left(y - \mu\right)^2}{2 \sigma^2}\right).\]</div>
-<p>To fit the model, we maximize the log likelihood in Eq. <a class="reference internal" href="#equation-loglik">(5)</a> with
-respect to all model parameters: the latent effects <span class="math notranslate nohighlight">\(\beta_m\)</span> of all
-mutations, the latent phenotype <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span> of the wildtype
-sequence, the house-of-cards epistasis <span class="math notranslate nohighlight">\(\sigma^2_{\rm{HOC}}\)</span>,
-and any parameters that define the global epistasis function <span class="math notranslate nohighlight">\(g\)</span>.</p>
+<p>This likelihood calculation is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLikelihood</span></code></a>.</p>
+</div>
+<div class="section" id="cauchy-likelihood">
+<span id="id6"></span><h3><a class="toc-backref" href="#id12">Cauchy likelihood</a><a class="headerlink" href="#cauchy-likelihood" title="Permalink to this headline">¶</a></h3>
+<p>This form of the likelihood assumes that the difference between the
+measured functional scores and the model’s observed phenotypes follows a
+<a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a>.</p>
+<p>A potential advantage over the <a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a> is the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Fat-tailed_distribution">fatter tails</a>
+of the Cauchy distribution relative to the Gaussian distribution.
+This could be advantageous if some measurements are very large outliers
+(either due to un-modeled epistasis or experimental factors such as
+mis-calling of variant sequences or bottlenecks) in ways that are not
+capture in the functional score variance estimates <span class="math notranslate nohighlight">\(\sigma^2_{y_v}\)</span>.
+Such outlier measurements will have less influence on the overall model
+fit for the Cauchy likelihood relative to the <a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a>.</p>
+<p>Specifically, we compute the overall log likelihood as</p>
+<div class="math notranslate nohighlight" id="equation-loglik-cauchy">
+<span class="eqno">(7)<a class="headerlink" href="#equation-loglik-cauchy" title="Permalink to this equation">¶</a></span>\[\mathcal{L} = -\sum_{v=1}^V
+              \ln\left[\pi \sqrt{\gamma^2 + \sigma^2_{y_v}}
+                       \left(1 + \frac{\left[y_v - p\left(v\right)\right]^2}
+                                      {\gamma^2 + \sigma^2_{y_v}}
+                       \right)
+                  \right]\]</div>
+<p>where <span class="math notranslate nohighlight">\(\gamma\)</span> is the scale parameters, and the functional score
+variance estimates <span class="math notranslate nohighlight">\(\sigma^2_{y_v}\)</span> are incorporated in heuristic way
+(with no real theoretical basis)
+that qualitatively captures the fact that larger variance estimates give a
+broader distribution. If variance estimates are not available then
+<span class="math notranslate nohighlight">\(\sigma^2_{y_v}\)</span> is set to zero.</p>
+<p>This likelihood calculation is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.CauchyLikelihood" title="dms_variants.globalepistasis.CauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">CauchyLikelihood</span></code></a>.</p>
+</div>
+</div>
+<div class="section" id="the-model-classes">
+<h2><a class="toc-backref" href="#id13">The model classes</a><a class="headerlink" href="#the-model-classes" title="Permalink to this headline">¶</a></h2>
+<p>The epistasis models are defined in a set of classes. All these classes
+inherit their main functionality from the <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a>
+abstract base class.</p>
+<p>There are subclasses of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> that implement the
+global epistasis functions and likelihood calculation methods. Specifically,
+the following classes implement a <a class="reference internal" href="#global-epistasis-function"><span class="std std-ref">Global epistasis function</span></a>:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a></p></li>
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a></p></li>
+</ul>
+</div></blockquote>
+<dl class="simple">
+<dt>and the following classes each implement at <a class="reference internal" href="#likelihood-calculation"><span class="std std-ref">Likelihood calculation</span></a>:</dt><dd><ul class="simple">
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLikelihood</span></code></a></p></li>
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.CauchyLikelihood" title="dms_variants.globalepistasis.CauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">CauchyLikelihood</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<p>However, those classes can still not be directly instantianted, as a fully
+concrete model subclass must have <strong>both</strong> a global epistasis function and
+a likelihood calculation method.
+The following classes implement both, and so can be directly instantiated
+for use in analyses:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood" title="dms_variants.globalepistasis.NoEpistasisGaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasisGaussianLikelihood</span></code></a></p></li>
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasisCauchyLikelihood" title="dms_variants.globalepistasis.NoEpistasisCauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasisCauchyLikelihood</span></code></a></p></li>
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood" title="dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasisGaussianLikelihood</span></code></a></p></li>
+<li><p><a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasisCauchyLikelihood" title="dms_variants.globalepistasis.MonotonicSplineEpistasisCauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasisCauchyLikelihood</span></code></a></p></li>
+</ul>
+</div></blockquote>
 </div>
 <div class="section" id="details-of-fitting">
-<h2><a class="toc-backref" href="#id5">Details of fitting</a><a class="headerlink" href="#details-of-fitting" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id14">Details of fitting</a><a class="headerlink" href="#details-of-fitting" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="fitting-workflow">
-<h3><a class="toc-backref" href="#id6">Fitting workflow</a><a class="headerlink" href="#fitting-workflow" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id15">Fitting workflow</a><a class="headerlink" href="#fitting-workflow" title="Permalink to this headline">¶</a></h3>
 <p>The fitting workflow is essentially the same as that described in
 <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li><p>The latent effects are fit under an additive (non-epistatic) model
-using least squares.</p></li>
+using least squares. The residuals from this fit are then used to
+estimate <span class="math notranslate nohighlight">\(\sigma^2_{\rm{HOC}}\)</span> for <a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a>,
+or <span class="math notranslate nohighlight">\(\gamma^2\)</span> for <a class="reference internal" href="#cauchy-likelihood"><span class="std std-ref">Cauchy likelihood</span></a>.</p></li>
 <li><p>If there are any parameters in the epistasis function, they are set
 to reasonable initial values. For <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a>
 this involves setting the mesh to go from 0 to 1,
@@ -184,7 +271,7 @@ effect is one and the wildtype latent phenotype is zero.</p></li>
 </div></blockquote>
 </div>
 <div class="section" id="vector-representation-of-beta-rm-wt">
-<h3><a class="toc-backref" href="#id7">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a><a class="headerlink" href="#vector-representation-of-beta-rm-wt" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id16">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a><a class="headerlink" href="#vector-representation-of-beta-rm-wt" title="Permalink to this headline">¶</a></h3>
 <p>For the purposes of the optimization (and in the equations below), we change
 how <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span> is represented to simplify the calculations.
 Specifically, to the binary encoding <span class="math notranslate nohighlight">\(\mathbf{b}\left(v\right)\)</span> of
@@ -192,78 +279,81 @@ each variant, we append a 1 so that the encodings are now of length
 <span class="math notranslate nohighlight">\(M + 1\)</span>. We then define <span class="math notranslate nohighlight">\(\beta_{M + 1} = \beta_{\rm{wt}}\)</span>.
 Then Eq. <a class="reference internal" href="#equation-latent-phenotype">(1)</a> can be rewritten as</p>
 <div class="math notranslate nohighlight" id="equation-latent-phenotype-wt-vec">
-<span class="eqno">(7)<a class="headerlink" href="#equation-latent-phenotype-wt-vec" title="Permalink to this equation">¶</a></span>\[\phi\left(v\right) = \sum_{m=1}^{M+1} \beta_m b\left(v\right)_m\]</div>
+<span class="eqno">(8)<a class="headerlink" href="#equation-latent-phenotype-wt-vec" title="Permalink to this equation">¶</a></span>\[\phi\left(v\right) = \sum_{m=1}^{M+1} \beta_m b\left(v\right)_m\]</div>
 <p>enabling <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span> to just be handled like the other
 <span class="math notranslate nohighlight">\(\beta_m\)</span> parameters.</p>
 </div>
 <div class="section" id="optimization">
-<h3><a class="toc-backref" href="#id8">Optimization</a><a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id17">Optimization</a><a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h3>
 <p>The optimization is performed by <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.fit" title="dms_variants.globalepistasis.AbstractEpistasis.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.fit()</span></code></a>.
 There are several options to that method about how to do the optimization;
 by default it uses a L-BFGS-B algorithm with exact gradients
 calculated as below.</p>
 </div>
-<div class="section" id="gradients">
-<h3><a class="toc-backref" href="#id9">Gradients</a><a class="headerlink" href="#gradients" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="gradients-used-in-optimization">
+<h3><a class="toc-backref" href="#id18">Gradients used in optimization</a><a class="headerlink" href="#gradients-used-in-optimization" title="Permalink to this headline">¶</a></h3>
 <p>For the optimization, we use the following gradients:</p>
+<p>Gradient of latent phenotype with respect to latent effects:</p>
 <div class="math notranslate nohighlight" id="equation-dlatent-phenotype-dlatent-effect">
-<span class="eqno">(8)<a class="headerlink" href="#equation-dlatent-phenotype-dlatent-effect" title="Permalink to this equation">¶</a></span>\[\frac{\partial \phi\left(v\right)}{\partial \beta_m} =
+<span class="eqno">(9)<a class="headerlink" href="#equation-dlatent-phenotype-dlatent-effect" title="Permalink to this equation">¶</a></span>\[\frac{\partial \phi\left(v\right)}{\partial \beta_m} =
 b\left(v_m\right)\]</div>
+<p>Gradient of observed phenotype with respect to latent phenotypes:</p>
 <div class="math notranslate nohighlight" id="equation-dobserved-phenotype-dlatent-effect">
-<span class="eqno">(9)<a class="headerlink" href="#equation-dobserved-phenotype-dlatent-effect" title="Permalink to this equation">¶</a></span>\[\begin{split}\frac{\partial p\left(v\right)}{\partial \beta_m}
+<span class="eqno">(10)<a class="headerlink" href="#equation-dobserved-phenotype-dlatent-effect" title="Permalink to this equation">¶</a></span>\[\begin{split}\frac{\partial p\left(v\right)}{\partial \beta_m}
 &amp;=&amp; \left.\frac{\partial g\left(x\right)}{\partial x}
     \right\rvert_{x = \phi\left(v\right)} \times
     \frac{\partial \phi\left(v\right)}{\partial \beta_m} \\
 &amp;=&amp; \left.\frac{\partial g\left(x\right)}{\partial x}
     \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)\end{split}\]</div>
-<div class="math notranslate nohighlight" id="equation-dnormaldist-dmu">
-<span class="eqno">(10)<a class="headerlink" href="#equation-dnormaldist-dmu" title="Permalink to this equation">¶</a></span>\[\frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
-     {\partial \mu} =
-\frac{y - \mu}{\sigma^2}\]</div>
+<p>Derivative of the likelihood with respect to latent effects:</p>
 <div class="math notranslate nohighlight" id="equation-dloglik-dlatent-effect">
-<span class="eqno">(11)<a class="headerlink" href="#equation-dloglik-dlatent-effect" title="Permalink to this equation">¶</a></span>\[\begin{split}\frac{\partial \mathcal{L}}{\partial \beta_m}
-&amp;=&amp; \sum_{v=1}^V \frac{\partial \ln\left[N\left(y_v \mid p\left(v\right),
-                       \sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}\right)\right]}
-                      {\partial p\left(v\right)} \times
-                 \frac{\partial p\left(v\right)}{\partial \beta_m} \\
-&amp;=&amp; \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                      {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}} \times
-                 \frac{\partial p\left(v\right)}{\partial \beta_m}\end{split}\]</div>
-<div class="math notranslate nohighlight" id="equation-dnormaldist-dsigma2">
-<span class="eqno">(12)<a class="headerlink" href="#equation-dnormaldist-dsigma2" title="Permalink to this equation">¶</a></span>\[\frac{\partial \ln\left[N\left(y \mid \mu, \sigma^2\right)\right]}
-     {\partial \sigma^2} = \frac{1}{2}\left[\left(\frac{y - \mu}{\sigma^2}
-                                                  \right)^2 -
-                                           \frac{1}{\sigma^2}\right]\]</div>
-<div class="math notranslate nohighlight" id="equation-dloglik-depistasis-hoc">
-<span class="eqno">(13)<a class="headerlink" href="#equation-dloglik-depistasis-hoc" title="Permalink to this equation">¶</a></span>\[\frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V
-\frac{1}{2} \left[\left(\frac{y_v - p\left(v\right)}
-                             {\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2}\right)^2
-                  - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right]\]</div>
-<p>For derivatives of log likelihood with respect to the parameters of
-<span class="math notranslate nohighlight">\(g\)</span> as defined in Eq. <a class="reference internal" href="#equation-monotonicspline">(4)</a>:</p>
-<div class="math notranslate nohighlight">
-\[\frac{g\left(x\right)}{\partial c_{\alpha}} = 1\]</div>
-<div class="math notranslate nohighlight">
-\[\frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)\]</div>
-<div class="math notranslate nohighlight" id="equation-dloglik-dcalpha">
-<span class="eqno">(14)<a class="headerlink" href="#equation-dloglik-dcalpha" title="Permalink to this equation">¶</a></span>\[\begin{split}\frac{\mathcal{L}}{\partial c_{\alpha}}
-&amp;=&amp;
-\frac{\mathcal{L}}{\partial p\left(v\right)}
-\frac{\partial p\left(v\right)}{\partial c_{\alpha}} \\
-&amp;=&amp; \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                      {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}\end{split}\]</div>
-<div class="math notranslate nohighlight" id="equation-dloglik-dalpham">
-<span class="eqno">(15)<a class="headerlink" href="#equation-dloglik-dalpham" title="Permalink to this equation">¶</a></span>\[\begin{split}\frac{\mathcal{L}}{\partial \alpha_m}
-&amp;=&amp;
-\frac{\mathcal{L}}{\partial p\left(v\right)}
-\frac{\partial p\left(v\right)}{\partial \alpha_m} \\
-&amp;=&amp; \sum_{v=1}^V \frac{y_v - p\left(v\right)}
-                      {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}
-    I_m\left(\phi\left(v\right)\right)\end{split}\]</div>
+<span class="eqno">(11)<a class="headerlink" href="#equation-dloglik-dlatent-effect" title="Permalink to this equation">¶</a></span>\[\frac{\partial \mathcal{L}}{\partial \beta_m}
+= \sum_{v=1}^V \frac{\mathcal{L}}
+                    {\partial p\left(v\right)} \times
+               \frac{\partial p\left(v\right)}{\partial \beta_m}.\]</div>
+<p>Derivative of <a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a> (Eq. <a class="reference internal" href="#equation-loglik-gaussian">(5)</a>) with
+respect to observed phenotype:</p>
+<div class="math notranslate nohighlight" id="equation-dloglik-gaussian-dobserved-phenotype">
+<span class="eqno">(12)<a class="headerlink" href="#equation-dloglik-gaussian-dobserved-phenotype" title="Permalink to this equation">¶</a></span>\[\frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+= \frac{y_v - p\left(v\right)}
+       {\sigma_{y_v}^2 + \sigma^2_{\rm{HOC}}}.\]</div>
+<p>Derivative of <a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a> (Eq. <a class="reference internal" href="#equation-loglik-gaussian">(5)</a>) with
+respect to house-of-cards epistasis:</p>
+<div class="math notranslate nohighlight" id="equation-dloglik-gaussian-depistasis-hoc">
+<span class="eqno">(13)<a class="headerlink" href="#equation-dloglik-gaussian-depistasis-hoc" title="Permalink to this equation">¶</a></span>\[\frac{\partial \mathcal{L}}{\partial \sigma^2_{\rm{HOC}}} = \sum_{v=1}^V
+\frac{1}{2} \left[\left(\frac{\partial \mathcal{L}}
+                             {\partial p\left(v\right)}\right)^2
+                  - \frac{1}{\sigma_{y_v}^2 + \sigma_{\rm{HOC}}^2} \right].\]</div>
+<p>Derivative of <a class="reference internal" href="#cauchy-likelihood"><span class="std std-ref">Cauchy likelihood</span></a> (Eq. <a class="reference internal" href="#equation-loglik-cauchy">(7)</a>) with
+respect to observed phenotype:</p>
+<div class="math notranslate nohighlight" id="equation-dloglik-cauchy-dobserved-phenotype">
+<span class="eqno">(14)<a class="headerlink" href="#equation-dloglik-cauchy-dobserved-phenotype" title="Permalink to this equation">¶</a></span>\[\frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+=
+\frac{2\left[y_v - p\left(v\right)\right]}
+     {\gamma^2 + \sigma^2_{y_v} +
+      \left[y_v - p\left(v\right)\right]^2}.\]</div>
+<p>Derivative of <a class="reference internal" href="#cauchy-likelihood"><span class="std std-ref">Cauchy likelihood</span></a> (Eq. <a class="reference internal" href="#equation-loglik-cauchy">(7)</a>) with
+respect to scale parameter:</p>
+<div class="math notranslate nohighlight" id="equation-dloglik-cauchy-dscale-parameter">
+<span class="eqno">(15)<a class="headerlink" href="#equation-dloglik-cauchy-dscale-parameter" title="Permalink to this equation">¶</a></span>\[\frac{\partial \mathcal{L}}{\partial \gamma}
+=
+\sum_{v=1}^{V} \frac{\gamma\left(\left[y_v - p\left(v\right)\right]^2 -
+                                 \gamma^2 - \sigma^2_{y_v}
+                           \right)}
+                    {\left(\gamma^2 + \sigma^2_{y_v}\right)
+                     \left(\gamma^2 + \sigma^2_{y_v} +
+                           \left[y_v - p\left(v\right)\right]^2\right)
+                     }\]</div>
+<p>Derivative of <a class="reference internal" href="#monotonic-spline-epistasis-function"><span class="std std-ref">Monotonic spline epistasis function</span></a> with respect to its
+parameters:</p>
+<div class="math notranslate nohighlight" id="equation-dspline-epistasis-dcalpha">
+<span class="eqno">(16)<a class="headerlink" href="#equation-dspline-epistasis-dcalpha" title="Permalink to this equation">¶</a></span>\[\frac{g\left(x\right)}{\partial c_{\alpha}} = 1\]</div>
+<div class="math notranslate nohighlight" id="equation-dspline-epistasis-dalpham">
+<span class="eqno">(17)<a class="headerlink" href="#equation-dspline-epistasis-dalpham" title="Permalink to this equation">¶</a></span>\[\frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)\]</div>
 </div>
 </div>
-<div class="section" id="api-implementing-models">
-<h2><a class="toc-backref" href="#id10">API implementing models</a><a class="headerlink" href="#api-implementing-models" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="detailed-documentation-of-models">
+<h2><a class="toc-backref" href="#id19">Detailed documentation of models</a><a class="headerlink" href="#detailed-documentation-of-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis">
 <em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">AbstractEpistasis</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis" title="Permalink to this definition">¶</a></dt>
@@ -277,8 +367,8 @@ b\left(v_m\right)\]</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>This is an abstract base class. It implements most of the epistasis model
-functionality, but does not define the actual functional form of
-the global epistasis function <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func()</span></code></a>.</p>
+functionality, but requires subclasses to define the actual
+<a class="reference internal" href="#global-epistasis-function"><span class="std std-ref">Global epistasis function</span></a> and <a class="reference internal" href="#likelihood-calculation"><span class="std std-ref">Likelihood calculation</span></a>.</p>
 </div>
 <dl class="method">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis.add_phenotypes_to_df">
@@ -360,40 +450,32 @@ to enrichments.</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="dms_variants.globalepistasis.AbstractEpistasis.epistasis_HOC">
-<em class="property">property </em><code class="sig-name descname">epistasis_HOC</code><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_HOC" title="Permalink to this definition">¶</a></dt>
-<dd><p>House of cards epistasis, <span class="math notranslate nohighlight">\(\sigma^2_{\rm{HOC}}\)</span>.</p>
+<dt id="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func">
+<em class="property">abstract </em><code class="sig-name descname">epistasis_func</code><span class="sig-paren">(</span><em class="sig-param">latent_phenotype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.epistasis_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>The <a class="reference internal" href="#global-epistasis-function"><span class="std std-ref">Global epistasis function</span></a> <span class="math notranslate nohighlight">\(g\)</span>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>float</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>latent_phenotype</strong> (<em>numpy.ndarray</em>) – Latent phenotype(s) of one or more variants.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Observed phenotype(s) after transforming the latent phenotypes
+using the global epistasis function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func">
-<em class="property">abstract </em><code class="sig-name descname">epistasis_func</code><span class="sig-paren">(</span><em class="sig-param">latent_phenotype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.epistasis_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Global epistasis function <span class="math notranslate nohighlight">\(g\)</span> in Eq. <a class="reference internal" href="#equation-observed-phenotype">(2)</a>.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>This is an abstract method for the <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> class.
-The actual functional forms for specific models are defined in
-concrete subclasses. Those concrete implementations will also have
-additional parameters used by the function.</p>
-</div>
-</dd></dl>
-
-<dl class="method">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func_params_dict">
 <em class="property">property </em><code class="sig-name descname">epistasis_func_params_dict</code><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func_params_dict" title="Permalink to this definition">¶</a></dt>
-<dd><p><a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func()</span></code></a> param values.</p>
+<dd><p>Parameters for the <a class="reference internal" href="#global-epistasis-function"><span class="std std-ref">Global epistasis function</span></a>.</p>
 <p>Maps names of parameters defining the global epistasis function to
-current values. These parameters are all arguments to
-<a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func()</span></code></a> <strong>except</strong> <cite>latent_phenotype</cite>
-(which is the function input, not a parameter defining the function).</p>
+their current values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>OrderedDict</p>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -446,9 +528,22 @@ gives the current predicted latent effect of that mutation.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="dms_variants.globalepistasis.AbstractEpistasis.likelihood_calc_params_dict">
+<em class="property">property </em><code class="sig-name descname">likelihood_calc_params_dict</code><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.likelihood_calc_params_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parameters for the <a class="reference internal" href="#likelihood-calculation"><span class="std std-ref">Likelihood calculation</span></a>.</p>
+<p>Maps names of parameters defining the likelihood calculation to
+their current values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis.loglik">
-<em class="property">property </em><code class="sig-name descname">loglik</code><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.loglik" title="Permalink to this definition">¶</a></dt>
-<dd><p>Current log likelihood as defined in Eq. <a class="reference internal" href="#equation-loglik">(5)</a>.</p>
+<em class="property">abstract property </em><code class="sig-name descname">loglik</code><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current log likelihood of model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>float</p>
@@ -493,7 +588,7 @@ as the functional score and its variance.</p>
 <li><p><strong>phenotype</strong> (<em>{'latent'</em><em>, </em><em>'observed'}</em>) – Calculate the latent or observed phenotype.</p></li>
 <li><p><strong>wt_col</strong> (<em>bool</em>) – Set to <cite>True</cite> if <cite>binary_variants</cite> contains a terminal
 column of ones to enable calculations in the form given
-by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(7)</a>.</p></li>
+by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(8)</a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -501,6 +596,29 @@ by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(7
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_variants.globalepistasis.CauchyLikelihood">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">CauchyLikelihood</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#CauchyLikelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.CauchyLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.AbstractEpistasis</span></code></a></p>
+<p>Cauchy likelihood calculation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Subclass of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> that implements the
+<a class="reference internal" href="#cauchy-likelihood"><span class="std std-ref">Cauchy likelihood</span></a>.</p>
+</div>
+<dl class="method">
+<dt id="dms_variants.globalepistasis.CauchyLikelihood.loglik">
+<em class="property">property </em><code class="sig-name descname">loglik</code><a class="headerlink" href="#dms_variants.globalepistasis.CauchyLikelihood.loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current log likelihood from Eq. <a class="reference internal" href="#equation-loglik-cauchy">(7)</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -515,16 +633,37 @@ by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(7
 </dd></dl>
 
 <dl class="class">
+<dt id="dms_variants.globalepistasis.GaussianLikelihood">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">GaussianLikelihood</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#GaussianLikelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.GaussianLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.AbstractEpistasis</span></code></a></p>
+<p>Gaussian likelihood calculation.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Subclass of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> that implements the
+<a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a>.</p>
+</div>
+<dl class="method">
+<dt id="dms_variants.globalepistasis.GaussianLikelihood.loglik">
+<em class="property">property </em><code class="sig-name descname">loglik</code><a class="headerlink" href="#dms_variants.globalepistasis.GaussianLikelihood.loglik" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current log likelihood from Eq. <a class="reference internal" href="#equation-loglik-gaussian">(5)</a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
 <dt id="dms_variants.globalepistasis.MonotonicSplineEpistasis">
 <em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">MonotonicSplineEpistasis</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em>, <em class="sig-param">*</em>, <em class="sig-param">spline_order=3</em>, <em class="sig-param">meshpoints=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#MonotonicSplineEpistasis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.AbstractEpistasis</span></code></a></p>
 <p>Monotonic spline global epistasis model.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Models global epistasis function <span class="math notranslate nohighlight">\(g\)</span> via monotonic splines as
-defined in Eq. <a class="reference internal" href="#equation-monotonicspline">(4)</a>.</p>
-<p>This is a concrete subclass of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a>, so see the docs
-of that abstract base class for details on most properties and methods.</p>
+<p>Subclass of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> that implements the
+<a class="reference internal" href="#monotonic-spline-epistasis-function"><span class="std std-ref">Monotonic spline epistasis function</span></a>.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -561,21 +700,38 @@ global epistasis function.</p></li>
 <dl class="method">
 <dt id="dms_variants.globalepistasis.MonotonicSplineEpistasis.epistasis_func">
 <code class="sig-name descname">epistasis_func</code><span class="sig-paren">(</span><em class="sig-param">latent_phenotype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#MonotonicSplineEpistasis.epistasis_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis.epistasis_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply <span class="math notranslate nohighlight">\(g\)</span> in Eq. <a class="reference internal" href="#equation-monotonicspline">(4)</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>latent_phenotype</strong> (<em>numpy.ndarray</em>) – Latent phenotype(s) of one or more variants.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Observed phenotype(s) after transforming the latent phenotypes
-using the global epistasis function.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
+<dd><p>Global epistasis function <span class="math notranslate nohighlight">\(g\)</span> in Eq. <a class="reference internal" href="#equation-monotonicspline">(4)</a>.</p>
+<p>Concrete implementation of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func()</span></code></a>.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_variants.globalepistasis.MonotonicSplineEpistasisCauchyLikelihood">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">MonotonicSplineEpistasisCauchyLikelihood</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em>, <em class="sig-param">*</em>, <em class="sig-param">spline_order=3</em>, <em class="sig-param">meshpoints=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#MonotonicSplineEpistasisCauchyLikelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.MonotonicSplineEpistasisCauchyLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.MonotonicSplineEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.CauchyLikelihood" title="dms_variants.globalepistasis.CauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.CauchyLikelihood</span></code></a></p>
+<p>Monotonic spline global epistasis model with Cauchy likelihood.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class implements the <a class="reference internal" href="#monotonic-spline-epistasis-function"><span class="std std-ref">Monotonic spline epistasis function</span></a>
+with a <a class="reference internal" href="#cauchy-likelihood"><span class="std std-ref">Cauchy likelihood</span></a>. See documentation for the base
+classes <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.CauchyLikelihood" title="dms_variants.globalepistasis.CauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">CauchyLikelihood</span></code></a>,
+and <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> for details.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">MonotonicSplineEpistasisGaussianLikelihood</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em>, <em class="sig-param">*</em>, <em class="sig-param">spline_order=3</em>, <em class="sig-param">meshpoints=4</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#MonotonicSplineEpistasisGaussianLikelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.MonotonicSplineEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.GaussianLikelihood</span></code></a></p>
+<p>Monotonic spline global epistasis model with Gaussian likelihood.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class implements the <a class="reference internal" href="#monotonic-spline-epistasis-function"><span class="std std-ref">Monotonic spline epistasis function</span></a>
+with a <a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a>. See documentation for the base
+classes <a class="reference internal" href="#dms_variants.globalepistasis.MonotonicSplineEpistasis" title="dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLikelihood</span></code></a>,
+and <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> for details.</p>
+</div>
 </dd></dl>
 
 <dl class="class">
@@ -585,34 +741,44 @@ using the global epistasis function.</p>
 <p>Non-epistatic model.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Model when there is no epistasis, which is when the global epistasis
-function <span class="math notranslate nohighlight">\(g\)</span> is defined by Eq. <a class="reference internal" href="#equation-noepistasis">(3)</a>.</p>
-<p>This is a concrete subclass of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a>, so see the docs
-of that abstract base class for details on most properties and methods.</p>
+<p>Subclass of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> that implements the
+<a class="reference internal" href="#no-epistasis-function"><span class="std std-ref">No epistasis function</span></a>.</p>
 </div>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>binarymap</strong> (<a class="reference internal" href="dms_variants.binarymap.html#dms_variants.binarymap.BinaryMap" title="dms_variants.binarymap.BinaryMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.binarymap.BinaryMap</span></code></a>) – Contains the variants, their functional scores, and score variances.</p>
-</dd>
-</dl>
 <dl class="method">
 <dt id="dms_variants.globalepistasis.NoEpistasis.epistasis_func">
 <code class="sig-name descname">epistasis_func</code><span class="sig-paren">(</span><em class="sig-param">latent_phenotype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#NoEpistasis.epistasis_func"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.NoEpistasis.epistasis_func" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply <span class="math notranslate nohighlight">\(g\)</span> in Eq. <a class="reference internal" href="#equation-noepistasis">(3)</a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>latent_phenotype</strong> (<em>numpy.ndarray</em>) – Latent phenotype(s) of one or more variants.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Observed phenotype(s) after transforming the latent phenotypes
-using the global epistasis function.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>numpy.ndarray</p>
-</dd>
-</dl>
+<dd><p>Global epistasis function <span class="math notranslate nohighlight">\(g\)</span> in Eq. <a class="reference internal" href="#equation-noepistasis">(3)</a>.</p>
+<p>Concrete implementation of <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func" title="dms_variants.globalepistasis.AbstractEpistasis.epistasis_func"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func()</span></code></a>.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_variants.globalepistasis.NoEpistasisCauchyLikelihood">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">NoEpistasisCauchyLikelihood</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#NoEpistasisCauchyLikelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.NoEpistasisCauchyLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.NoEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.CauchyLikelihood" title="dms_variants.globalepistasis.CauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.CauchyLikelihood</span></code></a></p>
+<p>No-epistasis model with Cauchy likelihood.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class implements the <a class="reference internal" href="#no-epistasis-function"><span class="std std-ref">No epistasis function</span></a> with a
+<a class="reference internal" href="#cauchy-likelihood"><span class="std std-ref">Cauchy likelihood</span></a>. See documentation for the base classes
+<a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.CauchyLikelihood" title="dms_variants.globalepistasis.CauchyLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">CauchyLikelihood</span></code></a>, and
+<a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> for details.</p>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">NoEpistasisGaussianLikelihood</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#NoEpistasisGaussianLikelihood"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.NoEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.globalepistasis.GaussianLikelihood</span></code></a></p>
+<p>No-epistasis model with Gaussian likelihood.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This class implements the <a class="reference internal" href="#no-epistasis-function"><span class="std std-ref">No epistasis function</span></a> with a
+<a class="reference internal" href="#gaussian-likelihood"><span class="std std-ref">Gaussian likelihood</span></a>. See documentation for the base classes
+<a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a>, <a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLikelihood</span></code></a>, and
+<a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a> for details.</p>
+</div>
 </dd></dl>
 
 </div>
