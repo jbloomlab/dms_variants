@@ -19,6 +19,8 @@ Added
 
 - Added the `narrow_bottleneck.ipynb` notebook to demonstrate use of the Cauchy likelihood for analysis of experiments with a lot of noise.
 
+- Added the `predict_variants.ipynb` to demonstrate prediction of variant phenotypes using global epistasis models.
+
 - Added `simulate.codon_muts`.
 
 Fixed
