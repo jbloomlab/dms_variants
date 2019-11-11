@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-0.4.dev0
+0.4.0
 --------
 
 Added
@@ -18,6 +18,10 @@ Added
   **Note that this an API-breaking change.**
 
 - Added the `narrow_bottleneck.ipynb` notebook to demonstrate use of the Cauchy likelihood for analysis of experiments with a lot of noise.
+
+- Added the `predict_variants.ipynb` to demonstrate prediction of variant phenotypes using global epistasis models.
+
+- Added `simulate.codon_muts`.
 
 Fixed
 ++++++++
