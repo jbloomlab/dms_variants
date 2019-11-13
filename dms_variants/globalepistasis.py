@@ -440,6 +440,15 @@ class AbstractEpistasis(abc.ABC):
         self._likelihood_calc_params = self._init_likelihood_calc_params
         self._epistasis_func_params = self._init_epistasis_func_params
 
+    def __getstate__(self):
+        """Clears the internal `_cache` before pickling.
+
+        See: https://docs.python.org/3/library/pickle.html#object.__getstate__
+
+        """
+        self._cache = {}
+        return self.__dict__
+
     # ------------------------------------------------------------------------
     # Methods / properties to set and get model parameters that are fit.
     # The setters must clear appropriate elements from the cache.
@@ -772,7 +781,8 @@ class AbstractEpistasis(abc.ABC):
     # that store the current state for the variants we are fitting, using the
     # cache so that they don't have to be re-computed needlessly.
     # ------------------------------------------------------------------------
-    def fit(self, *, use_grad=True, optimize_method='L-BFGS-B', ftol=1e-7):
+    def fit(self, *, use_grad=True, optimize_method='L-BFGS-B', ftol=1e-7,
+            clearcache=True):
         """Fit all model params to maximum likelihood values.
 
         Parameters
@@ -784,6 +794,10 @@ class AbstractEpistasis(abc.ABC):
         ftol : float
             Function convergence tolerance for optimization, used by
             `scipy.optimize.minimize`.
+        clearcache : bool
+            Clear the cache after model fitting? This slightly increases
+            the time needed to compute properties after fitting, but
+            greatly saves memory usage.
 
         Returns
         -------
@@ -815,6 +829,9 @@ class AbstractEpistasis(abc.ABC):
 
         # postscale parameters to desired range
         self._postscale_params()
+
+        if clearcache:
+            self._cache = {}
 
         return optres
 

@@ -13,6 +13,8 @@ Fixed
 ++++++
 - The `isplines` module now uses a simple dict-implemented cache rather than `methodtools.lru_cache`. This fixes excess memory usage and allows objects to be pickled.
 
+- `AbstractEpistasis` internally clears the cache via `__getstate__` to reduce size of pickled objects. This avoids pickled models being huge. Also added the `clearcache` option to `AbstractEpistasis.fit` to serve a similar purpose of memory savings.
+
 0.4.0
 --------
 
