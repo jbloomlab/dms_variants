@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.4.1
+------
+
+Fixed
+++++++
+- The `isplines` module now uses a simple dict-implemented cache rather than `methodtools.lru_cache`. This fixes excess memory usage and allows objects to be pickled.
+
 0.4.0
 --------
 
