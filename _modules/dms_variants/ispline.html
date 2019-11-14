@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.ispline &#8212; dms_variants 0.4.0 documentation</title>
+    <title>dms_variants.ispline &#8212; dms_variants 0.4.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -51,8 +51,6 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-
-<span class="kn">import</span> <span class="nn">methodtools</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span>
 
@@ -253,6 +251,10 @@
                                             <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">])),</span>
                           <span class="p">}</span>
 
+        <span class="c1"># for caching values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span> <span class="o">=</span> <span class="mi">100</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
@@ -276,12 +278,14 @@
 <span class="sd">            :math:`I_{\rm{total}}` for each point in :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span>
-                                                 <span class="s1">&#39;Itotal&#39;</span><span class="p">)</span></div>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span> <span class="s1">&#39;Itotal&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
-    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">,</span>
-                                     <span class="n">quantity</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.Itotal` or derivatives.</span>
 
 <span class="sd">        Parameters have same meaning as for :meth:`Isplines.Itotal`</span>
@@ -418,8 +422,12 @@
 <span class="sd">            for each point in :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span>
-                                                 <span class="s1">&#39;dItotal_dx&#39;</span><span class="p">)</span></div>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;dItotal_dx&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="Isplines_total.dItotal_dweights"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dweights">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dweights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines_total.Itotal` by :math:`w_i`.</span>
@@ -613,6 +621,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span> <span class="o">=</span> <span class="n">Msplines</span><span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 
+        <span class="c1"># for caching values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span> <span class="o">=</span> <span class="mi">100</span>
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
@@ -659,7 +671,12 @@
 <span class="sd">        .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">)</span></div>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">j</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -705,7 +722,6 @@
                                                        <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span>
 
-    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_calculate_I_or_dI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.</span>
 
@@ -790,7 +806,12 @@
 <span class="sd">           \end{cases}</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;dI&#39;</span><span class="p">)</span></div></div>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;dI&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div></div>
 
 
 <div class="viewcode-block" id="Msplines"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines">[docs]</a><span class="k">class</span> <span class="nc">Msplines</span><span class="p">:</span>
@@ -935,6 +956,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span> <span class="o">=</span> <span class="p">{}</span>
 
+        <span class="c1"># for caching values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span> <span class="o">=</span> <span class="mi">100</span>
+
     <span class="k">def</span> <span class="nf">_ti_le_x_lt_tiplusk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Indices where :math:`t_i \le x \le t_{i+k}`.</span>
 
@@ -957,6 +983,8 @@
             <span class="n">val</span> <span class="o">=</span> <span class="p">(</span><span class="n">ti</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">tiplusk</span><span class="p">)</span>
             <span class="n">val</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">assert</span> <span class="n">val</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="nb">bool</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
@@ -1007,9 +1035,13 @@
 <span class="sd">           \end{cases}</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">)</span></div>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_M</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
-    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_calculate_M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.M` with result caching.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
@@ -1091,9 +1123,13 @@
 <span class="sd">           \end{cases}</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dM_dx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">)</span></div>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dM_dx</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
-    <span class="nd">@methodtools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">65536</span><span class="p">)</span>
     <span class="k">def</span> <span class="nf">_calculate_dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.dM_dx` with results caching.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
