@@ -17,8 +17,6 @@ by `Ramsay (1988)`_.
 """
 
 
-import methodtools
-
 import numpy
 
 
@@ -218,6 +216,10 @@ class Isplines_total:
                                             numpy.array([self.upper])),
                           }
 
+        # for caching values
+        self._cache = {}
+        self._max_cache_size = 100
+
     @property
     def x(self):
         """numpy.ndarray: Points at which spline is evaluated."""
@@ -241,12 +243,14 @@ class Isplines_total:
             :math:`I_{\rm{total}}` for each point in :attr:`Isplines_total.x`.
 
         """
-        return self._calculate_Itotal_or_dItotal(tuple(weights), w_lower,
-                                                 'Itotal')
+        args = (tuple(weights), w_lower, 'Itotal')
+        if args not in self._cache:
+            if len(self._cache) > self._max_cache_size:
+                self._cache = {}
+            self._cache[args] = self._calculate_Itotal_or_dItotal(*args)
+        return self._cache[args]
 
-    @methodtools.lru_cache(maxsize=65536)
-    def _calculate_Itotal_or_dItotal(self, weights, w_lower,
-                                     quantity):
+    def _calculate_Itotal_or_dItotal(self, weights, w_lower, quantity):
         """Calculate :meth:`Isplines.Itotal` or derivatives.
 
         Parameters have same meaning as for :meth:`Isplines.Itotal`
@@ -383,8 +387,12 @@ class Isplines_total:
             for each point in :attr:`Isplines_total.x`.
 
         """
-        return self._calculate_Itotal_or_dItotal(tuple(weights), None,
-                                                 'dItotal_dx')
+        args = (tuple(weights), None, 'dItotal_dx')
+        if args not in self._cache:
+            if len(self._cache) > self._max_cache_size:
+                self._cache = {}
+            self._cache[args] = self._calculate_Itotal_or_dItotal(*args)
+        return self._cache[args]
 
     def dItotal_dweights(self, weights, w_lower):
         r"""Derivative of :meth:`Isplines_total.Itotal` by :math:`w_i`.
@@ -578,6 +586,10 @@ class Isplines:
 
         self._msplines = Msplines(order + 1, mesh, self.x)
 
+        # for caching values
+        self._cache = {}
+        self._max_cache_size = 100
+
     @property
     def x(self):
         """numpy.ndarray: Points at which spline is evaluated."""
@@ -624,7 +636,12 @@ class Isplines:
         .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html
 
         """
-        return self._calculate_I_or_dI(i, 'I')
+        args = (i, 'I')
+        if args not in self._cache:
+            if len(self._cache) > self._max_cache_size:
+                self._cache = {}
+            self._cache[args] = self._calculate_I_or_dI(*args)
+        return self._cache[args]
 
     @property
     def j(self):
@@ -670,7 +687,6 @@ class Isplines:
                                                        len(self.x))
         return self._sum_terms_dI_dx_val
 
-    @methodtools.lru_cache(maxsize=65536)
     def _calculate_I_or_dI(self, i, quantity):
         """Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.
 
@@ -755,7 +771,12 @@ class Isplines:
            \end{cases}
 
         """
-        return self._calculate_I_or_dI(i, 'dI')
+        args = (i, 'dI')
+        if args not in self._cache:
+            if len(self._cache) > self._max_cache_size:
+                self._cache = {}
+            self._cache[args] = self._calculate_I_or_dI(*args)
+        return self._cache[args]
 
 
 class Msplines:
@@ -900,6 +921,11 @@ class Msplines:
 
         self._ti_le_x_lt_tiplusk_cache = {}
 
+        # for caching values
+        self._M_cache = {}
+        self._dM_cache = {}
+        self._max_cache_size = 100
+
     def _ti_le_x_lt_tiplusk(self, ti, tiplusk):
         r"""Indices where :math:`t_i \le x \le t_{i+k}`.
 
@@ -922,6 +948,8 @@ class Msplines:
             val = (ti <= self.x) & (self.x < tiplusk)
             val.flags.writeable = False
             assert val.dtype == bool
+            if len(self._ti_le_x_lt_tiplusk_cache) > self._max_cache_size:
+                self._ti_le_x_lt_tiplusk_cache = {}
             self._ti_le_x_lt_tiplusk_cache[key] = val
         return self._ti_le_x_lt_tiplusk_cache[key]
 
@@ -972,9 +1000,13 @@ class Msplines:
            \end{cases}
 
         """
-        return self._calculate_M(i, k, invalid_i)
+        args = (i, k, invalid_i)
+        if args not in self._M_cache:
+            if len(self._M_cache) > self._max_cache_size:
+                self._M_cache = {}
+            self._M_cache[args] = self._calculate_M(*args)
+        return self._M_cache[args]
 
-    @methodtools.lru_cache(maxsize=65536)
     def _calculate_M(self, i, k, invalid_i):
         """Calculate :meth:`Msplines.M` with result caching."""
         if not (1 <= i <= self.n):
@@ -1056,9 +1088,13 @@ class Msplines:
            \end{cases}
 
         """
-        return self._calculate_dM_dx(i, k, invalid_i)
+        args = (i, k, invalid_i)
+        if args not in self._dM_cache:
+            if len(self._dM_cache) > self._max_cache_size:
+                self._dM_cache = {}
+            self._dM_cache[args] = self._calculate_dM_dx(*args)
+        return self._dM_cache[args]
 
-    @methodtools.lru_cache(maxsize=65536)
     def _calculate_dM_dx(self, i, k, invalid_i):
         """Calculate :meth:`Msplines.dM_dx` with results caching."""
         if not (1 <= i <= self.n):
