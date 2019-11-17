@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.4.2
+------
+
+Added
+++++++
+- The new ``AbstractEpistasis.preferences`` method gets amino-acid preferences from phenotypes.
+
 0.4.1
 ------
 
