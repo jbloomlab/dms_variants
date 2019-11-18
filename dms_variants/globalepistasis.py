@@ -827,10 +827,7 @@ class AbstractEpistasis(abc.ABC):
             if extra_chars:
                 raise ValueError(f"invalid {col} characters: {extra_chars}")
 
-        # fill in wildtype and any missing characters
-        if missing == 'average':
-            assert len(phenotypes.query('mutant == wildtype')) == 0
-            missing_val = phenotypes['phenotype'].mean()
+        # add wildtype to data frame
         wt_phenotype = (self.add_phenotypes_to_df(
                                 pd.DataFrame({'mutation': ['']}),
                                 substitutions_col='mutation')
@@ -838,43 +835,59 @@ class AbstractEpistasis(abc.ABC):
                         .values
                         [0]
                         )
+        wt_df = (phenotypes
+                 [['wildtype', 'site']]
+                 .drop_duplicates()
+                 .assign(mutant=lambda x: x['wildtype'],
+                         phenotype=wt_phenotype)
+                 )
+        phenotypes = pd.concat([phenotypes, wt_df], sort=False)
+
+        # add any missing characters
+        if missing == 'average':
+            missing_val = (phenotypes
+                           .query('mutant != wildtype')
+                           ['phenotype']
+                           .mean()
+                           )
         preferences = []
         for (wildtype, site), df in phenotypes.groupby(['wildtype', 'site']):
-            site_d = df.set_index('mutant')['phenotype'].to_dict()
-            assert len(site_d) == len(df)
-            assert wildtype not in site_d
-            if len(site_d) < len(chars) - 1:
+            if set(df['mutant']) != chars:
+                site_d = df.set_index('mutant')['phenotype'].to_dict()
                 if missing == 'error':
                     missing_chars = sorted(chars - {wildtype} - set(site_d))
                     assert missing_chars
                     raise ValueError('Missing phenotypes for these mutations '
                                      f"at site {site}: {missing_chars}")
                 elif missing == 'site_average':
-                    missing_val = df['phenotype'].mean()
+                    missing_val = (df
+                                   .query('mutant != wildtype')
+                                   ['phenotype']
+                                   .mean()
+                                   )
                 elif missing != 'average':
                     raise ValueError(f"invalid `missing` of {missing}")
                 for a in chars - set(site_d):
                     site_d[a] = missing_val
-            site_d[wildtype] = wt_phenotype
-            assert chars == set(site_d)
+                df = (pd.Series(site_d)
+                      .rename_axis('mutant')
+                      .rename('phenotype')
+                      .reset_index()
+                      .assign(site=site)
+                      )
+            df = df[['site', 'mutant', 'phenotype']]
+            assert len(df) == len(chars)
+            assert set(df['mutant']) == chars
             preferences.append(
-                    pd.Series(site_d)
-                    .rename_axis('character')
-                    .rename('phenotype')
-                    .reset_index()
-                    .assign(site=site,
-                            preference=lambda x: (x['phenotype']
-                                                  .map(lambda p: base**p)
-                                                  )
-                            )
+                    df
+                    .assign(preference=lambda x: (x['phenotype']
+                                                  .map(lambda p: base**p)))
                     .assign(preference=lambda x: (x['preference'] /
-                                                  x['preference'].sum()
-                                                  )
-                            )
+                                                  x['preference'].sum()))
                     )
         preferences = (pd.concat(preferences, sort=False)
                        .pivot_table(index='site',
-                                    columns='character',
+                                    columns='mutant',
                                     values='preference')
                        )
         preferences.columns.name = None
