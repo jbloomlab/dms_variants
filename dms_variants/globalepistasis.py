@@ -390,6 +390,7 @@ Detailed documentation of models
 
 
 import abc
+import re
 
 import numpy
 
@@ -736,6 +737,149 @@ class AbstractEpistasis(abc.ABC):
                  'latent_phenotype': self._latent_phenotypes,
                  'observed_phenotype': self._observed_phenotypes,
                  })
+
+    def preferences(self, phenotype, *,
+                    base=2, missing='average', exclude_chars=('*',)):
+        r"""Get preference of each site for each character.
+
+        Use the latent or observed phenotype to estimate the preference
+        :math:`\pi_{r,a}` of each site :math:`r` for each character (e.g.,
+        amino acid) :math:`a`. These preferences can be displayed in logo plots
+        or used as input to `phydms <https://jbloomlab.github.io/phydms/>`_
+        in experimentally informed substitution models.
+
+        The preferences are calculated from the phenotypes as follows. Let
+        :math:`p_{r,a}` be the phenotype of the variant with the single
+        mutation of site :math:`r` to :math:`a` (when :math:`a` is the wildtype
+        character, then :math:`p_{r,a}` is the phenotype of the wildtype
+        sequence). Then the preference :math:`\pi_{r,a}` is defined as
+
+        .. math::
+
+           \pi_{r,a} = \frac{b^{p_{r,a}}}{\sum_{a'} b^{p_{r,a'}}}
+
+        where :math:`b` is the base for the exponent. This definition
+        ensures that the preferences sum to one at each site.
+
+        The alphabet from which the characters are drawn and the site
+        numbers are extracted from :attr:`AbstractEpistasis.binarymap`.
+
+        Parameters
+        ----------
+        phenotype : {'observed', 'latent'}
+            Calculate the preferences from observed or latent phenotypes?
+        base : float
+            Base to which the exponent is taken in computing the preferences.
+        missing : {'average', 'site_average', 'error'}
+            What to do when there is no estimate of the phenotype for one of
+            the single mutants? Estimate the phenotype as the average of
+            all single mutants, as the average of all single mutants at that
+            site, or raise an error.
+        exclude_chars : tuple or list
+            Characters to exclude when calculating preferences (and when
+            averaging values for missing mutants). For instance, you might
+            want to exclude stop codons.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Data frame where first column is named 'site', other columns are
+            named for each character, and rows give preferences for each site.
+
+        """
+        if phenotype not in {'observed', 'latent'}:
+            raise ValueError(f"invalid `phenotype` {phenotype}")
+
+        # data frame with all observed single mutations and their phenotypes
+        chars = ''.join(re.escape(a) for a in self.binarymap.alphabet)
+        phenotypes = (self.add_phenotypes_to_df(
+                           pd.DataFrame({'mutation': self.binarymap.all_subs}),
+                           substitutions_col='mutation')
+                      .rename(columns={f"{phenotype}_phenotype": 'phenotype'})
+                      [['mutation', 'phenotype']]
+                      )
+
+        # extract wildtype, site, mutant from mutation
+        phenotypes = (phenotypes.join(phenotypes
+                                      ['mutation']
+                                      .str
+                                      .extract(rf"^(?P<wildtype>[{chars}])" +
+                                               r'(?P<site>\d+)' +
+                                               rf"(?P<mutant>[{chars}])$")
+                                      )
+                      [['wildtype', 'site', 'mutant', 'phenotype']]
+                      )
+        if phenotypes.isnull().any().any():
+            raise ValueError('unparseable mutations:\n' +
+                             ', '.join(phenotypes['mutation'].tolist()))
+
+        # exclude any specified letters
+        if exclude_chars:
+            if not isinstance(exclude_chars, (list, tuple)):
+                raise TypeError(f"`exclude_chars` not list or tuple: " +
+                                str(type(exclude_chars)))
+            phenotypes = phenotypes.query('mutant not in @exclude_chars')
+
+        # get the valid characters
+        chars = {a for a in self.binarymap.alphabet if a not in exclude_chars}
+        for col in ['mutant', 'wildtype']:
+            extra_chars = set(phenotypes[col].unique()) - chars
+            if extra_chars:
+                raise ValueError(f"invalid {col} characters: {extra_chars}")
+
+        # fill in wildtype and any missing characters
+        if missing == 'average':
+            assert len(phenotypes.query('mutant == wildtype')) == 0
+            missing_val = phenotypes['phenotype'].mean()
+        wt_phenotype = (self.add_phenotypes_to_df(
+                                pd.DataFrame({'mutation': ['']}),
+                                substitutions_col='mutation')
+                        [f"{phenotype}_phenotype"]
+                        .values
+                        [0]
+                        )
+        preferences = []
+        for (wildtype, site), df in phenotypes.groupby(['wildtype', 'site']):
+            site_d = df.set_index('mutant')['phenotype'].to_dict()
+            assert len(site_d) == len(df)
+            assert wildtype not in site_d
+            if len(site_d) < len(chars) - 1:
+                if missing == 'error':
+                    missing_chars = sorted(chars - {wildtype} - set(site_d))
+                    assert missing_chars
+                    raise ValueError('Missing phenotypes for these mutations '
+                                     f"at site {site}: {missing_chars}")
+                elif missing == 'site_average':
+                    missing_val = df['phenotype'].mean()
+                elif missing != 'average':
+                    raise ValueError(f"invalid `missing` of {missing}")
+                for a in chars - set(site_d):
+                    site_d[a] = missing_val
+            site_d[wildtype] = wt_phenotype
+            assert chars == set(site_d)
+            preferences.append(
+                    pd.Series(site_d)
+                    .rename_axis('character')
+                    .rename('phenotype')
+                    .reset_index()
+                    .assign(site=site,
+                            preference=lambda x: (x['phenotype']
+                                                  .map(lambda p: base**p)
+                                                  )
+                            )
+                    .assign(preference=lambda x: (x['preference'] /
+                                                  x['preference'].sum()
+                                                  )
+                            )
+                    )
+        preferences = (pd.concat(preferences, sort=False)
+                       .pivot_table(index='site',
+                                    columns='character',
+                                    values='preference')
+                       )
+        preferences.columns.name = None
+
+        return preferences.reset_index()
 
     def enrichments(self, observed_phenotypes, base=2):
         r"""Calculated enrichment ratios from observed phenotypes.
