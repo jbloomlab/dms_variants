@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.utils &#8212; dms_variants 0.4.1 documentation</title>
+    <title>dms_variants.utils &#8212; dms_variants 0.4.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -43,12 +43,15 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
+<span class="kn">import</span> <span class="nn">re</span>
+
 <span class="kn">import</span> <span class="nn">matplotlib.ticker</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># noqa: F401</span>
 
 <span class="kn">import</span> <span class="nn">dms_variants._cutils</span>
-<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="p">(</span><span class="n">CODON_TO_AA</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="p">(</span><span class="n">AAS_NOSTOP</span><span class="p">,</span>
+                                    <span class="n">CODON_TO_AA</span><span class="p">,</span>
                                     <span class="n">NT_COMPLEMENT</span><span class="p">,</span>
                                     <span class="p">)</span>
 
@@ -479,6 +482,201 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="n">integer</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="o">.</span><span class="n">tick_values</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
             <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="scores_to_prefs"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.scores_to_prefs">[docs]</a><span class="k">def</span> <span class="nf">scores_to_prefs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">,</span> <span class="n">score_col</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                    <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">wt_score</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span>
+                    <span class="n">alphabet</span><span class="o">=</span><span class="n">AAS_NOSTOP</span><span class="p">,</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,)):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert functional scores to amino-acid preferences.</span>
+
+<span class="sd">    Preferences are calculated from functional scores as follows. Let</span>
+<span class="sd">    :math:`y_{r,a}` be the score of the variant with the single mutation</span>
+<span class="sd">    of site :math:`r` to :math:`a` (when :math:`a` is the wildtype character,</span>
+<span class="sd">    then :math:`p_{r,a}` is the score of the wildtype sequence). Then the</span>
+<span class="sd">    preference :math:`\pi_{r,a}` is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \pi_{r,a} = \frac{b^{y_{r,a}}}{\sum_{a&#39;} b^{y_{r,a&#39;}}}</span>
+
+<span class="sd">    where :math:`b` is the base for the exponent. This definition ensures</span>
+<span class="sd">    that the preferences sum to one at each site. These preferences can be</span>
+<span class="sd">    displayed in logo pltos or used as input to</span>
+<span class="sd">    `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Data frame holding the functional scores.</span>
+<span class="sd">    mutation_col : str</span>
+<span class="sd">        Column in `df` with mutations, in this format: &#39;M1A&#39;.</span>
+<span class="sd">    score_col : str</span>
+<span class="sd">        Column in `df` with functional scores.</span>
+<span class="sd">    base : float</span>
+<span class="sd">        Base to which the exponent is taken in computing the preferences.</span>
+<span class="sd">    wt_score : float</span>
+<span class="sd">        Functional score for wildtype sequence.</span>
+<span class="sd">    missing : {&#39;average&#39;, &#39;site_average&#39;, &#39;error&#39;}</span>
+<span class="sd">        What to do when there is no estimate of the score for a mutant?</span>
+<span class="sd">        Estimate the phenotype as the average of all single mutants, the</span>
+<span class="sd">        average of all single mutants at that site, or raise an error.</span>
+<span class="sd">    alphabet : list or tuple</span>
+<span class="sd">        Characters (e.g., amino acids) for which we compute preferences.</span>
+<span class="sd">    exclude_chars : tuple or list</span>
+<span class="sd">        Characters to exclude when calculating preferences (and when</span>
+<span class="sd">        averaging values for missing mutants). For instance, you might</span>
+<span class="sd">        want to exclude stop codons even if they are in `df`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        Data frame where first column is named &#39;site&#39;, other columns are</span>
+<span class="sd">        named for each character, and rows give preferences for each site.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; func_scores_df = pd.DataFrame(</span>
+<span class="sd">    ...         {&#39;aa_substitutions&#39;: [&#39;M1A&#39;, &#39;M1C&#39;, &#39;A2M&#39;, &#39;A2C&#39;, &#39;M1*&#39;],</span>
+<span class="sd">    ...          &#39;func_score&#39;:       [-0.1,  -2.3,   0.8,  -1.2,  -3.0,]})</span>
+
+<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    ...                  alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;], exclude_chars=[&#39;*&#39;])</span>
+<span class="sd">    ...  ).round(2)</span>
+<span class="sd">      site     M     A     C</span>
+<span class="sd">    0    1  0.47  0.44  0.10</span>
+<span class="sd">    1    2  0.55  0.31  0.14</span>
+
+<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    ...                  alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;, &#39;*&#39;], exclude_chars=[])</span>
+<span class="sd">    ...  ).round(2)</span>
+<span class="sd">      site     M     A     C     *</span>
+<span class="sd">    0    1  0.44  0.41  0.09  0.06</span>
+<span class="sd">    1    2  0.48  0.28  0.12  0.12</span>
+
+<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    ...                  alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;, &#39;*&#39;], exclude_chars=[],</span>
+<span class="sd">    ...                  missing=&#39;site_average&#39;)</span>
+<span class="sd">    ...  ).round(2)</span>
+<span class="sd">      site     M     A     C     *</span>
+<span class="sd">    0    1  0.44  0.41  0.09  0.06</span>
+<span class="sd">    1    2  0.43  0.25  0.11  0.22</span>
+
+<span class="sd">    &gt;&gt;&gt; scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    ...                 alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;, &#39;*&#39;], exclude_chars=[],</span>
+<span class="sd">    ...                 missing=&#39;error&#39;)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">        ...</span>
+<span class="sd">    ValueError: missing functional scores for some mutations</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exclude_chars</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`exclude_chars` must be list, tuple (can be empty)&#39;</span><span class="p">)</span>
+    <span class="n">exclude_chars</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">exclude_chars</span><span class="p">)</span>
+
+    <span class="n">alphabet</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alphabet</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">exclude_chars</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;character in `exclude_chars` of </span><span class="si">{exclude_chars}</span><span class="s2"> &quot;</span>
+                         <span class="n">f</span><span class="s2">&quot; in `alphabet` of </span><span class="si">{alphabet}</span><span class="s2">. These lists must be &quot;</span>
+                         <span class="s1">&#39;mutually exclusive&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">score_col</span> <span class="o">==</span> <span class="n">mutation_col</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`score_col` and `mutation_col` must be different&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">colname</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">score_col</span><span class="p">)]:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` lacks `</span><span class="si">{colname}</span><span class="s2">_col` of </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`</span><span class="si">{colname}</span><span class="s2">_col` cannot be named </span><span class="si">{score_col}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">mutation_col</span><span class="p">])</span> <span class="o">!=</span> <span class="n">df</span><span class="p">[</span><span class="n">mutation_col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;duplicated entries in `mutation_col` of `df`&#39;</span><span class="p">)</span>
+
+    <span class="c1"># extract wildtype, site, mutant from mutation</span>
+    <span class="n">chars_regex</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alphabet</span> <span class="o">+</span> <span class="n">exclude_chars</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df</span>
+                  <span class="p">[</span><span class="n">mutation_col</span><span class="p">]</span>
+                  <span class="o">.</span><span class="n">str</span>
+                  <span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">rf</span><span class="s2">&quot;^(?P&lt;wildtype&gt;[</span><span class="si">{chars_regex}</span><span class="s2">])&quot;</span> <span class="o">+</span>
+                           <span class="sa">r</span><span class="s1">&#39;(?P&lt;site&gt;\-?\d+)&#39;</span> <span class="o">+</span>
+                           <span class="n">rf</span><span class="s2">&quot;(?P&lt;mutant&gt;[</span><span class="si">{chars_regex}</span><span class="s2">])$&quot;</span><span class="p">)</span>
+                  <span class="p">)</span>
+          <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">,</span> <span class="n">score_col</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">]]</span>
+          <span class="p">)</span>
+    <span class="k">if</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;unparseable mutations given specified alphabet:</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+                         <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">mutation_col</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;wildtype == mutant&#39;</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`df` contains mutations with same wildtype &amp; mutant&#39;</span><span class="p">)</span>
+
+    <span class="c1"># remove any excluded characters</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+          <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">,</span> <span class="n">score_col</span><span class="p">]]</span>
+          <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;wildtype not in @exclude_chars&#39;</span><span class="p">)</span>
+          <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;mutant not in @exclude_chars&#39;</span><span class="p">)</span>
+          <span class="p">)</span>
+
+    <span class="c1"># get missing values for later use</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="o">==</span> <span class="s1">&#39;average&#39;</span><span class="p">:</span>
+        <span class="n">missing_val</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">score_col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">missing</span> <span class="o">==</span> <span class="s1">&#39;site_average&#39;</span><span class="p">:</span>
+        <span class="n">missing_val</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)[</span><span class="n">score_col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">missing</span> <span class="o">!=</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `missing` of </span><span class="si">{missing}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># add wildtype to data frame</span>
+    <span class="n">wt_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+             <span class="p">[[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">]]</span>
+             <span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+             <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">mutant</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;wildtype&#39;</span><span class="p">])</span>
+             <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">score_col</span><span class="p">:</span> <span class="n">wt_score</span><span class="p">})</span>
+             <span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">wt_df</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># add missing characters from alphabet for each site as here:</span>
+    <span class="c1"># https://stackoverflow.com/a/47118819</span>
+    <span class="n">mux</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">MultiIndex</span><span class="o">.</span><span class="n">from_product</span><span class="p">([</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">(),</span> <span class="n">alphabet</span><span class="p">],</span>
+                                     <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">mux</span>
+          <span class="o">.</span><span class="n">to_frame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+          <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">],</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;outer&#39;</span><span class="p">)</span>
+          <span class="p">)</span>
+
+    <span class="c1"># fill missing values</span>
+    <span class="k">if</span> <span class="n">missing</span> <span class="o">==</span> <span class="s1">&#39;average&#39;</span><span class="p">:</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">missing_val</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">missing</span> <span class="o">==</span> <span class="s1">&#39;site_average&#39;</span><span class="p">:</span>
+        <span class="n">df_notmissing</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="n">df_missing</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_notmissing</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_missing</span><span class="p">)</span>
+        <span class="n">df_missing</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_missing</span>
+                      <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">score_col</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span>
+                                                       <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">missing_val</span><span class="p">))}</span>
+                              <span class="p">)</span>
+                      <span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_notmissing</span><span class="p">,</span> <span class="n">df_missing</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;missing functional scores for some mutations&#39;</span><span class="p">)</span>
+
+    <span class="c1"># convert to prefs and get in wide form</span>
+    <span class="c1"># pivot to wide form and return final data frame</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+          <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">unscaled_prefs</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">base</span><span class="o">**</span><span class="n">x</span><span class="p">[</span><span class="n">score_col</span><span class="p">],</span>
+                  <span class="n">prefs</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;unscaled_prefs&#39;</span><span class="p">]</span> <span class="o">/</span>
+                                   <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)</span>
+                                    <span class="p">[</span><span class="s1">&#39;unscaled_prefs&#39;</span><span class="p">]</span>
+                                    <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+                                    <span class="p">)</span>
+                                   <span class="p">)</span>
+                  <span class="p">)</span>
+          <span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+                       <span class="n">columns</span><span class="o">=</span><span class="s1">&#39;mutant&#39;</span><span class="p">,</span>
+                       <span class="n">values</span><span class="o">=</span><span class="s1">&#39;prefs&#39;</span><span class="p">)</span>
+          <span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> <span class="n">df</span>
+    <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">alphabet</span><span class="p">]</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.globalepistasis &#8212; dms_variants 0.4.1 documentation</title>
+    <title>dms_variants.globalepistasis &#8212; dms_variants 0.4.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -435,6 +435,7 @@
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
 
 <span class="kn">import</span> <span class="nn">dms_variants.ispline</span>
+<span class="kn">import</span> <span class="nn">dms_variants.utils</span>
 
 
 <div class="viewcode-block" id="EpistasisFittingError"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.EpistasisFittingError">[docs]</a><span class="k">class</span> <span class="nc">EpistasisFittingError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
@@ -771,6 +772,87 @@
                  <span class="s1">&#39;latent_phenotype&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_latent_phenotypes</span><span class="p">,</span>
                  <span class="s1">&#39;observed_phenotype&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">,</span>
                  <span class="p">})</span>
+
+<div class="viewcode-block" id="AbstractEpistasis.preferences"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.preferences">[docs]</a>    <span class="k">def</span> <span class="nf">preferences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phenotype</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                    <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,)):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get preference of each site for each character.</span>
+
+<span class="sd">        Use the latent or observed phenotype to estimate the preference</span>
+<span class="sd">        :math:`\pi_{r,a}` of each site :math:`r` for each character (e.g.,</span>
+<span class="sd">        amino acid) :math:`a`. These preferences can be displayed in logo plots</span>
+<span class="sd">        or used as input to `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_</span>
+<span class="sd">        in experimentally informed substitution models.</span>
+
+<span class="sd">        The preferences are calculated from the phenotypes as follows. Let</span>
+<span class="sd">        :math:`p_{r,a}` be the phenotype of the variant with the single</span>
+<span class="sd">        mutation of site :math:`r` to :math:`a` (when :math:`a` is the wildtype</span>
+<span class="sd">        character, then :math:`p_{r,a}` is the phenotype of the wildtype</span>
+<span class="sd">        sequence). Then the preference :math:`\pi_{r,a}` is defined as</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">           \pi_{r,a} = \frac{b^{p_{r,a}}}{\sum_{a&#39;} b^{p_{r,a&#39;}}}</span>
+
+<span class="sd">        where :math:`b` is the base for the exponent. This definition</span>
+<span class="sd">        ensures that the preferences sum to one at each site.</span>
+
+<span class="sd">        The alphabet from which the characters are drawn and the site</span>
+<span class="sd">        numbers are extracted from :attr:`AbstractEpistasis.binarymap`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        phenotype : {&#39;observed&#39;, &#39;latent&#39;}</span>
+<span class="sd">            Calculate the preferences from observed or latent phenotypes?</span>
+<span class="sd">        base : float</span>
+<span class="sd">            Base to which the exponent is taken in computing the preferences.</span>
+<span class="sd">        missing : {&#39;average&#39;, &#39;site_average&#39;, &#39;error&#39;}</span>
+<span class="sd">            What to do when there is no estimate of the phenotype for one of</span>
+<span class="sd">            the single mutants? Estimate the phenotype as the average of</span>
+<span class="sd">            all single mutants, as the average of all single mutants at that</span>
+<span class="sd">            site, or raise an error.</span>
+<span class="sd">        exclude_chars : tuple or list</span>
+<span class="sd">            Characters to exclude when calculating preferences (and when</span>
+<span class="sd">            averaging values for missing mutants). For instance, you might</span>
+<span class="sd">            want to exclude stop codons.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DataFrame</span>
+<span class="sd">            Data frame where first column is named &#39;site&#39;, other columns are</span>
+<span class="sd">            named for each character, and rows give preferences for each site.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">phenotype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;observed&#39;</span><span class="p">,</span> <span class="s1">&#39;latent&#39;</span><span class="p">}:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `phenotype` </span><span class="si">{phenotype}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># data frame with all observed single mutations and their phenotypes</span>
+        <span class="n">phenotypes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_phenotypes_to_df</span><span class="p">(</span>
+                           <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;mutation&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">all_subs</span><span class="p">}),</span>
+                           <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">)</span>
+
+        <span class="c1"># get wildtype phenotype</span>
+        <span class="n">wt_phenotype</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_phenotypes_to_df</span><span class="p">(</span>
+                                <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;mutation&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]}),</span>
+                                <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">)</span>
+                        <span class="p">[</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{phenotype}</span><span class="s2">_phenotype&quot;</span><span class="p">]</span>
+                        <span class="o">.</span><span class="n">values</span>
+                        <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="p">)</span>
+
+        <span class="c1"># get alphabet of non-excluded characters</span>
+        <span class="n">alphabet</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">alphabet</span>
+                    <span class="k">if</span> <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_chars</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">scores_to_prefs</span><span class="p">(</span>
+                    <span class="n">df</span><span class="o">=</span><span class="n">phenotypes</span><span class="p">,</span>
+                    <span class="n">mutation_col</span><span class="o">=</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span>
+                    <span class="n">score_col</span><span class="o">=</span><span class="n">f</span><span class="s2">&quot;</span><span class="si">{phenotype}</span><span class="s2">_phenotype&quot;</span><span class="p">,</span>
+                    <span class="n">base</span><span class="o">=</span><span class="n">base</span><span class="p">,</span>
+                    <span class="n">wt_score</span><span class="o">=</span><span class="n">wt_phenotype</span><span class="p">,</span>
+                    <span class="n">missing</span><span class="o">=</span><span class="n">missing</span><span class="p">,</span>
+                    <span class="n">alphabet</span><span class="o">=</span><span class="n">alphabet</span><span class="p">,</span>
+                    <span class="n">exclude_chars</span><span class="o">=</span><span class="n">exclude_chars</span><span class="p">,</span>
+                    <span class="p">)</span></div>
 
 <div class="viewcode-block" id="AbstractEpistasis.enrichments"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.enrichments">[docs]</a>    <span class="k">def</span> <span class="nf">enrichments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed_phenotypes</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Calculated enrichment ratios from observed phenotypes.</span>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>globalepistasis &#8212; dms_variants 0.4.1 documentation</title>
+    <title>globalepistasis &#8212; dms_variants 0.4.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -599,6 +599,50 @@ by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(8
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.globalepistasis.AbstractEpistasis.preferences">
+<code class="sig-name descname">preferences</code><span class="sig-paren">(</span><em class="sig-param">phenotype</em>, <em class="sig-param">*</em>, <em class="sig-param">base=2</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.preferences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get preference of each site for each character.</p>
+<p>Use the latent or observed phenotype to estimate the preference
+<span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of each site <span class="math notranslate nohighlight">\(r\)</span> for each character (e.g.,
+amino acid) <span class="math notranslate nohighlight">\(a\)</span>. These preferences can be displayed in logo plots
+or used as input to <a class="reference external" href="https://jbloomlab.github.io/phydms/">phydms</a>
+in experimentally informed substitution models.</p>
+<p>The preferences are calculated from the phenotypes as follows. Let
+<span class="math notranslate nohighlight">\(p_{r,a}\)</span> be the phenotype of the variant with the single
+mutation of site <span class="math notranslate nohighlight">\(r\)</span> to <span class="math notranslate nohighlight">\(a\)</span> (when <span class="math notranslate nohighlight">\(a\)</span> is the wildtype
+character, then <span class="math notranslate nohighlight">\(p_{r,a}\)</span> is the phenotype of the wildtype
+sequence). Then the preference <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> is defined as</p>
+<div class="math notranslate nohighlight">
+\[\pi_{r,a} = \frac{b^{p_{r,a}}}{\sum_{a'} b^{p_{r,a'}}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(b\)</span> is the base for the exponent. This definition
+ensures that the preferences sum to one at each site.</p>
+<p>The alphabet from which the characters are drawn and the site
+numbers are extracted from <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.binarymap" title="dms_variants.globalepistasis.AbstractEpistasis.binarymap"><code class="xref py py-attr docutils literal notranslate"><span class="pre">AbstractEpistasis.binarymap</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phenotype</strong> (<em>{'observed'</em><em>, </em><em>'latent'}</em>) – Calculate the preferences from observed or latent phenotypes?</p></li>
+<li><p><strong>base</strong> (<em>float</em>) – Base to which the exponent is taken in computing the preferences.</p></li>
+<li><p><strong>missing</strong> (<em>{'average'</em><em>, </em><em>'site_average'</em><em>, </em><em>'error'}</em>) – What to do when there is no estimate of the phenotype for one of
+the single mutants? Estimate the phenotype as the average of
+all single mutants, as the average of all single mutants at that
+site, or raise an error.</p></li>
+<li><p><strong>exclude_chars</strong> (<em>tuple</em><em> or </em><em>list</em>) – Characters to exclude when calculating preferences (and when
+averaging values for missing mutants). For instance, you might
+want to exclude stop codons.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Data frame where first column is named ‘site’, other columns are
+named for each character, and rows give preferences for each site.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
