@@ -8,12 +8,15 @@ Miscellaneous utility functions.
 """
 
 
+import re
+
 import matplotlib.ticker
 
 import pandas as pd  # noqa: F401
 
 import dms_variants._cutils
-from dms_variants.constants import (CODON_TO_AA,
+from dms_variants.constants import (AAS_NOSTOP,
+                                    CODON_TO_AA,
                                     NT_COMPLEMENT,
                                     )
 
@@ -444,6 +447,201 @@ def integer_breaks(x):
     return (matplotlib.ticker.MaxNLocator(integer=True)
             .tick_values(min(x), max(x))
             )
+
+
+def scores_to_prefs(df, mutation_col, score_col, *,
+                    base=2, wt_score=0, missing='average',
+                    alphabet=AAS_NOSTOP, exclude_chars=('*',)):
+    r"""Convert functional scores to amino-acid preferences.
+
+    Preferences are calculated from functional scores as follows. Let
+    :math:`y_{r,a}` be the score of the variant with the single mutation
+    of site :math:`r` to :math:`a` (when :math:`a` is the wildtype character,
+    then :math:`p_{r,a}` is the score of the wildtype sequence). Then the
+    preference :math:`\pi_{r,a}` is
+
+    .. math::
+
+        \pi_{r,a} = \frac{b^{y_{r,a}}}{\sum_{a'} b^{y_{r,a'}}}
+
+    where :math:`b` is the base for the exponent. This definition ensures
+    that the preferences sum to one at each site. These preferences can be
+    displayed in logo pltos or used as input to
+    `phydms <https://jbloomlab.github.io/phydms/>`_
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data frame holding the functional scores.
+    mutation_col : str
+        Column in `df` with mutations, in this format: 'M1A'.
+    score_col : str
+        Column in `df` with functional scores.
+    base : float
+        Base to which the exponent is taken in computing the preferences.
+    wt_score : float
+        Functional score for wildtype sequence.
+    missing : {'average', 'site_average', 'error'}
+        What to do when there is no estimate of the score for a mutant?
+        Estimate the phenotype as the average of all single mutants, the
+        average of all single mutants at that site, or raise an error.
+    alphabet : list or tuple
+        Characters (e.g., amino acids) for which we compute preferences.
+    exclude_chars : tuple or list
+        Characters to exclude when calculating preferences (and when
+        averaging values for missing mutants). For instance, you might
+        want to exclude stop codons even if they are in `df`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Data frame where first column is named 'site', other columns are
+        named for each character, and rows give preferences for each site.
+
+    Example
+    -------
+    >>> func_scores_df = pd.DataFrame(
+    ...         {'aa_substitutions': ['M1A', 'M1C', 'A2M', 'A2C', 'M1*'],
+    ...          'func_score':       [-0.1,  -2.3,   0.8,  -1.2,  -3.0,]})
+
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    ...                  alphabet=['M', 'A', 'C'], exclude_chars=['*'])
+    ...  ).round(2)
+      site     M     A     C
+    0    1  0.47  0.44  0.10
+    1    2  0.55  0.31  0.14
+
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[])
+    ...  ).round(2)
+      site     M     A     C     *
+    0    1  0.44  0.41  0.09  0.06
+    1    2  0.48  0.28  0.12  0.12
+
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
+    ...                  missing='site_average')
+    ...  ).round(2)
+      site     M     A     C     *
+    0    1  0.44  0.41  0.09  0.06
+    1    2  0.43  0.25  0.11  0.22
+
+    >>> scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    ...                 alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
+    ...                 missing='error')
+    Traceback (most recent call last):
+        ...
+    ValueError: missing functional scores for some mutations
+
+    """
+    if not isinstance(exclude_chars, (list, tuple)):
+        raise ValueError('`exclude_chars` must be list, tuple (can be empty)')
+    exclude_chars = list(exclude_chars)
+
+    alphabet = list(alphabet)
+    if [a for a in alphabet if a in exclude_chars]:
+        raise ValueError(f"character in `exclude_chars` of {exclude_chars} "
+                         f" in `alphabet` of {alphabet}. These lists must be "
+                         'mutually exclusive')
+
+    if score_col == mutation_col:
+        raise ValueError('`score_col` and `mutation_col` must be different')
+    for colname, col in [('mutation', mutation_col), ('score', score_col)]:
+        if col not in df.columns:
+            raise ValueError(f"`df` lacks `{colname}_col` of {col}")
+        if col in {'wildtype', 'site', 'mutant'}:
+            raise ValueError(f"`{colname}_col` cannot be named {score_col}")
+
+    if len(df[mutation_col]) != df[mutation_col].nunique():
+        raise ValueError('duplicated entries in `mutation_col` of `df`')
+
+    # extract wildtype, site, mutant from mutation
+    chars_regex = ''.join(re.escape(a) for a in alphabet + exclude_chars)
+    df = (df.join(df
+                  [mutation_col]
+                  .str
+                  .extract(rf"^(?P<wildtype>[{chars_regex}])" +
+                           r'(?P<site>\-?\d+)' +
+                           rf"(?P<mutant>[{chars_regex}])$")
+                  )
+          [['site', 'wildtype', 'mutant', score_col, mutation_col]]
+          )
+    if df.isnull().any().any():
+        raise ValueError('unparseable mutations given specified alphabet:\n' +
+                         ', '.join(df[mutation_col].tolist()))
+    if len(df.query('wildtype == mutant')):
+        raise ValueError('`df` contains mutations with same wildtype & mutant')
+
+    # remove any excluded characters
+    df = (df
+          [['site', 'wildtype', 'mutant', score_col]]
+          .query('wildtype not in @exclude_chars')
+          .query('mutant not in @exclude_chars')
+          )
+
+    # get missing values for later use
+    if missing == 'average':
+        missing_val = df[score_col].mean()
+    elif missing == 'site_average':
+        missing_val = df.groupby('site')[score_col].mean().to_dict()
+    elif missing != 'error':
+        raise ValueError(f"invalid `missing` of {missing}")
+
+    # add wildtype to data frame
+    wt_df = (df
+             [['wildtype', 'site']]
+             .drop_duplicates()
+             .assign(mutant=lambda x: x['wildtype'])
+             .assign(**{score_col: wt_score})
+             )
+    df = pd.concat([df, wt_df], sort=False)
+
+    # add missing characters from alphabet for each site as here:
+    # https://stackoverflow.com/a/47118819
+    mux = pd.MultiIndex.from_product([df['site'].unique(), alphabet],
+                                     names=['site', 'mutant'])
+    df = (mux
+          .to_frame(index=False)
+          .merge(df, on=['site', 'mutant'], how='outer')
+          )
+
+    # fill missing values
+    if missing == 'average':
+        df = df.fillna(missing_val)
+    elif missing == 'site_average':
+        df_notmissing = df[df.notnull().all(axis=1)]
+        df_missing = df[df.isnull().any(axis=1)]
+        assert len(df) == len(df_notmissing) + len(df_missing)
+        df_missing = (df_missing
+                      .assign(**{score_col: lambda x: (x['site']
+                                                       .map(missing_val))}
+                              )
+                      )
+        df = pd.concat([df_notmissing, df_missing], sort=False)
+    elif df.isnull().any().any():
+        raise ValueError('missing functional scores for some mutations')
+
+    # convert to prefs and get in wide form
+    # pivot to wide form and return final data frame
+    df = (df
+          .assign(unscaled_prefs=lambda x: base**x[score_col],
+                  prefs=lambda x: (x['unscaled_prefs'] /
+                                   (x.groupby('site')
+                                    ['unscaled_prefs']
+                                    .transform('sum')
+                                    )
+                                   )
+                  )
+          .pivot_table(index='site',
+                       columns='mutant',
+                       values='prefs')
+          )
+    assert not df.isnull().any().any(), df
+    assert set(df.columns) == set(alphabet)
+    df = df[alphabet]
+    df.columns.name = None
+
+    return df.reset_index()
 
 
 if __name__ == '__main__':
