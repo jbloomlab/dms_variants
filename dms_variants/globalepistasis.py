@@ -390,7 +390,6 @@ Detailed documentation of models
 
 
 import abc
-import re
 
 import numpy
 
@@ -401,6 +400,7 @@ import scipy.sparse
 import scipy.stats
 
 import dms_variants.ispline
+import dms_variants.utils
 
 
 class EpistasisFittingError(Exception):
@@ -791,43 +791,11 @@ class AbstractEpistasis(abc.ABC):
             raise ValueError(f"invalid `phenotype` {phenotype}")
 
         # data frame with all observed single mutations and their phenotypes
-        chars = ''.join(re.escape(a) for a in self.binarymap.alphabet)
-        phenotypes = (self.add_phenotypes_to_df(
+        phenotypes = self.add_phenotypes_to_df(
                            pd.DataFrame({'mutation': self.binarymap.all_subs}),
                            substitutions_col='mutation')
-                      .rename(columns={f"{phenotype}_phenotype": 'phenotype'})
-                      [['mutation', 'phenotype']]
-                      )
 
-        # extract wildtype, site, mutant from mutation
-        phenotypes = (phenotypes.join(phenotypes
-                                      ['mutation']
-                                      .str
-                                      .extract(rf"^(?P<wildtype>[{chars}])" +
-                                               r'(?P<site>\d+)' +
-                                               rf"(?P<mutant>[{chars}])$")
-                                      )
-                      [['wildtype', 'site', 'mutant', 'phenotype']]
-                      )
-        if phenotypes.isnull().any().any():
-            raise ValueError('unparseable mutations:\n' +
-                             ', '.join(phenotypes['mutation'].tolist()))
-
-        # exclude any specified letters
-        if exclude_chars:
-            if not isinstance(exclude_chars, (list, tuple)):
-                raise TypeError(f"`exclude_chars` not list or tuple: " +
-                                str(type(exclude_chars)))
-            phenotypes = phenotypes.query('mutant not in @exclude_chars')
-
-        # get the valid characters
-        chars = {a for a in self.binarymap.alphabet if a not in exclude_chars}
-        for col in ['mutant', 'wildtype']:
-            extra_chars = set(phenotypes[col].unique()) - chars
-            if extra_chars:
-                raise ValueError(f"invalid {col} characters: {extra_chars}")
-
-        # add wildtype to data frame
+        # get wildtype phenotype
         wt_phenotype = (self.add_phenotypes_to_df(
                                 pd.DataFrame({'mutation': ['']}),
                                 substitutions_col='mutation')
@@ -835,64 +803,21 @@ class AbstractEpistasis(abc.ABC):
                         .values
                         [0]
                         )
-        wt_df = (phenotypes
-                 [['wildtype', 'site']]
-                 .drop_duplicates()
-                 .assign(mutant=lambda x: x['wildtype'],
-                         phenotype=wt_phenotype)
-                 )
-        phenotypes = pd.concat([phenotypes, wt_df], sort=False)
 
-        # add any missing characters
-        if missing == 'average':
-            missing_val = (phenotypes
-                           .query('mutant != wildtype')
-                           ['phenotype']
-                           .mean()
-                           )
-        preferences = []
-        for (wildtype, site), df in phenotypes.groupby(['wildtype', 'site']):
-            if set(df['mutant']) != chars:
-                site_d = df.set_index('mutant')['phenotype'].to_dict()
-                if missing == 'error':
-                    missing_chars = sorted(chars - {wildtype} - set(site_d))
-                    assert missing_chars
-                    raise ValueError('Missing phenotypes for these mutations '
-                                     f"at site {site}: {missing_chars}")
-                elif missing == 'site_average':
-                    missing_val = (df
-                                   .query('mutant != wildtype')
-                                   ['phenotype']
-                                   .mean()
-                                   )
-                elif missing != 'average':
-                    raise ValueError(f"invalid `missing` of {missing}")
-                for a in chars - set(site_d):
-                    site_d[a] = missing_val
-                df = (pd.Series(site_d)
-                      .rename_axis('mutant')
-                      .rename('phenotype')
-                      .reset_index()
-                      .assign(site=site)
-                      )
-            df = df[['site', 'mutant', 'phenotype']]
-            assert len(df) == len(chars)
-            assert set(df['mutant']) == chars
-            preferences.append(
-                    df
-                    .assign(preference=lambda x: (x['phenotype']
-                                                  .map(lambda p: base**p)))
-                    .assign(preference=lambda x: (x['preference'] /
-                                                  x['preference'].sum()))
+        # get alphabet of non-excluded characters
+        alphabet = [a for a in self.binarymap.alphabet
+                    if a not in exclude_chars]
+
+        return dms_variants.utils.scores_to_prefs(
+                    df=phenotypes,
+                    mutation_col='mutation',
+                    score_col=f"{phenotype}_phenotype",
+                    base=base,
+                    wt_score=wt_phenotype,
+                    missing=missing,
+                    alphabet=alphabet,
+                    exclude_chars=exclude_chars,
                     )
-        preferences = (pd.concat(preferences, sort=False)
-                       .pivot_table(index='site',
-                                    columns='mutant',
-                                    values='preference')
-                       )
-        preferences.columns.name = None
-
-        return preferences.reset_index()
 
     def enrichments(self, observed_phenotypes, base=2):
         r"""Calculated enrichment ratios from observed phenotypes.
