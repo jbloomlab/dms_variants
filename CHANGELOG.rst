@@ -13,6 +13,8 @@ Added
 ++++++
 - The new ``AbstractEpistasis.preferences`` method gets amino-acid preferences from phenotypes.
 
+- Added ``utils.scores_to_prefs``.
+
 0.4.1
 ------
 
