@@ -12,6 +12,8 @@ import re
 
 import matplotlib.ticker
 
+import natsort
+
 import pandas as pd  # noqa: F401
 
 import dms_variants._cutils
@@ -449,8 +451,8 @@ def integer_breaks(x):
             )
 
 
-def scores_to_prefs(df, mutation_col, score_col, *,
-                    base=2, wt_score=0, missing='average',
+def scores_to_prefs(df, mutation_col, score_col, base,
+                    wt_score=0, missing='average',
                     alphabet=AAS_NOSTOP, exclude_chars=('*',)):
     r"""Convert functional scores to amino-acid preferences.
 
@@ -469,6 +471,20 @@ def scores_to_prefs(df, mutation_col, score_col, *,
     displayed in logo pltos or used as input to
     `phydms <https://jbloomlab.github.io/phydms/>`_
 
+    Note
+    ----
+    The "flatness" of the preferences is determined by the exponent base.
+    A smaller `base` yields flatter preferences. There is no obvious "best"
+    `base` as different values correspond to different linear scalings
+    of the scores. A recommended approach is simply to choose a value of `base`
+    (such as 10) and then re-scale the preferences by using
+    `phydms <https://jbloomlab.github.io/phydms/>`_ to optimize a stringency
+    parameter as `described here <https://peerj.com/articles/3657>`_. One
+    thing to note is that `phydms <https://jbloomlab.github.io/phydms/>`_
+    has an upper bound on the largest stringency parameter it can fit,
+    so if you are hitting this upper bound then pre-scale the preferences
+    to be less flat by using a larger value of `base`.
+
     Parameters
     ----------
     df : pandas.DataFrame
@@ -479,6 +495,10 @@ def scores_to_prefs(df, mutation_col, score_col, *,
         Column in `df` with functional scores.
     base : float
         Base to which the exponent is taken in computing the preferences.
+        Make sure not to choose an excessively small value if using
+        in `phydms <https://jbloomlab.github.io/phydms/>`_ or the
+        preferences will be too flat. In the examples below we use 2,
+        but you may want a larger value.
     wt_score : float
         Functional score for wildtype sequence.
     missing : {'average', 'site_average', 'error'}
@@ -504,21 +524,21 @@ def scores_to_prefs(df, mutation_col, score_col, *,
     ...         {'aa_substitutions': ['M1A', 'M1C', 'A2M', 'A2C', 'M1*'],
     ...          'func_score':       [-0.1,  -2.3,   0.8,  -1.2,  -3.0,]})
 
-    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C'], exclude_chars=['*'])
     ...  ).round(2)
       site     M     A     C
     0    1  0.47  0.44  0.10
     1    2  0.55  0.31  0.14
 
-    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[])
     ...  ).round(2)
       site     M     A     C     *
     0    1  0.44  0.41  0.09  0.06
     1    2  0.48  0.28  0.12  0.12
 
-    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
     ...                  missing='site_average')
     ...  ).round(2)
@@ -526,7 +546,7 @@ def scores_to_prefs(df, mutation_col, score_col, *,
     0    1  0.44  0.41  0.09  0.06
     1    2  0.43  0.25  0.11  0.22
 
-    >>> scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                 alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
     ...                 missing='error')
     Traceback (most recent call last):
@@ -641,7 +661,14 @@ def scores_to_prefs(df, mutation_col, score_col, *,
     df = df[alphabet]
     df.columns.name = None
 
-    return df.reset_index()
+    # sort on site as here: https://stackoverflow.com/a/29582718
+    df = df.reset_index()
+    df = df.reindex(index=natsort.order_by_index(
+                        df.index,
+                        natsort.index_realsorted(df['site'])))
+    df = df.reset_index(drop=True)
+
+    return df
 
 
 if __name__ == '__main__':

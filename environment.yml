@@ -12,3 +12,4 @@ dependencies:
   # install the current package with `pip install .`
   - pip:
       - .
+      - dmslogo>=0.2.3

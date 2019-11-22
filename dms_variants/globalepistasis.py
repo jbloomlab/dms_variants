@@ -738,8 +738,8 @@ class AbstractEpistasis(abc.ABC):
                  'observed_phenotype': self._observed_phenotypes,
                  })
 
-    def preferences(self, phenotype, *,
-                    base=2, missing='average', exclude_chars=('*',)):
+    def preferences(self, phenotype, base, *,
+                    missing='average', exclude_chars=('*',)):
         r"""Get preference of each site for each character.
 
         Use the latent or observed phenotype to estimate the preference
@@ -763,6 +763,25 @@ class AbstractEpistasis(abc.ABC):
 
         The alphabet from which the characters are drawn and the site
         numbers are extracted from :attr:`AbstractEpistasis.binarymap`.
+
+        Note
+        ----
+        The "flatness" of the preferences is determined by the exponent base.
+        A smaller `base` yields flatter preferences. There is no obvious "best"
+        `base` as different values correspond to different linear scalings of
+        of the phenotype. A recommended approach is simply to choose a value of
+        `base` and then re-scale the preferences by using
+        `phydms <https://jbloomlab.github.io/phydms/>`_ to optimize a
+        stringency parameter (`see here <https://peerj.com/articles/3657>`_).
+        The stringency parameter and the `base` chosen here both apply the
+        same transformation to the data: linear scaling of the phenotypes.
+        But note that `phydms <https://jbloomlab.github.io/phydms/>`_
+        has an upper bound on the largest stringency parameter it can fit,
+        so if you are hitting this upper bound then pre-scale the preferences
+        to be less flat by using a larger value of `base`. In particular,
+        the latent phenotypes from many of the epistasis models are scaled
+        during fitting to have a relatively tight range, so you may need a
+        large value of `base` such as 50.
 
         Parameters
         ----------
