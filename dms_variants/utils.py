@@ -469,6 +469,20 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     displayed in logo pltos or used as input to
     `phydms <https://jbloomlab.github.io/phydms/>`_
 
+    Note
+    ----
+    The "flatness" of the preferences is determined by the exponent base.
+    A smaller `base` yields flatter preferences. There is no obvious "best"
+    `base` as different values correspond to different linear scalings
+    of the scores. A recommended approach is simply to choose a value of `base`
+    (such as 10) and then re-scale the preferences by using
+    `phydms <https://jbloomlab.github.io/phydms/>`_ to optimize a stringency
+    parameter as `described here <https://peerj.com/articles/3657>`_. One
+    thing to note is that `phydms <https://jbloomlab.github.io/phydms/>`_
+    has an upper bound on the largest stringency parameter it can fit,
+    so if you are hitting this upper bound then pre-scale the preferences
+    to be less flat by using a larger value of `base`.
+
     Parameters
     ----------
     df : pandas.DataFrame
