@@ -12,6 +12,8 @@ import re
 
 import matplotlib.ticker
 
+import natsort
+
 import pandas as pd  # noqa: F401
 
 import dms_variants._cutils
@@ -659,7 +661,14 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     df = df[alphabet]
     df.columns.name = None
 
-    return df.reset_index()
+    # sort on site as here: https://stackoverflow.com/a/29582718
+    df = df.reset_index()
+    df = df.reindex(index=natsort.order_by_index(
+                        df.index,
+                        natsort.index_realsorted(df['site'])))
+    df = df.reset_index(drop=True)
+
+    return df
 
 
 if __name__ == '__main__':

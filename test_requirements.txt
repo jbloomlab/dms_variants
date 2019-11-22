@@ -9,3 +9,4 @@ flake8-bugbear
 flake8-print
 nbval
 ipython
+dmslogo>=0.2.3
