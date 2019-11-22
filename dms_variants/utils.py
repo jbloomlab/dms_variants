@@ -449,8 +449,8 @@ def integer_breaks(x):
             )
 
 
-def scores_to_prefs(df, mutation_col, score_col, *,
-                    base=2, wt_score=0, missing='average',
+def scores_to_prefs(df, mutation_col, score_col, base,
+                    wt_score=0, missing='average',
                     alphabet=AAS_NOSTOP, exclude_chars=('*',)):
     r"""Convert functional scores to amino-acid preferences.
 
@@ -479,6 +479,10 @@ def scores_to_prefs(df, mutation_col, score_col, *,
         Column in `df` with functional scores.
     base : float
         Base to which the exponent is taken in computing the preferences.
+        Make sure not to choose an excessively small value if using
+        in `phydms <https://jbloomlab.github.io/phydms/>`_ or the
+        preferences will be too flat. In the examples below we use 2,
+        but you may want a larger value.
     wt_score : float
         Functional score for wildtype sequence.
     missing : {'average', 'site_average', 'error'}
@@ -504,21 +508,21 @@ def scores_to_prefs(df, mutation_col, score_col, *,
     ...         {'aa_substitutions': ['M1A', 'M1C', 'A2M', 'A2C', 'M1*'],
     ...          'func_score':       [-0.1,  -2.3,   0.8,  -1.2,  -3.0,]})
 
-    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C'], exclude_chars=['*'])
     ...  ).round(2)
       site     M     A     C
     0    1  0.47  0.44  0.10
     1    2  0.55  0.31  0.14
 
-    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[])
     ...  ).round(2)
       site     M     A     C     *
     0    1  0.44  0.41  0.09  0.06
     1    2  0.48  0.28  0.12  0.12
 
-    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
     ...                  missing='site_average')
     ...  ).round(2)
@@ -526,7 +530,7 @@ def scores_to_prefs(df, mutation_col, score_col, *,
     0    1  0.44  0.41  0.09  0.06
     1    2  0.43  0.25  0.11  0.22
 
-    >>> scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score',
+    >>> scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                 alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
     ...                 missing='error')
     Traceback (most recent call last):

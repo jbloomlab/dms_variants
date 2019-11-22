@@ -738,8 +738,8 @@ class AbstractEpistasis(abc.ABC):
                  'observed_phenotype': self._observed_phenotypes,
                  })
 
-    def preferences(self, phenotype, *,
-                    base=2, missing='average', exclude_chars=('*',)):
+    def preferences(self, phenotype, base, *,
+                    missing='average', exclude_chars=('*',)):
         r"""Get preference of each site for each character.
 
         Use the latent or observed phenotype to estimate the preference

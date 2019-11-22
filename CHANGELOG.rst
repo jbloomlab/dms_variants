@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.4.3
+------
+
+Changed
+++++++++
+- Eliminated the default log base for conversion of scores / phenotypes. This is because base 2 gave excessively flat preferences, and the choice of a base is something that the user should need to think about.
+
 0.4.2
 ------
 
