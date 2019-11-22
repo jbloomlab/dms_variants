@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.4.2 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.4.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -262,6 +262,8 @@ div.rendered_html tbody tr:hover {
 <span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
 
 <span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">dmslogo</span>  <span class="c1"># used for preference logo plots</span>
 
 <span class="kn">import</span> <span class="nn">dms_variants.binarymap</span>
 <span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
@@ -2438,14 +2440,14 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Fitting global epistasis model to loose_bottle, lib_1... fitting took 40.3 sec.
-Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.2 sec.
-Fitting global epistasis model to loose_bottle, lib_2... fitting took 26.0 sec.
-Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.2 sec.
-Fitting global epistasis model to tight_bottle, lib_1... fitting took 17.3 sec.
-Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.2 sec.
-Fitting global epistasis model to tight_bottle, lib_2... fitting took 18.4 sec.
-Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.2 sec.
+Fitting global epistasis model to loose_bottle, lib_1... fitting took 21.1 sec.
+Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.1 sec.
+Fitting global epistasis model to loose_bottle, lib_2... fitting took 15.0 sec.
+Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.1 sec.
+Fitting global epistasis model to tight_bottle, lib_1... fitting took 5.8 sec.
+Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.1 sec.
+Fitting global epistasis model to tight_bottle, lib_2... fitting took 9.9 sec.
+Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.1 sec.
 </pre></div></div>
 </div>
 <p>Now we want to see which model fits the data better. To do this, we get the log likelihood of each model along with the number of model parameters and use it to calculate the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better, and below we see that the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> global epistasis model always fits
@@ -2516,8 +2518,8 @@ the data much better:</p>
       <td>lib_1</td>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-13127.2</td>
-      <td>27470.5</td>
+      <td>-12013.8</td>
+      <td>25243.6</td>
     </tr>
     <tr>
       <td>lib_1</td>
@@ -2530,8 +2532,8 @@ the data much better:</p>
       <td>lib_2</td>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-12823.8</td>
-      <td>26863.6</td>
+      <td>-12800.8</td>
+      <td>26817.6</td>
     </tr>
     <tr>
       <td>lib_2</td>
@@ -2545,8 +2547,8 @@ the data much better:</p>
       <td>lib_1</td>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-21872.0</td>
-      <td>44959.9</td>
+      <td>-21873.6</td>
+      <td>44963.1</td>
     </tr>
     <tr>
       <td>lib_1</td>
@@ -2559,8 +2561,8 @@ the data much better:</p>
       <td>lib_2</td>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-22462.7</td>
-      <td>46141.4</td>
+      <td>-22463.8</td>
+      <td>46143.6</td>
     </tr>
     <tr>
       <td>lib_2</td>
@@ -2639,11 +2641,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>I17R R29C</td>
       <td>-0.82</td>
       <td>0.00</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
+      <td>-0.83</td>
+      <td>-1.06</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.44</td>
+      <td>0.49</td>
       <td>0.56</td>
     </tr>
     <tr>
@@ -2652,7 +2654,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-0.12</td>
       <td>0.00</td>
       <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2663,11 +2665,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>R12P R15P</td>
       <td>-2.14</td>
       <td>0.01</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
+      <td>-1.02</td>
+      <td>-2.23</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.17</td>
+      <td>0.22</td>
       <td>0.23</td>
     </tr>
     <tr>
@@ -2676,7 +2678,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.22</td>
       <td>0.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2687,8 +2689,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>N21H I28W</td>
       <td>-6.61</td>
       <td>0.13</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.69</td>
+      <td>-6.75</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>0.01</td>
@@ -2811,11 +2813,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>I17R R29C</td>
       <td>-0.82</td>
       <td>0.00</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
+      <td>-0.83</td>
+      <td>-1.06</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.44</td>
+      <td>0.49</td>
       <td>0.56</td>
       <td>-0.01</td>
       <td>0.50</td>
@@ -2827,7 +2829,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-0.12</td>
       <td>0.00</td>
       <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2841,11 +2843,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>R12P R15P</td>
       <td>-2.14</td>
       <td>0.01</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
+      <td>-1.02</td>
+      <td>-2.23</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.17</td>
+      <td>0.22</td>
       <td>0.23</td>
       <td>-1.28</td>
       <td>0.22</td>
@@ -2857,7 +2859,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.22</td>
       <td>0.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2871,8 +2873,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>N21H I28W</td>
       <td>-6.61</td>
       <td>0.13</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.69</td>
+      <td>-6.75</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>0.01</td>
@@ -2954,23 +2956,23 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td rowspan="2" valign="top">loose_bottle</td>
       <td>lib_1</td>
       <td>0.98</td>
-      <td>0.99</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <td>lib_2</td>
       <td>0.98</td>
-      <td>1.00</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <td rowspan="2" valign="top">tight_bottle</td>
       <td>lib_1</td>
       <td>0.83</td>
-      <td>1.00</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <td>lib_2</td>
       <td>0.82</td>
-      <td>1.00</td>
+      <td>1.0</td>
     </tr>
   </tbody>
 </table>
@@ -3178,9 +3180,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-0.82</td>
       <td>0.56</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
-      <td>0.44</td>
+      <td>-0.83</td>
+      <td>-1.06</td>
+      <td>0.49</td>
     </tr>
     <tr>
       <td>1</td>
@@ -3191,7 +3193,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-0.03</td>
       <td>0.98</td>
       <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
     </tr>
     <tr>
@@ -3202,9 +3204,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-2.14</td>
       <td>0.23</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
-      <td>0.17</td>
+      <td>-1.02</td>
+      <td>-2.23</td>
+      <td>0.22</td>
     </tr>
     <tr>
       <td>3</td>
@@ -3215,7 +3217,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.00</td>
       <td>1.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
     </tr>
     <tr>
@@ -3226,8 +3228,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-6.61</td>
       <td>0.01</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.69</td>
+      <td>-6.75</td>
       <td>0.01</td>
     </tr>
   </tbody>
@@ -3304,9 +3306,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-0.82</td>
       <td>0.56</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
-      <td>0.44</td>
+      <td>-0.83</td>
+      <td>-1.06</td>
+      <td>0.49</td>
       <td>-0.01</td>
       <td>0.50</td>
       <td>-0.99</td>
@@ -3320,7 +3322,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-0.03</td>
       <td>0.98</td>
       <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>4.14</td>
       <td>0.99</td>
@@ -3334,9 +3336,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-2.14</td>
       <td>0.23</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
-      <td>0.17</td>
+      <td>-1.02</td>
+      <td>-2.23</td>
+      <td>0.22</td>
       <td>-1.28</td>
       <td>0.22</td>
       <td>-2.18</td>
@@ -3350,7 +3352,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.00</td>
       <td>1.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>5.00</td>
       <td>1.00</td>
@@ -3364,8 +3366,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-6.61</td>
       <td>0.01</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.69</td>
+      <td>-6.75</td>
       <td>0.01</td>
       <td>-5.00</td>
       <td>0.01</td>
@@ -3568,7 +3570,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-0.03</td>
       <td>0.98</td>
       <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>4.14</td>
       <td>0.99</td>
@@ -3582,8 +3584,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>0.06</td>
       <td>1.04</td>
-      <td>0.11</td>
-      <td>-0.05</td>
+      <td>0.12</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>5.76</td>
       <td>1.00</td>
@@ -3597,8 +3599,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-6.89</td>
       <td>0.01</td>
-      <td>-1.63</td>
-      <td>-6.77</td>
+      <td>-1.69</td>
+      <td>-6.74</td>
       <td>0.01</td>
       <td>-4.96</td>
       <td>0.01</td>
@@ -3612,8 +3614,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>0.00</td>
       <td>1.00</td>
-      <td>-0.31</td>
-      <td>-0.05</td>
+      <td>-0.33</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>3.15</td>
       <td>0.97</td>
@@ -3627,8 +3629,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-10.47</td>
       <td>0.00</td>
-      <td>-2.45</td>
-      <td>-8.59</td>
+      <td>-2.37</td>
+      <td>-8.54</td>
       <td>0.00</td>
       <td>-10.00</td>
       <td>0.00</td>
@@ -3718,7 +3720,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td rowspan="2" valign="top">tight_bottle</td>
       <td>lib_1</td>
       <td>0.93</td>
-      <td>1.00</td>
+      <td>0.99</td>
     </tr>
     <tr>
       <td>lib_2</td>
@@ -3762,6 +3764,261 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <p>We see that even for single mutants, fitting the global epistasis model leads to more accurate measurements of the effects of mutations. Presumably this is because these models are able to effectively extract information from the multiple mutants.</p>
+</div>
+<div class="section" id="Phenotypic-mutational-effects-to-“preferences”">
+<h2>Phenotypic mutational effects to “preferences”<a class="headerlink" href="#Phenotypic-mutational-effects-to-“preferences”" title="Permalink to this headline">¶</a></h2>
+<p>The latent and observed phenotypes of the single mutants are a measurement of the effects of mutations. It is sometimes useful to convert these mutational effects to “preferences.” Essentially, the preferences are simply the exponential of the mutational effects re-scaled to sum to one at each site. In other words, the preference <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of site <span class="math notranslate nohighlight">\(r\)</span> for character (e.g., amino acid) <span class="math notranslate nohighlight">\(a\)</span> is simply:</p>
+<div class="math notranslate nohighlight">
+\[\pi_{r,a} = \frac{b^{p_{r,a}}}{\sum_{a'} b^{p_{r,a'}}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(p_{r,a}\)</span> is the phenotype of the variant with the single mutation of site <span class="math notranslate nohighlight">\(r\)</span> to <span class="math notranslate nohighlight">\(a\)</span>, and <span class="math notranslate nohighlight">\(b\)</span> is the logarithm base.</p>
+<p>Amino-acid preferences are useful as they can be displayed in logo plots where the height of the letter is proportional to the preference for that amino acid, and can be used to fit <a class="reference external" href="https://jbloomlab.github.io/phydms/ExpCM.html">experimentally informed phylogenetic substitution models</a> using programs such as <a class="reference external" href="https://jbloomlab.github.io/phydms">phydms</a> to directly compare the deep mutational scanning experiments to natural evolution.</p>
+<p>The epistasis models have a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.preferences">preferences</a> method for getting the amino-acid preferences from the effects of single mutations on either the latent or observed phenotype (see also the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.utils.html#dms_variants.utils.scores_to_prefs">scores_to_prefs</a> function if you need to directly convert functional scores
+not within an epistasis model). For instance, the next cell converts the latent effects to a data frame of preferences using an exponent base of 10:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">prefs_base10</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span><span class="n">phenotype</span><span class="o">=</span><span class="s1">&#39;latent&#39;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">prefs_base10</span><span class="o">.</span><span class="n">head</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>site</th>
+      <th>A</th>
+      <th>C</th>
+      <th>D</th>
+      <th>E</th>
+      <th>F</th>
+      <th>G</th>
+      <th>H</th>
+      <th>I</th>
+      <th>K</th>
+      <th>...</th>
+      <th>M</th>
+      <th>N</th>
+      <th>P</th>
+      <th>Q</th>
+      <th>R</th>
+      <th>S</th>
+      <th>T</th>
+      <th>V</th>
+      <th>W</th>
+      <th>Y</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>1</td>
+      <td>0.094</td>
+      <td>0.028</td>
+      <td>0.001</td>
+      <td>0.011</td>
+      <td>0.195</td>
+      <td>0.009</td>
+      <td>0.025</td>
+      <td>0.006</td>
+      <td>0.172</td>
+      <td>...</td>
+      <td>0.018</td>
+      <td>0.040</td>
+      <td>0.071</td>
+      <td>0.072</td>
+      <td>0.076</td>
+      <td>0.002</td>
+      <td>0.060</td>
+      <td>0.035</td>
+      <td>0.044</td>
+      <td>0.001</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>2</td>
+      <td>0.096</td>
+      <td>0.019</td>
+      <td>0.096</td>
+      <td>0.006</td>
+      <td>0.000</td>
+      <td>0.007</td>
+      <td>0.003</td>
+      <td>0.027</td>
+      <td>0.003</td>
+      <td>...</td>
+      <td>0.095</td>
+      <td>0.049</td>
+      <td>0.006</td>
+      <td>0.065</td>
+      <td>0.020</td>
+      <td>0.155</td>
+      <td>0.004</td>
+      <td>0.154</td>
+      <td>0.065</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>3</td>
+      <td>0.125</td>
+      <td>0.033</td>
+      <td>0.000</td>
+      <td>0.146</td>
+      <td>0.044</td>
+      <td>0.006</td>
+      <td>0.026</td>
+      <td>0.069</td>
+      <td>0.029</td>
+      <td>...</td>
+      <td>0.002</td>
+      <td>0.006</td>
+      <td>0.147</td>
+      <td>0.053</td>
+      <td>0.002</td>
+      <td>0.100</td>
+      <td>0.002</td>
+      <td>0.119</td>
+      <td>0.002</td>
+      <td>0.090</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>4</td>
+      <td>0.012</td>
+      <td>0.013</td>
+      <td>0.001</td>
+      <td>0.063</td>
+      <td>0.029</td>
+      <td>0.160</td>
+      <td>0.067</td>
+      <td>0.085</td>
+      <td>0.055</td>
+      <td>...</td>
+      <td>0.044</td>
+      <td>0.062</td>
+      <td>0.002</td>
+      <td>0.008</td>
+      <td>0.044</td>
+      <td>0.090</td>
+      <td>0.112</td>
+      <td>0.046</td>
+      <td>0.007</td>
+      <td>0.056</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>5</td>
+      <td>0.072</td>
+      <td>0.004</td>
+      <td>0.003</td>
+      <td>0.007</td>
+      <td>0.003</td>
+      <td>0.008</td>
+      <td>0.062</td>
+      <td>0.005</td>
+      <td>0.060</td>
+      <td>...</td>
+      <td>0.225</td>
+      <td>0.113</td>
+      <td>0.004</td>
+      <td>0.004</td>
+      <td>0.113</td>
+      <td>0.084</td>
+      <td>0.015</td>
+      <td>0.027</td>
+      <td>0.077</td>
+      <td>0.002</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 21 columns</p>
+</div></div>
+</div>
+<p>These preferences can be plotted in logoplots, using programs like: - <a class="reference external" href="http://jbloomlab.github.io/dms_tools2/dms2_logoplot.html">dms2_logoplot</a> - <a class="reference external" href="https://jbloomlab.github.io/dmslogo">dmslogo</a> - <a class="reference external" href="https://logomaker.readthedocs.io">logomaker</a></p>
+<p>Here we make such a plot using <a class="reference external" href="https://jbloomlab.github.io/dmslogo">dmslogo</a> (note how this requires melting the data frame to tidy format and converting the site column to be an integer):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">_</span> <span class="o">=</span> <span class="n">dmslogo</span><span class="o">.</span><span class="n">draw_logo</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">prefs_base10</span>
+                 <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+                       <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;amino_acid&#39;</span><span class="p">,</span>
+                       <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;preference&#39;</span><span class="p">)</span>
+                  <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)),</span>
+            <span class="n">x_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+            <span class="n">letter_col</span><span class="o">=</span><span class="s1">&#39;amino_acid&#39;</span><span class="p">,</span>
+            <span class="n">letter_height_col</span><span class="o">=</span><span class="s1">&#39;preference&#39;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s1">&#39;exponent base 10&#39;</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_129_0.png" src="_images/codonvariant_sim_data_129_0.png" />
+</div>
+</div>
+<p>Note how the preferences plotted above look rather “flat”, with no amino acid appearing to be vastly more preferred than another. If we re-plot the data using a larger exponent base, the preferences are now less flat and more peaked:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">prefs_base100</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span><span class="n">phenotype</span><span class="o">=</span><span class="s1">&#39;latent&#39;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">dmslogo</span><span class="o">.</span><span class="n">draw_logo</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">prefs_base100</span>
+                 <span class="o">.</span><span class="n">melt</span><span class="p">(</span><span class="n">id_vars</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+                       <span class="n">var_name</span><span class="o">=</span><span class="s1">&#39;amino_acid&#39;</span><span class="p">,</span>
+                       <span class="n">value_name</span><span class="o">=</span><span class="s1">&#39;preference&#39;</span><span class="p">)</span>
+                  <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)),</span>
+            <span class="n">x_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+            <span class="n">letter_col</span><span class="o">=</span><span class="s1">&#39;amino_acid&#39;</span><span class="p">,</span>
+            <span class="n">letter_height_col</span><span class="o">=</span><span class="s1">&#39;preference&#39;</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s1">&#39;exponent base 100&#39;</span>
+            <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_131_0.png" src="_images/codonvariant_sim_data_131_0.png" />
+</div>
+</div>
+<p>So what is the “best” exponent base to use? It turns out that different exponent bases simply correspond to different linear scalings of the phenotypic effects of mutations (you can see this by working through the math in the equation above to convert the phenotypes to preferences). So it’s not obvious what is the “best” exponent base when converting phenotypic effects to preferences, particularly for the latent effects of mutations which are themselves arbitrarily scaled.</p>
+<p>We therefore recommend just choosing a base and then using <a class="reference external" href="https://jbloomlab.github.io/phydms">phydms</a> to fit a stringency parameter to scale the preferences so that they best match the strength of selection observed in natural evolution (see <a class="reference external" href="https://peerj.com/articles/3657">here</a>). It turns out that scaling by a stringency parameter in this way is equivalent to choosing a different exponent base.</p>
+<p>An <strong>important caveat</strong> in doing this is that for numerical reasons, <a class="reference external" href="https://jbloomlab.github.io/phydms">phydms</a> can only fit stringency parameters up to a maximum bound (currently 10). So if you are gettting that upper bound stringency parameter, you should use a larger exponent base when initially converting the phenotypic effects into preferences.</p>
 </div>
 </div>
 

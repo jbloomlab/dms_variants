@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.utils &#8212; dms_variants 0.4.2 documentation</title>
+    <title>dms_variants.utils &#8212; dms_variants 0.4.3 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -46,6 +46,8 @@
 <span class="kn">import</span> <span class="nn">re</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.ticker</span>
+
+<span class="kn">import</span> <span class="nn">natsort</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># noqa: F401</span>
 
@@ -484,8 +486,8 @@
             <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="scores_to_prefs"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.scores_to_prefs">[docs]</a><span class="k">def</span> <span class="nf">scores_to_prefs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">,</span> <span class="n">score_col</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                    <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">wt_score</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="scores_to_prefs"><a class="viewcode-back" href="../../dms_variants.utils.html#dms_variants.utils.scores_to_prefs">[docs]</a><span class="k">def</span> <span class="nf">scores_to_prefs</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">,</span> <span class="n">score_col</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span>
+                    <span class="n">wt_score</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span>
                     <span class="n">alphabet</span><span class="o">=</span><span class="n">AAS_NOSTOP</span><span class="p">,</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,)):</span>
     <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Convert functional scores to amino-acid preferences.</span>
 
@@ -504,6 +506,20 @@
 <span class="sd">    displayed in logo pltos or used as input to</span>
 <span class="sd">    `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_</span>
 
+<span class="sd">    Note</span>
+<span class="sd">    ----</span>
+<span class="sd">    The &quot;flatness&quot; of the preferences is determined by the exponent base.</span>
+<span class="sd">    A smaller `base` yields flatter preferences. There is no obvious &quot;best&quot;</span>
+<span class="sd">    `base` as different values correspond to different linear scalings</span>
+<span class="sd">    of the scores. A recommended approach is simply to choose a value of `base`</span>
+<span class="sd">    (such as 10) and then re-scale the preferences by using</span>
+<span class="sd">    `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_ to optimize a stringency</span>
+<span class="sd">    parameter as `described here &lt;https://peerj.com/articles/3657&gt;`_. One</span>
+<span class="sd">    thing to note is that `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_</span>
+<span class="sd">    has an upper bound on the largest stringency parameter it can fit,</span>
+<span class="sd">    so if you are hitting this upper bound then pre-scale the preferences</span>
+<span class="sd">    to be less flat by using a larger value of `base`.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    df : pandas.DataFrame</span>
@@ -514,6 +530,10 @@
 <span class="sd">        Column in `df` with functional scores.</span>
 <span class="sd">    base : float</span>
 <span class="sd">        Base to which the exponent is taken in computing the preferences.</span>
+<span class="sd">        Make sure not to choose an excessively small value if using</span>
+<span class="sd">        in `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_ or the</span>
+<span class="sd">        preferences will be too flat. In the examples below we use 2,</span>
+<span class="sd">        but you may want a larger value.</span>
 <span class="sd">    wt_score : float</span>
 <span class="sd">        Functional score for wildtype sequence.</span>
 <span class="sd">    missing : {&#39;average&#39;, &#39;site_average&#39;, &#39;error&#39;}</span>
@@ -539,21 +559,21 @@
 <span class="sd">    ...         {&#39;aa_substitutions&#39;: [&#39;M1A&#39;, &#39;M1C&#39;, &#39;A2M&#39;, &#39;A2C&#39;, &#39;M1*&#39;],</span>
 <span class="sd">    ...          &#39;func_score&#39;:       [-0.1,  -2.3,   0.8,  -1.2,  -3.0,]})</span>
 
-<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;, 2,</span>
 <span class="sd">    ...                  alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;], exclude_chars=[&#39;*&#39;])</span>
 <span class="sd">    ...  ).round(2)</span>
 <span class="sd">      site     M     A     C</span>
 <span class="sd">    0    1  0.47  0.44  0.10</span>
 <span class="sd">    1    2  0.55  0.31  0.14</span>
 
-<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;, 2,</span>
 <span class="sd">    ...                  alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;, &#39;*&#39;], exclude_chars=[])</span>
 <span class="sd">    ...  ).round(2)</span>
 <span class="sd">      site     M     A     C     *</span>
 <span class="sd">    0    1  0.44  0.41  0.09  0.06</span>
 <span class="sd">    1    2  0.48  0.28  0.12  0.12</span>
 
-<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    &gt;&gt;&gt; (scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;, 2,</span>
 <span class="sd">    ...                  alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;, &#39;*&#39;], exclude_chars=[],</span>
 <span class="sd">    ...                  missing=&#39;site_average&#39;)</span>
 <span class="sd">    ...  ).round(2)</span>
@@ -561,7 +581,7 @@
 <span class="sd">    0    1  0.44  0.41  0.09  0.06</span>
 <span class="sd">    1    2  0.43  0.25  0.11  0.22</span>
 
-<span class="sd">    &gt;&gt;&gt; scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;,</span>
+<span class="sd">    &gt;&gt;&gt; scores_to_prefs(func_scores_df, &#39;aa_substitutions&#39;, &#39;func_score&#39;, 2,</span>
 <span class="sd">    ...                 alphabet=[&#39;M&#39;, &#39;A&#39;, &#39;C&#39;, &#39;*&#39;], exclude_chars=[],</span>
 <span class="sd">    ...                 missing=&#39;error&#39;)</span>
 <span class="sd">    Traceback (most recent call last):</span>
@@ -676,7 +696,14 @@
     <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">alphabet</span><span class="p">]</span>
     <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span></div>
+    <span class="c1"># sort on site as here: https://stackoverflow.com/a/29582718</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">natsort</span><span class="o">.</span><span class="n">order_by_index</span><span class="p">(</span>
+                        <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                        <span class="n">natsort</span><span class="o">.</span><span class="n">index_realsorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">])))</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>

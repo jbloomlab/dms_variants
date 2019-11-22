@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>globalepistasis &#8212; dms_variants 0.4.2 documentation</title>
+    <title>globalepistasis &#8212; dms_variants 0.4.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -42,32 +42,32 @@ See also <a class="reference external" href="https://www.genetics.org/content/20
 <div class="contents local topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#global-epistasis-function" id="id7">Global epistasis function</a></p>
+<li><p><a class="reference internal" href="#global-epistasis-function" id="id9">Global epistasis function</a></p>
 <ul>
-<li><p><a class="reference internal" href="#no-epistasis-function" id="id8">No epistasis function</a></p></li>
-<li><p><a class="reference internal" href="#monotonic-spline-epistasis-function" id="id9">Monotonic spline epistasis function</a></p></li>
+<li><p><a class="reference internal" href="#no-epistasis-function" id="id10">No epistasis function</a></p></li>
+<li><p><a class="reference internal" href="#monotonic-spline-epistasis-function" id="id11">Monotonic spline epistasis function</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#likelihood-calculation" id="id10">Likelihood calculation</a></p>
+<li><p><a class="reference internal" href="#likelihood-calculation" id="id12">Likelihood calculation</a></p>
 <ul>
-<li><p><a class="reference internal" href="#gaussian-likelihood" id="id11">Gaussian likelihood</a></p></li>
-<li><p><a class="reference internal" href="#cauchy-likelihood" id="id12">Cauchy likelihood</a></p></li>
+<li><p><a class="reference internal" href="#gaussian-likelihood" id="id13">Gaussian likelihood</a></p></li>
+<li><p><a class="reference internal" href="#cauchy-likelihood" id="id14">Cauchy likelihood</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#the-model-classes" id="id13">The model classes</a></p></li>
-<li><p><a class="reference internal" href="#details-of-fitting" id="id14">Details of fitting</a></p>
+<li><p><a class="reference internal" href="#the-model-classes" id="id15">The model classes</a></p></li>
+<li><p><a class="reference internal" href="#details-of-fitting" id="id16">Details of fitting</a></p>
 <ul>
-<li><p><a class="reference internal" href="#fitting-workflow" id="id15">Fitting workflow</a></p></li>
-<li><p><a class="reference internal" href="#vector-representation-of-beta-rm-wt" id="id16">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a></p></li>
-<li><p><a class="reference internal" href="#optimization" id="id17">Optimization</a></p></li>
-<li><p><a class="reference internal" href="#gradients-used-in-optimization" id="id18">Gradients used in optimization</a></p></li>
+<li><p><a class="reference internal" href="#fitting-workflow" id="id17">Fitting workflow</a></p></li>
+<li><p><a class="reference internal" href="#vector-representation-of-beta-rm-wt" id="id18">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a></p></li>
+<li><p><a class="reference internal" href="#optimization" id="id19">Optimization</a></p></li>
+<li><p><a class="reference internal" href="#gradients-used-in-optimization" id="id20">Gradients used in optimization</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#detailed-documentation-of-models" id="id19">Detailed documentation of models</a></p></li>
+<li><p><a class="reference internal" href="#detailed-documentation-of-models" id="id21">Detailed documentation of models</a></p></li>
 </ul>
 </div>
 <div class="section" id="global-epistasis-function">
-<span id="id1"></span><h2><a class="toc-backref" href="#id7">Global epistasis function</a><a class="headerlink" href="#global-epistasis-function" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2><a class="toc-backref" href="#id9">Global epistasis function</a><a class="headerlink" href="#global-epistasis-function" title="Permalink to this headline">¶</a></h2>
 <p>The global epistasis function is defined as follows.
 Let <span class="math notranslate nohighlight">\(v\)</span> be a variant. We convert
 <span class="math notranslate nohighlight">\(v\)</span> into a binary representation with respect to some wildtype
@@ -91,14 +91,14 @@ latent phenotype:</p>
 <p>where <span class="math notranslate nohighlight">\(g\)</span> is the <em>global epistasis function</em>.</p>
 <p>We define the following global epistasis functions:</p>
 <div class="section" id="no-epistasis-function">
-<span id="id2"></span><h3><a class="toc-backref" href="#id8">No epistasis function</a><a class="headerlink" href="#no-epistasis-function" title="Permalink to this headline">¶</a></h3>
+<span id="id2"></span><h3><a class="toc-backref" href="#id10">No epistasis function</a><a class="headerlink" href="#no-epistasis-function" title="Permalink to this headline">¶</a></h3>
 <p>No epistasis, so the observed phenotype is just the latent phenotype:</p>
 <div class="math notranslate nohighlight" id="equation-noepistasis">
 <span class="eqno">(3)<a class="headerlink" href="#equation-noepistasis" title="Permalink to this equation">¶</a></span>\[g\left(x\right) = x.\]</div>
 <p>This function is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.NoEpistasis" title="dms_variants.globalepistasis.NoEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a>.</p>
 </div>
 <div class="section" id="monotonic-spline-epistasis-function">
-<span id="id3"></span><h3><a class="toc-backref" href="#id9">Monotonic spline epistasis function</a><a class="headerlink" href="#monotonic-spline-epistasis-function" title="Permalink to this headline">¶</a></h3>
+<span id="id3"></span><h3><a class="toc-backref" href="#id11">Monotonic spline epistasis function</a><a class="headerlink" href="#monotonic-spline-epistasis-function" title="Permalink to this headline">¶</a></h3>
 <p>This is the function used in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. It transforms
 the latent phenotype to the observed phenotype using monotonic I-splines with
 linear extrapolation outside the spline boundaries:</p>
@@ -138,7 +138,7 @@ and the latent phenotype of the wildtype is set to zero.</p>
 </div>
 </div>
 <div class="section" id="likelihood-calculation">
-<span id="id4"></span><h2><a class="toc-backref" href="#id10">Likelihood calculation</a><a class="headerlink" href="#likelihood-calculation" title="Permalink to this headline">¶</a></h2>
+<span id="id4"></span><h2><a class="toc-backref" href="#id12">Likelihood calculation</a><a class="headerlink" href="#likelihood-calculation" title="Permalink to this headline">¶</a></h2>
 <p>We defined a <em>likelihood</em> capturing how well the model describes the
 actual data, and then fit the models by finding the parameters that
 maximize this likelihood. This means that different epistasis functions
@@ -150,7 +150,7 @@ Note that epistasis functions can only be compared within the same form of
 the likelihood on the same dataset–you <strong>cannot</strong> compare likelihoods
 calculated using different methods, or on different datasets.</p>
 <div class="section" id="gaussian-likelihood">
-<span id="id5"></span><h3><a class="toc-backref" href="#id11">Gaussian likelihood</a><a class="headerlink" href="#gaussian-likelihood" title="Permalink to this headline">¶</a></h3>
+<span id="id5"></span><h3><a class="toc-backref" href="#id13">Gaussian likelihood</a><a class="headerlink" href="#gaussian-likelihood" title="Permalink to this headline">¶</a></h3>
 <p>This is the form of the likelihood used in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. It is
 most appropriate when we have functional scores for variants along with
 good estimates of normally distributed errors on these functional scores.</p>
@@ -179,7 +179,7 @@ distribution defined by</p>
 <p>This likelihood calculation is implemented as <a class="reference internal" href="#dms_variants.globalepistasis.GaussianLikelihood" title="dms_variants.globalepistasis.GaussianLikelihood"><code class="xref py py-class docutils literal notranslate"><span class="pre">GaussianLikelihood</span></code></a>.</p>
 </div>
 <div class="section" id="cauchy-likelihood">
-<span id="id6"></span><h3><a class="toc-backref" href="#id12">Cauchy likelihood</a><a class="headerlink" href="#cauchy-likelihood" title="Permalink to this headline">¶</a></h3>
+<span id="id6"></span><h3><a class="toc-backref" href="#id14">Cauchy likelihood</a><a class="headerlink" href="#cauchy-likelihood" title="Permalink to this headline">¶</a></h3>
 <p>This form of the likelihood assumes that the difference between the
 measured functional scores and the model’s observed phenotypes follows a
 <a class="reference external" href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy distribution</a>.</p>
@@ -210,7 +210,7 @@ broader distribution. If variance estimates are not available then
 </div>
 </div>
 <div class="section" id="the-model-classes">
-<h2><a class="toc-backref" href="#id13">The model classes</a><a class="headerlink" href="#the-model-classes" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id15">The model classes</a><a class="headerlink" href="#the-model-classes" title="Permalink to this headline">¶</a></h2>
 <p>The epistasis models are defined in a set of classes. All these classes
 inherit their main functionality from the <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis" title="dms_variants.globalepistasis.AbstractEpistasis"><code class="xref py py-class docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a>
 abstract base class.</p>
@@ -245,9 +245,9 @@ for use in analyses:</p>
 </div></blockquote>
 </div>
 <div class="section" id="details-of-fitting">
-<h2><a class="toc-backref" href="#id14">Details of fitting</a><a class="headerlink" href="#details-of-fitting" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id16">Details of fitting</a><a class="headerlink" href="#details-of-fitting" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="fitting-workflow">
-<h3><a class="toc-backref" href="#id15">Fitting workflow</a><a class="headerlink" href="#fitting-workflow" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id17">Fitting workflow</a><a class="headerlink" href="#fitting-workflow" title="Permalink to this headline">¶</a></h3>
 <p>The fitting workflow is essentially the same as that described in
 <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>:</p>
 <blockquote>
@@ -271,7 +271,7 @@ effect is one and the wildtype latent phenotype is zero.</p></li>
 </div></blockquote>
 </div>
 <div class="section" id="vector-representation-of-beta-rm-wt">
-<h3><a class="toc-backref" href="#id16">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a><a class="headerlink" href="#vector-representation-of-beta-rm-wt" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id18">Vector representation of <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span></a><a class="headerlink" href="#vector-representation-of-beta-rm-wt" title="Permalink to this headline">¶</a></h3>
 <p>For the purposes of the optimization (and in the equations below), we change
 how <span class="math notranslate nohighlight">\(\beta_{\rm{wt}}\)</span> is represented to simplify the calculations.
 Specifically, to the binary encoding <span class="math notranslate nohighlight">\(\mathbf{b}\left(v\right)\)</span> of
@@ -284,14 +284,14 @@ Then Eq. <a class="reference internal" href="#equation-latent-phenotype">(1)</a>
 <span class="math notranslate nohighlight">\(\beta_m\)</span> parameters.</p>
 </div>
 <div class="section" id="optimization">
-<h3><a class="toc-backref" href="#id17">Optimization</a><a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id19">Optimization</a><a class="headerlink" href="#optimization" title="Permalink to this headline">¶</a></h3>
 <p>The optimization is performed by <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.fit" title="dms_variants.globalepistasis.AbstractEpistasis.fit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">AbstractEpistasis.fit()</span></code></a>.
 There are several options to that method about how to do the optimization;
 by default it uses a L-BFGS-B algorithm with exact gradients
 calculated as below.</p>
 </div>
 <div class="section" id="gradients-used-in-optimization">
-<h3><a class="toc-backref" href="#id18">Gradients used in optimization</a><a class="headerlink" href="#gradients-used-in-optimization" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id20">Gradients used in optimization</a><a class="headerlink" href="#gradients-used-in-optimization" title="Permalink to this headline">¶</a></h3>
 <p>For the optimization, we use the following gradients:</p>
 <p>Gradient of latent phenotype with respect to latent effects:</p>
 <div class="math notranslate nohighlight" id="equation-dlatent-phenotype-dlatent-effect">
@@ -353,7 +353,7 @@ parameters:</p>
 </div>
 </div>
 <div class="section" id="detailed-documentation-of-models">
-<h2><a class="toc-backref" href="#id19">Detailed documentation of models</a><a class="headerlink" href="#detailed-documentation-of-models" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id21">Detailed documentation of models</a><a class="headerlink" href="#detailed-documentation-of-models" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis">
 <em class="property">class </em><code class="sig-prename descclassname">dms_variants.globalepistasis.</code><code class="sig-name descname">AbstractEpistasis</code><span class="sig-paren">(</span><em class="sig-param">binarymap</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis" title="Permalink to this definition">¶</a></dt>
@@ -605,7 +605,7 @@ by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(8
 
 <dl class="method">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis.preferences">
-<code class="sig-name descname">preferences</code><span class="sig-paren">(</span><em class="sig-param">phenotype</em>, <em class="sig-param">*</em>, <em class="sig-param">base=2</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.preferences" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">preferences</code><span class="sig-paren">(</span><em class="sig-param">phenotype</em>, <em class="sig-param">base</em>, <em class="sig-param">*</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.preferences" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get preference of each site for each character.</p>
 <p>Use the latent or observed phenotype to estimate the preference
 <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of each site <span class="math notranslate nohighlight">\(r\)</span> for each character (e.g.,
@@ -623,6 +623,25 @@ sequence). Then the preference <span class="math notranslate nohighlight">\(\pi_
 ensures that the preferences sum to one at each site.</p>
 <p>The alphabet from which the characters are drawn and the site
 numbers are extracted from <a class="reference internal" href="#dms_variants.globalepistasis.AbstractEpistasis.binarymap" title="dms_variants.globalepistasis.AbstractEpistasis.binarymap"><code class="xref py py-attr docutils literal notranslate"><span class="pre">AbstractEpistasis.binarymap</span></code></a>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The “flatness” of the preferences is determined by the exponent base.
+A smaller <cite>base</cite> yields flatter preferences. There is no obvious “best”
+<cite>base</cite> as different values correspond to different linear scalings of
+of the phenotype. A recommended approach is simply to choose a value of
+<cite>base</cite> and then re-scale the preferences by using
+<a class="reference external" href="https://jbloomlab.github.io/phydms/">phydms</a> to optimize a
+stringency parameter (<a class="reference external" href="https://peerj.com/articles/3657">see here</a>).
+The stringency parameter and the <cite>base</cite> chosen here both apply the
+same transformation to the data: linear scaling of the phenotypes.
+But note that <a class="reference external" href="https://jbloomlab.github.io/phydms/">phydms</a>
+has an upper bound on the largest stringency parameter it can fit,
+so if you are hitting this upper bound then pre-scale the preferences
+to be less flat by using a larger value of <cite>base</cite>. In particular,
+the latent phenotypes from many of the epistasis models are scaled
+during fitting to have a relatively tight range, so you may need a
+large value of <cite>base</cite> such as 50.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

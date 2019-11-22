@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.globalepistasis &#8212; dms_variants 0.4.2 documentation</title>
+    <title>dms_variants.globalepistasis &#8212; dms_variants 0.4.3 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -773,8 +773,8 @@
                  <span class="s1">&#39;observed_phenotype&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observed_phenotypes</span><span class="p">,</span>
                  <span class="p">})</span>
 
-<div class="viewcode-block" id="AbstractEpistasis.preferences"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.preferences">[docs]</a>    <span class="k">def</span> <span class="nf">preferences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phenotype</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
-                    <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,)):</span>
+<div class="viewcode-block" id="AbstractEpistasis.preferences"><a class="viewcode-back" href="../../dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.preferences">[docs]</a>    <span class="k">def</span> <span class="nf">preferences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phenotype</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
+                    <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;average&#39;</span><span class="p">,</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,)):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get preference of each site for each character.</span>
 
 <span class="sd">        Use the latent or observed phenotype to estimate the preference</span>
@@ -798,6 +798,25 @@
 
 <span class="sd">        The alphabet from which the characters are drawn and the site</span>
 <span class="sd">        numbers are extracted from :attr:`AbstractEpistasis.binarymap`.</span>
+
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        The &quot;flatness&quot; of the preferences is determined by the exponent base.</span>
+<span class="sd">        A smaller `base` yields flatter preferences. There is no obvious &quot;best&quot;</span>
+<span class="sd">        `base` as different values correspond to different linear scalings of</span>
+<span class="sd">        of the phenotype. A recommended approach is simply to choose a value of</span>
+<span class="sd">        `base` and then re-scale the preferences by using</span>
+<span class="sd">        `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_ to optimize a</span>
+<span class="sd">        stringency parameter (`see here &lt;https://peerj.com/articles/3657&gt;`_).</span>
+<span class="sd">        The stringency parameter and the `base` chosen here both apply the</span>
+<span class="sd">        same transformation to the data: linear scaling of the phenotypes.</span>
+<span class="sd">        But note that `phydms &lt;https://jbloomlab.github.io/phydms/&gt;`_</span>
+<span class="sd">        has an upper bound on the largest stringency parameter it can fit,</span>
+<span class="sd">        so if you are hitting this upper bound then pre-scale the preferences</span>
+<span class="sd">        to be less flat by using a larger value of `base`. In particular,</span>
+<span class="sd">        the latent phenotypes from many of the epistasis models are scaled</span>
+<span class="sd">        during fitting to have a relatively tight range, so you may need a</span>
+<span class="sd">        large value of `base` such as 50.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
