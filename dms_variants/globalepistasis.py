@@ -740,7 +740,8 @@ class AbstractEpistasis(abc.ABC):
                  })
 
     def preferences(self, phenotype, base, *,
-                    missing='average', exclude_chars=('*',)):
+                    missing='average', exclude_chars=('*',),
+                    returnformat='wide', stringency_param=1):
         r"""Get preference of each site for each character.
 
         Use the latent or observed phenotype to estimate the preference
@@ -799,6 +800,13 @@ class AbstractEpistasis(abc.ABC):
             Characters to exclude when calculating preferences (and when
             averaging values for missing mutants). For instance, you might
             want to exclude stop codons.
+        returnformat : {'tidy', 'wide'}
+            Return preferences in tidy or wide format data frame.
+        stringency_param : float
+            Re-scale preferences by this stringency parameter. This
+            involves raising each preference to the power of
+            `stringency_param`, and then re-normalizes. A similar
+            effect can be achieved by changing `base`.
 
         Returns
         -------
@@ -825,6 +833,8 @@ class AbstractEpistasis(abc.ABC):
                     missing=missing,
                     alphabet=alphabet,
                     exclude_chars=exclude_chars,
+                    returnformat=returnformat,
+                    stringency_param=stringency_param,
                     )
 
     def single_mut_effects(self,

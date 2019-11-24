@@ -13,6 +13,12 @@ Added
 +++++++
 - The new ``AbstractEpistasis.single_mut_effects`` method.
 
+- Options ``returnformat`` and ``stringency_param`` to ``AbstractEpistasis.preferences`` and ``utils.scores_to_prefs``.
+
+Changed
++++++++
+- ``AbstractEpistasis.preferences`` and ``utils.scores_to_prefs`` return site as integer.
+
 0.4.4
 ------
 
