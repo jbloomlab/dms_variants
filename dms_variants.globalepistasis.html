@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>globalepistasis &#8212; dms_variants 0.4.4 documentation</title>
+    <title>globalepistasis &#8212; dms_variants 0.4.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -605,7 +605,7 @@ by Eq. <a class="reference internal" href="#equation-latent-phenotype-wt-vec">(8
 
 <dl class="method">
 <dt id="dms_variants.globalepistasis.AbstractEpistasis.preferences">
-<code class="sig-name descname">preferences</code><span class="sig-paren">(</span><em class="sig-param">phenotype</em>, <em class="sig-param">base</em>, <em class="sig-param">*</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.preferences" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">preferences</code><span class="sig-paren">(</span><em class="sig-param">phenotype</em>, <em class="sig-param">base</em>, <em class="sig-param">*</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em>, <em class="sig-param">returnformat='wide'</em>, <em class="sig-param">stringency_param=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.preferences"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.preferences" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get preference of each site for each character.</p>
 <p>Use the latent or observed phenotype to estimate the preference
 <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of each site <span class="math notranslate nohighlight">\(r\)</span> for each character (e.g.,
@@ -654,11 +654,53 @@ site, or raise an error.</p></li>
 <li><p><strong>exclude_chars</strong> (<em>tuple</em><em> or </em><em>list</em>) – Characters to exclude when calculating preferences (and when
 averaging values for missing mutants). For instance, you might
 want to exclude stop codons.</p></li>
+<li><p><strong>returnformat</strong> (<em>{'tidy'</em><em>, </em><em>'wide'}</em>) – Return preferences in tidy or wide format data frame.</p></li>
+<li><p><strong>stringency_param</strong> (<em>float</em>) – Re-scale preferences by this stringency parameter. This
+involves raising each preference to the power of
+<cite>stringency_param</cite>, and then re-normalizes. A similar
+effect can be achieved by changing <cite>base</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Data frame where first column is named ‘site’, other columns are
 named for each character, and rows give preferences for each site.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dms_variants.globalepistasis.AbstractEpistasis.single_mut_effects">
+<code class="sig-name descname">single_mut_effects</code><span class="sig-paren">(</span><em class="sig-param">phenotype</em>, <em class="sig-param">*</em>, <em class="sig-param">include_wildtype=True</em>, <em class="sig-param">standardize_range=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/globalepistasis.html#AbstractEpistasis.single_mut_effects"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.globalepistasis.AbstractEpistasis.single_mut_effects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Effects of single mutations on latent or observed phenotype.</p>
+<p>For the effects on observed phenotype, this is how much the mutation
+changes the observed phenotype relative to wildtype. Effects are
+reported only for mutations present in <cite>AbstractEpistasis.binarymap</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phenotype</strong> (<em>{'latent'</em><em>, </em><em>'observed'}</em>) – Get effect on this phenotype.</p></li>
+<li><p><strong>include_wildtype</strong> (<em>bool</em>) – Include the effect of “mutating” to wildtype identity at a site
+(always zero).</p></li>
+<li><p><strong>standardize_range</strong> (<em>bool</em>) – Scale effects so that the mean absolute value effect is one
+(scaling is done before including wildtype).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>The effect of all single mutations on latent and observed
+phenotype. Columns are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>’mutation’: mutation as str</p></li>
+<li><p>’wildtype’: wildtype identity at site</p></li>
+<li><p>’site’: site number</p></li>
+<li><p>’mutant’: mutant identity at site</p></li>
+<li><p>’effect’: effect of mutation on latent or observed phenotype</p></li>
+</ul>
+</div></blockquote>
+</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>

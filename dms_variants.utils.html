@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>utils &#8212; dms_variants 0.4.4 documentation</title>
+    <title>utils &#8212; dms_variants 0.4.5 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -181,7 +181,7 @@ as in:</p>
 
 <dl class="function">
 <dt id="dms_variants.utils.scores_to_prefs">
-<code class="sig-prename descclassname">dms_variants.utils.</code><code class="sig-name descname">scores_to_prefs</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">mutation_col</em>, <em class="sig-param">score_col</em>, <em class="sig-param">base</em>, <em class="sig-param">wt_score=0</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">alphabet=('A'</em>, <em class="sig-param">'C'</em>, <em class="sig-param">'D'</em>, <em class="sig-param">'E'</em>, <em class="sig-param">'F'</em>, <em class="sig-param">'G'</em>, <em class="sig-param">'H'</em>, <em class="sig-param">'I'</em>, <em class="sig-param">'K'</em>, <em class="sig-param">'L'</em>, <em class="sig-param">'M'</em>, <em class="sig-param">'N'</em>, <em class="sig-param">'P'</em>, <em class="sig-param">'Q'</em>, <em class="sig-param">'R'</em>, <em class="sig-param">'S'</em>, <em class="sig-param">'T'</em>, <em class="sig-param">'V'</em>, <em class="sig-param">'W'</em>, <em class="sig-param">'Y')</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/utils.html#scores_to_prefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.utils.scores_to_prefs" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_variants.utils.</code><code class="sig-name descname">scores_to_prefs</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">mutation_col</em>, <em class="sig-param">score_col</em>, <em class="sig-param">base</em>, <em class="sig-param">wt_score=0</em>, <em class="sig-param">missing='average'</em>, <em class="sig-param">alphabet=('A'</em>, <em class="sig-param">'C'</em>, <em class="sig-param">'D'</em>, <em class="sig-param">'E'</em>, <em class="sig-param">'F'</em>, <em class="sig-param">'G'</em>, <em class="sig-param">'H'</em>, <em class="sig-param">'I'</em>, <em class="sig-param">'K'</em>, <em class="sig-param">'L'</em>, <em class="sig-param">'M'</em>, <em class="sig-param">'N'</em>, <em class="sig-param">'P'</em>, <em class="sig-param">'Q'</em>, <em class="sig-param">'R'</em>, <em class="sig-param">'S'</em>, <em class="sig-param">'T'</em>, <em class="sig-param">'V'</em>, <em class="sig-param">'W'</em>, <em class="sig-param">'Y')</em>, <em class="sig-param">exclude_chars=('*'</em>, <em class="sig-param">)</em>, <em class="sig-param">returnformat='wide'</em>, <em class="sig-param">stringency_param=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/utils.html#scores_to_prefs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.utils.scores_to_prefs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert functional scores to amino-acid preferences.</p>
 <p>Preferences are calculated from functional scores as follows. Let
 <span class="math notranslate nohighlight">\(y_{r,a}\)</span> be the score of the variant with the single mutation
@@ -228,6 +228,11 @@ average of all single mutants at that site, or raise an error.</p></li>
 <li><p><strong>exclude_chars</strong> (<em>tuple</em><em> or </em><em>list</em>) – Characters to exclude when calculating preferences (and when
 averaging values for missing mutants). For instance, you might
 want to exclude stop codons even if they are in <cite>df</cite>.</p></li>
+<li><p><strong>returnformat</strong> (<em>{'tidy'</em><em>, </em><em>'wide'}</em>) – Return preferences in tidy or wide format data frame.</p></li>
+<li><p><strong>stringency_param</strong> (<em>float</em>) – Re-scale preferences by this stringency parameter. This
+involves raising each preference to the power of
+<cite>stringency_param</cite>, and then re-normalizes. A similar
+effect can be achieved by changing <cite>base</cite>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -247,26 +252,26 @@ named for each character, and rows give preferences for each site.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">scores_to_prefs</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
 <span class="gp">... </span>                 <span class="n">alphabet</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">])</span>
 <span class="gp">... </span> <span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="go">  site     M     A     C</span>
-<span class="go">0    1  0.47  0.44  0.10</span>
-<span class="go">1    2  0.55  0.31  0.14</span>
+<span class="go">   site     M     A     C</span>
+<span class="go">0     1  0.47  0.44  0.10</span>
+<span class="go">1     2  0.55  0.31  0.14</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">scores_to_prefs</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
 <span class="gp">... </span>                 <span class="n">alphabet</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">],</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">[])</span>
 <span class="gp">... </span> <span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="go">  site     M     A     C     *</span>
-<span class="go">0    1  0.44  0.41  0.09  0.06</span>
-<span class="go">1    2  0.48  0.28  0.12  0.12</span>
+<span class="go">   site     M     A     C     *</span>
+<span class="go">0     1  0.44  0.41  0.09  0.06</span>
+<span class="go">1     2  0.48  0.28  0.12  0.12</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">scores_to_prefs</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
 <span class="gp">... </span>                 <span class="n">alphabet</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">],</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">[],</span>
 <span class="gp">... </span>                 <span class="n">missing</span><span class="o">=</span><span class="s1">&#39;site_average&#39;</span><span class="p">)</span>
 <span class="gp">... </span> <span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-<span class="go">  site     M     A     C     *</span>
-<span class="go">0    1  0.44  0.41  0.09  0.06</span>
-<span class="go">1    2  0.43  0.25  0.11  0.22</span>
+<span class="go">   site     M     A     C     *</span>
+<span class="go">0     1  0.44  0.41  0.09  0.06</span>
+<span class="go">1     2  0.43  0.25  0.11  0.22</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scores_to_prefs</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
@@ -275,6 +280,28 @@ named for each character, and rows give preferences for each site.</p>
 <span class="gt">Traceback (most recent call last):</span>
     <span class="o">...</span>
 <span class="gr">ValueError</span>: <span class="n">missing functional scores for some mutations</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">scores_to_prefs</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="n">alphabet</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                 <span class="n">returnformat</span><span class="o">=</span><span class="s1">&#39;tidy&#39;</span><span class="p">)</span>
+<span class="gp">... </span> <span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">  wildtype  site mutant  preference</span>
+<span class="go">0        M     1      C        0.10</span>
+<span class="go">1        A     2      C        0.14</span>
+<span class="go">2        A     2      A        0.31</span>
+<span class="go">3        M     1      A        0.44</span>
+<span class="go">4        M     1      M        0.47</span>
+<span class="go">5        A     2      M        0.55</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">scores_to_prefs</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="n">alphabet</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">],</span> <span class="n">exclude_chars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                 <span class="n">stringency_param</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">... </span> <span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">   site     M     A     C</span>
+<span class="go">0     1  0.55  0.45  0.00</span>
+<span class="go">1     2  0.83  0.16  0.01</span>
 </pre></div>
 </div>
 </dd></dl>
