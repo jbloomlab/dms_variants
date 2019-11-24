@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.4.5
+------
+
+Added
++++++++
+- The new ``AbstractEpistasis.single_mut_effects`` method.
+
 0.4.4
 ------
 
