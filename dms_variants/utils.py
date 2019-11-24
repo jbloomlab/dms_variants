@@ -359,7 +359,7 @@ def tidy_to_corr(df, sample_col, label_col, value_col, *,
                   value_name='correlation'
                   )
             .rename(columns={sample_col: sample_col + '_1'})
-            .query('not correlation.isna()')
+            .dropna()
             .reset_index(drop=True)
             )
 
