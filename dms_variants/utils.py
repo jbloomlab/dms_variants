@@ -12,8 +12,6 @@ import re
 
 import matplotlib.ticker
 
-import natsort
-
 import pandas as pd  # noqa: F401
 
 import dms_variants._cutils
@@ -453,7 +451,8 @@ def integer_breaks(x):
 
 def scores_to_prefs(df, mutation_col, score_col, base,
                     wt_score=0, missing='average',
-                    alphabet=AAS_NOSTOP, exclude_chars=('*',)):
+                    alphabet=AAS_NOSTOP, exclude_chars=('*',),
+                    returnformat='wide', stringency_param=1):
     r"""Convert functional scores to amino-acid preferences.
 
     Preferences are calculated from functional scores as follows. Let
@@ -511,6 +510,13 @@ def scores_to_prefs(df, mutation_col, score_col, base,
         Characters to exclude when calculating preferences (and when
         averaging values for missing mutants). For instance, you might
         want to exclude stop codons even if they are in `df`.
+    returnformat : {'tidy', 'wide'}
+        Return preferences in tidy or wide format data frame.
+    stringency_param : float
+        Re-scale preferences by this stringency parameter. This
+        involves raising each preference to the power of
+        `stringency_param`, and then re-normalizes. A similar
+        effect can be achieved by changing `base`.
 
     Returns
     -------
@@ -527,24 +533,24 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C'], exclude_chars=['*'])
     ...  ).round(2)
-      site     M     A     C
-    0    1  0.47  0.44  0.10
-    1    2  0.55  0.31  0.14
+       site     M     A     C
+    0     1  0.47  0.44  0.10
+    1     2  0.55  0.31  0.14
 
     >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[])
     ...  ).round(2)
-      site     M     A     C     *
-    0    1  0.44  0.41  0.09  0.06
-    1    2  0.48  0.28  0.12  0.12
+       site     M     A     C     *
+    0     1  0.44  0.41  0.09  0.06
+    1     2  0.48  0.28  0.12  0.12
 
     >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
     ...                  missing='site_average')
     ...  ).round(2)
-      site     M     A     C     *
-    0    1  0.44  0.41  0.09  0.06
-    1    2  0.43  0.25  0.11  0.22
+       site     M     A     C     *
+    0     1  0.44  0.41  0.09  0.06
+    1     2  0.43  0.25  0.11  0.22
 
     >>> scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
     ...                 alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
@@ -552,6 +558,26 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     Traceback (most recent call last):
         ...
     ValueError: missing functional scores for some mutations
+
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
+    ...                  alphabet=['M', 'A', 'C'], exclude_chars=['*'],
+    ...                  returnformat='tidy')
+    ...  ).round(2)
+      wildtype  site mutant  preference
+    0        M     1      C        0.10
+    1        A     2      C        0.14
+    2        A     2      A        0.31
+    3        M     1      A        0.44
+    4        M     1      M        0.47
+    5        A     2      M        0.55
+
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
+    ...                  alphabet=['M', 'A', 'C'], exclude_chars=['*'],
+    ...                  stringency_param=3)
+    ...  ).round(2)
+       site     M     A     C
+    0     1  0.55  0.45  0.00
+    1     2  0.83  0.16  0.01
 
     """
     if not isinstance(exclude_chars, (list, tuple)):
@@ -583,6 +609,7 @@ def scores_to_prefs(df, mutation_col, score_col, base,
                   .extract(rf"^(?P<wildtype>[{chars_regex}])" +
                            r'(?P<site>\-?\d+)' +
                            rf"(?P<mutant>[{chars_regex}])$")
+                  .assign(site=lambda x: x['site'].astype(int))
                   )
           [['site', 'wildtype', 'mutant', score_col, mutation_col]]
           )
@@ -641,32 +668,36 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     elif df.isnull().any().any():
         raise ValueError('missing functional scores for some mutations')
 
-    # convert to prefs and get in wide form
-    # pivot to wide form and return final data frame
+    # convert to prefs
     df = (df
-          .assign(unscaled_prefs=lambda x: base**x[score_col],
-                  prefs=lambda x: (x['unscaled_prefs'] /
-                                   (x.groupby('site')
-                                    ['unscaled_prefs']
-                                    .transform('sum')
-                                    )
-                                   )
+          .assign(unscaled_prefs=lambda x: (base**x[score_col]
+                                            )**stringency_param,
+                  preference=lambda x: (x['unscaled_prefs'] /
+                                        (x.groupby('site')
+                                         ['unscaled_prefs']
+                                         .transform('sum')
+                                         )
+                                        )
                   )
-          .pivot_table(index='site',
-                       columns='mutant',
-                       values='prefs')
           )
-    assert not df.isnull().any().any(), df
-    assert set(df.columns) == set(alphabet)
-    df = df[alphabet]
-    df.columns.name = None
 
-    # sort on site as here: https://stackoverflow.com/a/29582718
-    df = df.reset_index()
-    df = df.reindex(index=natsort.order_by_index(
-                        df.index,
-                        natsort.index_realsorted(df['site'])))
-    df = df.reset_index(drop=True)
+    # pivot to wide form
+    if returnformat == 'wide':
+        df = df.pivot_table(index='site',
+                            columns='mutant',
+                            values='preference')
+        df = df[alphabet]
+        df.columns.name = None
+        df = df.reset_index()
+    elif returnformat == 'tidy':
+        df = (df
+              [['wildtype', 'site', 'mutant', 'preference']]
+              .sort_values('preference')
+              .reset_index(drop=True)
+              )
+    else:
+        raise ValueError(f"invalid `returnformat` {returnformat}")
+    assert not df.isnull().any().any(), df
 
     return df
 

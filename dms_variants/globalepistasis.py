@@ -390,6 +390,7 @@ Detailed documentation of models
 
 
 import abc
+import re
 
 import numpy
 
@@ -739,7 +740,8 @@ class AbstractEpistasis(abc.ABC):
                  })
 
     def preferences(self, phenotype, base, *,
-                    missing='average', exclude_chars=('*',)):
+                    missing='average', exclude_chars=('*',),
+                    returnformat='wide', stringency_param=1):
         r"""Get preference of each site for each character.
 
         Use the latent or observed phenotype to estimate the preference
@@ -798,6 +800,13 @@ class AbstractEpistasis(abc.ABC):
             Characters to exclude when calculating preferences (and when
             averaging values for missing mutants). For instance, you might
             want to exclude stop codons.
+        returnformat : {'tidy', 'wide'}
+            Return preferences in tidy or wide format data frame.
+        stringency_param : float
+            Re-scale preferences by this stringency parameter. This
+            involves raising each preference to the power of
+            `stringency_param`, and then re-normalizes. A similar
+            effect can be achieved by changing `base`.
 
         Returns
         -------
@@ -806,37 +815,119 @@ class AbstractEpistasis(abc.ABC):
             named for each character, and rows give preferences for each site.
 
         """
-        if phenotype not in {'observed', 'latent'}:
-            raise ValueError(f"invalid `phenotype` {phenotype}")
-
-        # data frame with all observed single mutations and their phenotypes
-        phenotypes = self.add_phenotypes_to_df(
-                           pd.DataFrame({'mutation': self.binarymap.all_subs}),
-                           substitutions_col='mutation')
-
-        # get wildtype phenotype
-        wt_phenotype = (self.add_phenotypes_to_df(
-                                pd.DataFrame({'mutation': ['']}),
-                                substitutions_col='mutation')
-                        [f"{phenotype}_phenotype"]
-                        .values
-                        [0]
-                        )
+        effects = self.single_mut_effects(phenotype,
+                                          include_wildtype=False,
+                                          standardize_range=False
+                                          )
 
         # get alphabet of non-excluded characters
         alphabet = [a for a in self.binarymap.alphabet
                     if a not in exclude_chars]
 
         return dms_variants.utils.scores_to_prefs(
-                    df=phenotypes,
+                    df=effects[['mutation', 'effect']],
                     mutation_col='mutation',
-                    score_col=f"{phenotype}_phenotype",
+                    score_col='effect',
                     base=base,
-                    wt_score=wt_phenotype,
+                    wt_score=0,
                     missing=missing,
                     alphabet=alphabet,
                     exclude_chars=exclude_chars,
+                    returnformat=returnformat,
+                    stringency_param=stringency_param,
                     )
+
+    def single_mut_effects(self,
+                           phenotype,
+                           *,
+                           include_wildtype=True,
+                           standardize_range=True,
+                           ):
+        """Effects of single mutations on latent or observed phenotype.
+
+        For the effects on observed phenotype, this is how much the mutation
+        changes the observed phenotype relative to wildtype. Effects are
+        reported only for mutations present in `AbstractEpistasis.binarymap`.
+
+        Parameters
+        -----------
+        phenotype : {'latent', 'observed'}
+            Get effect on this phenotype.
+        include_wildtype : bool
+            Include the effect of "mutating" to wildtype identity at a site
+            (always zero).
+        standardize_range : bool
+            Scale effects so that the mean absolute value effect is one
+            (scaling is done before including wildtype).
+
+        Returns
+        -------
+        pandas.DataFrame
+            The effect of all single mutations on latent and observed
+            phenotype. Columns are:
+
+              - 'mutation': mutation as str
+              - 'wildtype': wildtype identity at site
+              - 'site': site number
+              - 'mutant': mutant identity at site
+              - 'effect': effect of mutation on latent or observed phenotype
+
+        """
+        if phenotype not in {'latent', 'observed'}:
+            raise ValueError(f"invalid `phenotype` {phenotype}")
+        phenotypecol = f"{phenotype}_phenotype"  # column with phenotype
+
+        # data frame with all observed single mutations and phenotypes
+        df = self.add_phenotypes_to_df(
+                    pd.DataFrame({'mutation': self.binarymap.all_subs}),
+                    substitutions_col='mutation')
+
+        # get wildtype phenotype
+        wt_phenotype = (self.add_phenotypes_to_df(
+                            pd.DataFrame({'mutation': ['']}),
+                            substitutions_col='mutation')
+                        [phenotypecol]
+                        .values
+                        [0]
+                        )
+
+        # subtract wildtype phenotype to get effects
+        df['effect'] = df[phenotypecol] - wt_phenotype
+
+        if standardize_range:
+            df['effect'] = df['effect'] / df['effect'].abs().mean()
+
+        # extract wildtype, site, mutant from mutation
+        chars_regex = ''.join(map(re.escape, self.binarymap.alphabet))
+        df = (df.join(df
+                      ['mutation']
+                      .str
+                      .extract(rf"^(?P<wildtype>[{chars_regex}])" +
+                               r'(?P<site>\-?\d+)' +
+                               rf"(?P<mutant>[{chars_regex}])$")
+                      )
+              [['mutation', 'wildtype', 'site', 'mutant', 'effect']]
+              )
+
+        if include_wildtype:
+            df = pd.concat([df,
+                            (df
+                             [['wildtype', 'site']]
+                             .drop_duplicates()
+                             .assign(mutant=lambda x: x['wildtype'],
+                                     mutation=lambda x: (x['wildtype'] +
+                                                         x['site'] +
+                                                         x['mutant']),
+                                     effect=0)
+                             )
+                            ],
+                           sort=False)
+
+        return (df
+                .assign(site=lambda x: x['site'].astype(int))
+                .sort_values(['effect', 'site', 'mutant'])
+                .reset_index(drop=True)
+                )
 
     def enrichments(self, observed_phenotypes, base=2):
         r"""Calculated enrichment ratios from observed phenotypes.
