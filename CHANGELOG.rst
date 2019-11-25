@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.4.6
+-----
+
+Fixed
++++++
+- Fixed bug in ``AbstractEpistasis.preferences`` with ``returnformat`` of 'tidy'. Previously the wildtype was set incorrectly for missing values.
+
 0.4.5
 ------
 
