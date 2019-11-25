@@ -579,6 +579,20 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     0     1  0.55  0.45  0.00
     1     2  0.83  0.16  0.01
 
+    >>> (scores_to_prefs(func_scores_df, 'aa_substitutions', 'func_score', 2,
+    ...                  alphabet=['M', 'A', 'C', '*'], exclude_chars=[],
+    ...                  returnformat='tidy')
+    ...  ).round(2)
+      wildtype  site mutant  preference
+    0        M     1      *        0.06
+    1        M     1      C        0.09
+    2        A     2      C        0.12
+    3        A     2      *        0.12
+    4        A     2      A        0.28
+    5        M     1      A        0.41
+    6        M     1      M        0.44
+    7        A     2      M        0.48
+
     """
     if not isinstance(exclude_chars, (list, tuple)):
         raise ValueError('`exclude_chars` must be list, tuple (can be empty)')
@@ -649,7 +663,11 @@ def scores_to_prefs(df, mutation_col, score_col, base,
                                      names=['site', 'mutant'])
     df = (mux
           .to_frame(index=False)
-          .merge(df, on=['site', 'mutant'], how='outer')
+          .assign(wildtype=lambda x: x['site'].map(df
+                                                   .set_index('site')
+                                                   ['wildtype']
+                                                   .to_dict()))
+          .merge(df, on=['site', 'wildtype', 'mutant'], how='outer')
           )
 
     # fill missing values
