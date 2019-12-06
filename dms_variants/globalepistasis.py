@@ -109,6 +109,33 @@ model).
 The latent effects are scaled so that their mean absolute value is one,
 and the latent phenotype of the wildtype is set to zero.
 
+Multiple latent phenotypes
++++++++++++++++++++++++++++
+Equations :eq:`latent_phenotype` and :eq:`observed_phenotype` can be
+generalized to the case where multiple latent phenotypes contribute
+to the observed phenotype. Specifically, let there be
+:math:`k = 1, \ldots, K` different latent phenotypes, and let
+:math:`\beta_m^k` denote the effect of mutation :math:`m` on latent phenotype
+:math:`k`. Then we generalize Equation :eq:`latent_phenotype` to
+
+.. math::
+   :label: latent_phenotype_multi
+
+   \phi_k\left(v\right) = \beta_{\rm{wt}}^k +
+                          \sum_{m=1}^M \beta_m^k b\left(v\right)_m,
+
+and Equation :eq:`observed_phenotype` to
+
+.. math::
+   :label: observed_phenotype_multi
+
+   p\left(v\right) = \sum_{k=1}^K g_k\left(\phi_k\left(v\right)\right),
+
+where :math:`\phi_k\left(v\right)` is the :math:`k`-th latent phenotype of
+variant :math:`v`, and :math:`g_k` is the :math:`k`-th global epistasis
+function.
+
+
 .. _likelihood_calculation:
 
 Likelihood calculation
@@ -291,30 +318,33 @@ Gradient of latent phenotype with respect to latent effects:
 .. math::
    :label: dlatent_phenotype_dlatent_effect
 
-   \frac{\partial \phi\left(v\right)}{\partial \beta_m} =
-   b\left(v_m\right)
+   \frac{\partial \phi_j\left(v\right)}{\partial \beta_m^k} =
+   \begin{cases}
+   b\left(v_m\right) & \rm{if\;} j = k, \\
+   0 & \rm{otherwise.} \\
+   \end{cases}
 
 Gradient of observed phenotype with respect to latent phenotypes:
 
 .. math::
    :label: dobserved_phenotype_dlatent_effect
 
-   \frac{\partial p\left(v\right)}{\partial \beta_m}
-   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
-       \right\rvert_{x = \phi\left(v\right)} \times
-       \frac{\partial \phi\left(v\right)}{\partial \beta_m} \\
-   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
-       \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
+   \frac{\partial p\left(v\right)}{\partial \beta_m^k}
+   &=& \left.\frac{\partial g_k\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi_k\left(v\right)} \times
+       \frac{\partial \phi_k\left(v\right)}{\partial \beta_m^k} \\
+   &=& \left.\frac{\partial g_k\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi_k\left(v\right)} \times b\left(v_m\right)
 
 Derivative of the likelihood with respect to latent effects:
 
 .. math::
    :label: dloglik_dlatent_effect
 
-   \frac{\partial \mathcal{L}}{\partial \beta_m}
+   \frac{\partial \mathcal{L}}{\partial \beta_m^k}
    = \sum_{v=1}^V \frac{\mathcal{L}}
                        {\partial p\left(v\right)} \times
-                  \frac{\partial p\left(v\right)}{\partial \beta_m}.
+                  \frac{\partial p\left(v\right)}{\partial \beta_m^k}.
 
 Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
 respect to observed phenotype:
@@ -371,12 +401,13 @@ parameters:
 .. math::
    :label: dspline_epistasis_dcalpha
 
-   \frac{g\left(x\right)}{\partial c_{\alpha}} = 1
+   \frac{\partial g_k\left(x\right)}{\partial c_{\alpha}^k} = 1
 
 .. math::
    :label: dspline_epistasis_dalpham
 
-   \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
+   \frac{\partial g_k\left(x\right)}{\partial \alpha^k_m}
+   = I^k_m\left(x\right)
 
 
 Detailed documentation of models
