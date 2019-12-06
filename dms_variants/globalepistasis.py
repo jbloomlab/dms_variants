@@ -109,6 +109,8 @@ model).
 The latent effects are scaled so that their mean absolute value is one,
 and the latent phenotype of the wildtype is set to zero.
 
+.. _multi_latent:
+
 Multiple latent phenotypes
 +++++++++++++++++++++++++++
 Equations :eq:`latent_phenotype` and :eq:`observed_phenotype` can be
@@ -448,6 +450,8 @@ class AbstractEpistasis(abc.ABC):
     ----------
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
+    n_latent_phenotypes : int
+        Number of distinct latent phenotypes. See :ref:`multi_latent`.
 
     Note
     ----
@@ -462,14 +466,21 @@ class AbstractEpistasis(abc.ABC):
 
     def __init__(self,
                  binarymap,
+                 *,
+                 n_latent_phenotypes=1,
                  ):
         """See main class docstring."""
         self._binarymap = binarymap
-        self._nlatent = self.binarymap.binarylength  # number latent effects
+        if not (isinstance(n_latent_phenotypes, int) and
+                n_latent_phenotypes >= 1):
+            raise ValueError('`n_latent_phenotypes` must be integer >= 1')
+        self._n_latent_phenotypes = n_latent_phenotypes
+        self._n_latent_effects = self.binarymap.binarylength
         self._cache = {}  # cache computed values
 
         # initialize params
-        self._latenteffects = numpy.zeros(self._nlatent + 1, dtype='float')
+        self._latenteffects = numpy.zeros(self._n_latent_effects + 1,
+                                          dtype='float')
         self._likelihood_calc_params = self._init_likelihood_calc_params
         self._epistasis_func_params = self._init_epistasis_func_params
 
@@ -499,7 +510,7 @@ class AbstractEpistasis(abc.ABC):
     @_latenteffects.setter
     def _latenteffects(self, val):
         if not (isinstance(val, numpy.ndarray) and
-                len(val) == self._nlatent + 1):
+                len(val) == self._n_latent_effects + 1):
             raise ValueError(f"invalid value for `_latenteffects`: {val}")
         if (not hasattr(self, '_latenteffects_val')) or (self._latenteffects
                                                          != val).any():
@@ -550,6 +561,11 @@ class AbstractEpistasis(abc.ABC):
         return self._binarymap
 
     @property
+    def n_latent_phenotypes(self):
+        """int: number of latent phenotypes, see :ref:`multi_latent`."""
+        return self._n_latent_phenotypes
+
+    @property
     def _binary_variants(self):
         r"""scipy.sparse.csr.csr_matrix: Binary variants with 1 in last column.
 
@@ -579,7 +595,7 @@ class AbstractEpistasis(abc.ABC):
         :math:`\beta_{\rm{wt}}` in Eq. :eq:`latent_phenotype`.
 
         """
-        return self._latenteffects[self._nlatent]
+        return self._latenteffects[self._n_latent_effects]
 
     @property
     def epistasis_func_params_dict(self):
@@ -638,7 +654,7 @@ class AbstractEpistasis(abc.ABC):
         """
         if len(binary_variants.shape) != 2:
             raise ValueError(f"`binary_variants` not 2D:\n{binary_variants}")
-        if binary_variants.shape[1] != self._nlatent + int(wt_col):
+        if binary_variants.shape[1] != self._n_latent_effects + int(wt_col):
             raise ValueError(f"variants wrong length: {binary_variants.shape}")
 
         if wt_col:
@@ -1208,7 +1224,7 @@ class AbstractEpistasis(abc.ABC):
                     .multiply(self._depistasis_func_dlatent(
                                 self._latent_phenotypes))
                     )
-            assert self._cache[key].shape == (self._nlatent + 1,
+            assert self._cache[key].shape == (self._n_latent_effects + 1,
                                               self.binarymap.nvariants)
         return self._cache[key]
 
@@ -1223,7 +1239,7 @@ class AbstractEpistasis(abc.ABC):
         if key not in self._cache:
             self._cache[key] = self._dobserved_phenotypes_dlatent.dot(
                     self._dloglik_dobserved_phenotype)
-        assert self._cache[key].shape == (self._nlatent + 1,)
+        assert self._cache[key].shape == (self._n_latent_effects + 1,)
         return self._cache[key]
 
     def _fit_latent_leastsquares(self):
@@ -1740,6 +1756,8 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     ----------
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
+    n_latent_phenotypes : int
+        Number of distinct latent phenotypes. See :ref:`multi_latent`.
     spline_order : int
         Order of the I-splines defining the global epistasis function.
     meshpoints : int
@@ -1751,6 +1769,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     def __init__(self,
                  binarymap,
                  *,
+                 n_latent_phenotypes=1,
                  spline_order=3,
                  meshpoints=4,
                  ):
@@ -1759,7 +1778,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             raise ValueError('`meshpoints` must be int > 1')
         self._mesh = numpy.linspace(0, 1, meshpoints)
         self._spline_order = spline_order
-        super().__init__(binarymap)
+        super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes)
 
     @property
     def _isplines_total(self):
@@ -1929,8 +1948,9 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         self._mesh = self._mesh - self._latenteffects[-1]
         self._latenteffects = numpy.append(self._latenteffects[: -1], 0.0)
         assert (0 ==
-                self.phenotypes_frombinary(numpy.zeros((1, self._nlatent)),
-                                           'latent')
+                self.phenotypes_frombinary(
+                        numpy.zeros((1, self._n_latent_effects)),
+                        'latent')
                 ).all()
 
         # make sure log likelihood hasn't changed too much
