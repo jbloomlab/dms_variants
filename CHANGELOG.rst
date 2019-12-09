@@ -12,7 +12,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Added
 ++++++
-- The ability to fit **multiple** latent phenotypes in the global epistasis models.
+- The ability to fit **multiple** latent phenotypes in the global epistasis models. This adds the ``n_latent_phenotypes`` flag to ``AbstractEpistasis`` models, and changes the calls to certain methods / properties of that abstract model class and its concrete subclasses.
 
 0.4.6
 -----
