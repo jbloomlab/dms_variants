@@ -143,6 +143,47 @@ class BinaryMap:
 
     """
 
+    def __eq__(self, other):
+        """Test if equal to object `other`.
+
+        >>> df = pd.DataFrame({'aa_substitutions': ['', 'M1A'],
+        ...                    'func_score': [0.0, -1.2],
+        ...                    'func_score_var': [0.1, 0.15]})
+        >>> df2 = df.copy()
+        >>> df3 = df.assign(func_score=lambda x: x['func_score'] + 0.1)
+        >>> bmap1 = BinaryMap(df)
+        >>> bmap2 = BinaryMap(df2)
+        >>> bmap3 = BinaryMap(df3)
+        >>> bmap1 == bmap2
+        True
+        >>> bmap1 == bmap3
+        False
+
+        """
+        # following here: https://stackoverflow.com/a/390640
+        if type(other) != type(self):
+            return False
+        elif self.__dict__.keys() != other.__dict__.keys():
+            return False
+        else:
+            for key, val in self.__dict__.items():
+                val2 = getattr(other, key)
+                if type(val) != type(val2):
+                    return False
+                elif isinstance(val, numpy.ndarray):
+                    if not numpy.array_equal(val, val2):
+                        return False
+                elif isinstance(val, scipy.sparse.csr.csr_matrix):
+                    if (val - val2).nnz:
+                        return False
+                elif isinstance(val, (pd.DataFrame, pd.Series)):
+                    if not val.equals(val2):
+                        return False
+                else:
+                    if val != val2:
+                        return False
+            return True
+
     def __init__(self,
                  func_scores_df,
                  *,
