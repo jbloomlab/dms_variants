@@ -265,6 +265,8 @@ for use in analyses:
 Details of fitting
 -------------------------
 
+.. _fitting_workflow:
+
 Fitting workflow
 +++++++++++++++++
 The fitting workflow is essentially the same as that described in
@@ -285,6 +287,23 @@ The fitting workflow is essentially the same as that described in
  4. For :class:`MonotonicSplineEpistasis`, the latent effects and wildtype
     latent phenotype are rescaled so that the mean absolute value latent
     effect is one and the wildtype latent phenotype is zero.
+
+
+.. _fitting_multi_latent:
+
+Fitting multiple latent phenotypes
+++++++++++++++++++++++++++++++++++
+When there are multiple latent phenotypes (see :ref:`multi_latent`), the
+fitting workflow changes. In order to fit a model with :math:`K > 1` latent
+phenotypes, you first must fit a model of the same type to the same data
+with :math:`K - 1` latent phenotypes. That model is then passed to the
+model with :math:`K` latent phenotypes, and the values fit for the first
+:math:`K - 1` latent phenotypes are used to initialize all the parameters
+relevant to those first :math:`K - 1` latent phenotypes. The latent effects
+for phenotype :math:`K` as well as :math:`\sigma^2_{\rm{HOC}}` or
+:math:`\gamma^2` are then fit to the **residuals** from the model with
+:math:`K - 1` latent phenotypes similar to as in :ref:`fitting_workflow`,
+and then the entire model is fit by maximum likelihood.
 
 Vector representation of :math:`\beta_{\rm{wt}}`
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -459,6 +478,10 @@ class AbstractEpistasis(abc.ABC):
         Contains the variants, their functional scores, and score variances.
     n_latent_phenotypes : int
         Number of distinct latent phenotypes. See :ref:`multi_latent`.
+    model_one_less_latent : None or :class:`AbstractEpistasis`
+        If `n_latent_phenotypes` > 1, should be a fit model of the same
+        type fit the same `binarymap` for one less latent phenotype. This
+        is used to initialize the parameters. See :ref:`fitting_multi_latent`.
 
     Note
     ----
@@ -475,6 +498,7 @@ class AbstractEpistasis(abc.ABC):
                  binarymap,
                  *,
                  n_latent_phenotypes=1,
+                 model_one_less_latent=None,
                  ):
         """See main class docstring."""
         self._binarymap = binarymap
@@ -492,6 +516,55 @@ class AbstractEpistasis(abc.ABC):
                         dtype='float')
         self._likelihood_calc_params = self._init_likelihood_calc_params
         self._epistasis_func_params = self._init_epistasis_func_params
+
+        if self.n_latent_phenotypes > 1:
+            self._set_lower_latent_phenotype_params(model_one_less_latent)
+        elif model_one_less_latent is not None:
+            raise ValueError('`n_latent_phenotypes` is 1, but '
+                             '`model_one_less_latent` is not `None`.')
+
+    def _set_lower_latent_phenotype_params(self, model_one_less_latent):
+        """Set parameters for lower-order latent phenotypes.
+
+        Parameters
+        ----------
+        model_one_less_latent : :class:`AbstractEpistasis`
+            Model like `self` but fit with one less latent phenotype.
+
+        Initializes all parameters relevant to the first :math:`K - 1`
+        latent phenotypes as described in :ref:`fitting_multi_latent`.
+
+        """
+        assert self.n_latent_phenotypes > 1, 'calling with only 1 latent pheno'
+        if type(self) != type(model_one_less_latent):
+            raise ValueError('`model_one_less_latent` not same type as current'
+                             f" object: {type(self)} versus "
+                             f"{type(model_one_less_latent)}")
+        if self.binarymap != model_one_less_latent.binarymap:
+            raise ValueError('`model_one_less_latent` has different '
+                             '`binarymap` than current object.')
+        if self.n_latent_phenotypes - 1 != (model_one_less_latent
+                                            .n_latent_phenotypes):
+            raise ValueError('`model_one_less_latent` does not have 1 fewer '
+                             'latent phenotype than current object.')
+
+        self._likelihood_calc_params = (model_one_less_latent
+                                        ._likelihood_calc_params)
+        new_latenteffects = self._latenteffects.copy()
+        assert new_latenteffects.shape == (self.n_latent_phenotypes,
+                                           self.n_latent_effects + 1)
+        new_epistasis_func_params = self._epistasis_func_params.copy()
+        assert (new_latenteffects.shape ==
+                (self.n_latent_phenotypes,
+                 len(self._epistasis_func_param_names)
+                 ))
+        for k in range(1, self.n_latent_phenotypes):
+            ki = k - 1
+            new_latenteffects[ki] = model_one_less_latent._latenteffects[ki]
+            new_epistasis_func_params[ki] = (model_one_less_latent
+                                             ._epistasis_func_params[ki])
+        self._latenteffects = new_latenteffects
+        self._epistasis_func_params = new_epistasis_func_params
 
     def __getstate__(self):
         """Clears the internal `_cache` before pickling.
@@ -2013,6 +2086,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                  binarymap,
                  *,
                  n_latent_phenotypes=1,
+                 model_one_less_latent=None,
                  spline_order=3,
                  meshpoints=4,
                  ):
@@ -2024,7 +2098,19 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                       .reshape(n_latent_phenotypes, meshpoints)
                       )
         self._spline_order = spline_order
-        super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes)
+        super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes,
+                         model_one_less_latent=model_one_less_latent)
+
+    def _set_lower_latent_phenotype_params(self, model_one_less_latent):
+        """Overrides :meth:`AbstractEpistasis._set_lower_latent_phenotypes`.
+
+        Augments that base method to also set mesh.
+
+        """
+        super()._set_lower_latent_phenotype_params(model_one_less_latent)
+        for k in range(1, self.n_latent_phenotypes):
+            ki = k - 1
+            self._mesh[ki] = model_one_less_latent._mesh[ki]
 
     def _isplines_total(self, k=None):
         """I-splines for global epistasis function.
