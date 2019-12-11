@@ -424,6 +424,7 @@ Detailed documentation of models
 
 import abc
 import re
+import warnings
 
 import numpy
 
@@ -439,6 +440,12 @@ import dms_variants.utils
 
 class EpistasisFittingError(Exception):
     """Error fitting an epistasis model."""
+
+    pass
+
+
+class EpistasisFittingWarning(Warning):
+    """Warning when fitting epistasis model."""
 
     pass
 
@@ -765,7 +772,7 @@ class AbstractEpistasis(abc.ABC):
              }
         if self.n_latent_phenotypes > 1:
             d['latent_phenotype_number'] = numpy.repeat(
-                    [k for k in range(1, self.n_latent_phenotypes + 1)],
+                    (k for k in range(1, self.n_latent_phenotypes + 1)),
                     len(self.binarymap.all_subs))
         return pd.DataFrame(d)
 
@@ -2196,35 +2203,43 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
             rescale_min, rescale_max = min(self._mesh[ki]), max(self._mesh[ki])
             rescalerange = rescale_max - rescale_min
-            assert rescalerange > 0
+            assert rescalerange > self._NEARLY_ZERO
 
             rescaled_latenteffects = self._latenteffects.copy()
             currentrange = (self._latent_phenotypes(k).max() -
                             self._latent_phenotypes(k).min())
-            if currentrange <= 0:
-                raise ValueError(f"bad latent phenotype range: {currentrange}")
-            # rescale so latent phenotypes span desired range
-            rescaled_latenteffects[ki] = (rescaled_latenteffects[ki] *
-                                          rescalerange / currentrange)
-            self._latenteffects = rescaled_latenteffects
-            # change wt latent phenotype so latent phenotypes have right min
-            rescaled_latenteffects[ki] = numpy.append(
-                    rescaled_latenteffects[ki][: -1],
-                    (rescaled_latenteffects[ki][-1] + rescale_min -
-                     self._latent_phenotypes(k).min()))
-            self._latenteffects = rescaled_latenteffects
 
-        assert all(numpy.allclose(rescale_min,
-                                  self._latent_phenotypes(k).min())
-                   for k in range(1, self.n_latent_phenotypes + 1))
-        assert all(numpy.allclose(rescale_max,
-                                  self._latent_phenotypes(k).max())
-                   for k in range(1, self.n_latent_phenotypes + 1))
-        assert all(numpy.allclose(rescalerange,
-                                  (self._latent_phenotypes(k).max() -
-                                   self._latent_phenotypes(k).min())
-                                  )
-                   for k in range(1, self.n_latent_phenotypes + 1))
+            if currentrange <= self._NEARLY_ZERO:
+                warnings.warn(f"range of latent phenotype {k} is nearly zero "
+                              f"({currentrange}); so cannot pre-scale. Just "
+                              'setting all latent effects to zero',
+                              EpistasisFittingWarning)
+                rescaled_latenteffects[ki] = 0
+                rescaled_latenteffects[ki] = numpy.append(
+                     rescaled_latenteffects[ki][: -1],
+                     (rescaled_latenteffects[ki][-1] + rescale_min -
+                      self._latent_phenotypes(k).min()))
+                self._latenteffects = rescaled_latenteffects
+
+            else:
+                # rescale so latent phenotypes span desired range
+                rescaled_latenteffects[ki] = (rescaled_latenteffects[ki] *
+                                              rescalerange / currentrange)
+                self._latenteffects = rescaled_latenteffects
+                # change wt latent phenotype so latent phenos have right min
+                rescaled_latenteffects[ki] = numpy.append(
+                     rescaled_latenteffects[ki][: -1],
+                     (rescaled_latenteffects[ki][-1] + rescale_min -
+                      self._latent_phenotypes(k).min()))
+                self._latenteffects = rescaled_latenteffects
+
+                assert numpy.allclose(rescale_min,
+                                      self._latent_phenotypes(k).min())
+                assert numpy.allclose(rescale_max,
+                                      self._latent_phenotypes(k).max())
+                assert numpy.allclose(rescalerange,
+                                      (self._latent_phenotypes(k).max() -
+                                       self._latent_phenotypes(k).min()))
 
     def _postscale_params(self):
         """Rescale parameters after global epistasis fitting.
@@ -2241,11 +2256,15 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             mean_abs_latent_effect = (numpy.abs(self._latenteffects[ki][: -1])
                                       .mean()
                                       )
-            if mean_abs_latent_effect == 0:
-                raise ValueError('latent effects are all 0')
-            rescaled_latenteffects[ki] = (rescaled_latenteffects[ki] /
-                                          mean_abs_latent_effect)
-            self._mesh[ki] = self._mesh[ki] / mean_abs_latent_effect
+            if mean_abs_latent_effect < self._NEARLY_ZERO:
+                warnings.warn(f"mean latent effect for phenotype {ki + 1} "
+                              f"is nearly zero ({mean_abs_latent_effect}); "
+                              'so cannot rescale',
+                              EpistasisFittingWarning)
+            else:
+                rescaled_latenteffects[ki] = (rescaled_latenteffects[ki] /
+                                              mean_abs_latent_effect)
+                self._mesh[ki] = self._mesh[ki] / mean_abs_latent_effect
 
             # make latent phenotype of wildtype equal to 0
             self._mesh[ki] = self._mesh[ki] - rescaled_latenteffects[ki][-1]
