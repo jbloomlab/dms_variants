@@ -276,11 +276,11 @@ The fitting workflow is essentially the same as that described in
     or :math:`\gamma^2` for :ref:`cauchy_likelihood`.
  2. If there are any parameters in the epistasis function, they are set
     to reasonable initial values. For :class:`MonotonicSplineEpistasis`
-    this involves setting the mesh to go from 0 to 1,
-    setting :math:`c_{\alpha}` to the minimum functional
-    score and setting the weights :math:`\alpha_m` to equal values such
-    that the max of the epistasis function is the same as the maximum
-    functional score.
+    this involves setting the mesh to go from 0 to 1, scaling the latent
+    effects so that the latent phenotypes range from 0 to 1, setting
+    :math:`c_{\alpha}` to the minimum functional score and setting the
+    weights :math:`\alpha_m` to equal values such that the max of the
+    epistasis function is the same as the max functional score.
  3. The overall model is fit by maximum likelihood.
  4. For :class:`MonotonicSplineEpistasis`, the latent effects and wildtype
     latent phenotype are rescaled so that the mean absolute value latent
@@ -1169,6 +1169,9 @@ class AbstractEpistasis(abc.ABC):
             The results of optimizing the full model.
 
         """
+        if self.n_latent_phenotypes != 1:
+            raise NotImplementedError('not yet implemented for multi latent')
+
         # least squares fit of latent effects for reasonable initial values
         _ = self._fit_latent_leastsquares()
 
@@ -1423,8 +1426,17 @@ class AbstractEpistasis(abc.ABC):
             assert self._cache[key].shape == (self._n_latent_effects + 1,)
         return self._cache[key]
 
-    def _fit_latent_leastsquares(self):
+    def _fit_latent_leastsquares(self, k=None, fit_to=None):
         """Least-squares fit latent effects for quick "reasonable" values.
+
+        Parameters
+        ----------
+        k : int or None
+            Fit effects for this latent phenotype (1 <= `k` <=
+            `n_latent_phenotypes`); can be `None` if just one latent phenotype.
+        fit_to : numpy.ndarray or None
+            Fit latent effects to these values. If `None`, fits to
+            :attr:`AbstractEpistasis.binarymap.func_scores`.
 
         Returns
         -------
@@ -1432,21 +1444,28 @@ class AbstractEpistasis(abc.ABC):
             Results of fitting described here:
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.lsqr.html
 
+        In addition to returning the fitting results, sets the latent
+        effects to the new fit value.
+
         """
-        if self.n_latent_phenotypes != 1:
-            raise NotImplementedError('not implemented for multi latent')
+        ki = self._process_latent_phenotype_k(k)
+        if fit_to is None:
+            fit_to = self.binarymap.func_scores
         else:
-            ki = 0
+            if fit_to.shape != self.binarymap.func_scores.shape:
+                raise ValueError('`invalid shape for `fit_to`')
+
         # fit by least squares
         fitres = scipy.sparse.linalg.lsqr(
                     A=self._binary_variants,
-                    b=self.binarymap.func_scores,
+                    b=fit_to,
                     x0=self._latenteffects[ki],
                     )
 
         # use fit result to update latenteffects
-        self._latenteffects = fitres[0].reshape(self.n_latent_phenotypes,
-                                                self._n_latent_effects + 1)
+        new_latenteffects = self._latenteffects.copy()
+        new_latenteffects[ki] = fitres[0]
+        self._latenteffects = new_latenteffects
 
         return fitres
 
