@@ -552,9 +552,9 @@ class AbstractEpistasis(abc.ABC):
                                         ._likelihood_calc_params)
         new_latenteffects = self._latenteffects.copy()
         assert new_latenteffects.shape == (self.n_latent_phenotypes,
-                                           self.n_latent_effects + 1)
+                                           self._n_latent_effects + 1)
         new_epistasis_func_params = self._epistasis_func_params.copy()
-        assert (new_latenteffects.shape ==
+        assert (new_epistasis_func_params.shape ==
                 (self.n_latent_phenotypes,
                  len(self._epistasis_func_param_names)
                  ))
@@ -845,7 +845,7 @@ class AbstractEpistasis(abc.ABC):
              }
         if self.n_latent_phenotypes > 1:
             d['latent_phenotype_number'] = numpy.repeat(
-                    (k for k in range(1, self.n_latent_phenotypes + 1)),
+                    range(1, self.n_latent_phenotypes + 1),
                     len(self.binarymap.all_subs))
         return pd.DataFrame(d)
 
@@ -1479,7 +1479,7 @@ class AbstractEpistasis(abc.ABC):
         key = f"_observed_phenotypes_{'_'.join(map(str, latent_phenos))}"
         if key not in self._cache:
             observed_phenos = self.epistasis_func(
-                    self._latent_phenotypes(latent_phenos[0]))
+                    self._latent_phenotypes(latent_phenos[0])).copy()
             for k in latent_phenos[1:]:
                 observed_phenos += self.epistasis_func(
                                         self._latent_phenotypes(k))

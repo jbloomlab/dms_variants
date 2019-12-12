@@ -16,6 +16,9 @@ Added
 
 - An equals (``__eq__``) comparison operation to ``BinaryMap``.
 
+Fixed
+++++++
+- ``BinaryMap`` objects can now be deep copied (they don't have a compiled regex as attributed).
 
 0.4.6
 -----

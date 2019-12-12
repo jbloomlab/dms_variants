@@ -238,16 +238,16 @@ class BinaryMap:
             else:
                 raise ValueError(f"invalid alphabet character: {char}")
         chars = '|'.join(chars)
-        self._sub_regex = re.compile(rf"(?P<wt>{chars})"
-                                     rf"(?P<site>\d+)"
-                                     rf"(?P<mut>{chars})")
+        self._sub_regex = (rf"(?P<wt>{chars})"
+                           rf"(?P<site>\d+)"
+                           rf"(?P<mut>{chars})")
 
         # build mapping from substitution to binary map index
         wts = {}
         muts = collections.defaultdict(set)
         for subs in substitutions:
             for sub in subs.split():
-                m = self._sub_regex.fullmatch(sub)
+                m = re.fullmatch(self._sub_regex, sub)
                 if not m:
                     raise ValueError(f"could not match substitution: {sub}")
                 site = int(m.group('site'))
@@ -318,7 +318,7 @@ class BinaryMap:
         sites = set()
         indices = []
         for sub in sub_str.split():
-            m = self._sub_regex.fullmatch(sub)
+            m = re.fullmatch(self._sub_regex, sub)
             if not m:
                 raise ValueError(f"substitution {sub} in {sub_str} invalid "
                                  f"for alphabet {self.alphabet}")
@@ -353,7 +353,7 @@ class BinaryMap:
         if not set(binary).issubset({0, 1}):
             raise ValueError(f"`binary` not all 0 or 1:\n{binary}")
         subs = list(map(self.i_to_sub, numpy.flatnonzero(binary)))
-        sites = [self._sub_regex.fullmatch(sub) for sub in subs]
+        sites = [re.fullmatch(self._sub_regex, sub) for sub in subs]
         if len(sites) != len(set(sites)):
             raise ValueError('`binary` specifies multiple substitutions '
                              f"at same site:\n{binary}\n{' '.join(subs)}")
