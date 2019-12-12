@@ -1479,10 +1479,13 @@ class AbstractEpistasis(abc.ABC):
         key = f"_observed_phenotypes_{'_'.join(map(str, latent_phenos))}"
         if key not in self._cache:
             observed_phenos = self.epistasis_func(
-                    self._latent_phenotypes(latent_phenos[0])).copy()
+                    self._latent_phenotypes(latent_phenos[0]),
+                    k=latent_phenos[0]
+                    ).copy()
             for k in latent_phenos[1:]:
                 observed_phenos += self.epistasis_func(
-                                        self._latent_phenotypes(k))
+                                        self._latent_phenotypes(k),
+                                        k=k)
             self._cache[key] = observed_phenos
             self._cache[key].flags.writeable = False
         return self._cache[key]
@@ -1511,7 +1514,8 @@ class AbstractEpistasis(abc.ABC):
                     self._binary_variants
                     .transpose()  # convert from V by M to M by V
                     .multiply(self._depistasis_func_dlatent(
-                                self._latent_phenotypes(k)))
+                                self._latent_phenotypes(k),
+                                k=k))
                     )
             assert self._cache[key].shape == (self._n_latent_effects + 1,
                                               self.binarymap.nvariants)
