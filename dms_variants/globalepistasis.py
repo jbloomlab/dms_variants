@@ -965,7 +965,7 @@ class AbstractEpistasis(abc.ABC):
         else:
             for k in range(1, self.n_latent_phenotypes + 1):
                 d[f"latent_phenotype_{k}"] = self._latent_phenotypes(k=k)
-        d['observed_phenotype'] = self._observed_phenotypes
+        d['observed_phenotype'] = self._observed_phenotypes()
         return pd.DataFrame(d)
 
     def preferences(self, phenotype, base, *,
@@ -1249,11 +1249,18 @@ class AbstractEpistasis(abc.ABC):
             The results of optimizing the full model.
 
         """
-        if self.n_latent_phenotypes != 1:
-            raise NotImplementedError('not yet implemented for multi latent')
-
         # least squares fit of latent effects for reasonable initial values
-        _ = self._fit_latent_leastsquares()
+        if self.n_latent_phenotypes == 1:
+            _ = self._fit_latent_leastsquares(self.n_latent_phenotypes,
+                                              self.binarymap.func_scores)
+        else:
+            assert self.n_latent_phenotypes > 1
+            # fit to residual error after using the K - 1 latent phenotypes
+            phenos_Kminus1 = list(range(1, self.n_latent_phenotypes))
+            residuals = (self.binarymap.func_scores -
+                         self._observed_phenotypes(phenos_Kminus1))
+            _ = self._fit_latent_leastsquares(self.n_latent_phenotypes,
+                                              residuals)
 
         # prescale parameters to desired range
         self._prescale_params()
@@ -1438,13 +1445,42 @@ class AbstractEpistasis(abc.ABC):
             self._cache[key].flags.writeable = False
         return self._cache[key]
 
-    @property
-    def _observed_phenotypes(self):
-        """numpy.ndarray: Observed phenotypes, Eq. :eq:`observed_phenotype`."""
-        key = '_observed_phenotypes'
+    def _observed_phenotypes(self, latent_phenos='all'):
+        r"""Observed phenotypes of variants being fit.
+
+        Parameters
+        ----------
+        latent_phenos : 'all' or list
+            The numbers (:math:`k = 1, 2, \ldots...) of the latent phenotypes
+            used to calculate the observed phenotype. If 'all' use all
+            latent phenotypes. Otherwise only include the terms in
+            Eq. :eq:`observed_phenotype_multi` corresponding to the
+            :math:`k` values listed here.
+
+        Returns
+        --------
+        numpy.ndarray
+            Observed phenotypes.
+
+        """
+        if latent_phenos == 'all':
+            latent_phenos = list(range(1, self.n_latent_phenotypes + 1))
+        if isinstance(latent_phenos, list):
+            if len(latent_phenos) != len(set(latent_phenos)):
+                raise ValueError('duplicate entries in `latent_phenos`')
+            if not set(latent_phenos).issubset(
+                    set(range(1, self.n_latent_phenotypes + 1))):
+                raise ValueError('invalid entries in `latent_phenos`')
+            if not latent_phenos:
+                raise ValueError('empty `latent_phenos`')
+            latent_phenos = sorted(latent_phenos)
+        else:
+            raise ValueError('`latent_phenos` not a list')
+        key = f"_observed_phenotypes_{'_'.join(map(str, latent_phenos))}"
         if key not in self._cache:
-            observed_phenos = self.epistasis_func(self._latent_phenotypes(1))
-            for k in range(2, self.n_latent_phenotypes + 1):
+            observed_phenos = self.epistasis_func(
+                    self._latent_phenotypes(latent_phenos[0]))
+            for k in latent_phenos[1:]:
                 observed_phenos += self.epistasis_func(
                                         self._latent_phenotypes(k))
             self._cache[key] = observed_phenos
@@ -1731,12 +1767,12 @@ class CauchyLikelihood(AbstractEpistasis):
                 raise ValueError('scales not all > 0')
             self._cache[key] = (scipy.stats.cauchy.logpdf(
                                     self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
+                                    loc=self._observed_phenotypes(),
                                     scale=scales)
                                 ).sum()
         return self._cache[key]
 
-    def _fit_latent_leastsquares(self):
+    def _fit_latent_leastsquares(self, k=None, fit_to=None):
         r"""Also get initial value for scale parameter.
 
         Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
@@ -1746,7 +1782,7 @@ class CauchyLikelihood(AbstractEpistasis):
         a Gaussian distribution (not sure how good this supposition is...).
 
         """
-        fitres = super()._fit_latent_leastsquares()
+        fitres = super()._fit_latent_leastsquares(k=k, fit_to=fit_to)
         residuals2 = fitres[3]**2
         if self.binarymap.func_scores_var is None:
             scale_param2 = max(residuals2 / self.binarymap.nvariants,
@@ -1799,7 +1835,7 @@ class CauchyLikelihood(AbstractEpistasis):
         """
         key = '_dloglik_dobserved_phenotype'
         if key not in self._cache:
-            diff = self.binarymap.func_scores - self._observed_phenotypes
+            diff = self.binarymap.func_scores - self._observed_phenotypes()
             self._cache[key] = 2 * diff / (self._pseudo_variances + diff**2)
             self._cache[key].flags.writeable = False
         return self._cache[key]
@@ -1814,7 +1850,8 @@ class CauchyLikelihood(AbstractEpistasis):
         key = '_dloglik_dlikelihood_calc_params'
         if key not in self._cache:
             scale_param = self.likelihood_calc_params_dict['scale_parameter']
-            diff2 = (self.binarymap.func_scores - self._observed_phenotypes)**2
+            diff2 = (self.binarymap.func_scores -
+                     self._observed_phenotypes())**2
             self._cache[key] = numpy.array([
                                 (scale_param * (diff2 - self._pseudo_variances)
                                  / (self._pseudo_variances *
@@ -1867,12 +1904,12 @@ class GaussianLikelihood(AbstractEpistasis):
                 raise ValueError('standard deviations not all > 0')
             self._cache[key] = (scipy.stats.norm.logpdf(
                                     self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
+                                    loc=self._observed_phenotypes(),
                                     scale=standard_devs)
                                 ).sum()
         return self._cache[key]
 
-    def _fit_latent_leastsquares(self):
+    def _fit_latent_leastsquares(self, k=None, fit_to=None):
         r"""Also get initial value for HOC epistasis.
 
         Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
@@ -1880,7 +1917,7 @@ class GaussianLikelihood(AbstractEpistasis):
         residual not from functional score variance.
 
         """
-        fitres = super()._fit_latent_leastsquares()
+        fitres = super()._fit_latent_leastsquares(k=k, fit_to=fit_to)
         residuals2 = fitres[3]**2
         if self.binarymap.func_scores_var is None:
             epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
@@ -1934,7 +1971,7 @@ class GaussianLikelihood(AbstractEpistasis):
         key = '_dloglik_dobserved_phenotype'
         if key not in self._cache:
             self._cache[key] = (self.binarymap.func_scores -
-                                self._observed_phenotypes) / self._variances
+                                self._observed_phenotypes()) / self._variances
             self._cache[key].flags.writeable = False
         return self._cache[key]
 
