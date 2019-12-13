@@ -14,6 +14,8 @@ Added
 ++++++
 - The ability to fit **multiple** latent phenotypes in the global epistasis models. This adds the ``n_latent_phenotypes`` flag to ``AbstractEpistasis`` models, and changes the calls to certain methods / properties of that abstract model class and its concrete subclasses.
 
+- Added ``AbstractEpistasis.aic`` property.
+
 - An equals (``__eq__``) comparison operation to ``BinaryMap``.
 
 Fixed

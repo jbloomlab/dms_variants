@@ -669,6 +669,11 @@ class AbstractEpistasis(abc.ABC):
         return self._binary_variants_val
 
     @property
+    def aic(self):
+        """float: Aikake Information Criterion given current log likelihood."""
+        return 2 * self.nparams - 2 * self.loglik
+
+    @property
     def nparams(self):
         """int: Total number of parameters in model."""
         return len(self._allparams)
