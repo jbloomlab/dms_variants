@@ -137,6 +137,11 @@ where :math:`\phi_k\left(v\right)` is the :math:`k`-th latent phenotype of
 variant :math:`v`, and :math:`g_k` is the :math:`k`-th global epistasis
 function.
 
+Note that it does **not** make sense to fit multiple latent phenotypes
+to a non-epistatic model as a linear combination of linear effects
+reduces to a simple linear model (in other words, a multi-latent
+phenotype non-epistatic model is no differen than a one-latent
+phenotype non-epistatic model).
 
 .. _likelihood_calculation:
 
@@ -305,6 +310,12 @@ for phenotype :math:`K` as well as :math:`\sigma^2_{\rm{HOC}}` or
 :math:`K - 1` latent phenotypes similar to as in :ref:`fitting_workflow`,
 and then the entire model is fit by maximum likelihood.
 
+Conveniently fitting and comparing several models
++++++++++++++++++++++++++++++++++++++++++++++++++
+To conveniently fit and compare several models, use :func:`fit_models`.
+This is especially useful when you are including models with multiple
+latent phenotypes.
+
 Vector representation of :math:`\beta_{\rm{wt}}`
 +++++++++++++++++++++++++++++++++++++++++++++++++
 For the purposes of the optimization (and in the equations below), we change
@@ -442,7 +453,9 @@ Detailed documentation of models
 
 
 import abc
+import collections
 import re
+import time
 import warnings
 
 import numpy
@@ -536,6 +549,9 @@ class AbstractEpistasis(abc.ABC):
 
         """
         assert self.n_latent_phenotypes > 1, 'calling with only 1 latent pheno'
+        if model_one_less_latent is None:
+            raise ValueError('`model_one_less_latent` cannot be `None` when '
+                             'fitting multiple latent phenotypes')
         if type(self) != type(model_one_less_latent):
             raise ValueError('`model_one_less_latent` not same type as current'
                              f" object: {type(self)} versus "
@@ -2486,6 +2502,112 @@ class NoEpistasisCauchyLikelihood(NoEpistasis,
     """
 
     pass
+
+
+def fit_models(binarymap,
+               likelihood,
+               *,
+               max_latent_phenotypes=3,
+               ):
+    """Fit and compare global epistasis models.
+
+    This function is useful when you want to examine the fit of several
+    different models to the same data. It does the following:
+
+     1. Fits a non-epistatic model to the data.
+
+     2. Fits a global epistasis model with :math:`K = 1` latent phenotypes
+        to the data. If the global epistasis model outperforms the no-
+        epistasis model by AIC_, proceed to next step. Otherwise stop.
+
+     3. Fit a global epistasis model with :math:`K = 2` latent phenotypes.
+        If this model outperforms (by AIC_) the model with :math:`K - 1`
+        latent phenotypes, repeat for :math:`K = 3` etc until adding more
+        latent phenotypes no longer improves fit.
+
+    .. _AIC: https://en.wikipedia.org/wiki/Akaike_information_criterion
+
+    Note
+    ----
+    All of the fitting is done with the same likelihood-calculation method
+    because you can **not** compare models fit with different likelihood-
+    calculation methods.
+
+    Parameters
+    ----------
+    binarymap : :class:`dms_variants.binarymap.BinaryMap`
+        Contains the variants, their functional scores, and score variances.
+        The models are fit to these data.
+    likelihood : {'Gaussian', 'Cauchy'}
+        Likelihood calculation method to use when fitting models. See
+        :ref:`likelihood_calculation`.
+    max_latent_phenotypes : int
+        Maximum number of latent phenotypes that are potentially be fit.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Summarizes the results of the model fitting and contains the
+        fit models. Columns are:
+
+          - 'description': description of model
+          - 'n_latent_phenotypes': number of latent phenotypes in model
+          - 'AIC': AIC_
+          - 'nparams': number of parameters
+          - 'log_likelihood': log likelihood
+          - 'model': the actual model (subclass of :class:`AbstractEpistasis`)
+          - 'fitting_time': time in seconds that it took to fit model
+
+        The data frame is sorted from best to worst model.
+
+    """
+    if likelihood == 'Gaussian':
+        NoEpistasisClass = NoEpistasisGaussianLikelihood
+        EpistasisClass = MonotonicSplineEpistasisGaussianLikelihood
+    elif likelihood == 'Cauchy':
+        NoEpistasisClass = NoEpistasisCauchyLikelihood
+        EpistasisClass = MonotonicSplineEpistasisCauchyLikelihood
+    else:
+        raise ValueError(f"invalid `likelihood` {likelihood}")
+
+    FitData = collections.namedtuple('FitData',
+                                     ['description', 'n_latent_phenotypes',
+                                      'AIC', 'nparams', 'log_likelihood',
+                                      'model', 'fitting_time']
+                                     )
+
+    def fit(modelclass, description, k=1, model_one_less_latent=None):
+        model = modelclass(binarymap,
+                           n_latent_phenotypes=k,
+                           model_one_less_latent=model_one_less_latent)
+        start = time.time()
+        _ = model.fit()
+        return FitData(description=description,
+                       n_latent_phenotypes=model.n_latent_phenotypes,
+                       AIC=model.aic,
+                       nparams=model.nparams,
+                       log_likelihood=model.loglik,
+                       model=model,
+                       fitting_time=time.time() - start
+                       )
+
+    fitlist = [fit(NoEpistasisClass, 'no epistasis')]
+
+    for k in range(1, max_latent_phenotypes + 1):
+        fitlist.append(
+                fit(EpistasisClass,
+                    f"global epistasis with {k} latent phenotypes",
+                    k=k,
+                    model_one_less_latent=None if k == 1 else fitlist[-1].model
+                    )
+                )
+        if fitlist[-1].AIC > fitlist[-2].AIC:
+            break
+
+    return (pd.DataFrame.from_records(fitlist, columns=FitData._fields)
+            .sort_values('AIC')
+            .reset_index(drop=True)
+            )
 
 
 if __name__ == '__main__':
