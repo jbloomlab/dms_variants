@@ -16,6 +16,8 @@ Added
 
 - Added ``AbstractEpistasis.aic`` property.
 
+- Added ``MultiLatentSigmoidPhenotypeSimulator``.
+
 - An equals (``__eq__``) comparison operation to ``BinaryMap``.
 
 Fixed
