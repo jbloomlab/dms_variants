@@ -31,7 +31,8 @@ class BinaryMap:
     Such representations are useful for fitting estimates of the effect of
     each substitution.
 
-    The binary maps only cover substitutions that are present in at least one
+    Unless you are using the `expand` option, the binary maps only cover
+    substitutions relative to wildtype that are present in at least one
     of the variants used to create the map.
 
     Parameters
@@ -50,6 +51,16 @@ class BinaryMap:
         estimate, or `None` if no variance available.
     alphabet : list or tuple
         Allowed characters (e.g., amino acids or codons).
+    expand : bool
+        If `False` (the default) the encoding only covers substitutions
+        relative to wildtype that are observed in the set of variants. If
+        `True` then the encoding covers all allowed characters at each
+        site regardless of whether they are wildtype or observed. In this
+        latter case, each binary representation is of length (alphabet size)
+        :math:`\times` (sequence length), and sums to the sequence length.
+    wtseq : None or str
+        Only set this option if `expand` is `True`. In that case, it
+        should be the wildtype sequence.
 
     Attributes
     ----------
@@ -141,6 +152,54 @@ class BinaryMap:
     [3, 4]
     [2]
 
+    Now do similar operation but using `expand` to include full alphabet
+    (although to keep size manageable, we use an alphabet smaller than
+    all amino acids):
+
+    >>> wtseq = 'MAKG'
+    >>> alphabet = ['A', 'C', 'G', 'K', 'M', '*']
+    >>> binmap_expand = BinaryMap(func_scores_df,
+    ...                           alphabet=alphabet,
+    ...                           expand=True,
+    ...                           wtseq=wtseq)
+    >>> binmap_expand.binarylength == len(wtseq) * len(alphabet)
+    True
+
+    >>> binmap_expand.all_subs
+    ... # doctest: +NORMALIZE_WHITESPACE
+    ['M1A', 'M1C', 'M1G', 'M1K', 'M1*',
+     'A2C', 'A2G', 'A2K', 'A2M', 'A2*',
+     'K3A', 'K3C', 'K3G', 'K3M', 'K3*',
+     'G4A', 'G4C', 'G4K', 'G4M', 'G4*']
+
+    >>> binmap_expand.binary_variants.toarray()
+    ... # doctest: +NORMALIZE_WHITESPACE
+    array([[0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
+            0, 0],
+           [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
+            0, 0],
+           [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+            0, 0],
+           [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
+            0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+            0, 0],
+           [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,
+            0, 0]], dtype=int8)
+
+    >>> all(numpy.sum(binmap_expand.binary_variants.toarray(), axis=1) ==
+    ...     numpy.full(binmap_expand.nvariants, len(wtseq)))
+    True
+
+    >>> binmap_expand.substitution_variants
+    ['', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*']
+
+    >>> for ivar in range(binmap_expand.nvariants):
+    ...     binvar = binmap_expand.binary_variants.toarray()[ivar]
+    ...     subs_from_df = func_scores_df.at[ivar, 'aa_substitutions']
+    ...     assert subs_from_df == binmap_expand.binary_to_sub_str(binvar)
+    ...     assert all(binvar == binmap_expand.sub_str_to_binary(subs_from_df))
+
     """
 
     def __init__(self,
@@ -150,6 +209,8 @@ class BinaryMap:
                  func_score_col='func_score',
                  func_score_var_col='func_score_var',
                  alphabet=dms_variants.constants.AAS_WITHSTOP,
+                 expand=False,
+                 wtseq=None,
                  ):
         """Initialize object; see main class docstring."""
         self.nvariants = len(func_scores_df)
@@ -219,13 +280,40 @@ class BinaryMap:
                     raise ValueError(f"wildtype and mutant the same in {sub}")
                 muts[site].add(m.group('mut'))
         self._i_to_sub = {}
-        i = 0
-        for site, wt in sorted(wts.items()):
-            for mut in sorted(muts[site]):
-                self._i_to_sub[i] = f"{wt}{site}{mut}"
-                i += 1
-        self.binarylength = i
+        self._wt_indices = {}  # keyed by site, values wildtype indices
+        if expand:
+            if not isinstance(wtseq, str):
+                raise ValueError('`wtseq` must be str if `expand` is True')
+            if not set(wtseq).issubset(set(alphabet)):
+                raise ValueError('`wtseq` has characters not in alphabet')
+            if min(wts.keys()) < 1:
+                raise ValueError('if `expand`, site numbers must start at 1')
+            if max(wts.keys()) > len(wtseq):
+                raise ValueError('`wtseq` not long enough given site numbers')
+            for site, wt in wts.items():
+                if wtseq[site - 1] != wt:
+                    raise ValueError('`wtseq` and `func_scores_df` differ on '
+                                     f"identity at site {site}")
+            i = 0
+            for site, wt in enumerate(wtseq, start=1):
+                assert (site not in wts) or (wts[site] == wt)
+                for char in self.alphabet:
+                    self._i_to_sub[i] = f"{wt}{site}{char}"
+                    if char == wt:
+                        assert site not in self._wt_indices
+                        self._wt_indices[site] = i
+                    i += 1
+        else:
+            if wtseq is not None:
+                raise ValueError('`wtseq` should be None if `expand` is False')
+            i = 0
+            for site, wt in sorted(wts.items()):
+                for mut in sorted(muts[site]):
+                    self._i_to_sub[i] = f"{wt}{site}{mut}"
+                    i += 1
+        self.binarylength = len(self._i_to_sub)
         self._sub_to_i = {sub: i for i, sub in self._i_to_sub.items()}
+        self._wt_index_set = set(self._wt_indices.values())
         assert len(self._sub_to_i) == len(self._i_to_sub) == self.binarylength
 
         # build binary_variants
@@ -285,7 +373,10 @@ class BinaryMap:
                 raise ValueError("multiple subs at same site in {sub_str}")
             sites.add(m.group('site'))
             indices.append(self.sub_to_i(sub))
-        assert len(sites) == len(sub_str.split()) == len(indices)
+        sites = {int(site) for site in sites}
+        for site, i in self._wt_indices.items():
+            if site not in sites:
+                indices.append(i)
         return sorted(indices)
 
     def binary_to_sub_str(self, binary):
@@ -311,7 +402,7 @@ class BinaryMap:
                              str(binary))
         if not set(binary).issubset({0, 1}):
             raise ValueError(f"`binary` not all 0 or 1:\n{binary}")
-        subs = list(map(self.i_to_sub, numpy.flatnonzero(binary)))
+        subs = [s for s in map(self.i_to_sub, numpy.flatnonzero(binary)) if s]
         sites = [self._sub_regex.fullmatch(sub) for sub in subs]
         if len(sites) != len(set(sites)):
             raise ValueError('`binary` specifies multiple substitutions '
@@ -319,7 +410,7 @@ class BinaryMap:
         return ' '.join(subs)
 
     def i_to_sub(self, i):
-        """Mutation corresponding to index in binary representation.
+        """Substitution corresponding to index in binary representation.
 
         Parameters
         ----------
@@ -333,7 +424,10 @@ class BinaryMap:
 
         """
         try:
-            return self._i_to_sub[i]
+            if i in self._wt_index_set:
+                return ''
+            else:
+                return self._i_to_sub[i]
         except KeyError:
             if i < 0 or i >= self.binarylength:
                 raise ValueError(f"invalid i of {i}. Must be >= 0 and "
@@ -363,11 +457,10 @@ class BinaryMap:
 
     @property
     def all_subs(self):
-        """list: All substitutions in order encoded in binary map."""
+        """list: Substitutions in order encoded in binary map."""
         if not hasattr(self, '_all_subs'):
             self._all_subs = [self.i_to_sub(i) for i in
-                              range(self.binarylength)]
-            assert len(self._all_subs) == len(set(self._all_subs))
+                              range(self.binarylength) if self.i_to_sub(i)]
         return self._all_subs
 
 
