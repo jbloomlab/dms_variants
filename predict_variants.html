@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Predict unseen variants using global epistasis models &#8212; dms_variants 0.4.6 documentation</title>
+    <title>Predict unseen variants using global epistasis models &#8212; dms_variants 0.4.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -256,7 +256,7 @@ div.rendered_html tbody tr:hover {
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
-<span class="kn">from</span> <span class="nn">plotnine</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
 
 <span class="kn">import</span> <span class="nn">scipy</span>
 
@@ -265,7 +265,7 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">dms_variants.globalepistasis</span>
 <span class="kn">import</span> <span class="nn">dms_variants.plotnine_themes</span>
 <span class="kn">import</span> <span class="nn">dms_variants.simulate</span>
-<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="kn">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
 </pre></div>
 </div>
 </div>
@@ -344,7 +344,7 @@ mutation rates (average number of codon substitutions per variant):</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -366,7 +366,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
                 <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
                 <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
-                <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="n">f</span><span class="s2">&quot;&lt;m&gt; = </span><span class="si">{avgmuts:.1f}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
+                <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;&lt;m&gt; = </span><span class="si">{avgmuts:.1f}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
                                                          <span class="s1">&#39;nvariants&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span><span class="p">}</span>
                                <span class="k">for</span> <span class="n">avgmuts</span> <span class="ow">in</span> <span class="n">avgmuts_list</span><span class="p">},</span>
                 <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
@@ -703,12 +703,12 @@ assume mutations contribute additively to the functional scores.</p>
             <span class="p">(</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">,</span>
              <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">NoEpistasisGaussianLikelihood</span><span class="p">),</span>
             <span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Fitting </span><span class="si">{epistasis_func}</span><span class="s2"> model to library </span><span class="si">{library}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting </span><span class="si">{epistasis_func}</span><span class="s2"> model to library </span><span class="si">{library}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
 
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">bmap</span><span class="p">)</span>
         <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;fitting took {time.time() - start:.1f} sec.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took {time.time() - start:.1f} sec.&quot;</span><span class="p">)</span>
         <span class="n">models</span><span class="p">[(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model</span>
 </pre></div>
 </div>

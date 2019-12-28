@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>ispline &#8212; dms_variants 0.4.6 documentation</title>
+    <title>ispline &#8212; dms_variants 0.4.7 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -128,7 +128,7 @@ values, as this will lead to invalid caching.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">scipy.optimize</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.ispline</span> <span class="k">import</span> <span class="n">Isplines</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.ispline</span> <span class="kn">import</span> <span class="n">Isplines</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">3</span>
@@ -149,7 +149,7 @@ values, as this will lead to invalid caching.</p>
 </div>
 <p>Evaluate the I-splines at some selected points:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">isplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;I</span><span class="si">{i}</span><span class="s2">: {numpy.round(isplines.I(i), 2)}&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;I</span><span class="si">{i}</span><span class="s2">: {numpy.round(isplines.I(i), 2)}&quot;</span><span class="p">)</span>
 <span class="gp">... </span>
 <span class="go">I1: [0.   0.96 1.   1.   1.   1.  ]</span>
 <span class="go">I2: [0.   0.52 0.84 0.98 1.   1.  ]</span>
@@ -168,7 +168,7 @@ values, as this will lead to invalid caching.</p>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">Isplines</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">xval</span><span class="p">)</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">err</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">check_grad</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">dfunc</span><span class="p">,</span> <span class="n">xval</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">if</span> <span class="n">err</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for </span><span class="si">{i}</span><span class="s2">, </span><span class="si">{xval}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for </span><span class="si">{i}</span><span class="s2">, </span><span class="si">{xval}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Plot the I-splines in Fig. 1 of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>:</p>
@@ -176,7 +176,7 @@ values, as this will lead to invalid caching.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">isplines_xplot</span> <span class="o">=</span> <span class="n">Isplines</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">xplot</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xplot</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">isplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;I</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">isplines_xplot</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;I</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">isplines_xplot</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
 </pre></div>
@@ -386,7 +386,7 @@ I_{\rm{total}}\left(U\right) &amp;=&amp; w_{\rm{lower}} + \sum_i w_i\end{split}\
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">scipy.optimize</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.ispline</span> <span class="k">import</span> <span class="n">Isplines_total</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.ispline</span> <span class="kn">import</span> <span class="n">Isplines_total</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">3</span>
@@ -416,7 +416,7 @@ outside the mesh and also have a nonzero <cite>w_lower</cite>:</p>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">Isplines_total</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">xval</span><span class="p">)</span><span class="o">.</span><span class="n">dItotal_dx</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">err</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">check_grad</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">dfunc</span><span class="p">,</span> <span class="n">xval</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">if</span> <span class="n">err</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for </span><span class="si">{xval}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for </span><span class="si">{xval}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">isplines_total</span><span class="o">.</span><span class="n">dItotal_dw_lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -446,7 +446,7 @@ outside the mesh and also have a nonzero <cite>w_lower</cite>:</p>
 <span class="gp">... </span>                                                              <span class="n">iw</span><span class="p">]</span>
 <span class="gp">... </span>    <span class="n">err</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">check_grad</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">dfunc</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">if</span> <span class="n">err</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for {ix, iw}&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for {ix, iw}&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Plot the total of the I-spline family shown in Fig. 1 of
@@ -702,7 +702,7 @@ values as this will lead to invalid caching.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">scipy.optimize</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.ispline</span> <span class="k">import</span> <span class="n">Msplines</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.ispline</span> <span class="kn">import</span> <span class="n">Msplines</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">3</span>
@@ -725,7 +725,7 @@ values as this will lead to invalid caching.</p>
 </div>
 <p>Evaluate the M-splines at some selected points:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;M</span><span class="si">{i}</span><span class="s2">: {numpy.round(msplines.M(i), 2)}&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;M</span><span class="si">{i}</span><span class="s2">: {numpy.round(msplines.M(i), 2)}&quot;</span><span class="p">)</span>
 <span class="gp">... </span>
 <span class="go">M1: [10. 1.11 0.  0.   0.   0.  ]</span>
 <span class="go">M2: [0.  3.73 2.4 0.6  0.   0.  ]</span>
@@ -744,7 +744,7 @@ values as this will lead to invalid caching.</p>
 <span class="gp">... </span>        <span class="k">return</span> <span class="n">Msplines</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">xval</span><span class="p">)</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="n">err</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">check_grad</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">dfunc</span><span class="p">,</span> <span class="n">xval</span><span class="p">)</span>
 <span class="gp">... </span>    <span class="k">if</span> <span class="n">err</span> <span class="o">&gt;</span> <span class="mf">1e-5</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for </span><span class="si">{i}</span><span class="s2">, </span><span class="si">{xval}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;excess err </span><span class="si">{err}</span><span class="s2"> for </span><span class="si">{i}</span><span class="s2">, </span><span class="si">{xval}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Plot the M-splines in in Fig. 1 of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>:</p>
@@ -752,7 +752,7 @@ values as this will lead to invalid caching.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">msplines_plot</span> <span class="o">=</span> <span class="n">Msplines</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">xplot</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="n">xplot</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">msplines_plot</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="n">f</span><span class="s2">&quot;M</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msplines_plot</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">data</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;M</span><span class="si">{i}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msplines_plot</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
 </pre></div>

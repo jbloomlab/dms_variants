@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.utils &#8212; dms_variants 0.4.6 documentation</title>
+    <title>dms_variants.utils &#8212; dms_variants 0.4.7 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -50,7 +50,7 @@
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># noqa: F401</span>
 
 <span class="kn">import</span> <span class="nn">dms_variants._cutils</span>
-<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="k">import</span> <span class="p">(</span><span class="n">AAS_NOSTOP</span><span class="p">,</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AAS_NOSTOP</span><span class="p">,</span>
                                     <span class="n">CODON_TO_AA</span><span class="p">,</span>
                                     <span class="n">NT_COMPLEMENT</span><span class="p">,</span>
                                     <span class="p">)</span>
@@ -149,16 +149,16 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">formatlist</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">:</span>
-        <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;</span><span class="si">{x:.2g}</span><span class="s2">&quot;</span>
+        <span class="n">xf</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{x:.2g}</span><span class="s2">&quot;</span>
         <span class="k">if</span> <span class="n">xf</span><span class="p">[:</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;1e&#39;</span><span class="p">:</span>
-            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$10^{{{int(xf[2 : ])}}}$&quot;</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$10^{{{int(xf[2 : ])}}}$&quot;</span>
         <span class="k">elif</span> <span class="n">xf</span><span class="p">[:</span> <span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;-1e&#39;</span><span class="p">:</span>
-            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$-10^{{{int(xf[3 : ])}}}$&quot;</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$-10^{{{int(xf[3 : ])}}}$&quot;</span>
         <span class="k">elif</span> <span class="s1">&#39;e&#39;</span> <span class="ow">in</span> <span class="n">xf</span><span class="p">:</span>
             <span class="n">d</span><span class="p">,</span> <span class="n">exp</span> <span class="o">=</span> <span class="n">xf</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;e&#39;</span><span class="p">)</span>
-            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$</span><span class="si">{d}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">times 10^{{{int(exp)}}}$&quot;</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{d}</span><span class="s2"> </span><span class="se">\\</span><span class="s2">times 10^{{{int(exp)}}}$&quot;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">xf</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;$</span><span class="si">{xf}</span><span class="s2">$&quot;</span>
+            <span class="n">xf</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;$</span><span class="si">{xf}</span><span class="s2">$&quot;</span>
         <span class="n">formatlist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xf</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">formatlist</span></div>
 
@@ -212,7 +212,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">count_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;df does not have column </span><span class="si">{count_col}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;df does not have column </span><span class="si">{count_col}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">group_cols</span><span class="p">:</span>
         <span class="n">drop_group_cols</span> <span class="o">=</span> <span class="kc">True</span>
@@ -224,11 +224,11 @@
             <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">group_cols</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">group_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `group_cols` </span><span class="si">{group_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `group_cols` </span><span class="si">{group_cols}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="n">count_col</span><span class="p">,</span> <span class="n">n_col</span><span class="p">,</span> <span class="n">tot_col</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">group_cols</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`group_cols` cannot contain </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`group_cols` cannot contain </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
          <span class="n">df</span>
@@ -349,17 +349,17 @@
         <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample_col</span><span class="p">,</span> <span class="n">value_col</span><span class="p">,</span> <span class="n">label_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span>
     <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` missing some of these columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` missing some of these columns: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">cols</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;duplicate column names: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;duplicate column names: </span><span class="si">{cols}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="s1">&#39;correlation&#39;</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot have column named `correlation`&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sample_col</span> <span class="o">+</span> <span class="s1">&#39;_2&#39;</span> <span class="ow">in</span> <span class="n">group_cols</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;cannot have column named `</span><span class="si">{sample_col}</span><span class="s2">_2`&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cannot have column named `</span><span class="si">{sample_col}</span><span class="s2">_2`&quot;</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">sample_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="n">label_col</span><span class="p">])</span> <span class="o">!=</span> <span class="n">g</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Entries in `df` column </span><span class="si">{label_col}</span><span class="s2"> not unique &quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entries in `df` column </span><span class="si">{label_col}</span><span class="s2"> not unique &quot;</span>
                              <span class="s1">&#39;after grouping by: &#39;</span> <span class="o">+</span>
                              <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="p">[</span><span class="n">sample_col</span><span class="p">]</span> <span class="o">+</span> <span class="n">group_cols</span><span class="p">))</span>
 
@@ -397,7 +397,7 @@
             <span class="p">)</span>
 
     <span class="k">elif</span> <span class="n">return_type</span> <span class="o">!=</span> <span class="s1">&#39;matrix&#39;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `return_type` of </span><span class="si">{return_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `return_type` of </span><span class="si">{return_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">corr</span></div>
 
@@ -635,17 +635,17 @@
 
     <span class="n">alphabet</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
     <span class="k">if</span> <span class="p">[</span><span class="n">a</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">alphabet</span> <span class="k">if</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">exclude_chars</span><span class="p">]:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;character in `exclude_chars` of </span><span class="si">{exclude_chars}</span><span class="s2"> &quot;</span>
-                         <span class="n">f</span><span class="s2">&quot; in `alphabet` of </span><span class="si">{alphabet}</span><span class="s2">. These lists must be &quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;character in `exclude_chars` of </span><span class="si">{exclude_chars}</span><span class="s2"> &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot; in `alphabet` of </span><span class="si">{alphabet}</span><span class="s2">. These lists must be &quot;</span>
                          <span class="s1">&#39;mutually exclusive&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">score_col</span> <span class="o">==</span> <span class="n">mutation_col</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`score_col` and `mutation_col` must be different&#39;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">colname</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;mutation&#39;</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="n">score_col</span><span class="p">)]:</span>
         <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`df` lacks `</span><span class="si">{colname}</span><span class="s2">_col` of </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` lacks `</span><span class="si">{colname}</span><span class="s2">_col` of </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">}:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;`</span><span class="si">{colname}</span><span class="s2">_col` cannot be named </span><span class="si">{score_col}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`</span><span class="si">{colname}</span><span class="s2">_col` cannot be named </span><span class="si">{score_col}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">mutation_col</span><span class="p">])</span> <span class="o">!=</span> <span class="n">df</span><span class="p">[</span><span class="n">mutation_col</span><span class="p">]</span><span class="o">.</span><span class="n">nunique</span><span class="p">():</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;duplicated entries in `mutation_col` of `df`&#39;</span><span class="p">)</span>
@@ -655,9 +655,9 @@
     <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df</span>
                   <span class="p">[</span><span class="n">mutation_col</span><span class="p">]</span>
                   <span class="o">.</span><span class="n">str</span>
-                  <span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">rf</span><span class="s2">&quot;^(?P&lt;wildtype&gt;[</span><span class="si">{chars_regex}</span><span class="s2">])&quot;</span> <span class="o">+</span>
+                  <span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;^(?P&lt;wildtype&gt;[</span><span class="si">{chars_regex}</span><span class="s2">])&quot;</span> <span class="o">+</span>
                            <span class="sa">r</span><span class="s1">&#39;(?P&lt;site&gt;\-?\d+)&#39;</span> <span class="o">+</span>
-                           <span class="n">rf</span><span class="s2">&quot;(?P&lt;mutant&gt;[</span><span class="si">{chars_regex}</span><span class="s2">])$&quot;</span><span class="p">)</span>
+                           <span class="sa">rf</span><span class="s2">&quot;(?P&lt;mutant&gt;[</span><span class="si">{chars_regex}</span><span class="s2">])$&quot;</span><span class="p">)</span>
                   <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">site</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
                   <span class="p">)</span>
           <span class="p">[[</span><span class="s1">&#39;site&#39;</span><span class="p">,</span> <span class="s1">&#39;wildtype&#39;</span><span class="p">,</span> <span class="s1">&#39;mutant&#39;</span><span class="p">,</span> <span class="n">score_col</span><span class="p">,</span> <span class="n">mutation_col</span><span class="p">]]</span>
@@ -681,7 +681,7 @@
     <span class="k">elif</span> <span class="n">missing</span> <span class="o">==</span> <span class="s1">&#39;site_average&#39;</span><span class="p">:</span>
         <span class="n">missing_val</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">)[</span><span class="n">score_col</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
     <span class="k">elif</span> <span class="n">missing</span> <span class="o">!=</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `missing` of </span><span class="si">{missing}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `missing` of </span><span class="si">{missing}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1"># add wildtype to data frame</span>
     <span class="n">wt_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
@@ -749,7 +749,7 @@
               <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
               <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;invalid `returnformat` </span><span class="si">{returnformat}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `returnformat` </span><span class="si">{returnformat}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">()</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> <span class="n">df</span>
 
     <span class="k">return</span> <span class="n">df</span></div>
