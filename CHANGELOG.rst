@@ -6,7 +6,6 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-
 0.5.dev0
 --------
 
@@ -25,6 +24,13 @@ Added
 Fixed
 ++++++
 - ``BinaryMap`` objects can now be deep copied (they don't have a compiled regex as attributed).
+
+0.4.7
+------
+
+Added
++++++
+- The ``expand`` option to ``BinaryMap`` to have maps encode all possible characters at each site.
 
 0.4.6
 -----
