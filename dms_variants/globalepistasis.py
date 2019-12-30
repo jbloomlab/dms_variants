@@ -274,8 +274,8 @@ Details of fitting
 
 Fitting workflow
 +++++++++++++++++
-The fitting workflow is essentially the same as that described in
-`Otwinoski et al (2018)`_:
+The fitting workflow for a single latent phenotype is similar to that described
+in `Otwinoski et al (2018)`_:
 
  1. The latent effects are fit under an additive (non-epistatic) model
     using least squares. The residuals from this fit are then used to
@@ -299,16 +299,24 @@ The fitting workflow is essentially the same as that described in
 Fitting multiple latent phenotypes
 ++++++++++++++++++++++++++++++++++
 When there are multiple latent phenotypes (see :ref:`multi_latent`), the
-fitting workflow changes. In order to fit a model with :math:`K > 1` latent
-phenotypes, you first must fit a model of the same type to the same data
-with :math:`K - 1` latent phenotypes. That model is then passed to the
-model with :math:`K` latent phenotypes, and the values fit for the first
-:math:`K - 1` latent phenotypes are used to initialize all the parameters
-relevant to those first :math:`K - 1` latent phenotypes. The latent effects
-for phenotype :math:`K` as well as :math:`\sigma^2_{\rm{HOC}}` or
-:math:`\gamma^2` are then fit to the **residuals** from the model with
-:math:`K - 1` latent phenotypes similar to as in :ref:`fitting_workflow`,
-and then the entire model is fit by maximum likelihood.
+fitting workflow changes. To fit a model with :math:`K > 1` latent phenotypes,
+first fit a model of the same type to the same data with :math:`K - 1` latent
+phenotype. The values from that fit for the first :math:`K - 1` latent
+phenotypes are used to initialize all parameters relevant to those first
+:math:`K - 1` latent phenotypes and the associated global epistasis
+functions and likelihood calculations.
+
+Then parameters relevant to latent phenotype :math:`K` are set so the initial
+contribution of this phenotype to the overall observed phenotype is zero.
+Specifically the latent effects :math:`\beta_m^K` for phenotype :math:`K` are
+all set to zero and :math:`\beta_{\rm{wt}}^K` is chosen so that
+:math:`0 = g_K \left(\beta_{\rm{wt}}^K\right)`. For a
+:class:`MonotonicSplineEpistasis` model, initial parameters for :math:`g_K` are
+chosen so that over the mesh, :math:`g_K` spans +/- the absolute value of
+the largest residual of the model with :math:`K - 1` latent phenotypes.
+
+After initializing the paramters in this way, the entire model (all latent
+phenotypes) is fit by maximum likelihood.
 
 Conveniently fitting and comparing several models
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -528,7 +536,10 @@ class AbstractEpistasis(abc.ABC):
                          self._n_latent_effects + 1),
                         dtype='float')
         self._likelihood_calc_params = self._init_likelihood_calc_params
-        self._epistasis_func_params = self._init_epistasis_func_params
+        self._epistasis_func_params = numpy.zeros(
+                        shape=(self.n_latent_phenotypes,
+                               len(self._epistasis_func_param_names)),
+                        dtype='float')
 
         if self.n_latent_phenotypes > 1:
             self._set_lower_latent_phenotype_params(model_one_less_latent)
@@ -1270,21 +1281,24 @@ class AbstractEpistasis(abc.ABC):
             The results of optimizing the full model.
 
         """
-        # least squares fit of latent effects for reasonable initial values
+        # Least squares fit of latent effects for reasonable initial values
+        # for the first latent phenotype:
         if self.n_latent_phenotypes == 1:
             _ = self._fit_latent_leastsquares(self.n_latent_phenotypes,
                                               self.binarymap.func_scores)
+            self._prescale_params(k=1,
+                                  g_k_range=(min(self.binarymap.func_scores),
+                                             max(self.binarymap.func_scores)),
+                                  )
         else:
             assert self.n_latent_phenotypes > 1
-            # fit to residual error after using the K - 1 latent phenotypes
             phenos_Kminus1 = list(range(1, self.n_latent_phenotypes))
             residuals = (self.binarymap.func_scores -
                          self._observed_phenotypes(phenos_Kminus1))
-            _ = self._fit_latent_leastsquares(self.n_latent_phenotypes,
-                                              residuals)
-
-        # prescale parameters to desired range
-        self._prescale_params()
+            max_abs_residual = numpy.abs(residuals).max()
+            self._prescale_params(
+                        k=self.n_latent_phenotypes,
+                        g_k_range=(-max_abs_residual, max_abs_residual))
 
         # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
@@ -1703,15 +1717,27 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
-    @property
     @abc.abstractmethod
-    def _init_epistasis_func_params(self):
-        """numpy.ndarray: Initial `_epistasis_func_params` values."""
-        return NotImplementedError
+    def _prescale_params(self, k, g_k_range):
+        """Set / scale parameters prior to the global fitting.
 
-    @abc.abstractmethod
-    def _prescale_params(self):
-        """Rescale parameters prior to the global fitting."""
+        This method is designed to set / re-scale parameters relevant
+        to the latent phenotype :math:`k` and its associated global
+        epistasis function prior to fitting. The re-scaling differs
+        for different model classes, and is implemented in concrete
+        subclasses. See :ref:`fitting_workflow`.
+
+        Importantly, this is the method that sets initial values
+        for `_epistasis_func_params`.
+
+        Parameters
+        -----------
+        k : int
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`).
+        g_k_range : tuple
+            Gives desired min and max of :math:`g_k`.
+
+        """
         return NotImplementedError
 
     @abc.abstractmethod
@@ -1720,7 +1746,7 @@ class AbstractEpistasis(abc.ABC):
 
         Note
         ----
-        This is an abstract method, the actula pre-scaling is done in concrete
+        This is an abstract method, the actual pre-scaling is done in concrete
         subclasses.
 
         """
@@ -2098,22 +2124,7 @@ class NoEpistasis(AbstractEpistasis):
         bounds_d = {}
         return [bounds_d[name] for name in self._epistasis_func_param_names]
 
-    @property
-    def _init_epistasis_func_params(self):
-        """numpy.ndarray: Initial :meth:`NoEpistasis._epistasis_func_params`.
-
-        For :class:`NoEpistasis` models, this is just an empty array as
-        there are no epistasis function parameters.
-
-        """
-        init_d = {}
-        init_vals = [init_d[name] for name in self._epistasis_func_param_names]
-        return (numpy.tile(init_vals, self.n_latent_phenotypes)
-                .reshape(self.n_latent_phenotypes,
-                         len(self._epistasis_func_param_names))
-                )
-
-    def _prescale_params(self):
+    def _prescale_params(self, k, g_k_range):
         """Do nothing, as no need to prescale for :class:`NoEpistasis`."""
         pass
 
@@ -2271,29 +2282,6 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
             bounds_d[f"alpha_{m}"] = (self._NEARLY_ZERO, None)
         return [bounds_d[name] for name in self._epistasis_func_param_names]
 
-    @property
-    def _init_epistasis_func_params(self):
-        r"""numpy.ndarray: Initial values for epistasis func parameters.
-
-        :math:`c_{alpha}` is set to the minimum observed phenotype in the
-        actual data, and all :math:`\alpha_m` values are set to
-        :math:`\left[\max\left(y_v\right) - \min\left(y_v\right)\right] / M`
-        so that the range of :math:`g` over 0 to 1 goes from the smallest
-        to largest observed phenotype.
-
-        """
-        func_score_min = min(self.binarymap.func_scores)
-        func_score_max = max(self.binarymap.func_scores)
-        init_d = {'c_alpha': func_score_min}
-        for m in range(1, self._isplines_total(1).n + 1):
-            init_d[f"alpha_{m}"] = ((func_score_max - func_score_min) /
-                                    self._isplines_total(1).n)
-        init_vals = [init_d[name] for name in self._epistasis_func_param_names]
-        return (numpy.tile(init_vals, self.n_latent_phenotypes)
-                .reshape(self.n_latent_phenotypes,
-                         len(self._epistasis_func_param_names))
-                )
-
     def c_alpha(self, k=None):
         r""":math:`c_{\alpha}` in Eq. :eq:`monotonicspline`.
 
@@ -2344,11 +2332,49 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                      for m in range(1, self._isplines_total(k).n + 1)],
                     dtype='float')
 
-    def _prescale_params(self):
-        """Rescale latent effects so latent phenotypes are within mesh."""
-        for k in range(1, self.n_latent_phenotypes + 1):
-            ki = k - 1
+    def _prescale_params(self, k, g_k_range):
+        r"""Get latent phenotypes in mesh and :math:`g_k` with desired limits.
 
+        See :meth:`AbstractEpistasis._prescale_params` for description of
+        parameters.
+
+        Specifically, if `k == 1` then the latent phenotypes are re-scaled
+        to span the mesh. The parameters of the global epistasis function
+        :math:`g_k` are set so that :math:`c_alpha` is :math:`g_k_range[0]`,
+        and all :math:`\alpha_m` values are set to
+        :math:`\left[\max\left(y_v\right) - \min\left(y_v\right)\right] / M`
+        so that the range of :math:`g_k` over its mesh spans `g_k_range`.
+
+        If `k > 1`, then the latent effects are all zero, the latent phenotype
+        of wildtype is chosen so that :math:`g_k = 0` for wildtype, and
+        the parameters of :math:`g_k` are chosen so that the limits on the
+        mesh are `g_k_range` and all :math:`\alpha_m` values are equal.
+        In addition, we require that `g_k_range[0] = -g_k_range[1]`.
+        """
+        if not (isinstance(k, int) and self.n_latent_phenotypes >= k >= 1):
+            raise ValueError(f"invalid `k` of {k}")
+        ki = k - 1
+
+        # check g_k_range, and make sure > 0
+        if g_k_range[1] < g_k_range[0]:
+            raise ValueError('invalid `g_k_range`')
+        if g_k_range[1] - g_k_range[0] < 2 * self._NEARLY_ZERO:
+            g_k_range = (g_k_range[0] - self._NEARLY_ZERO,
+                         g_k_range[1] + self._NEARLY_ZERO)
+
+        # set initial epistasis func params
+        g_k_params = self._epistasis_func_params.copy()
+        assert g_k_params.shape == (self.n_latent_phenotypes,
+                                    len(self._epistasis_func_param_names))
+        init_d = {'c_alpha': g_k_range[0]}
+        for m in range(1, self._isplines_total(k).n + 1):
+            init_d[f"alpha_{m}"] = ((g_k_range[1] - g_k_range[0]) /
+                                    self._isplines_total(k).n)
+        for iparam, param in enumerate(self._epistasis_func_param_names):
+            g_k_params[ki, iparam] = init_d[param]
+        self._epistasis_func_params = g_k_params
+
+        if k == 1:
             rescale_min, rescale_max = min(self._mesh[ki]), max(self._mesh[ki])
             rescalerange = rescale_max - rescale_min
             assert rescalerange > self._NEARLY_ZERO
@@ -2389,6 +2415,23 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                                       (self._latent_phenotypes(k).max() -
                                        self._latent_phenotypes(k).min()))
 
+        else:
+            if g_k_range[0] != -g_k_range[1]:
+                raise ValueError(f"`g_k_range` not symmetric: {g_k_range}")
+
+            assert k > 1
+
+            # midpoint of mesh, g_k should be 0 here, set to wildtype latent k
+            mid_mesh = (self._mesh[ki].max() - self._mesh[ki].min()) / 2
+            assert numpy.allclose(0,
+                                  self.epistasis_func(numpy.array([mid_mesh]),
+                                                      k=k))
+            latenteffects = self._latenteffects.copy()
+            latenteffects[ki] = 0.0
+            latenteffects[ki, self._n_latent_effects] = mid_mesh
+            self._latenteffects = latenteffects
+            assert numpy.allclose(0, self._observed_phenotypes([k]))
+
     def _postscale_params(self):
         """Rescale parameters after global epistasis fitting.
 
@@ -2428,11 +2471,6 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                             k=k)
                     ).all()
                    for k in range(1, self.n_latent_phenotypes + 1))
-        assert all(numpy.allclose(1,
-                                  (numpy.abs(self._latenteffects[ki][: -1])
-                                   .mean())
-                                  )
-                   for ki in range(self.n_latent_phenotypes))
 
         # make sure log likelihood hasn't changed too much
         if not numpy.allclose(self.loglik, oldloglik):
