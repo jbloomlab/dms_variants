@@ -6,6 +6,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.5.dev0
+--------
+
+Added
+++++++
+- The ability to fit **multiple** latent phenotypes in the global epistasis models. This adds the ``n_latent_phenotypes`` flag to ``AbstractEpistasis`` models, and changes calls to certain methods / properties of that abstract model class and its concrete subclasses.
+
+- Added ``AbstractEpistasis.aic`` property.
+
+- Added ``globalepistasis.fit_models``
+
+- Added ``MultiLatentSigmoidPhenotypeSimulator``.
+
+- An equals (``__eq__``) comparison operation to ``BinaryMap``.
+
+Fixed
+++++++
+- ``BinaryMap`` objects can now be deep copied (they don't have a compiled regex as attributed).
+
 0.4.7
 ------
 

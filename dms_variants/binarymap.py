@@ -202,6 +202,47 @@ class BinaryMap:
 
     """
 
+    def __eq__(self, other):
+        """Test if equal to object `other`.
+
+        >>> df = pd.DataFrame({'aa_substitutions': ['', 'M1A'],
+        ...                    'func_score': [0.0, -1.2],
+        ...                    'func_score_var': [0.1, 0.15]})
+        >>> df2 = df.copy()
+        >>> df3 = df.assign(func_score=lambda x: x['func_score'] + 0.1)
+        >>> bmap1 = BinaryMap(df)
+        >>> bmap2 = BinaryMap(df2)
+        >>> bmap3 = BinaryMap(df3)
+        >>> bmap1 == bmap2
+        True
+        >>> bmap1 == bmap3
+        False
+
+        """
+        # following here: https://stackoverflow.com/a/390640
+        if type(other) != type(self):
+            return False
+        elif self.__dict__.keys() != other.__dict__.keys():
+            return False
+        else:
+            for key, val in self.__dict__.items():
+                val2 = getattr(other, key)
+                if type(val) != type(val2):
+                    return False
+                elif isinstance(val, numpy.ndarray):
+                    if not numpy.array_equal(val, val2):
+                        return False
+                elif isinstance(val, scipy.sparse.csr.csr_matrix):
+                    if (val - val2).nnz:
+                        return False
+                elif isinstance(val, (pd.DataFrame, pd.Series)):
+                    if not val.equals(val2):
+                        return False
+                else:
+                    if val != val2:
+                        return False
+            return True
+
     def __init__(self,
                  func_scores_df,
                  *,
@@ -258,16 +299,16 @@ class BinaryMap:
             else:
                 raise ValueError(f"invalid alphabet character: {char}")
         chars = '|'.join(chars)
-        self._sub_regex = re.compile(rf"(?P<wt>{chars})"
-                                     rf"(?P<site>\d+)"
-                                     rf"(?P<mut>{chars})")
+        self._sub_regex = (rf"(?P<wt>{chars})"
+                           rf"(?P<site>\d+)"
+                           rf"(?P<mut>{chars})")
 
         # build mapping from substitution to binary map index
         wts = {}
         muts = collections.defaultdict(set)
         for subs in substitutions:
             for sub in subs.split():
-                m = self._sub_regex.fullmatch(sub)
+                m = re.fullmatch(self._sub_regex, sub)
                 if not m:
                     raise ValueError(f"could not match substitution: {sub}")
                 site = int(m.group('site'))
@@ -365,7 +406,7 @@ class BinaryMap:
         sites = set()
         indices = []
         for sub in sub_str.split():
-            m = self._sub_regex.fullmatch(sub)
+            m = re.fullmatch(self._sub_regex, sub)
             if not m:
                 raise ValueError(f"substitution {sub} in {sub_str} invalid "
                                  f"for alphabet {self.alphabet}")
@@ -403,7 +444,7 @@ class BinaryMap:
         if not set(binary).issubset({0, 1}):
             raise ValueError(f"`binary` not all 0 or 1:\n{binary}")
         subs = [s for s in map(self.i_to_sub, numpy.flatnonzero(binary)) if s]
-        sites = [self._sub_regex.fullmatch(sub) for sub in subs]
+        sites = [re.fullmatch(self._sub_regex, sub) for sub in subs]
         if len(sites) != len(set(sites)):
             raise ValueError('`binary` specifies multiple substitutions '
                              f"at same site:\n{binary}\n{' '.join(subs)}")
