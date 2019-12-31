@@ -11,6 +11,8 @@ import collections
 import math
 import random  # noqa: F401
 
+import numpy
+
 import pandas as pd
 
 import scipy.special
@@ -75,7 +77,7 @@ def rarefyBarcodes(barcodecounts, *,
     ...                      for _ in range(nrand)) / nrand)
     >>> sim_rarefaction_curve = pd.DataFrame({'ncounts': ncounts,
     ...                                       'nbarcodes': nbarcodes})
-    >>> scipy.allclose(rarefaction_curve, sim_rarefaction_curve, atol=1e-2)
+    >>> numpy.allclose(rarefaction_curve, sim_rarefaction_curve, atol=1e-2)
     True
 
     """
@@ -89,7 +91,7 @@ def rarefyBarcodes(barcodecounts, *,
     K = len(barcodecounts)
     Mj = collections.Counter(Ni.values())
 
-    Nk, num = map(scipy.array, zip(*Mj.items()))
+    Nk, num = map(numpy.array, zip(*Mj.items()))
 
     # use simplification that (N - Ni)Cr(n) / (N)Cr(n) =
     # [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]
@@ -98,17 +100,17 @@ def rarefyBarcodes(barcodecounts, *,
     nbarcodes = []
     lnFactorial_N = scipy.special.gammaln(N + 1)
     if logspace and N > maxpoints:
-        ncounts = list(scipy.unique(scipy.logspace(
+        ncounts = list(numpy.unique(numpy.logspace(
                        math.log10(1), math.log10(N),
                        num=min(N, maxpoints)).astype('int')))
     else:
-        ncounts = list(scipy.unique(scipy.linspace(
+        ncounts = list(numpy.unique(numpy.linspace(
                        1, N, num=min(N, maxpoints)).astype('int')))
     for n in ncounts:
         lnFactorial_N_minus_n = scipy.special.gammaln(N - n + 1)
-        i = scipy.nonzero(N - Nk - n >= 0)  # indices where this is true
+        i = numpy.nonzero(N - Nk - n >= 0)  # indices where this is true
         nbarcodes.append(
-                K - (num[i] * scipy.exp(
+                K - (num[i] * numpy.exp(
                             scipy.special.gammaln(N - Nk[i] + 1) +
                             lnFactorial_N_minus_n -
                             lnFactorial_N -
