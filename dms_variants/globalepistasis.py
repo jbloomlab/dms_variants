@@ -2545,9 +2545,9 @@ class NoEpistasisCauchyLikelihood(NoEpistasis,
 def fit_models(binarymap,
                likelihood,
                *,
-               max_latent_phenotypes=3,
+               max_latent_phenotypes=1,
                ):
-    """Fit and compare global epistasis models.
+    r"""Fit and compare global epistasis models.
 
     This function is useful when you want to examine the fit of several
     different models to the same data. It does the following:
@@ -2561,7 +2561,10 @@ def fit_models(binarymap,
      3. Fit a global epistasis model with :math:`K = 2` latent phenotypes.
         If this model outperforms (by AIC_) the model with :math:`K - 1`
         latent phenotypes, repeat for :math:`K = 3` etc until adding more
-        latent phenotypes no longer improves fit.
+        latent phenotypes no longer improves fit. Note that it only does
+        continues this process while :math:`K \le` `max_latent_phenotypes`,
+        so set `max_latent_phenotypes` > 1 if you want to fit multiple
+        latent phenotypes.
 
     .. _AIC: https://en.wikipedia.org/wiki/Akaike_information_criterion
 
@@ -2581,6 +2584,7 @@ def fit_models(binarymap,
         :ref:`likelihood_calculation`.
     max_latent_phenotypes : int
         Maximum number of latent phenotypes that are potentially be fit.
+        See the :math:`K` parameter in :ref:`multi_latent`.
 
     Returns
     -------
@@ -2596,9 +2600,13 @@ def fit_models(binarymap,
           - 'model': the actual model (subclass of :class:`AbstractEpistasis`)
           - 'fitting_time': time in seconds that it took to fit model
 
-        The data frame is sorted from best to worst model.
+        The data frame is sorted from best to worst model by AIC_.
 
     """
+    if not (isinstance(max_latent_phenotypes, int) and
+            max_latent_phenotypes >= 1):
+        raise ValueError('`max_latent_phenotypes` must be int >= 1')
+
     if likelihood == 'Gaussian':
         NoEpistasisClass = NoEpistasisGaussianLikelihood
         EpistasisClass = MonotonicSplineEpistasisGaussianLikelihood
