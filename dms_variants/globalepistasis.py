@@ -109,6 +109,40 @@ model).
 The latent effects are scaled so that their mean absolute value is one,
 and the latent phenotype of the wildtype is set to zero.
 
+.. _multi_latent:
+
+Multiple latent phenotypes
++++++++++++++++++++++++++++
+Equations :eq:`latent_phenotype` and :eq:`observed_phenotype` can be
+generalized to the case where multiple latent phenotypes contribute
+to the observed phenotype. Specifically, let there be
+:math:`k = 1, \ldots, K` different latent phenotypes, and let
+:math:`\beta_m^k` denote the effect of mutation :math:`m` on latent phenotype
+:math:`k`. Then we generalize Equation :eq:`latent_phenotype` to
+
+.. math::
+   :label: latent_phenotype_multi
+
+   \phi_k\left(v\right) = \beta_{\rm{wt}}^k +
+                          \sum_{m=1}^M \beta_m^k b\left(v\right)_m,
+
+and Equation :eq:`observed_phenotype` to
+
+.. math::
+   :label: observed_phenotype_multi
+
+   p\left(v\right) = \sum_{k=1}^K g_k\left(\phi_k\left(v\right)\right),
+
+where :math:`\phi_k\left(v\right)` is the :math:`k`-th latent phenotype of
+variant :math:`v`, and :math:`g_k` is the :math:`k`-th global epistasis
+function.
+
+Note that it does **not** make sense to fit multiple latent phenotypes
+to a non-epistatic model as a linear combination of linear effects
+reduces to a simple linear model (in other words, a multi-latent
+phenotype non-epistatic model is no differen than a one-latent
+phenotype non-epistatic model).
+
 .. _likelihood_calculation:
 
 Likelihood calculation
@@ -236,10 +270,12 @@ for use in analyses:
 Details of fitting
 -------------------------
 
+.. _fitting_workflow:
+
 Fitting workflow
 +++++++++++++++++
-The fitting workflow is essentially the same as that described in
-`Otwinoski et al (2018)`_:
+The fitting workflow for a single latent phenotype is similar to that described
+in `Otwinoski et al (2018)`_:
 
  1. The latent effects are fit under an additive (non-epistatic) model
     using least squares. The residuals from this fit are then used to
@@ -247,15 +283,46 @@ The fitting workflow is essentially the same as that described in
     or :math:`\gamma^2` for :ref:`cauchy_likelihood`.
  2. If there are any parameters in the epistasis function, they are set
     to reasonable initial values. For :class:`MonotonicSplineEpistasis`
-    this involves setting the mesh to go from 0 to 1,
-    setting :math:`c_{\alpha}` to the minimum functional
-    score and setting the weights :math:`\alpha_m` to equal values such
-    that the max of the epistasis function is the same as the maximum
-    functional score.
+    this involves setting the mesh to go from 0 to 1, scaling the latent
+    effects so that the latent phenotypes range from 0 to 1, setting
+    :math:`c_{\alpha}` to the minimum functional score and setting the
+    weights :math:`\alpha_m` to equal values such that the max of the
+    epistasis function is the same as the max functional score.
  3. The overall model is fit by maximum likelihood.
  4. For :class:`MonotonicSplineEpistasis`, the latent effects and wildtype
     latent phenotype are rescaled so that the mean absolute value latent
     effect is one and the wildtype latent phenotype is zero.
+
+
+.. _fitting_multi_latent:
+
+Fitting multiple latent phenotypes
+++++++++++++++++++++++++++++++++++
+When there are multiple latent phenotypes (see :ref:`multi_latent`), the
+fitting workflow changes. To fit a model with :math:`K > 1` latent phenotypes,
+first fit a model of the same type to the same data with :math:`K - 1` latent
+phenotype. The values from that fit for the first :math:`K - 1` latent
+phenotypes are used to initialize all parameters relevant to those first
+:math:`K - 1` latent phenotypes and the associated global epistasis
+functions and likelihood calculations.
+
+Then parameters relevant to latent phenotype :math:`K` are set so the initial
+contribution of this phenotype to the overall observed phenotype is zero.
+Specifically the latent effects :math:`\beta_m^K` for phenotype :math:`K` are
+all set to zero and :math:`\beta_{\rm{wt}}^K` is chosen so that
+:math:`0 = g_K \left(\beta_{\rm{wt}}^K\right)`. For a
+:class:`MonotonicSplineEpistasis` model, initial parameters for :math:`g_K` are
+chosen so that over the mesh, :math:`g_K` spans +/- the absolute value of
+the largest residual of the model with :math:`K - 1` latent phenotypes.
+
+After initializing the paramters in this way, the entire model (all latent
+phenotypes) is fit by maximum likelihood.
+
+Conveniently fitting and comparing several models
++++++++++++++++++++++++++++++++++++++++++++++++++
+To conveniently fit and compare several models, use :func:`fit_models`.
+This is especially useful when you are including models with multiple
+latent phenotypes.
 
 Vector representation of :math:`\beta_{\rm{wt}}`
 +++++++++++++++++++++++++++++++++++++++++++++++++
@@ -291,30 +358,33 @@ Gradient of latent phenotype with respect to latent effects:
 .. math::
    :label: dlatent_phenotype_dlatent_effect
 
-   \frac{\partial \phi\left(v\right)}{\partial \beta_m} =
-   b\left(v_m\right)
+   \frac{\partial \phi_j\left(v\right)}{\partial \beta_m^k} =
+   \begin{cases}
+   b\left(v_m\right) & \rm{if\;} j = k, \\
+   0 & \rm{otherwise.} \\
+   \end{cases}
 
 Gradient of observed phenotype with respect to latent phenotypes:
 
 .. math::
    :label: dobserved_phenotype_dlatent_effect
 
-   \frac{\partial p\left(v\right)}{\partial \beta_m}
-   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
-       \right\rvert_{x = \phi\left(v\right)} \times
-       \frac{\partial \phi\left(v\right)}{\partial \beta_m} \\
-   &=& \left.\frac{\partial g\left(x\right)}{\partial x}
-       \right\rvert_{x = \phi\left(v\right)} \times b\left(v_m\right)
+   \frac{\partial p\left(v\right)}{\partial \beta_m^k}
+   &=& \left.\frac{\partial g_k\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi_k\left(v\right)} \times
+       \frac{\partial \phi_k\left(v\right)}{\partial \beta_m^k} \\
+   &=& \left.\frac{\partial g_k\left(x\right)}{\partial x}
+       \right\rvert_{x = \phi_k\left(v\right)} \times b\left(v_m\right)
 
 Derivative of the likelihood with respect to latent effects:
 
 .. math::
    :label: dloglik_dlatent_effect
 
-   \frac{\partial \mathcal{L}}{\partial \beta_m}
+   \frac{\partial \mathcal{L}}{\partial \beta_m^k}
    = \sum_{v=1}^V \frac{\mathcal{L}}
                        {\partial p\left(v\right)} \times
-                  \frac{\partial p\left(v\right)}{\partial \beta_m}.
+                  \frac{\partial p\left(v\right)}{\partial \beta_m^k}.
 
 Derivative of :ref:`gaussian_likelihood` (Eq. :eq:`loglik_gaussian`) with
 respect to observed phenotype:
@@ -371,12 +441,13 @@ parameters:
 .. math::
    :label: dspline_epistasis_dcalpha
 
-   \frac{g\left(x\right)}{\partial c_{\alpha}} = 1
+   \frac{\partial g_k\left(x\right)}{\partial c_{\alpha}^k} = 1
 
 .. math::
    :label: dspline_epistasis_dalpham
 
-   \frac{g\left(x\right)}{\partial \alpha_m} = I_m\left(x\right)
+   \frac{\partial g_k\left(x\right)}{\partial \alpha^k_m}
+   = I^k_m\left(x\right)
 
 
 Detailed documentation of models
@@ -390,7 +461,10 @@ Detailed documentation of models
 
 
 import abc
+import collections
 import re
+import time
+import warnings
 
 import numpy
 
@@ -410,6 +484,12 @@ class EpistasisFittingError(Exception):
     pass
 
 
+class EpistasisFittingWarning(Warning):
+    """Warning when fitting epistasis model."""
+
+    pass
+
+
 class AbstractEpistasis(abc.ABC):
     """Abstract base class for epistasis models.
 
@@ -417,6 +497,12 @@ class AbstractEpistasis(abc.ABC):
     ----------
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
+    n_latent_phenotypes : int
+        Number of distinct latent phenotypes. See :ref:`multi_latent`.
+    model_one_less_latent : None or :class:`AbstractEpistasis`
+        If `n_latent_phenotypes` > 1, should be a fit model of the same
+        type fit the same `binarymap` for one less latent phenotype. This
+        is used to initialize the parameters. See :ref:`fitting_multi_latent`.
 
     Note
     ----
@@ -431,16 +517,81 @@ class AbstractEpistasis(abc.ABC):
 
     def __init__(self,
                  binarymap,
+                 *,
+                 n_latent_phenotypes=1,
+                 model_one_less_latent=None,
                  ):
         """See main class docstring."""
         self._binarymap = binarymap
-        self._nlatent = self.binarymap.binarylength  # number latent effects
+        if not (isinstance(n_latent_phenotypes, int) and
+                n_latent_phenotypes >= 1):
+            raise ValueError('`n_latent_phenotypes` must be integer >= 1')
+        self._n_latent_phenotypes = n_latent_phenotypes
+        self._n_latent_effects = self.binarymap.binarylength
         self._cache = {}  # cache computed values
 
         # initialize params
-        self._latenteffects = numpy.zeros(self._nlatent + 1, dtype='float')
+        self._latenteffects = numpy.zeros(
+                        (self.n_latent_phenotypes,
+                         self._n_latent_effects + 1),
+                        dtype='float')
         self._likelihood_calc_params = self._init_likelihood_calc_params
-        self._epistasis_func_params = self._init_epistasis_func_params
+        self._epistasis_func_params = numpy.zeros(
+                        shape=(self.n_latent_phenotypes,
+                               len(self._epistasis_func_param_names)),
+                        dtype='float')
+
+        if self.n_latent_phenotypes > 1:
+            self._set_lower_latent_phenotype_params(model_one_less_latent)
+        elif model_one_less_latent is not None:
+            raise ValueError('`n_latent_phenotypes` is 1, but '
+                             '`model_one_less_latent` is not `None`.')
+
+    def _set_lower_latent_phenotype_params(self, model_one_less_latent):
+        """Set parameters for lower-order latent phenotypes.
+
+        Parameters
+        ----------
+        model_one_less_latent : :class:`AbstractEpistasis`
+            Model like `self` but fit with one less latent phenotype.
+
+        Initializes all parameters relevant to the first :math:`K - 1`
+        latent phenotypes as described in :ref:`fitting_multi_latent`.
+
+        """
+        assert self.n_latent_phenotypes > 1, 'calling with only 1 latent pheno'
+        if model_one_less_latent is None:
+            raise ValueError('`model_one_less_latent` cannot be `None` when '
+                             'fitting multiple latent phenotypes')
+        if type(self) != type(model_one_less_latent):
+            raise ValueError('`model_one_less_latent` not same type as current'
+                             f" object: {type(self)} versus "
+                             f"{type(model_one_less_latent)}")
+        if self.binarymap != model_one_less_latent.binarymap:
+            raise ValueError('`model_one_less_latent` has different '
+                             '`binarymap` than current object.')
+        if self.n_latent_phenotypes - 1 != (model_one_less_latent
+                                            .n_latent_phenotypes):
+            raise ValueError('`model_one_less_latent` does not have 1 fewer '
+                             'latent phenotype than current object.')
+
+        self._likelihood_calc_params = (model_one_less_latent
+                                        ._likelihood_calc_params)
+        new_latenteffects = self._latenteffects.copy()
+        assert new_latenteffects.shape == (self.n_latent_phenotypes,
+                                           self._n_latent_effects + 1)
+        new_epistasis_func_params = self._epistasis_func_params.copy()
+        assert (new_epistasis_func_params.shape ==
+                (self.n_latent_phenotypes,
+                 len(self._epistasis_func_param_names)
+                 ))
+        for k in range(1, self.n_latent_phenotypes):
+            ki = k - 1
+            new_latenteffects[ki] = model_one_less_latent._latenteffects[ki]
+            new_epistasis_func_params[ki] = (model_one_less_latent
+                                             ._epistasis_func_params[ki])
+        self._latenteffects = new_latenteffects
+        self._epistasis_func_params = new_epistasis_func_params
 
     def __getstate__(self):
         """Clears the internal `_cache` before pickling.
@@ -467,9 +618,11 @@ class AbstractEpistasis(abc.ABC):
 
     @_latenteffects.setter
     def _latenteffects(self, val):
-        if not (isinstance(val, numpy.ndarray) and
-                len(val) == self._nlatent + 1):
-            raise ValueError(f"invalid value for `_latenteffects`: {val}")
+        if val.shape != (self.n_latent_phenotypes, self._n_latent_effects + 1):
+            raise ValueError('invalid value for `_latenteffects`:\n'
+                             f"shape should be: {self.n_latent_phenotypes} by "
+                             f"{self._n_latent_effects + 1}\n"
+                             f"but trying to set to: {val.shape}")
         if (not hasattr(self, '_latenteffects_val')) or (self._latenteffects
                                                          != val).any():
             self._cache = {}
@@ -483,7 +636,7 @@ class AbstractEpistasis(abc.ABC):
 
     @_likelihood_calc_params.setter
     def _likelihood_calc_params(self, val):
-        if len(val) != len(self._likelihood_calc_param_names):
+        if val.shape != (len(self._likelihood_calc_param_names),):
             raise ValueError('invalid length for `_likelihood_calc_params`')
         if ((not hasattr(self, '_likelihood_calc_params_val')) or
                 (val != self._likelihood_calc_params).any()):
@@ -498,8 +651,9 @@ class AbstractEpistasis(abc.ABC):
 
     @_epistasis_func_params.setter
     def _epistasis_func_params(self, val):
-        if len(val) != len(self._epistasis_func_param_names):
-            raise ValueError('invalid length for `_epistasis_func_params`')
+        if val.shape != (self.n_latent_phenotypes,
+                         len(self._epistasis_func_param_names)):
+            raise ValueError('invalid value for `_epistasis_func_params`')
         if ((not hasattr(self, '_epistasis_func_params_val')) or
                 (val != self._epistasis_func_params).any()):
             self._cache = {}
@@ -517,6 +671,11 @@ class AbstractEpistasis(abc.ABC):
 
         """
         return self._binarymap
+
+    @property
+    def n_latent_phenotypes(self):
+        """int: number of latent phenotypes, see :ref:`multi_latent`."""
+        return self._n_latent_phenotypes
 
     @property
     def _binary_variants(self):
@@ -537,18 +696,64 @@ class AbstractEpistasis(abc.ABC):
         return self._binary_variants_val
 
     @property
+    def aic(self):
+        """float: Aikake Information Criterion given current log likelihood."""
+        return 2 * self.nparams - 2 * self.loglik
+
+    @property
     def nparams(self):
         """int: Total number of parameters in model."""
         return len(self._allparams)
 
-    @property
-    def latent_phenotype_wt(self):
-        r"""float: Latent phenotype of wildtype.
+    def _process_latent_phenotype_k(self, k):
+        """Process latent phenotype number to 0-based index.
 
-        :math:`\beta_{\rm{wt}}` in Eq. :eq:`latent_phenotype`.
+        Parameters
+        ----------
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`)
+            or `None`.
+
+        Returns
+        -------
+        int
+            If `k` is valid latent phenotype number, return `k - 1`. If `k`
+            is `None` and there is just one latent phenotype, return
+            0. If `k` is `None` and there are multiple latent phenotypes,
+            raise an errror.
 
         """
-        return self._latenteffects[self._nlatent]
+        if k is None:
+            if self.n_latent_phenotypes == 1:
+                return 0
+            else:
+                raise ValueError('must set numerical value for `k` when '
+                                 'there are multiple latent phenotypes')
+        elif (1 <= k <= self.n_latent_phenotypes) and isinstance(k, int):
+            return k - 1
+        else:
+            raise ValueError('`k` must be >= 1 and <= `n_latent_phenotypes`')
+
+    def latent_phenotype_wt(self, k=None):
+        r"""Latent phenotype of wildtype.
+
+        Parameters
+        ----------
+        k : int or None
+            Which latent phenotype to get (1 <= k <=
+            :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`.
+
+        Returns
+        ---------
+        float
+            Wildtype latent phenotype, which is :math:`\beta_{\rm{wt}}` in
+            Eq. :eq:`latent_phenotype` or :math:`\beta_{\rm{wt}}^k` in
+            Eq. :eq:`latent_phenotype_multi`.
+
+        """
+        return self._latenteffects[self._process_latent_phenotype_k(k),
+                                   self._n_latent_effects]
 
     @property
     def epistasis_func_params_dict(self):
@@ -558,10 +763,19 @@ class AbstractEpistasis(abc.ABC):
         their current values.
 
         """
-        assert (len(self._epistasis_func_params) ==
-                len(self._epistasis_func_param_names))
-        return dict(zip(self._epistasis_func_param_names,
-                        self._epistasis_func_params))
+        assert (self._epistasis_func_params.shape ==
+                (self.n_latent_phenotypes,
+                 len(self._epistasis_func_param_names)))
+        if self.n_latent_phenotypes == 1:
+            suffixed_names = self._epistasis_func_param_names
+        else:
+            suffixed_names = []
+            for k in range(1, self.n_latent_phenotypes + 1):
+                for name in self._epistasis_func_param_names:
+                    suffixed_names.append(f"{name}_{k}")
+        assert len(suffixed_names) == len(set(suffixed_names))
+        assert len(suffixed_names) == self._epistasis_func_params.size
+        return dict(zip(suffixed_names, self._epistasis_func_params.ravel()))
 
     @property
     def likelihood_calc_params_dict(self):
@@ -584,6 +798,7 @@ class AbstractEpistasis(abc.ABC):
                               phenotype,
                               *,
                               wt_col=False,
+                              k=None,
                               ):
         """Phenotypes from binary variant representations.
 
@@ -598,44 +813,73 @@ class AbstractEpistasis(abc.ABC):
             Set to `True` if `binary_variants` contains a terminal
             column of ones to enable calculations in the form given
             by Eq. :eq:`latent_phenotype_wt_vec`.
+        k : int or None
+            If `phenotype` is 'latent', which latent phenotype to use (1 <= k
+            (<= :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`. Has no meaning
+            if `phenotype` is 'observed'.
 
         Returns
         --------
         numpy.ndarray
-            Latent phenotypes calculated using Eq. :eq:`latent_phenotype`.
+            Latent phenotypes calculated using Eq. :eq:`latent_phenotype` or
+            observed phenotypes calculated using Eq. :eq:`observed_phenotype`
+            (or Eqs. :eq:`latent_phenotype_multi` or
+            :eq:`observed_phenotype_multi`).
 
         """
         if len(binary_variants.shape) != 2:
             raise ValueError(f"`binary_variants` not 2D:\n{binary_variants}")
-        if binary_variants.shape[1] != self._nlatent + int(wt_col):
+        if binary_variants.shape[1] != self._n_latent_effects + int(wt_col):
             raise ValueError(f"variants wrong length: {binary_variants.shape}")
 
-        if wt_col:
-            assert len(self._latenteffects) == binary_variants.shape[1]
-            latent = binary_variants.dot(self._latenteffects)
-        else:
-            assert (len(self._latenteffects) - 1) == binary_variants.shape[1]
-            latent = (binary_variants.dot(self._latenteffects[: -1]) +
-                      self.latent_phenotype_wt)
-
         if phenotype == 'latent':
-            return latent
+            ki = self._process_latent_phenotype_k(k)
+            if wt_col:
+                return binary_variants.dot(self._latenteffects[ki])
+            else:
+                return (binary_variants.dot(self._latenteffects[ki][: -1]) +
+                        self.latent_phenotype_wt(k))
         elif phenotype == 'observed':
-            return self.epistasis_func(latent)
-        else:
-            return ValueError(f"invalid `phenotype` of {phenotype}")
+            if wt_col:
+                latents = self._latenteffects.transpose()
+                assert latents.shape[0] == binary_variants.shape[1]
+                latent_phenos = binary_variants.dot(latents).transpose()
+            else:
+                latents = self._latenteffects.transpose()[:-1, ]
+                assert latents.shape[0] == binary_variants.shape[1]
+                latent_phenos = (binary_variants.dot(latents) +
+                                 [self.latent_phenotype_wt(kj + 1) for kj in
+                                  range(self.n_latent_phenotypes)]
+                                 ).transpose()
+            assert latent_phenos.shape == (self.n_latent_phenotypes,
+                                           binary_variants.shape[0])
+            observed_phenos = numpy.zeros(binary_variants.shape[0],
+                                          dtype='float')
+            for kj in range(self.n_latent_phenotypes):
+                observed_phenos += self.epistasis_func(latent_phenos[kj],
+                                                       kj + 1)
+            return observed_phenos
 
     @property
     def latent_effects_df(self):
         """pandas.DataFrame: Latent effects of mutations.
 
-        For each single mutation in :attr:`AbstractEpistasis.binarymap`,
-        gives the current predicted latent effect of that mutation.
+        For each single mutation in :attr:`AbstractEpistasis.binarymap`, gives
+        current predicted latent effect of that mutation. If there are multiple
+        latent phenotypes (:attr:`AbstractEpistasis.n_latent_phenotypes` > 1),
+        also indicates the phenotype number of the latent effect.
 
         """
-        assert len(self.binarymap.all_subs) == len(self._latenteffects) - 1
-        return pd.DataFrame({'mutation': self.binarymap.all_subs,
-                             'latent_effect': self._latenteffects[: -1]})
+        assert len(self.binarymap.all_subs) == self._latenteffects.shape[1] - 1
+        d = {'mutation': self.binarymap.all_subs * self.n_latent_phenotypes,
+             'latent_effect': self._latenteffects[:, : -1].ravel(),
+             }
+        if self.n_latent_phenotypes > 1:
+            d['latent_phenotype_number'] = numpy.repeat(
+                    range(1, self.n_latent_phenotypes + 1),
+                    len(self.binarymap.all_subs))
+        return pd.DataFrame(d)
 
     def add_phenotypes_to_df(self,
                              df,
@@ -658,7 +902,9 @@ class AbstractEpistasis(abc.ABC):
             If `None`, defaults to the `substitutions_col` attribute of
             that binary map.
         latent_phenotype_col : str
-            Column added to `df` containing predicted latent phenotypes.
+            Column(s) added to `df` containing predicted latent phenotypes.
+            If there are multiple latent phenotypes, this string is suffixed
+            with the latent phenotype number (i.e., 'latent_phenotype_1').
         observed_phenotype_col : str
             Column added to `df` containing predicted observed phenotypes.
         phenotype_col_overwrite : bool
@@ -681,11 +927,17 @@ class AbstractEpistasis(abc.ABC):
         if substitutions_col not in df.columns:
             raise ValueError('`df` lacks `substitutions_col` '
                              f"{substitutions_col}")
-        if 3 != len({substitutions_col, latent_phenotype_col,
-                     observed_phenotype_col}):
+        if self.n_latent_phenotypes == 1:
+            latent_phenotype_cols = [latent_phenotype_col]
+        else:
+            latent_phenotype_cols = [f"{latent_phenotype_col}_{k}" for k in
+                                     range(1, self.n_latent_phenotypes + 1)]
+        if 2 + self.n_latent_phenotypes != len({substitutions_col,
+                                                observed_phenotype_col,
+                                                *latent_phenotype_cols}):
             raise ValueError('repeated name among `latent_phenotype_col`, '
                              '`observed_phenotype_col`, `substitutions_col`')
-        for col in [latent_phenotype_col, observed_phenotype_col]:
+        for col in latent_phenotype_cols + [observed_phenotype_col]:
             if col in df.columns and not phenotype_col_overwrite:
                 if not phenotype_col_overwrite:
                     raise ValueError(f"`df` already contains column {col}")
@@ -712,9 +964,14 @@ class AbstractEpistasis(abc.ABC):
                             dtype='int8')
 
         df = df.copy()
-        for col, phenotype in [(latent_phenotype_col, 'latent'),
-                               (observed_phenotype_col, 'observed')]:
-            vals = self.phenotypes_frombinary(binary_variants, phenotype)
+        for col, k, phenotype in zip(
+                latent_phenotype_cols + [observed_phenotype_col],
+                list(range(1, self.n_latent_phenotypes + 1)) + [None],
+                ['latent'] * self.n_latent_phenotypes + ['observed']
+                ):
+            vals = self.phenotypes_frombinary(binary_variants,
+                                              phenotype,
+                                              k=k)
             assert len(vals) == len(df)
             vals = vals.copy()  # needed because vals not might be writable
             vals[nan_variant_indices] = numpy.nan
@@ -726,22 +983,27 @@ class AbstractEpistasis(abc.ABC):
         """pandas.DataFrame: Phenotypes of variants used to fit model.
 
         For each variant in :attr:`AbstractEpistasis.binarymap`, gives
-        the current predicted latent and observed phenotype as well
+        the current predicted latent and observed phenotypes as well
         as the functional score and its variance.
 
         """
-        return pd.DataFrame(
-                {self.binarymap.substitutions_col:
-                    self.binarymap.substitution_variants,
-                 'func_score': self.binarymap.func_scores,
-                 'func_score_var': self.binarymap.func_scores_var,
-                 'latent_phenotype': self._latent_phenotypes,
-                 'observed_phenotype': self._observed_phenotypes,
-                 })
+        d = {self.binarymap.substitutions_col: (self.binarymap
+                                                .substitution_variants),
+             'func_score': self.binarymap.func_scores,
+             'func_score_var': self.binarymap.func_scores_var
+             }
+        if self.n_latent_phenotypes == 1:
+            d['latent_phenotype'] = self._latent_phenotypes(k=None)
+        else:
+            for k in range(1, self.n_latent_phenotypes + 1):
+                d[f"latent_phenotype_{k}"] = self._latent_phenotypes(k=k)
+        d['observed_phenotype'] = self._observed_phenotypes()
+        return pd.DataFrame(d)
 
     def preferences(self, phenotype, base, *,
                     missing='average', exclude_chars=('*',),
-                    returnformat='wide', stringency_param=1):
+                    returnformat='wide', stringency_param=1,
+                    k=None):
         r"""Get preference of each site for each character.
 
         Use the latent or observed phenotype to estimate the preference
@@ -789,6 +1051,8 @@ class AbstractEpistasis(abc.ABC):
         ----------
         phenotype : {'observed', 'latent'}
             Calculate the preferences from observed or latent phenotypes?
+            Note that if there are multiple latent phenotypes, you must
+            also set `k`.
         base : float
             Base to which the exponent is taken in computing the preferences.
         missing : {'average', 'site_average', 'error'}
@@ -807,6 +1071,11 @@ class AbstractEpistasis(abc.ABC):
             involves raising each preference to the power of
             `stringency_param`, and then re-normalizes. A similar
             effect can be achieved by changing `base`.
+        k : int or None
+            Which latent phenotype to use (1 <= k <=
+            :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`. Has no
+            meaning if `phenotype` is 'observed'.
 
         Returns
         -------
@@ -817,7 +1086,8 @@ class AbstractEpistasis(abc.ABC):
         """
         effects = self.single_mut_effects(phenotype,
                                           include_wildtype=False,
-                                          standardize_range=False
+                                          standardize_range=False,
+                                          k=k,
                                           )
 
         # get alphabet of non-excluded characters
@@ -842,6 +1112,7 @@ class AbstractEpistasis(abc.ABC):
                            *,
                            include_wildtype=True,
                            standardize_range=True,
+                           k=None,
                            ):
         """Effects of single mutations on latent or observed phenotype.
 
@@ -852,19 +1123,24 @@ class AbstractEpistasis(abc.ABC):
         Parameters
         -----------
         phenotype : {'latent', 'observed'}
-            Get effect on this phenotype.
+            Get effect on this phenotype. If there are multiple latent
+            phenotypes, you must also set `k`.
         include_wildtype : bool
             Include the effect of "mutating" to wildtype identity at a site
             (always zero).
         standardize_range : bool
             Scale effects so that the mean absolute value effect is one
             (scaling is done before including wildtype).
+        k : int or None
+            Which latent phenotype to use (1 <= k <=
+            :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`. Has no
+            meaning if `phenotype` is 'observed'.
 
         Returns
         -------
         pandas.DataFrame
-            The effect of all single mutations on latent and observed
-            phenotype. Columns are:
+            The effects of all single mutations. Columns are:
 
               - 'mutation': mutation as str
               - 'wildtype': wildtype identity at site
@@ -873,9 +1149,16 @@ class AbstractEpistasis(abc.ABC):
               - 'effect': effect of mutation on latent or observed phenotype
 
         """
-        if phenotype not in {'latent', 'observed'}:
+        if phenotype == 'observed':
+            phenotypecol = 'observed_phenotype'
+        elif phenotype == 'latent':
+            if self.n_latent_phenotypes == 1:
+                phenotypecol = 'latent_phenotype'
+            else:
+                k = self._process_latent_phenotype_k(k) + 1
+                phenotypecol = f"latent_phenotype_{k}"
+        else:
             raise ValueError(f"invalid `phenotype` {phenotype}")
-        phenotypecol = f"{phenotype}_phenotype"  # column with phenotype
 
         # data frame with all observed single mutations and phenotypes
         df = self.add_phenotypes_to_df(
@@ -964,8 +1247,9 @@ class AbstractEpistasis(abc.ABC):
             The enrichments.
 
         """
-        observed_phenotype_wt = float(self.epistasis_func(
-                numpy.array([self.latent_phenotype_wt])))
+        observed_phenotype_wt = self.phenotypes_frombinary(
+                        numpy.zeros((1, self._n_latent_effects)),
+                        'observed')[0]
         return base**(observed_phenotypes - observed_phenotype_wt)
 
     # ------------------------------------------------------------------------
@@ -997,11 +1281,24 @@ class AbstractEpistasis(abc.ABC):
             The results of optimizing the full model.
 
         """
-        # least squares fit of latent effects for reasonable initial values
-        _ = self._fit_latent_leastsquares()
-
-        # prescale parameters to desired range
-        self._prescale_params()
+        # Least squares fit of latent effects for reasonable initial values
+        # for the first latent phenotype:
+        if self.n_latent_phenotypes == 1:
+            _ = self._fit_latent_leastsquares(self.n_latent_phenotypes,
+                                              self.binarymap.func_scores)
+            self._prescale_params(k=1,
+                                  g_k_range=(min(self.binarymap.func_scores),
+                                             max(self.binarymap.func_scores)),
+                                  )
+        else:
+            assert self.n_latent_phenotypes > 1
+            phenos_Kminus1 = list(range(1, self.n_latent_phenotypes))
+            residuals = (self.binarymap.func_scores -
+                         self._observed_phenotypes(phenos_Kminus1))
+            max_abs_residual = numpy.abs(residuals).max()
+            self._prescale_params(
+                        k=self.n_latent_phenotypes,
+                        g_k_range=(-max_abs_residual, max_abs_residual))
 
         # optimize full model by maximum likelihood
         optres = scipy.optimize.minimize(
@@ -1079,9 +1376,11 @@ class AbstractEpistasis(abc.ABC):
 
         """
         self._allparams = allparams
-        val = numpy.concatenate((self._dloglik_dlatent,
+        val = numpy.concatenate((*[self._dloglik_dlatent(k) for k in
+                                   range(1, self.n_latent_phenotypes + 1)],
                                  self._dloglik_dlikelihood_calc_params,
-                                 self._dloglik_depistasis_func_params,
+                                 *[self._dloglik_depistasis_func_params(k) for
+                                   k in range(1, self.n_latent_phenotypes + 1)]
                                  )
                                 )
         assert val.shape == (self.nparams,)
@@ -1103,9 +1402,9 @@ class AbstractEpistasis(abc.ABC):
         in future implementations.
 
         """
-        val = numpy.concatenate((self._latenteffects,
+        val = numpy.concatenate((self._latenteffects.ravel(),
                                  self._likelihood_calc_params,
-                                 self._epistasis_func_params,
+                                 self._epistasis_func_params.ravel(),
                                  )
                                 )
         return val
@@ -1116,16 +1415,28 @@ class AbstractEpistasis(abc.ABC):
             raise ValueError(f"invalid `_allparams`: {val}")
 
         istart = 0
-        iend = len(self._latenteffects)
-        self._latenteffects = val[istart: iend]
+        ncol = self._n_latent_effects + 1  # add 1 for wt latent phenotype
+        assert (self.n_latent_phenotypes, ncol) == self._latenteffects.shape
+        n = ncol * self.n_latent_phenotypes
+        assert self._latenteffects.size == n
+        self._latenteffects = val[istart: n].reshape(self.n_latent_phenotypes,
+                                                     ncol)
+        istart += n
 
-        istart = iend
-        iend = iend + len(self._likelihood_calc_params)
-        self._likelihood_calc_params = val[istart: iend]
+        assert self._likelihood_calc_params.ndim == 1
+        n = len(self._likelihood_calc_params)
+        self._likelihood_calc_params = val[istart: istart + n]
+        istart += n
 
-        istart = iend
-        iend = iend + len(self._epistasis_func_params)
-        self._epistasis_func_params = val[istart: iend]
+        ncol = len(self._epistasis_func_param_names)
+        assert ((self.n_latent_phenotypes, ncol) ==
+                self._epistasis_func_params.shape)
+        n = ncol * self.n_latent_phenotypes
+        assert self._epistasis_func_params.size == n
+        self._epistasis_func_params = (val[istart: istart + n]
+                                       .reshape(self.n_latent_phenotypes,
+                                                ncol)
+                                       )
 
     @property
     def _allparams_bounds(self):
@@ -1134,69 +1445,153 @@ class AbstractEpistasis(abc.ABC):
         Can be passed to `scipy.optimize.minimize`.
 
         """
-        bounds = ([(None, None)] * len(self._latenteffects) +
+        bounds = ([(None, None)] * self._latenteffects.size +
                   self._likelihood_calc_param_bounds +
-                  self._epistasis_func_param_bounds
-                  )
-        assert len(bounds) == len(self._allparams)
+                  self._epistasis_func_param_bounds * self.n_latent_phenotypes)
+        assert len(bounds) == len(self._allparams), (
+                f"len(bounds) = {len(bounds)}\n"
+                f"_allparams.shape = {self._allparams.shape}")
         return bounds
 
-    @property
-    def _latent_phenotypes(self):
-        """numpy.ndarray: Latent phenotypes, Eq. :eq:`latent_phenotype`."""
-        key = '_latent_phenotypes'
+    def _latent_phenotypes(self, k=None):
+        """Latent phenotypes.
+
+        Parameters
+        -----------
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
+            or can be `None` if just one latent phenotype.
+
+        Returns
+        -------
+        numpy.ndarray
+            Latent phenotypes of all variants being used to fit model.
+
+        """
+        k = self._process_latent_phenotype_k(k) + 1
+        key = f"_latent_phenotypes_{k}"
         if key not in self._cache:
             self._cache[key] = self.phenotypes_frombinary(
                                 binary_variants=self._binary_variants,
                                 phenotype='latent',
                                 wt_col=True,
+                                k=k,
                                 )
+            self._cache[key].flags.writeable = False
         return self._cache[key]
 
-    @property
-    def _observed_phenotypes(self):
-        """numpy.ndarray: Observed phenotypes, Eq. :eq:`observed_phenotype`."""
-        key = '_observed_phenotypes'
-        if key not in self._cache:
-            self._cache[key] = self.epistasis_func(self._latent_phenotypes)
-        return self._cache[key]
+    def _observed_phenotypes(self, latent_phenos='all'):
+        r"""Observed phenotypes of variants being fit.
 
-    @property
-    def _dobserved_phenotypes_dlatent(self):
-        """scipy.parse.csr_matrix: Derivative observed pheno by latent effects.
+        Parameters
+        ----------
+        latent_phenos : 'all' or list
+            The numbers (:math:`k = 1, 2, \ldots...) of the latent phenotypes
+            used to calculate the observed phenotype. If 'all' use all
+            latent phenotypes. Otherwise only include the terms in
+            Eq. :eq:`observed_phenotype_multi` corresponding to the
+            :math:`k` values listed here.
 
-        See Eq. :eq:`dobserved_phenotype_dlatent_effect`. This is a
-        :math:`M + 1` by :math:`V` matrix.
+        Returns
+        --------
+        numpy.ndarray
+            Observed phenotypes.
 
         """
-        key = '_dobserved_phenotype_dlatent'
+        if latent_phenos == 'all':
+            latent_phenos = list(range(1, self.n_latent_phenotypes + 1))
+        if isinstance(latent_phenos, list):
+            if len(latent_phenos) != len(set(latent_phenos)):
+                raise ValueError('duplicate entries in `latent_phenos`')
+            if not set(latent_phenos).issubset(
+                    set(range(1, self.n_latent_phenotypes + 1))):
+                raise ValueError('invalid entries in `latent_phenos`')
+            if not latent_phenos:
+                raise ValueError('empty `latent_phenos`')
+            latent_phenos = sorted(latent_phenos)
+        else:
+            raise ValueError('`latent_phenos` not a list')
+        key = f"_observed_phenotypes_{'_'.join(map(str, latent_phenos))}"
+        if key not in self._cache:
+            observed_phenos = self.epistasis_func(
+                    self._latent_phenotypes(latent_phenos[0]),
+                    k=latent_phenos[0]
+                    ).copy()
+            for k in latent_phenos[1:]:
+                observed_phenos += self.epistasis_func(
+                                        self._latent_phenotypes(k),
+                                        k=k)
+            self._cache[key] = observed_phenos
+            self._cache[key].flags.writeable = False
+        return self._cache[key]
+
+    def _dobserved_phenotypes_dlatent(self, k=None):
+        """Derivative observed phenotype by latent effects.
+
+        Parameters
+        ----------
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
+            or can be `None` if just one latent phenotype.
+
+        Returns
+        -------
+        scipy.parse.csr_matrix
+            Derivative observed pheno by latent effects for phenotype
+            :math:`k`. See Eq. :eq:`dobserved_phenotype_dlatent_effect`.
+            This is a :math:`M + 1` by :math:`V` matrix.
+
+        """
+        k = self._process_latent_phenotype_k(k) + 1
+        key = f"_dobserved_phenotypes_dlatent_{k}"
         if key not in self._cache:
             self._cache[key] = (
                     self._binary_variants
                     .transpose()  # convert from V by M to M by V
                     .multiply(self._depistasis_func_dlatent(
-                                self._latent_phenotypes))
+                                self._latent_phenotypes(k),
+                                k=k))
                     )
-            assert self._cache[key].shape == (self._nlatent + 1,
+            assert self._cache[key].shape == (self._n_latent_effects + 1,
                                               self.binarymap.nvariants)
         return self._cache[key]
 
-    @property
-    def _dloglik_dlatent(self):
-        """numpy.ndarray: Derivative log likelihood by latent effects.
+    def _dloglik_dlatent(self, k=None):
+        """Derivative log likelihood by latent effects.
 
-        See Eq. :eq:`dloglik_dlatent_effect`.
+        Parameters
+        ----------
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
+            or can be `None` if just one latent phenotype.
+
+        Returns
+        -------
+        numpy.ndarray:
+            Derivative log likelihood by latent effects for phenotype
+            :math:`k`. See Eq. :eq:`dloglik_dlatent_effect`.
 
         """
-        key = '_dloglik_dlatent'
+        k = self._process_latent_phenotype_k(k) + 1
+        key = f"_dloglik_dlatent_{k}"
         if key not in self._cache:
-            self._cache[key] = self._dobserved_phenotypes_dlatent.dot(
+            self._cache[key] = self._dobserved_phenotypes_dlatent(k).dot(
                     self._dloglik_dobserved_phenotype)
-        assert self._cache[key].shape == (self._nlatent + 1,)
+            self._cache[key].flags.writeable = False
+            assert self._cache[key].shape == (self._n_latent_effects + 1,)
         return self._cache[key]
 
-    def _fit_latent_leastsquares(self):
+    def _fit_latent_leastsquares(self, k=None, fit_to=None):
         """Least-squares fit latent effects for quick "reasonable" values.
+
+        Parameters
+        ----------
+        k : int or None
+            Fit effects for this latent phenotype (1 <= `k` <=
+            `n_latent_phenotypes`); can be `None` if just one latent phenotype.
+        fit_to : numpy.ndarray or None
+            Fit latent effects to these values. If `None`, fits to
+            :attr:`AbstractEpistasis.binarymap.func_scores`.
 
         Returns
         -------
@@ -1204,16 +1599,28 @@ class AbstractEpistasis(abc.ABC):
             Results of fitting described here:
             https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.linalg.lsqr.html
 
+        In addition to returning the fitting results, sets the latent
+        effects to the new fit value.
+
         """
+        ki = self._process_latent_phenotype_k(k)
+        if fit_to is None:
+            fit_to = self.binarymap.func_scores
+        else:
+            if fit_to.shape != self.binarymap.func_scores.shape:
+                raise ValueError('`invalid shape for `fit_to`')
+
         # fit by least squares
         fitres = scipy.sparse.linalg.lsqr(
                     A=self._binary_variants,
-                    b=self.binarymap.func_scores,
-                    x0=self._latenteffects,
+                    b=fit_to,
+                    x0=self._latenteffects[ki],
                     )
 
         # use fit result to update latenteffects
-        self._latenteffects = fitres[0]
+        new_latenteffects = self._latenteffects.copy()
+        new_latenteffects[ki] = fitres[0]
+        self._latenteffects = new_latenteffects
 
         return fitres
 
@@ -1222,51 +1629,80 @@ class AbstractEpistasis(abc.ABC):
     # specific for that epistasis model.
     # ------------------------------------------------------------------------
     @abc.abstractmethod
-    def epistasis_func(self, latent_phenotype):
+    def epistasis_func(self, latent_phenotype, k=None):
         """The :ref:`global_epistasis_function` :math:`g`.
 
         Parameters
         -----------
         latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
+            or can be `None` if just one latent phenotype. See
+            Eq. :ref:`multi_latent`.
 
         Returns
         -------
         numpy.ndarray
-            Observed phenotype(s) after transforming the latent phenotypes
-            using the global epistasis function.
+            Result of applying global epistasis function :math:`g_k` to latent
+            phenotypes.
 
         """
         return NotImplementedError
 
     @abc.abstractmethod
-    def _depistasis_func_dlatent(self, latent_phenotype):
+    def _depistasis_func_dlatent(self, latent_phenotype, k=None):
         """Derivative of epistasis function by latent phenotype.
 
         Parameters
         -----------
         latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
+            or can be `None` if just one latent phenotype. See
+            Eq. :ref:`multi_latent`.
 
         Returns
         -------
         numpy.ndarray
-            Derivative of :meth:`NoEpistasis.epistasis_func` with respect to
-            latent phenotype evaluated at `latent_phenotype`.
+            Derivative of :meth:`NoEpistasis.epistasis_func` for
+            latent phenotype `k` evaluated at `latent_phenotype`.
+
+        """
+        return NotImplementedError
+
+    @abc.abstractmethod
+    def _dloglik_depistasis_func_params(self, k=None):
+        """Deriv log likelihood by `_epistasis_func_params` for :math:`g_k`.
+
+        Parameters
+        ----------
+        k : int or None
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
+            or can be `None` if just one latent phenotype. See
+            Eq. :ref:`multi_latent`.
+
+        Returns
+        -------
+        numpy.ndarray
+            The derivative with respect to the parameters for epistasis
+            function :math:`g_k`.
 
         """
         return NotImplementedError
 
     @property
     @abc.abstractmethod
-    def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Deriv log likelihood by `_epistasis_func_params`."""
-        return NotImplementedError
-
-    @property
-    @abc.abstractmethod
     def _epistasis_func_param_names(self):
-        """list: Names of :meth:`AbstractEpistasis._epistasis_func_params`."""
+        """list: Names of :meth:`AbstractEpistasis._epistasis_func_params`.
+
+        When there are multiple latent phenotypes and global epistasis
+        functions (:ref:`multi_latent`) still just provide a list with
+        one copy of each parameter name and they will be suffixed with
+        :math:`k` by :meth:`AbstractEpistasis.epistasis_func_params_dict`.
+
+        """
         return NotImplementedError
 
     @property
@@ -1281,15 +1717,27 @@ class AbstractEpistasis(abc.ABC):
         """
         return NotImplementedError
 
-    @property
     @abc.abstractmethod
-    def _init_epistasis_func_params(self):
-        """numpy.ndarray: Initial `_epistasis_func_params` values."""
-        return NotImplementedError
+    def _prescale_params(self, k, g_k_range):
+        """Set / scale parameters prior to the global fitting.
 
-    @abc.abstractmethod
-    def _prescale_params(self):
-        """Rescale parameters prior to the global fitting."""
+        This method is designed to set / re-scale parameters relevant
+        to the latent phenotype :math:`k` and its associated global
+        epistasis function prior to fitting. The re-scaling differs
+        for different model classes, and is implemented in concrete
+        subclasses. See :ref:`fitting_workflow`.
+
+        Importantly, this is the method that sets initial values
+        for `_epistasis_func_params`.
+
+        Parameters
+        -----------
+        k : int
+            Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`).
+        g_k_range : tuple
+            Gives desired min and max of :math:`g_k`.
+
+        """
         return NotImplementedError
 
     @abc.abstractmethod
@@ -1298,7 +1746,7 @@ class AbstractEpistasis(abc.ABC):
 
         Note
         ----
-        This is an abstract method, the actula pre-scaling is done in concrete
+        This is an abstract method, the actual pre-scaling is done in concrete
         subclasses.
 
         """
@@ -1370,12 +1818,12 @@ class CauchyLikelihood(AbstractEpistasis):
                 raise ValueError('scales not all > 0')
             self._cache[key] = (scipy.stats.cauchy.logpdf(
                                     self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
+                                    loc=self._observed_phenotypes(),
                                     scale=scales)
                                 ).sum()
         return self._cache[key]
 
-    def _fit_latent_leastsquares(self):
+    def _fit_latent_leastsquares(self, k=None, fit_to=None):
         r"""Also get initial value for scale parameter.
 
         Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
@@ -1385,7 +1833,7 @@ class CauchyLikelihood(AbstractEpistasis):
         a Gaussian distribution (not sure how good this supposition is...).
 
         """
-        fitres = super()._fit_latent_leastsquares()
+        fitres = super()._fit_latent_leastsquares(k=k, fit_to=fit_to)
         residuals2 = fitres[3]**2
         if self.binarymap.func_scores_var is None:
             scale_param2 = max(residuals2 / self.binarymap.nvariants,
@@ -1438,8 +1886,9 @@ class CauchyLikelihood(AbstractEpistasis):
         """
         key = '_dloglik_dobserved_phenotype'
         if key not in self._cache:
-            diff = self.binarymap.func_scores - self._observed_phenotypes
+            diff = self.binarymap.func_scores - self._observed_phenotypes()
             self._cache[key] = 2 * diff / (self._pseudo_variances + diff**2)
+            self._cache[key].flags.writeable = False
         return self._cache[key]
 
     @property
@@ -1452,7 +1901,8 @@ class CauchyLikelihood(AbstractEpistasis):
         key = '_dloglik_dlikelihood_calc_params'
         if key not in self._cache:
             scale_param = self.likelihood_calc_params_dict['scale_parameter']
-            diff2 = (self.binarymap.func_scores - self._observed_phenotypes)**2
+            diff2 = (self.binarymap.func_scores -
+                     self._observed_phenotypes())**2
             self._cache[key] = numpy.array([
                                 (scale_param * (diff2 - self._pseudo_variances)
                                  / (self._pseudo_variances *
@@ -1460,7 +1910,8 @@ class CauchyLikelihood(AbstractEpistasis):
                                     )
                                  ).sum()
                                 ])
-        assert self._cache[key].shape == self._likelihood_calc_params.shape
+            self._cache[key].flags.writeable = False
+            assert self._cache[key].shape == self._likelihood_calc_params.shape
         return self._cache[key]
 
     @property
@@ -1480,6 +1931,7 @@ class CauchyLikelihood(AbstractEpistasis):
             if (var <= 0).any():
                 raise ValueError('variance <= 0')
             self._cache[key] = var
+            self._cache[key].flags.writeable = False
         return self._cache[key]
 
 
@@ -1503,12 +1955,12 @@ class GaussianLikelihood(AbstractEpistasis):
                 raise ValueError('standard deviations not all > 0')
             self._cache[key] = (scipy.stats.norm.logpdf(
                                     self.binarymap.func_scores,
-                                    loc=self._observed_phenotypes,
+                                    loc=self._observed_phenotypes(),
                                     scale=standard_devs)
                                 ).sum()
         return self._cache[key]
 
-    def _fit_latent_leastsquares(self):
+    def _fit_latent_leastsquares(self, k=None, fit_to=None):
         r"""Also get initial value for HOC epistasis.
 
         Overrides :meth:`AbstractEpistasis._fit_latent_leastsquares`
@@ -1516,7 +1968,7 @@ class GaussianLikelihood(AbstractEpistasis):
         residual not from functional score variance.
 
         """
-        fitres = super()._fit_latent_leastsquares()
+        fitres = super()._fit_latent_leastsquares(k=k, fit_to=fit_to)
         residuals2 = fitres[3]**2
         if self.binarymap.func_scores_var is None:
             epistasis_HOC = max(residuals2 / self.binarymap.nvariants,
@@ -1570,7 +2022,8 @@ class GaussianLikelihood(AbstractEpistasis):
         key = '_dloglik_dobserved_phenotype'
         if key not in self._cache:
             self._cache[key] = (self.binarymap.func_scores -
-                                self._observed_phenotypes) / self._variances
+                                self._observed_phenotypes()) / self._variances
+            self._cache[key].flags.writeable = False
         return self._cache[key]
 
     @property
@@ -1587,7 +2040,8 @@ class GaussianLikelihood(AbstractEpistasis):
                 (self._dloglik_dobserved_phenotype**2 -
                  1 / self._variances).sum()
                 ])
-        assert self._cache[key].shape == self._likelihood_calc_params.shape
+            self._cache[key].flags.writeable = False
+            assert self._cache[key].shape == self._likelihood_calc_params.shape
         return self._cache[key]
 
     @property
@@ -1608,6 +2062,7 @@ class GaussianLikelihood(AbstractEpistasis):
             if (var <= 0).any():
                 raise ValueError('variance <= 0')
             self._cache[key] = var
+            self._cache[key].flags.writeable = False
         return self._cache[key]
 
 
@@ -1621,7 +2076,7 @@ class NoEpistasis(AbstractEpistasis):
 
     """
 
-    def epistasis_func(self, latent_phenotype):
+    def epistasis_func(self, latent_phenotype, k=None):
         """Global epistasis function :math:`g` in Eq. :eq:`noepistasis`.
 
         Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.
@@ -1629,7 +2084,7 @@ class NoEpistasis(AbstractEpistasis):
         """
         return latent_phenotype
 
-    def _depistasis_func_dlatent(self, latent_phenotype):
+    def _depistasis_func_dlatent(self, latent_phenotype, k=None):
         """Derivative of `epistasis_func` by latent phenotype.
 
         Concrete implementation of
@@ -1638,15 +2093,9 @@ class NoEpistasis(AbstractEpistasis):
         """
         return numpy.ones(latent_phenotype.shape, dtype='float')
 
-    @property
-    def _dloglik_depistasis_func_params(self):
-        """numpy.ndarray: Derivative of log likelihood by epistasis fun params.
+    def _dloglik_depistasis_func_params(self, k=None):
+        """Implements :meth:`AbstractEpistasis._dloglik_depistasis_func_params`
 
-        Concrete implementation of
-        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.
-
-        Note
-        ----
         For :class:`NoEpistasis` models, this is just an empty array as there
         are no epistasis function parameters.
 
@@ -1675,20 +2124,7 @@ class NoEpistasis(AbstractEpistasis):
         bounds_d = {}
         return [bounds_d[name] for name in self._epistasis_func_param_names]
 
-    @property
-    def _init_epistasis_func_params(self):
-        """numpy.ndarray: Initial :meth:`NoEpistasis._epistasis_func_params`.
-
-        For :class:`NoEpistasis` models, this is just an empty array as
-        there are no epistasis function parameters.
-
-        """
-        init_d = {}
-        return numpy.array([init_d[name] for name in
-                            self._epistasis_func_param_names],
-                           dtype='float')
-
-    def _prescale_params(self):
+    def _prescale_params(self, k, g_k_range):
         """Do nothing, as no need to prescale for :class:`NoEpistasis`."""
         pass
 
@@ -1709,6 +2145,8 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     ----------
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
+    n_latent_phenotypes : int
+        Number of distinct latent phenotypes. See :ref:`multi_latent`.
     spline_order : int
         Order of the I-splines defining the global epistasis function.
     meshpoints : int
@@ -1720,33 +2158,60 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
     def __init__(self,
                  binarymap,
                  *,
+                 n_latent_phenotypes=1,
+                 model_one_less_latent=None,
                  spline_order=3,
                  meshpoints=4,
                  ):
         """See main class docstring."""
         if not (isinstance(meshpoints, int) and meshpoints > 1):
             raise ValueError('`meshpoints` must be int > 1')
-        self._mesh = numpy.linspace(0, 1, meshpoints)
+        self._mesh = (numpy.tile(numpy.linspace(0, 1, meshpoints),
+                                 n_latent_phenotypes)
+                      .reshape(n_latent_phenotypes, meshpoints)
+                      )
         self._spline_order = spline_order
-        super().__init__(binarymap)
+        super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes,
+                         model_one_less_latent=model_one_less_latent)
 
-    @property
-    def _isplines_total(self):
-        """:class:`dms_variants.ispline.Isplines_total`: I-splines.
+    def _set_lower_latent_phenotype_params(self, model_one_less_latent):
+        """Overrides :meth:`AbstractEpistasis._set_lower_latent_phenotypes`.
 
-        The I-spline family is defined with the current values of
-        the latent phenotypes as `x`.
+        Augments that base method to also set mesh.
 
         """
-        key = '_isplines_total'
+        super()._set_lower_latent_phenotype_params(model_one_less_latent)
+        for k in range(1, self.n_latent_phenotypes):
+            ki = k - 1
+            self._mesh[ki] = model_one_less_latent._mesh[ki]
+
+    def _isplines_total(self, k=None):
+        """I-splines for global epistasis function.
+
+        Parameters
+        -----------
+        k : int or None
+            Which global epistasis function to get I-splines for (1 <= k <=
+            :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`.
+
+        Returns
+        --------
+        :class:`dms_variants.ispline.Isplines_total`
+            The I-spline family defined with the current values of
+            the latent phenotypes as `x`.
+
+        """
+        k = self._process_latent_phenotype_k(k) + 1
+        key = f"_isplines_total_{k}"
         if key not in self._cache:
             self._cache[key] = dms_variants.ispline.Isplines_total(
                                         order=self._spline_order,
-                                        mesh=self._mesh,
-                                        x=self._latent_phenotypes)
+                                        mesh=self._mesh[k - 1],
+                                        x=self._latent_phenotypes(k))
         return self._cache[key]
 
-    def epistasis_func(self, latent_phenotype):
+    def epistasis_func(self, latent_phenotype, k=None):
         """Global epistasis function :math:`g` in Eq. :eq:`monotonicspline`.
 
         Concrete implementation of :meth:`AbstractEpistasis.epistasis_func`.
@@ -1754,48 +2219,43 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         """
         if not isinstance(latent_phenotype, numpy.ndarray):
             raise ValueError('`latent_phenotype` not numpy array')
-        if ((latent_phenotype.shape == self._latent_phenotypes.shape) and
-                (latent_phenotype == self._latent_phenotypes).all()):
-            return self._isplines_total.Itotal(weights=self.alpha_ms,
-                                               w_lower=self.c_alpha)
+        if ((latent_phenotype.shape == self._latent_phenotypes(k).shape) and
+                (latent_phenotype == self._latent_phenotypes(k)).all()):
+            return self._isplines_total(k).Itotal(weights=self.alpha_ms(k),
+                                                  w_lower=self.c_alpha(k))
         else:
             return dms_variants.ispline.Isplines_total(
                         order=self._spline_order,
-                        mesh=self._mesh,
-                        x=latent_phenotype).Itotal(weights=self.alpha_ms,
-                                                   w_lower=self.c_alpha)
+                        mesh=self._mesh[self._process_latent_phenotype_k(k)],
+                        x=latent_phenotype).Itotal(weights=self.alpha_ms(k),
+                                                   w_lower=self.c_alpha(k))
 
-    def _depistasis_func_dlatent(self, latent_phenotype):
+    def _depistasis_func_dlatent(self, latent_phenotype, k=None):
         """Derivative of `epistasis_func` by latent phenotype.
 
         Concrete implementation of
         :meth:`AbstractEpistasis._depistasis_func_dlatent`.
 
         """
-        return self._isplines_total.dItotal_dx(weights=self.alpha_ms)
+        return self._isplines_total(k).dItotal_dx(weights=self.alpha_ms(k))
 
-    @property
-    def _dloglik_depistasis_func_params(self):
-        r"""numpy.ndarray: Derivative of epistasis function by its params.
+    def _dloglik_depistasis_func_params(self, k=None):
+        """Implements :meth:`AbstractEpistasis._dloglik_depistasis_func_params`
 
-        Concrete implementation of
-        :meth:`AbstractEpistasis._dloglik_depistasis_func_params`.
-
-        Note
-        ----
         See Eqs. :eq:`dspline_epistasis_dcalpha` and
         :eq:`dspline_epistasis_dalpham`.
 
         """
-        assert self._epistasis_func_params[0] == self.c_alpha
-        assert (self._epistasis_func_params[1:] == self.alpha_ms).all()
+        ki = self._process_latent_phenotype_k(k)
+        assert self._epistasis_func_params[ki, 0] == self.c_alpha(k)
+        assert (self._epistasis_func_params[ki, 1:] == self.alpha_ms(k)).all()
         dcalpha = self._dloglik_dobserved_phenotype.dot(
-                self._isplines_total.dItotal_dw_lower())
+                self._isplines_total(k).dItotal_dw_lower())
         dalpham = self._dloglik_dobserved_phenotype.dot(
-                self._isplines_total.dItotal_dweights(self.alpha_ms,
-                                                      self.c_alpha))
+                self._isplines_total(k).dItotal_dweights(self.alpha_ms(k),
+                                                         self.c_alpha(k)))
         deriv = numpy.append(dcalpha, dalpham)
-        assert deriv.shape == self._epistasis_func_params.shape
+        assert deriv.shape == (len(self._epistasis_func_param_names),)
         return deriv
 
     @property
@@ -1807,7 +2267,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         """
         return ['c_alpha'] + [f"alpha_{m}" for m in
-                              range(1, self._isplines_total.n + 1)]
+                              range(1, self._isplines_total(1).n + 1)]
 
     @property
     def _epistasis_func_param_bounds(self):
@@ -1818,64 +2278,159 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
         """
         bounds_d = {'c_alpha': (None, None)}
-        for m in range(1, self._isplines_total.n + 1):
+        for m in range(1, self._isplines_total(1).n + 1):
             bounds_d[f"alpha_{m}"] = (self._NEARLY_ZERO, None)
         return [bounds_d[name] for name in self._epistasis_func_param_names]
 
-    @property
-    def _init_epistasis_func_params(self):
-        r"""numpy.ndarray: Initial values for epistasis func parameters.
+    def c_alpha(self, k=None):
+        r""":math:`c_{\alpha}` in Eq. :eq:`monotonicspline`.
 
-        :math:`c_{alpha}` is set to the minimum observed phenotype in the
-        actual data, and all :math:`\alpha_m` values are set to
-        :math:`\left[\max\left(y_v\right) - \min\left(y_v\right)\right] / M`
-        so that the range of :math:`g` over 0 to 1 goes from the smallest
-        to largest observed phenotype.
+        Parameters
+        ----------
+        k : int or None
+            Which global epistasis function to get I-splines for (1 <= k <=
+            :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`.
+
+        Returns
+        -------
+        float
+            :math:`c_{\alpha}` for global epistasis function `k`.
 
         """
-        func_score_min = min(self.binarymap.func_scores)
-        func_score_max = max(self.binarymap.func_scores)
-        init_d = {'c_alpha': func_score_min}
-        for m in range(1, self._isplines_total.n + 1):
-            init_d[f"alpha_{m}"] = ((func_score_max - func_score_min) /
-                                    self._isplines_total.n)
-        return numpy.array([init_d[name] for name in
-                            self._epistasis_func_param_names],
-                           dtype='float')
+        if self.n_latent_phenotypes == 1:
+            return self.epistasis_func_params_dict['c_alpha']
+        else:
+            k = self._process_latent_phenotype_k(k) + 1
+            return self.epistasis_func_params_dict[f"c_alpha_{k}"]
 
-    @property
-    def c_alpha(self):
-        r"""float: :math:`c_{\alpha}` in Eq. :eq:`monotonicspline`."""
-        return self.epistasis_func_params_dict['c_alpha']
+    def alpha_ms(self, k=None):
+        r""":math:`\alpha_m` in Eq. :eq:`monotonicspline`.
 
-    @property
-    def alpha_ms(self):
-        r"""numpy.ndarray: :math:`\alpha_m` in Eq. :eq:`monotonicspline`."""
-        return numpy.array([self.epistasis_func_params_dict[f"alpha_{m}"]
-                            for m in range(1, self._isplines_total.n + 1)],
-                           dtype='float')
+        Parameters
+        ----------
+        k : int or None
+            Which global epistasis function to get I-splines for (1 <= k <=
+            :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
+            is just one latent phenotype, can also be `None`.
 
-    def _prescale_params(self):
-        """Rescale latent effects so latent phenotypes are within mesh."""
-        rescale_min, rescale_max = min(self._mesh), max(self._mesh)
-        rescalerange = rescale_max - rescale_min
-        assert rescalerange > 0
-        currentrange = (self._latent_phenotypes.max() -
-                        self._latent_phenotypes.min())
-        if currentrange <= 0:
-            raise ValueError(f"bad latent phenotype range: {currentrange}")
-        # rescale so latent phenotypes span desired range
-        self._latenteffects = self._latenteffects * rescalerange / currentrange
-        assert numpy.allclose(
-                self._latent_phenotypes.max() - self._latent_phenotypes.min(),
-                rescalerange)
-        # change wildtype latent phenotype so latent phenotypes have right min
-        self._latenteffects = numpy.append(
-                self._latenteffects[: -1],
-                (self._latenteffects[-1] + rescale_min -
-                 self._latent_phenotypes.min()))
-        assert numpy.allclose(rescale_min, self._latent_phenotypes.min())
-        assert numpy.allclose(rescale_max, self._latent_phenotypes.max())
+        Returns
+        -------
+        numpy.ndarray
+            :math:`\alpha_m` values for global epistasis function `k`.
+
+        """
+        if self.n_latent_phenotypes == 1:
+            return numpy.array(
+                    [self.epistasis_func_params_dict[f"alpha_{m}"]
+                     for m in range(1, self._isplines_total(k).n + 1)],
+                    dtype='float')
+        else:
+            k = self._process_latent_phenotype_k(k) + 1
+            return numpy.array(
+                    [self.epistasis_func_params_dict[f"alpha_{m}_{k}"]
+                     for m in range(1, self._isplines_total(k).n + 1)],
+                    dtype='float')
+
+    def _prescale_params(self, k, g_k_range):
+        r"""Get latent phenotypes in mesh and :math:`g_k` with desired limits.
+
+        See :meth:`AbstractEpistasis._prescale_params` for description of
+        parameters.
+
+        Specifically, if `k == 1` then the latent phenotypes are re-scaled
+        to span the mesh. The parameters of the global epistasis function
+        :math:`g_k` are set so that :math:`c_alpha` is :math:`g_k_range[0]`,
+        and all :math:`\alpha_m` values are set to
+        :math:`\left[\max\left(y_v\right) - \min\left(y_v\right)\right] / M`
+        so that the range of :math:`g_k` over its mesh spans `g_k_range`.
+
+        If `k > 1`, then the latent effects are all zero, the latent phenotype
+        of wildtype is chosen so that :math:`g_k = 0` for wildtype, and
+        the parameters of :math:`g_k` are chosen so that the limits on the
+        mesh are `g_k_range` and all :math:`\alpha_m` values are equal.
+        In addition, we require that `g_k_range[0] = -g_k_range[1]`.
+        """
+        if not (isinstance(k, int) and self.n_latent_phenotypes >= k >= 1):
+            raise ValueError(f"invalid `k` of {k}")
+        ki = k - 1
+
+        # check g_k_range, and make sure > 0
+        if g_k_range[1] < g_k_range[0]:
+            raise ValueError('invalid `g_k_range`')
+        if g_k_range[1] - g_k_range[0] < 2 * self._NEARLY_ZERO:
+            g_k_range = (g_k_range[0] - self._NEARLY_ZERO,
+                         g_k_range[1] + self._NEARLY_ZERO)
+
+        # set initial epistasis func params
+        g_k_params = self._epistasis_func_params.copy()
+        assert g_k_params.shape == (self.n_latent_phenotypes,
+                                    len(self._epistasis_func_param_names))
+        init_d = {'c_alpha': g_k_range[0]}
+        for m in range(1, self._isplines_total(k).n + 1):
+            init_d[f"alpha_{m}"] = ((g_k_range[1] - g_k_range[0]) /
+                                    self._isplines_total(k).n)
+        for iparam, param in enumerate(self._epistasis_func_param_names):
+            g_k_params[ki, iparam] = init_d[param]
+        self._epistasis_func_params = g_k_params
+
+        if k == 1:
+            rescale_min, rescale_max = min(self._mesh[ki]), max(self._mesh[ki])
+            rescalerange = rescale_max - rescale_min
+            assert rescalerange > self._NEARLY_ZERO
+
+            rescaled_latenteffects = self._latenteffects.copy()
+            currentrange = (self._latent_phenotypes(k).max() -
+                            self._latent_phenotypes(k).min())
+
+            if currentrange <= self._NEARLY_ZERO:
+                warnings.warn(f"range of latent phenotype {k} is nearly zero "
+                              f"({currentrange}); so cannot pre-scale. Just "
+                              'setting all latent effects to zero',
+                              EpistasisFittingWarning)
+                rescaled_latenteffects[ki] = 0
+                rescaled_latenteffects[ki] = numpy.append(
+                     rescaled_latenteffects[ki][: -1],
+                     (rescaled_latenteffects[ki][-1] + rescale_min -
+                      self._latent_phenotypes(k).min()))
+                self._latenteffects = rescaled_latenteffects
+
+            else:
+                # rescale so latent phenotypes span desired range
+                rescaled_latenteffects[ki] = (rescaled_latenteffects[ki] *
+                                              rescalerange / currentrange)
+                self._latenteffects = rescaled_latenteffects
+                # change wt latent phenotype so latent phenos have right min
+                rescaled_latenteffects[ki] = numpy.append(
+                     rescaled_latenteffects[ki][: -1],
+                     (rescaled_latenteffects[ki][-1] + rescale_min -
+                      self._latent_phenotypes(k).min()))
+                self._latenteffects = rescaled_latenteffects
+
+                assert numpy.allclose(rescale_min,
+                                      self._latent_phenotypes(k).min())
+                assert numpy.allclose(rescale_max,
+                                      self._latent_phenotypes(k).max())
+                assert numpy.allclose(rescalerange,
+                                      (self._latent_phenotypes(k).max() -
+                                       self._latent_phenotypes(k).min()))
+
+        else:
+            if g_k_range[0] != -g_k_range[1]:
+                raise ValueError(f"`g_k_range` not symmetric: {g_k_range}")
+
+            assert k > 1
+
+            # midpoint of mesh, g_k should be 0 here, set to wildtype latent k
+            mid_mesh = (self._mesh[ki].max() - self._mesh[ki].min()) / 2
+            assert numpy.allclose(0,
+                                  self.epistasis_func(numpy.array([mid_mesh]),
+                                                      k=k))
+            latenteffects = self._latenteffects.copy()
+            latenteffects[ki] = 0.0
+            latenteffects[ki, self._n_latent_effects] = mid_mesh
+            self._latenteffects = latenteffects
+            assert numpy.allclose(0, self._observed_phenotypes([k]))
 
     def _postscale_params(self):
         """Rescale parameters after global epistasis fitting.
@@ -1885,22 +2440,37 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
           - The latent phenotype of wildtype is 0.
 
         """
-        # make mean absolute latent effect equal to one
-        mean_abs_latent_effect = numpy.abs(self._latenteffects[: -1]).mean()
-        if mean_abs_latent_effect == 0:
-            raise ValueError('latent effects are all 0')
+        rescaled_latenteffects = self._latenteffects.copy()
         oldloglik = self.loglik
-        self._latenteffects = self._latenteffects / mean_abs_latent_effect
-        self._mesh = self._mesh / mean_abs_latent_effect
-        assert numpy.allclose(1, numpy.abs(self._latenteffects[: -1]).mean())
+        for ki in range(self.n_latent_phenotypes):
+            # make mean absolute latent effect equal to one
+            mean_abs_latent_effect = (numpy.abs(self._latenteffects[ki][: -1])
+                                      .mean()
+                                      )
+            if mean_abs_latent_effect < self._NEARLY_ZERO:
+                warnings.warn(f"mean latent effect for phenotype {ki + 1} "
+                              f"is nearly zero ({mean_abs_latent_effect}); "
+                              'so cannot rescale',
+                              EpistasisFittingWarning)
+            else:
+                rescaled_latenteffects[ki] = (rescaled_latenteffects[ki] /
+                                              mean_abs_latent_effect)
+                self._mesh[ki] = self._mesh[ki] / mean_abs_latent_effect
 
-        # make latent phenotype of wildtype equal to 0
-        self._mesh = self._mesh - self._latenteffects[-1]
-        self._latenteffects = numpy.append(self._latenteffects[: -1], 0.0)
-        assert (0 ==
-                self.phenotypes_frombinary(numpy.zeros((1, self._nlatent)),
-                                           'latent')
-                ).all()
+            # make latent phenotype of wildtype equal to 0
+            self._mesh[ki] = self._mesh[ki] - rescaled_latenteffects[ki][-1]
+            rescaled_latenteffects[ki] = numpy.append(
+                                            rescaled_latenteffects[ki][: -1],
+                                            0.0)
+
+        self._latenteffects = rescaled_latenteffects
+        assert all((0 ==
+                    self.phenotypes_frombinary(
+                            numpy.zeros((1, self._n_latent_effects)),
+                            'latent',
+                            k=k)
+                    ).all()
+                   for k in range(1, self.n_latent_phenotypes + 1))
 
         # make sure log likelihood hasn't changed too much
         if not numpy.allclose(self.loglik, oldloglik):
@@ -1970,6 +2540,120 @@ class NoEpistasisCauchyLikelihood(NoEpistasis,
     """
 
     pass
+
+
+def fit_models(binarymap,
+               likelihood,
+               *,
+               max_latent_phenotypes=1,
+               ):
+    r"""Fit and compare global epistasis models.
+
+    This function is useful when you want to examine the fit of several
+    different models to the same data. It does the following:
+
+     1. Fits a non-epistatic model to the data.
+
+     2. Fits a global epistasis model with :math:`K = 1` latent phenotypes
+        to the data. If the global epistasis model outperforms the no-
+        epistasis model by AIC_, proceed to next step. Otherwise stop.
+
+     3. Fit a global epistasis model with :math:`K = 2` latent phenotypes.
+        If this model outperforms (by AIC_) the model with :math:`K - 1`
+        latent phenotypes, repeat for :math:`K = 3` etc until adding more
+        latent phenotypes no longer improves fit. Note that it only does
+        continues this process while :math:`K \le` `max_latent_phenotypes`,
+        so set `max_latent_phenotypes` > 1 if you want to fit multiple
+        latent phenotypes.
+
+    .. _AIC: https://en.wikipedia.org/wiki/Akaike_information_criterion
+
+    Note
+    ----
+    All of the fitting is done with the same likelihood-calculation method
+    because you can **not** compare models fit with different likelihood-
+    calculation methods.
+
+    Parameters
+    ----------
+    binarymap : :class:`dms_variants.binarymap.BinaryMap`
+        Contains the variants, their functional scores, and score variances.
+        The models are fit to these data.
+    likelihood : {'Gaussian', 'Cauchy'}
+        Likelihood calculation method to use when fitting models. See
+        :ref:`likelihood_calculation`.
+    max_latent_phenotypes : int
+        Maximum number of latent phenotypes that are potentially be fit.
+        See the :math:`K` parameter in :ref:`multi_latent`.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Summarizes the results of the model fitting and contains the
+        fit models. Columns are:
+
+          - 'description': description of model
+          - 'n_latent_phenotypes': number of latent phenotypes in model
+          - 'AIC': AIC_
+          - 'nparams': number of parameters
+          - 'log_likelihood': log likelihood
+          - 'model': the actual model (subclass of :class:`AbstractEpistasis`)
+          - 'fitting_time': time in seconds that it took to fit model
+
+        The data frame is sorted from best to worst model by AIC_.
+
+    """
+    if not (isinstance(max_latent_phenotypes, int) and
+            max_latent_phenotypes >= 1):
+        raise ValueError('`max_latent_phenotypes` must be int >= 1')
+
+    if likelihood == 'Gaussian':
+        NoEpistasisClass = NoEpistasisGaussianLikelihood
+        EpistasisClass = MonotonicSplineEpistasisGaussianLikelihood
+    elif likelihood == 'Cauchy':
+        NoEpistasisClass = NoEpistasisCauchyLikelihood
+        EpistasisClass = MonotonicSplineEpistasisCauchyLikelihood
+    else:
+        raise ValueError(f"invalid `likelihood` {likelihood}")
+
+    FitData = collections.namedtuple('FitData',
+                                     ['description', 'n_latent_phenotypes',
+                                      'AIC', 'nparams', 'log_likelihood',
+                                      'model', 'fitting_time']
+                                     )
+
+    def fit(modelclass, description, k=1, model_one_less_latent=None):
+        model = modelclass(binarymap,
+                           n_latent_phenotypes=k,
+                           model_one_less_latent=model_one_less_latent)
+        start = time.time()
+        _ = model.fit()
+        return FitData(description=description,
+                       n_latent_phenotypes=model.n_latent_phenotypes,
+                       AIC=model.aic,
+                       nparams=model.nparams,
+                       log_likelihood=model.loglik,
+                       model=model,
+                       fitting_time=time.time() - start
+                       )
+
+    fitlist = [fit(NoEpistasisClass, 'no epistasis')]
+
+    for k in range(1, max_latent_phenotypes + 1):
+        fitlist.append(
+                fit(EpistasisClass,
+                    f"global epistasis with {k} latent phenotypes",
+                    k=k,
+                    model_one_less_latent=None if k == 1 else fitlist[-1].model
+                    )
+                )
+        if fitlist[-1].AIC > fitlist[-2].AIC:
+            break
+
+    return (pd.DataFrame.from_records(fitlist, columns=FitData._fields)
+            .sort_values('AIC')
+            .reset_index(drop=True)
+            )
 
 
 if __name__ == '__main__':
