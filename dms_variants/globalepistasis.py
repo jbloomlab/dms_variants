@@ -213,7 +213,7 @@ A potential advantage over the :ref:`gaussian_likelihood` is the
 of the Cauchy distribution relative to the Gaussian distribution.
 This could be advantageous if some measurements are very large outliers
 (either due to un-modeled epistasis or experimental factors such as
-mis-calling of variant sequences or bottlenecks) in ways that are not
+mis-calling of variant sequences) in ways that are not
 capture in the functional score variance estimates :math:`\sigma^2_{y_v}`.
 Such outlier measurements will have less influence on the overall model
 fit for the Cauchy likelihood relative to the :ref:`gaussian_likelihood`.
@@ -239,6 +239,56 @@ broader distribution. If variance estimates are not available then
 
 This likelihood calculation is implemented as :class:`CauchyLikelihood`.
 
+.. _bottleneck_likelihood:
+
+Bottleneck likelihood
+++++++++++++++++++++++
+This form of the likelihood is appropriate when most noise in the experiment
+comes from a bottleneck when passaging the library from the pre-selection to
+post-selection condition. This will be the case when the total pre- and post-
+selection sequencing depths greatly exceed the number of variants
+that were physically passaged from the pre-selection library to the post-
+selection condition. At least in Bloom lab viral deep mutational scanning
+experiments, this situation is quite common.
+
+A full derivation of the log likelihood in this situation is given in
+:doc:`bottleneck_likelihood`. As explained in those calculations, the
+overall log likelihood is:
+
+.. math::
+   :label: loglik_bottleneck
+
+   \mathcal{L}
+   =
+   \sum_v
+   \left[ n_v^{\rm{bottle}} \ln\left(N_{\rm{bottle}} f_v^{\text{pre}}\right)
+          - \ln \Gamma \left(n_v^{\rm{bottle}} + 1\right)
+        \right] - N_{\rm{bottle}}
+
+where :math:`\Gamma` is the
+`gamma function <https://en.wikipedia.org/wiki/Gamma_function>`_,
+:math:`N_{\rm{bottle}}` is the estimated bottleneck between the pre- and
+post-selection conditions and is estimated by maximum likelihood,
+and :math:`n_v^{\rm{bottle}}` is the estimated number of copies of variant
+:math:`v` that made it through the bottleneck, which is defined in terms
+of the phenotype :math:`p\left(v\right)` as
+
+.. math::
+   :label: n_v_bottle
+
+   n_v^{\rm{bottle}}
+   =
+   \frac{f_v^{\rm{post}} \times F_{\rm{wt}}^{\rm{pre}} \times N_{\rm{bottle}}}
+        {F_{\rm{wt}}^{\rm{post}} \times 2^{p\left(v\right)}}
+
+where all terms in Eq. :eq:`n_v_bottle` other than the estimated parameters
+:math:`N_{\rm{bottle}}` and :math:`p\left(v\right)` are calculated from the
+experimentally observed pre- and post-selection counts :math:`n_v^{\rm{pre}}`
+and :math:`n_v^{\rm{post}}` (as well as a user-defined pseudocount :math:`C`)
+as explained in :doc:`bottleneck_likelihood`.
+
+This likelihood calculation is implemented as :class:`BottleneckLikelihood`.
+
 The model classes
 ------------------
 The epistasis models are defined in a set of classes. All these classes
@@ -252,9 +302,10 @@ the following classes implement a :ref:`global_epistasis_function`:
   - :class:`NoEpistasis`
   - :class:`MonotonicSplineEpistasis`
 
-and the following classes each implement at :ref:`likelihood_calculation`:
+and the following classes each implement a :ref:`likelihood_calculation`:
   - :class:`GaussianLikelihood`
   - :class:`CauchyLikelihood`
+  - :class:`BottleneckLikelihood`
 
 However, those classes can still not be directly instantianted, as a fully
 concrete model subclass must have **both** a global epistasis function and
@@ -264,8 +315,10 @@ for use in analyses:
 
   - :class:`NoEpistasisGaussianLikelihood`
   - :class:`NoEpistasisCauchyLikelihood`
+  - :class:`NoEpistasisBottleneckLikelihood`
   - :class:`MonotonicSplineEpistasisGaussianLikelihood`
   - :class:`MonotonicSplineEpistasisCauchyLikelihood`
+  - :class:`MonotonicSplineEpistasisBottleneckLikelihood`
 
 Details of fitting
 -------------------------
