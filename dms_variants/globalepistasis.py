@@ -260,7 +260,7 @@ overall log likelihood is:
 
    \mathcal{L}
    =
-   \sum_v
+   \sum_{v=1}^V
    \left[ n_v^{\rm{bottle}} \ln\left(N_{\rm{bottle}} f_v^{\text{pre}}\right)
           - \ln \Gamma \left(n_v^{\rm{bottle}} + 1\right)
         \right] - N_{\rm{bottle}}
@@ -487,6 +487,60 @@ respect to scale parameter:
                         \left(\gamma^2 + \sigma^2_{y_v} +
                               \left[y_v - p\left(v\right)\right]^2\right)
                         }
+
+Derivative of :ref:`bottleneck_likelihood` with respect to
+:math:`N_{\rm{bottle}}`:
+
+.. math::
+
+   \frac{\partial n_v^{\rm{bottle}}}{\partial N_{\rm{bottle}}}
+   = \frac{n_v^{\rm{bottle}}}{N_{\rm{bottle}}}
+
+.. math::
+   :label: dloglik_bottleneck_dNbottle
+
+   \frac{\partial \mathcal{L}}{\partial N_{\rm{bottle}}}
+   &=&
+   \sum_{v=1}^V
+   \left[\frac{n_v^{\rm{bottle}}
+               \ln\left( N_{\rm{bottle}} f_v^{\rm{pre}} \right)}
+              {N_{\rm{bottle}}} +
+         \frac{n_v^{\rm{bottle}}}{N_{\rm{bottle}}} -
+         \frac{n_v^{\rm{bottle}}}{N_{\rm{bottle}}} \times
+         \psi_0\left(n_v^{\rm{bottle}} + 1\right)
+         \right] - 1 \\
+    &=&
+    \sum_{v=1}^V
+    \left(\frac{n_v^{\rm{bottle}}}{N_{\rm{bottle}}}
+          \left[
+                \ln\left( N_{\rm{bottle}} f_v^{\rm{pre}} \right) + 1 -
+                \psi_0\left(n_v^{\rm{bottle}} + 1\right)
+                \right]
+          \right)- 1
+
+where :math:`\psi_0` is the
+`digamma function <https://en.wikipedia.org/wiki/Digamma_function>`_.
+
+Derivative of :ref:`bottleneck_likelihood` with respect to
+:math:`p\left(v\right)`:
+
+.. math::
+
+   \frac{\partial n_v^{\rm{bottle}}}{\partial p\left(v\right)}
+   =
+   - \left(\ln 2\right) n_v^{\rm{bottle}}
+
+.. math::
+   :label: dloglik_bottleneck_dobserved_phenotype
+
+   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
+   &=& - \left(\ln 2\right) n_v^{\rm{bottle}}
+         \ln\left( N_{\rm{bottle}} f_v^{\rm{pre}} \right)
+       + \left(\ln 2\right) n_v^{\rm{bottle}}
+         \psi_0\left(n_v^{\rm{bottle}} + 1\right) \\
+   &=& \left(\ln 2\right) n_v^{\rm{bottle}}
+       \left[\psi_0\left(n_v^{\rm{bottle}} + 1\right) -
+             \ln\left( N_{\rm{bottle}} f_v^{\rm{pre}} \right)\right].
 
 Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its
 parameters:
