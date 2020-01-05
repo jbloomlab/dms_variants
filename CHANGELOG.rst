@@ -21,6 +21,8 @@ Added
 
 - An equals (``__eq__``) comparison operation to ``BinaryMap``.
 
+- Added ``n_pre`` and ``n_post`` attributes to ``BinaryMap``. This changes the initialization to add new parameters, ``n_pre_col``, ``n_post_col``, and ``cols_optional``.
+
 Fixed
 ++++++
 - ``BinaryMap`` objects can now be deep copied (they don't have a compiled regex as attributed).
