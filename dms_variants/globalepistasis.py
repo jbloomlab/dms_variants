@@ -278,14 +278,19 @@ of the phenotype :math:`p\left(v\right)` as
 
    n_v^{\rm{bottle}}
    =
-   \frac{f_v^{\rm{post}} \times F_{\rm{wt}}^{\rm{pre}} \times N_{\rm{bottle}}}
-        {F_{\rm{wt}}^{\rm{post}} \times 2^{p\left(v\right)}}
+   \frac{f_v^{\rm{post}} N_{\rm{bottle}}
+         \sum_{v'=1}^V f_{v'}^{\text{pre}} 2^{p\left(v'\right)}}
+        {2^{p\left(v\right)}}
 
 where all terms in Eq. :eq:`n_v_bottle` other than the estimated parameters
 :math:`N_{\rm{bottle}}` and :math:`p\left(v\right)` are calculated from the
 experimentally observed pre- and post-selection counts :math:`n_v^{\rm{pre}}`
 and :math:`n_v^{\rm{post}}` (as well as a user-defined pseudocount :math:`C`)
 as explained in :doc:`bottleneck_likelihood`.
+
+Note that after fitting the observed phenotype, the parameters are re-scaled
+so that the observed phenotype of wildtype is zero
+(:math:`p\left(\rm{wt}\right) = 0`).
 
 This likelihood calculation is implemented as :class:`BottleneckLikelihood`.
 
@@ -526,21 +531,54 @@ Derivative of :ref:`bottleneck_likelihood` with respect to
 
 .. math::
 
-   \frac{\partial n_v^{\rm{bottle}}}{\partial p\left(v\right)}
-   =
-   - \left(\ln 2\right) n_v^{\rm{bottle}}
+   \frac{\partial n_v^{\text{bottle}}}
+        {\partial p\left(v'\right)}
+   &=&
+   \begin{cases}
+   \frac{\left(\ln 2\right) f_v^{\text{post}} N_{\text{bottle}}
+         f_{v}^{\text{pre}} 2^{p\left(v\right)}}
+        {2^{p\left(v\right)}}
+   - \left(\ln 2\right) n_v^{\text{bottle}}
+   & \rm{if\;} v = v', \\
+   \frac{\left(\ln 2\right) f_v^{\text{post}} N_{\text{bottle}}
+         f_{v'}^{\text{pre}} 2^{p\left(v'\right)}}
+        {2^{p\left(v\right)}}
+   & \text{otherwise}
+   \end{cases} \\
+   &=&
+   \frac{\left(\ln 2\right) f_v^{\text{post}} N_{\text{bottle}}
+         f_{v'}^{\text{pre}} 2^{p\left(v'\right)}}
+        {2^{p\left(v\right)}}
+   - \delta_{v,v'} \left(\ln 2\right) n_{v'}^{\text{bottle}}
+
 
 .. math::
    :label: dloglik_bottleneck_dobserved_phenotype
 
-   \frac{\partial \mathcal{L}}{\partial p\left(v\right)}
-   &=& - \left(\ln 2\right) n_v^{\rm{bottle}}
-         \ln\left( N_{\rm{bottle}} f_v^{\rm{pre}} \right)
-       + \left(\ln 2\right) n_v^{\rm{bottle}}
-         \psi_0\left(n_v^{\rm{bottle}} + 1\right) \\
-   &=& \left(\ln 2\right) n_v^{\rm{bottle}}
-       \left[\psi_0\left(n_v^{\rm{bottle}} + 1\right) -
-             \ln\left( N_{\rm{bottle}} f_v^{\rm{pre}} \right)\right].
+   \frac{\partial \mathcal{L}}
+        {\partial p\left(v'\right)}
+   &=&
+   \sum_{v=1}^V
+   \frac{\partial n_v^{\text{bottle}}}{\partial p\left(v'\right)}
+   \ln\left( N_{\text{bottle}} f_v^{\text{pre}} \right)
+   -
+   \frac{\partial n_v^{\text{bottle}}}{\partial p\left(v'\right)}
+   \psi_0\left(n_v^{\text{bottle}} + 1\right)
+   \\
+   &=&
+   \left(\ln 2\right) f_{v'}^{\text{pre}} 2^{p\left(v'\right)}
+   N_{\text{bottle}}
+   \left(\sum_{v=1}^V
+         \frac{f_v^{\text{post}}}
+              {2^{p\left(v\right)}}
+         \left[\ln\left(N_{\text{bottle}} f_v^{\text{pre}}\right) -
+               \psi_0\left(n_v^{\text{bottle}} + 1\right)
+               \right]
+         \right)
+   - \left(\ln 2\right) n_{v'}^{\text{bottle}}
+     \left[\ln\left(N_{\text{bottle}} f_{v'}^{\text{pre}}\right) -
+           \psi_0\left(n_{v'}^{\text{bottle}} + 1\right)
+           \right]
 
 Derivative of :ref:`monotonic_spline_epistasis_function` with respect to its
 parameters:
