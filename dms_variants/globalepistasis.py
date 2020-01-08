@@ -2239,11 +2239,57 @@ class BottleneckLikelihood(AbstractEpistasis):
 
     @property
     def _dloglik_dobserved_phenotype(self):
-        raise NotImplementedError
+        """numpy.ndarray: Derivative of log likelihood by observed phenotype.
+
+        Calculating using Eq. :eq:`dloglik_bottleneck_dobserved_phenotype`.
+
+        """
+        key = '_dloglik_dobserved_phenotype'
+        if key not in self._cache:
+            self._cache[key] = (
+                    numpy.log(2) *
+                    self.f_pre *
+                    self._base_to_observed_pheno *
+                    self.likelihood_calc_params_dict['N_bottle'] *
+                    (self.f_post /
+                     self._base_to_observed_pheno *
+                     (self._log_N_bottle_f_pre -
+                      self._digamma_n_v_bottle_1
+                      )
+                     ).sum() -
+                    numpy.log(2) *
+                    self._n_v_bottle *
+                    (self._log_N_bottle_f_pre -
+                     self._digamma_n_v_bottle_1
+                     )
+                    )
+            self._cache[key].flags.writeable = False
+        assert self._cache[key].shape == (self.binarymap.nvariants,)
+        assert numpy.isfinite(self._cache[key]).all()
+        return self._cache[key]
 
     @property
     def _dloglik_dlikelihood_calc_params(self):
-        raise NotImplementedError
+        """numpy.ndarray: Derivative of log lik by `_likelihood_calc_params`.
+
+        See Eq. :eq:`dloglik_bottleneck_dNbottle`.
+
+        """
+        key = '_dloglik_dlikelihood_calc_params'
+        if key not in self._cache:
+            self._cache[key] = numpy.array([
+                    (self._n_v_bottle /
+                     self.likelihood_calc_params_dict['N_bottle'] *
+                     (self._log_N_bottle_f_pre +
+                      1 -
+                      self._digamma_n_v_bottle_1
+                      )
+                     ).sum() - 1
+                    ])
+            self._cache[key].flags.writeable = False
+        assert self._cache[key].shape == self._likelihood_calc_params.shape
+        assert numpy.isfinite(self._cache[key]).all()
+        return self._cache[key]
 
     @property
     def _base_to_observed_pheno(self):
@@ -2292,6 +2338,17 @@ class BottleneckLikelihood(AbstractEpistasis):
         assert self._cache[key].shape == (self.binarymap.nvariants,)
         assert numpy.isfinite(self._cache[key]).all()
         assert (self._cache[key] >= 0).all()
+        return self._cache[key]
+
+    @property
+    def _digamma_n_v_bottle_1(self):
+        r"""numpy.ndarray: :math:`\psi_0\left(n_v^{\rm{bottle}} + 1\right)`."""
+        key = '_digamma_n_v_bottle_1'
+        if key not in self._cache:
+            self._cache[key] = scipy.special.digamma(self._n_v_bottle + 1)
+            self._cache[key].flags.writeable = False
+        assert self._cache[key].shape == (self.binarymap.nvariants,)
+        assert numpy.isfinite(self._cache[key]).all()
         return self._cache[key]
 
 
