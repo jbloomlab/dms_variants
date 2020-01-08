@@ -303,8 +303,11 @@ The free parameters are therefore the :math:`p\left(v\right)` values
 and :math:`N_{\text{bottle}}` (the :math:`n_v^{\rm{bottle}}` values
 are hidden variables that are not explicitly estimated). The value
 of :math:`N_{\text{bottle}}` can be thought of as a measure of "noise";
-smaller values correspond to more noise.
-Note that after fitting the observed phenotypes, the parameters are re-scaled
+smaller values correspond to more noise. Note that Eq. :eq:`n_v_bottle`
+uses an exponent base of 2, but it can be set to arbitrary positive values
+in the actual implementation.
+
+After fitting the observed phenotypes, the parameters are re-scaled
 so that the observed phenotype of wildtype is zero
 (i.e., :math:`p\left(\rm{wt}\right) = 0`).
 
@@ -633,6 +636,7 @@ import pandas as pd
 
 import scipy.optimize
 import scipy.sparse
+import scipy.special
 import scipy.stats
 
 import dms_variants.ispline
@@ -2123,6 +2127,13 @@ class BottleneckLikelihood(AbstractEpistasis):
         The exponent base in Eq. :eq:`n_v_bottle` used when exponentiating
         the observed phenotypes :math:`p\left(v\right)`. It is written
         as 2 in Eq. :eq:`n_v_bottle`.
+    init_N_bottle_over_nvariants : float
+        Initial guess for bottleneck size :math:`N_{\rm{bottle}}`. Expressed
+        as the bottleneck size divided by the number of variants, or average
+        bottleneck per variant. If you have a good guess from the experiment
+        then you can set this value and it *might* slightly improve model
+        fitting. If you don't have a good guess, the default of 10 probably
+        works fine.
 
     """
 
@@ -2133,10 +2144,11 @@ class BottleneckLikelihood(AbstractEpistasis):
                  model_one_less_latent=None,
                  pseudocount=0.5,
                  base=2.0,
+                 init_N_bottle_over_nvariants=10.0,
                  ):
         """See main class docstring."""
-        if pseudocount < 0:
-            raise ValueError(f"invalid `pseudocount` of {pseudocount}")
+        if pseudocount <= 0:
+            raise ValueError('`pseudocount` must be > 0')
         for cond in ['pre', 'post']:
             n = getattr(binarymap, f"n_{cond}")
             if n is None:
@@ -2147,8 +2159,9 @@ class BottleneckLikelihood(AbstractEpistasis):
                 raise ValueError(f"negative values in `binarymap.n_{cond}`")
             f = n + pseudocount
             f = f / f.sum()
-            assert (n >= 0).all()
-            if (n < self.NEARLY_ZERO):
+            if (f <= 0).any():
+                raise ValueError(f"non-positive values in `f_{cond}`")
+            if (f < self._NEARLY_ZERO).any():
                 warnings.warn(f"`f_{cond}` has values that are nearly zero "
                               'which *might* cause numerical issues. Consider '
                               'increasing `pseudocount` if you have fitting '
@@ -2160,6 +2173,10 @@ class BottleneckLikelihood(AbstractEpistasis):
         if base <= 0:
             raise ValueError(f"invalid `base` of {base}")
         self._base = base
+
+        if init_N_bottle_over_nvariants <= self._NEARLY_ZERO:
+            raise ValueError('`init_N_bottle_over_nvariants` too small.')
+        self._init_N_bottle_over_nvariants = init_N_bottle_over_nvariants
 
         super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes,
                          model_one_less_latent=model_one_less_latent)
@@ -2181,6 +2198,101 @@ class BottleneckLikelihood(AbstractEpistasis):
 
         """
         return self._f_post
+
+    @property
+    def loglik(self):
+        """float: Current log likelihood from Eq. :eq:`loglik_bottleneck`."""
+        key = 'loglik'
+        if key not in self._cache:
+            N_bottle = self.likelihood_calc_params_dict['N_bottle']
+            self._cache[key] = (self._n_v_bottle * self._log_N_bottle_f_pre -
+                                scipy.special.loggamma(self._n_v_bottle + 1)
+                                ).sum() - N_bottle
+        return self._cache[key]
+
+    @property
+    def _likelihood_calc_param_names(self):
+        r"""list: Likelihood calculation parameter names.
+
+        For :class:`BottleneckLikelihood`, this is the bottleneck size
+        :math:`N_{\rm{bottle}}`.
+
+        """
+        return ['N_bottle']
+
+    @property
+    def _init_likelihood_calc_params(self):
+        """numpy.ndarray: Initial `_likelihood_calc_params`."""
+        init_d = {'N_bottle': (self.binarymap.nvariants *
+                               self._init_N_bottle_over_nvariants)
+                  }
+        return numpy.array([init_d[name] for name in
+                            self._likelihood_calc_param_names],
+                           dtype='float')
+
+    @property
+    def _likelihood_calc_param_bounds(self):
+        """list: Bounds for likelihood calculation parameters."""
+        bounds_d = {'N_bottle': (self._NEARLY_ZERO * self.binarymap.nvariants,
+                                 None)}
+        return [bounds_d[name] for name in self._likelihood_calc_param_names]
+
+    @property
+    def _dloglik_dobserved_phenotype(self):
+        raise NotImplementedError
+
+    @property
+    def _dloglik_dlikelihood_calc_params(self):
+        raise NotImplementedError
+
+    @property
+    def _base_to_observed_pheno(self):
+        r"""numpy.ndarray: `base` raised to observed phenotype.
+
+        This is :math:`2^{p\left(v\right)` in Eq. :eq:`n_v_bottle`.
+
+        """
+        key = '_base_to_observed_pheno'
+        if key not in self._cache:
+            self._cache[key] = self._base**self._observed_phenotypes()
+            self._cache[key].flags.writeable = False
+        assert self._cache[key].shape == (self.binarymap.nvariants,)
+        assert numpy.isfinite(self._cache[key]).all()
+        return self._cache[key]
+
+    @property
+    def _log_N_bottle_f_pre(self):
+        r"""numpy.ndarray: Log of N_bottle * f_v_pre.
+
+        :math:`\ln\left(N_{\rm{bottle}} f_v^{\rm{pre}}\right)` in
+        Eq. :eq:`loglik_bottleneck`.
+
+        """
+        key = '_log_N_bottle_f_pre'
+        if key not in self._cache:
+            self._cache[key] = numpy.log(
+                    self.likelihood_calc_params_dict['N_bottle'] *
+                    self.f_pre)
+            self._cache[key].flags.writeable = False
+        assert self._cache[key].shape == (self.binarymap.nvariants,)
+        assert numpy.isfinite(self._cache[key]).all()
+        return self._cache[key]
+
+    @property
+    def _n_v_bottle(self):
+        r"""numpy.ndarray: :math:`n_v^{\rm{bottle}}` (Eq. :eq:`n_v_bottle`)."""
+        key = '_n_v_bottle'
+        if key not in self._cache:
+            sumterm = (self.f_pre * self._base_to_observed_pheno).sum()
+            self._cache[key] = (self.f_post *
+                                self.likelihood_calc_params_dict['N_bottle'] *
+                                sumterm /
+                                self._base_to_observed_pheno)
+            self._cache[key].flags.writeable = False
+        assert self._cache[key].shape == (self.binarymap.nvariants,)
+        assert numpy.isfinite(self._cache[key]).all()
+        assert (self._cache[key] >= 0).all()
+        return self._cache[key]
 
 
 class GaussianLikelihood(AbstractEpistasis):
@@ -2776,23 +2888,27 @@ class MonotonicSplineEpistasisBottleneckLikelihood(MonotonicSplineEpistasis,
                  meshpoints=4,
                  pseudocount=0.5,
                  base=2,
+                 init_N_bottle_over_nvariants=10,
                  ):
         """See main class docstring."""
         # following here for multiple inheritance `__init__`:
         # https://stackoverflow.com/a/50465583
         MonotonicSplineEpistasis.__init__(
-                        binarymayp=binarymap,
-                        n_latent_phenotypes=n_latent_phenotypes,
-                        model_one_less_latent=model_one_less_latent,
-                        spline_order=spline_order,
-                        meshpoints=meshpoints)
+                    self,
+                    binarymap=binarymap,
+                    n_latent_phenotypes=n_latent_phenotypes,
+                    model_one_less_latent=model_one_less_latent,
+                    spline_order=spline_order,
+                    meshpoints=meshpoints)
         BottleneckLikelihood.__init__(
-                        binarymayp=binarymap,
-                        n_latent_phenotypes=n_latent_phenotypes,
-                        model_one_less_latent=model_one_less_latent,
-                        pseudocount=pseudocount,
-                        base=base,
-                        )
+                    self,
+                    binarymap=binarymap,
+                    n_latent_phenotypes=n_latent_phenotypes,
+                    model_one_less_latent=model_one_less_latent,
+                    pseudocount=pseudocount,
+                    base=base,
+                    init_N_bottle_over_nvariants=init_N_bottle_over_nvariants,
+                    )
 
 
 class NoEpistasisGaussianLikelihood(NoEpistasis,
