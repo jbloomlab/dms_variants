@@ -253,7 +253,24 @@ experiments, this situation is quite common.
 
 A full derivation of the log likelihood in this situation is given in
 :doc:`bottleneck_likelihood`. As explained in those calculations, the
-overall log likelihood is:
+likelihood is computed from the experimental observables
+:math:`f_v^{\text{pre}}` and :math:`f_v^{\text{post}}`, which represent
+the pre- and post-selection frequencies of variant :math:`v`. They are
+computed from the pre- and post-selection counts :math:`n_v^{\text{pre}}`
+and :math:`n_v^{\text{post}}` of the variants as
+
+.. math::
+   :label: f_v_pre_post
+
+   f_v^{\text{pre}}
+   &=& \frac{n_v^{\text{pre}} + C}
+            {\sum_{v'=1}^V \left(n_{v'}^{\text{pre}} + C \right)} \\
+   f_v^{\text{post}}
+   &=& \frac{n_v^{\text{post}} + C}
+            {\sum_{v'=1}^V \left(n_{v'}^{\text{post}} + C \right)}
+
+where :math:`C` is a pseudocount which by default is 0.5. Given these
+frequencies, the overall log likelihood is:
 
 .. math::
    :label: loglik_bottleneck
@@ -267,7 +284,7 @@ overall log likelihood is:
 
 where :math:`\Gamma` is the
 `gamma function <https://en.wikipedia.org/wiki/Gamma_function>`_,
-:math:`N_{\rm{bottle}}` is the estimated bottleneck between the pre- and
+:math:`N_{\rm{bottle}}` is the bottleneck between the pre- and
 post-selection conditions and is estimated by maximum likelihood,
 and :math:`n_v^{\rm{bottle}}` is the estimated number of copies of variant
 :math:`v` that made it through the bottleneck, which is defined in terms
@@ -280,17 +297,16 @@ of the phenotype :math:`p\left(v\right)` as
    =
    \frac{f_v^{\rm{post}} N_{\rm{bottle}}
          \sum_{v'=1}^V f_{v'}^{\text{pre}} 2^{p\left(v'\right)}}
-        {2^{p\left(v\right)}}
+        {2^{p\left(v\right)}}.
 
-where all terms in Eq. :eq:`n_v_bottle` other than the estimated parameters
-:math:`N_{\rm{bottle}}` and :math:`p\left(v\right)` are calculated from the
-experimentally observed pre- and post-selection counts :math:`n_v^{\rm{pre}}`
-and :math:`n_v^{\rm{post}}` (as well as a user-defined pseudocount :math:`C`)
-as explained in :doc:`bottleneck_likelihood`.
-
-Note that after fitting the observed phenotype, the parameters are re-scaled
+The free parameters are therefore the :math:`p\left(v\right)` values
+and :math:`N_{\text{bottle}}` (the :math:`n_v^{\rm{bottle}}` values
+are hidden variables that are not explicitly estimated). The value
+of :math:`N_{\text{bottle}}` can be thought of as a measure of "noise";
+smaller values correspond to more noise.
+Note that after fitting the observed phenotypes, the parameters are re-scaled
 so that the observed phenotype of wildtype is zero
-(:math:`p\left(\rm{wt}\right) = 0`).
+(i.e., :math:`p\left(\rm{wt}\right) = 0`).
 
 This likelihood calculation is implemented as :class:`BottleneckLikelihood`.
 
@@ -2080,6 +2096,93 @@ class CauchyLikelihood(AbstractEpistasis):
         return self._cache[key]
 
 
+class BottleneckLikelihood(AbstractEpistasis):
+    r"""Bottleneck likelihood calculation.
+
+    Note
+    ----
+    Subclass of :class:`AbstractEpistasis` that implements the
+    :ref:`bottleneck_likelihood`.
+
+    Note
+    ----
+    The :attr:`AbstractEpistasis.binarymap` must have non-`None`
+    counts in :attr:`dms_variants.binarymap.BinaryMap.n_pre` and
+    :attr:`dms_variants.binarymap.BinaryMap.n_post`, since
+    as described in :ref:`bottleneck_likelihood`, the model is
+    actually fit to the :attr:`BottleneckLikelihood.f_pre` and
+    :attr:`BottleneckLikelihood.f_post` values calculated from
+    these counts.
+
+    Parameters
+    ----------
+    pseudocount : float
+        The pseudocount used when converting the counts to frequencies
+        vi Eq. :eq:`f_v_pre_post`.
+    base : float
+        The exponent base in Eq. :eq:`n_v_bottle` used when exponentiating
+        the observed phenotypes :math:`p\left(v\right)`. It is written
+        as 2 in Eq. :eq:`n_v_bottle`.
+
+    """
+
+    def __init__(self,
+                 binarymap,
+                 *,
+                 n_latent_phenotypes=1,
+                 model_one_less_latent=None,
+                 pseudocount=0.5,
+                 base=2.0,
+                 ):
+        """See main class docstring."""
+        if pseudocount < 0:
+            raise ValueError(f"invalid `pseudocount` of {pseudocount}")
+        for cond in ['pre', 'post']:
+            n = getattr(binarymap, f"n_{cond}")
+            if n is None:
+                raise ValueError(f"`binarymap.n_{cond}` is `None`")
+            elif n.shape != (binarymap.nvariants,):
+                raise ValueError(f"invalid `binarymap.n_{cond}` shape")
+            if (n < 0).any():
+                raise ValueError(f"negative values in `binarymap.n_{cond}`")
+            f = n + pseudocount
+            f = f / f.sum()
+            assert (n >= 0).all()
+            if (n < self.NEARLY_ZERO):
+                warnings.warn(f"`f_{cond}` has values that are nearly zero "
+                              'which *might* cause numerical issues. Consider '
+                              'increasing `pseudocount` if you have fitting '
+                              'problems',
+                              EpistasisFittingWarning)
+            f.flags.writeable = False
+            setattr(self, f"_f_{cond}", f)
+
+        if base <= 0:
+            raise ValueError(f"invalid `base` of {base}")
+        self._base = base
+
+        super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes,
+                         model_one_less_latent=model_one_less_latent)
+
+    @property
+    def f_pre(self):
+        r"""numpy.ndarray: Pre-selection frequency of each variant.
+
+        The :math:`f_v^{\rm{pre}}` values in Eq. :eq:`f_v_pre_post`.
+
+        """
+        return self._f_pre
+
+    @property
+    def f_post(self):
+        r"""numpy.ndarray: Post-selection frequency of each variant.
+
+        The :math:`f_v^{\rm{post}}` values in Eq. :eq:`f_v_pre_post`.
+
+        """
+        return self._f_post
+
+
 class GaussianLikelihood(AbstractEpistasis):
     """Gaussian likelihood calculation.
 
@@ -2288,10 +2391,6 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
 
     Parameters
     ----------
-    binarymap : :class:`dms_variants.binarymap.BinaryMap`
-        Contains the variants, their functional scores, and score variances.
-    n_latent_phenotypes : int
-        Number of distinct latent phenotypes. See :ref:`multi_latent`.
     spline_order : int
         Order of the I-splines defining the global epistasis function.
     meshpoints : int
@@ -2655,6 +2754,47 @@ class MonotonicSplineEpistasisCauchyLikelihood(MonotonicSplineEpistasis,
     pass
 
 
+class MonotonicSplineEpistasisBottleneckLikelihood(MonotonicSplineEpistasis,
+                                                   BottleneckLikelihood):
+    """Monotonic spline global epistasis model with bottleneck likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`monotonic_spline_epistasis_function`
+    with a :ref:`bottleneck_likelihood`. See documentation for the base
+    classes :class:`MonotonicSplineEpistasis`, :class:`BottleneckLikelihood`,
+    and :class:`AbstractEpistasis` for details.
+
+    """
+
+    def __init__(self,
+                 binarymap,
+                 *,
+                 n_latent_phenotypes=1,
+                 model_one_less_latent=None,
+                 spline_order=3,
+                 meshpoints=4,
+                 pseudocount=0.5,
+                 base=2,
+                 ):
+        """See main class docstring."""
+        # following here for multiple inheritance `__init__`:
+        # https://stackoverflow.com/a/50465583
+        MonotonicSplineEpistasis.__init__(
+                        binarymayp=binarymap,
+                        n_latent_phenotypes=n_latent_phenotypes,
+                        model_one_less_latent=model_one_less_latent,
+                        spline_order=spline_order,
+                        meshpoints=meshpoints)
+        BottleneckLikelihood.__init__(
+                        binarymayp=binarymap,
+                        n_latent_phenotypes=n_latent_phenotypes,
+                        model_one_less_latent=model_one_less_latent,
+                        pseudocount=pseudocount,
+                        base=base,
+                        )
+
+
 class NoEpistasisGaussianLikelihood(NoEpistasis,
                                     GaussianLikelihood):
     """No-epistasis model with Gaussian likelihood.
@@ -2680,6 +2820,22 @@ class NoEpistasisCauchyLikelihood(NoEpistasis,
     This class implements the :ref:`no_epistasis_function` with a
     :ref:`cauchy_likelihood`. See documentation for the base classes
     :class:`NoEpistasis`, :class:`CauchyLikelihood`, and
+    :class:`AbstractEpistasis` for details.
+
+    """
+
+    pass
+
+
+class NoEpistasisBottleneckLikelihood(NoEpistasis,
+                                      BottleneckLikelihood):
+    """No-epistasis model with bottleneck likelihood.
+
+    Note
+    ----
+    This class implements the :ref:`no_epistasis_function` with a
+    :ref:`bottleneck_likelihood`. See documentation for the base classes
+    :class:`NoEpistasis`, :class:`BottleneckLikelihood`, and
     :class:`AbstractEpistasis` for details.
 
     """
