@@ -1882,9 +1882,7 @@ class AbstractEpistasis(abc.ABC):
     def _postscale_params(self):
         """Rescale parameters after the global fitting.
 
-        Note
-        ----
-        This is an abstract method, the actual pre-scaling is done in concrete
+        This is an abstract method, any actual post-scaling is done in concrete
         subclasses.
 
         """
@@ -1933,6 +1931,19 @@ class AbstractEpistasis(abc.ABC):
     @abc.abstractmethod
     def _dloglik_dlikelihood_calc_params(self):
         """numpy.ndarray: Derivative log lik by `_likelihood_calc_params`."""
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _zero_wt_observed_pheno(self):
+        """bool: Re-scale wildtype observed phenotype to 0 after fitting?
+
+        Should be set to `False` for likelihood calculation methods that
+        fit observed phenotypes directly to functional scores directly,
+        and `True` for those that only fit observed phenotypes up to an
+        arbitrary additive constant.
+
+        """
         raise NotImplementedError
 
 
@@ -2072,6 +2083,11 @@ class CauchyLikelihood(AbstractEpistasis):
             self._cache[key].flags.writeable = False
         return self._cache[key]
 
+    @property
+    def _zero_wt_observed_pheno(self):
+        """False: Do not re-scale wildtype observed phenotype to 0."""
+        return False
+
 
 class BottleneckLikelihood(AbstractEpistasis):
     r"""Bottleneck likelihood calculation.
@@ -2148,8 +2164,10 @@ class BottleneckLikelihood(AbstractEpistasis):
             raise ValueError('`bottleneck` must be > 0')
         self._bottleneck = bottleneck
 
-        super().__init__(binarymap, n_latent_phenotypes=n_latent_phenotypes,
-                         model_one_less_latent=model_one_less_latent)
+        super().__init__(binarymap,
+                         n_latent_phenotypes=n_latent_phenotypes,
+                         model_one_less_latent=model_one_less_latent,
+                         )
 
     @property
     def bottleneck(self):
@@ -2298,6 +2316,11 @@ class BottleneckLikelihood(AbstractEpistasis):
         assert numpy.isfinite(self._cache[key]).all()
         return self._cache[key]
 
+    @property
+    def _zero_wt_observed_pheno(self):
+        """True: Re-scale wildtype observed phenotype to 0 after fitting."""
+        return True
+
 
 class GaussianLikelihood(AbstractEpistasis):
     """Gaussian likelihood calculation.
@@ -2429,6 +2452,11 @@ class GaussianLikelihood(AbstractEpistasis):
             self._cache[key].flags.writeable = False
         return self._cache[key]
 
+    @property
+    def _zero_wt_observed_pheno(self):
+        """False: Do not re-scale wildtype observed phenotype to 0."""
+        return False
+
 
 class NoEpistasis(AbstractEpistasis):
     """Non-epistatic model.
@@ -2493,8 +2521,23 @@ class NoEpistasis(AbstractEpistasis):
         pass
 
     def _postscale_params(self):
-        """Do nothing, as no need to postscale for :class:`NoEpistasis`."""
-        pass
+        """If `_zero_wt_observed_pheno`, all wildtype latent -> 0."""
+        if self._zero_wt_observed_pheno:
+            rescaled_latenteffects = self._latenteffects.copy()
+            oldloglik = self.loglik
+            for ki in range(self.n_latent_phenotypes):
+                rescaled_latenteffects[ki] = numpy.append(
+                                    rescaled_latenteffects[ki][: -1],
+                                    0.0)
+            self._latenteffects = rescaled_latenteffects
+            # make sure log likelihood hasn't changed too much
+            if not numpy.allclose(self.loglik, oldloglik):
+                raise EpistasisFittingError('post-scaling changed loglik '
+                                            f"{oldloglik} to {self.loglik}")
+            assert numpy.allclose(0, self.phenotypes_frombinary(
+                                      numpy.zeros((1, self._n_latent_effects)),
+                                      'observed')
+                                  )
 
 
 class MonotonicSplineEpistasis(AbstractEpistasis):
@@ -2826,18 +2869,32 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                                             0.0)
 
         self._latenteffects = rescaled_latenteffects
-        assert all((0 ==
-                    self.phenotypes_frombinary(
-                            numpy.zeros((1, self._n_latent_effects)),
-                            'latent',
-                            k=k)
-                    ).all()
+        assert all(0 == self.latent_phenotype_wt(k)
                    for k in range(1, self.n_latent_phenotypes + 1))
 
         # make sure log likelihood hasn't changed too much
         if not numpy.allclose(self.loglik, oldloglik):
             raise EpistasisFittingError('post-scaling latent effects changed '
                                         f"loglik {oldloglik} to {self.loglik}")
+
+        if self._zero_wt_observed_pheno:
+            rescaled_func_params = self._epistasis_func_params.copy()
+            c_alpha_index = self._epistasis_func_param_names.index('c_alpha')
+            for ki in range(self.n_latent_phenotypes):
+                k = ki + 1
+                wt_obs_pheno_k = self.epistasis_func(
+                                    numpy.array([self.latent_phenotype_wt(k)]),
+                                    k=k)[0]
+                rescaled_func_params[ki, c_alpha_index] -= wt_obs_pheno_k
+            self._epistasis_func_params = rescaled_func_params
+            if not numpy.allclose(self.loglik, oldloglik):
+                raise EpistasisFittingError(
+                            'post-scaling wt observed pheno changed likelihood'
+                            f" from loglik {oldloglik} to {self.loglik}")
+            assert numpy.allclose(0, self.phenotypes_frombinary(
+                                      numpy.zeros((1, self._n_latent_effects)),
+                                      'observed')
+                                  )
 
 
 class MonotonicSplineEpistasisGaussianLikelihood(MonotonicSplineEpistasis,
