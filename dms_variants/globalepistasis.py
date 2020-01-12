@@ -3015,6 +3015,7 @@ class NoEpistasisBottleneckLikelihood(NoEpistasis,
 def fit_models(binarymap,
                likelihood,
                *,
+               bottleneck=None,
                max_latent_phenotypes=1,
                ):
     r"""Fit and compare global epistasis models.
@@ -3049,9 +3050,13 @@ def fit_models(binarymap,
     binarymap : :class:`dms_variants.binarymap.BinaryMap`
         Contains the variants, their functional scores, and score variances.
         The models are fit to these data.
-    likelihood : {'Gaussian', 'Cauchy'}
+    likelihood : {'Gaussian', 'Cauchy', 'Bottleneck'}
         Likelihood calculation method to use when fitting models. See
         :ref:`likelihood_calculation`.
+    bottleneck : float or None
+        Required if using 'Bottleneck' `likelihood`. In that case, is
+        the experimentally estimated bottleneck between the pre-
+        and post-selection conditions.
     max_latent_phenotypes : int
         Maximum number of latent phenotypes that are potentially be fit.
         See the :math:`K` parameter in :ref:`multi_latent`.
@@ -3080,9 +3085,17 @@ def fit_models(binarymap,
     if likelihood == 'Gaussian':
         NoEpistasisClass = NoEpistasisGaussianLikelihood
         EpistasisClass = MonotonicSplineEpistasisGaussianLikelihood
+        bottleneck_args = {}
     elif likelihood == 'Cauchy':
         NoEpistasisClass = NoEpistasisCauchyLikelihood
         EpistasisClass = MonotonicSplineEpistasisCauchyLikelihood
+        bottleneck_args = {}
+    elif likelihood == 'Bottleneck':
+        NoEpistasisClass = NoEpistasisBottleneckLikelihood
+        EpistasisClass = MonotonicSplineEpistasisBottleneckLikelihood
+        if not bottleneck:
+            raise ValueError('specify `bottleneck` for Bottleneck likelihood')
+        bottleneck_args = {'bottleneck': bottleneck}
     else:
         raise ValueError(f"invalid `likelihood` {likelihood}")
 
@@ -3095,7 +3108,8 @@ def fit_models(binarymap,
     def fit(modelclass, description, k=1, model_one_less_latent=None):
         model = modelclass(binarymap,
                            n_latent_phenotypes=k,
-                           model_one_less_latent=model_one_less_latent)
+                           model_one_less_latent=model_one_less_latent,
+                           **bottleneck_args)
         start = time.time()
         _ = model.fit()
         return FitData(description=description,
@@ -3110,10 +3124,12 @@ def fit_models(binarymap,
     fitlist = [fit(NoEpistasisClass, 'no epistasis')]
 
     for k in range(1, max_latent_phenotypes + 1):
+        if max_latent_phenotypes == 1:
+            description = 'global epistasis'
+        else:
+            description = f"global epistasis with {k} latent phenotypes"
         fitlist.append(
-                fit(EpistasisClass,
-                    f"global epistasis with {k} latent phenotypes",
-                    k=k,
+                fit(EpistasisClass, description, k,
                     model_one_less_latent=None if k == 1 else fitlist[-1].model
                     )
                 )
