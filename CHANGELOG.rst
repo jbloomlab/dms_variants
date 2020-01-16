@@ -13,6 +13,10 @@ Added
 ++++++
 - The ability to fit **multiple** latent phenotypes in the global epistasis models. This adds the ``n_latent_phenotypes`` flag to ``AbstractEpistasis`` models, and changes calls to certain methods / properties of that abstract model class and its concrete subclasses.
 
+- The concept of "bottleneck" likelihoods in global epistasis models, implemented in ``BottleneckLikelihood``.
+
+- The ``bottlenecks`` module to estimate bottlenecks.
+
 - Added ``AbstractEpistasis.aic`` property.
 
 - Added ``globalepistasis.fit_models``
