@@ -59,6 +59,11 @@ def estimateBottleneck(df,
     density function of a normal distribution with mean :math:`\mu` and
     variance :math:`\sigma^2`.
 
+    Note that the returned value is the **per-variant** bottleneck (the total
+    bottleneck :math:`N` divided by the number of variants :math:`V`). The
+    reason we return the bottleneck per-variant is that you may have subsetted
+    on just some variants (i.e., wildtype ones) to estimate the bottleneck.
+
     Parameters
     ----------
     df : pandas.DataFrame
@@ -76,7 +81,8 @@ def estimateBottleneck(df,
     Returns
     -------
     float
-        The estimated bottleneck.
+        The estimated bottleneck per variant, which is the mean number of
+        copies of each variant that survives the bottleneck.
 
     Example
     -------
@@ -116,28 +122,36 @@ def estimateBottleneck(df,
        ...                           title='pre-selection counts/variant')
 
        Simulate counts after bottlenecks of various sizes, simulated
-       as re-norrmalized multinomial draws of bottleneck size
+       as re-normalized multinomial draws of bottleneck size
        and used to parameterize new multinomial draws of sequencing counts:
 
-       >>> for n in [nvariants // 2,
-       ...           nvariants, nvariants * 2,
-       ...           nvariants * 10,
-       ...           nvariants * 100]:
-       ...     n_bottle = numpy.random.multinomial(n, n_pre / n_pre.sum())
+       >>> for n_per_variant in [0.5, 2, 10, 100]:
+       ...     n_bottle = numpy.random.multinomial(
+       ...                                    int(n_per_variant * nvariants),
+       ...                                    n_pre / n_pre.sum())
        ...     freqs_bottle = n_bottle / n_bottle.sum()
        ...     n_post = numpy.random.multinomial(depth, freqs_bottle)
        ...     df['n_post'] = n_post
        ...     _ = plt.figure()
        ...     _ = df['n_post'].plot.hist(
-       ...                         bins=40,
-       ...                         title=f"post-selection, bottleneck {n:.1g}")
-       ...     n_est = estimateBottleneck(df)
-       ...     print(f"Actual = {n:.1g}, estimated = {n_est:.1g}")
-       Actual = 5e+04, estimated = 5e+04
-       Actual = 1e+05, estimated = 1e+05
-       Actual = 2e+05, estimated = 2e+05
-       Actual = 1e+06, estimated = 9e+05
-       Actual = 1e+07, estimated = 5e+06
+       ...                       bins=40,
+       ...                       title=f"post-selection, {n_per_variant:.1g}")
+       ...     n_per_variant_est = estimateBottleneck(df)
+       ...     print('Bottleneck per variant:\n'
+       ...           f"  Actual: {n_per_variant:.1f}\n"
+       ...           f"  Estimated: {n_per_variant_est:.1f}")
+       Bottleneck per variant:
+         Actual: 0.5
+         Estimated: 0.5
+       Bottleneck per variant:
+         Actual: 2.0
+         Estimated: 2.0
+       Bottleneck per variant:
+         Actual: 10.0
+         Estimated: 9.3
+       Bottleneck per variant:
+         Actual: 100.0
+         Estimated: 50.4
 
     """
     if len(df) < min_variants:
@@ -180,7 +194,7 @@ def estimateBottleneck(df,
 
     if not optres.success:
         raise ValueError(f"failed to fit bottleneck:\n{optres}")
-    return optres.x[0]
+    return optres.x[0] / len(df)
 
 
 if __name__ == '__main__':
