@@ -122,9 +122,12 @@ def estimateBottleneck(df,
        ...                           title='pre-selection counts/variant')
 
        Simulate counts after bottlenecks of various sizes, simulated
-       as re-normalized multinomial draws of bottleneck size
-       and used to parameterize new multinomial draws of sequencing counts:
+       as re-normalized multinomial draws of bottleneck size used to
+       to parameterize new multinomial draws of sequencing counts. Then
+       estimate the bottlenecks on the simulated data and compare to actual
+       value:
 
+       >>> estimates = []
        >>> for n_per_variant in [0.5, 2, 10, 100]:
        ...     n_bottle = numpy.random.multinomial(
        ...                                    int(n_per_variant * nvariants),
@@ -137,21 +140,19 @@ def estimateBottleneck(df,
        ...                       bins=40,
        ...                       title=f"post-selection, {n_per_variant:.1g}")
        ...     n_per_variant_est = estimateBottleneck(df)
-       ...     print('Bottleneck per variant:\n'
-       ...           f"  Actual: {n_per_variant:.1f}\n"
-       ...           f"  Estimated: {n_per_variant_est:.1f}")
-       Bottleneck per variant:
-         Actual: 0.5
-         Estimated: 0.5
-       Bottleneck per variant:
-         Actual: 2.0
-         Estimated: 2.0
-       Bottleneck per variant:
-         Actual: 10.0
-         Estimated: 9.3
-       Bottleneck per variant:
-         Actual: 100.0
-         Estimated: 50.4
+       ...     estimates.append((n_per_variant, n_per_variant_est))
+       >>> estimates_df = pd.DataFrame.from_records(
+       ...                                 estimates,
+       ...                                 columns=['actual', 'estimated'])
+       >>> estimates_df  # doctest: +SKIP
+
+       Confirm that estimates are good when bottleneck is small:
+
+       >>> numpy.allclose(
+       ...         estimates_df.query('actual <= 10')['actual'],
+       ...         estimates_df.query('actual <= 10')['estimated'],
+       ...         rtol=0.1)
+       True
 
     """
     if len(df) < min_variants:
