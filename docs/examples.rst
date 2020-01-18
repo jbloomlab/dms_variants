@@ -20,7 +20,6 @@ Below are a series of examples that illustrate usage of this functionality and o
    codonvariant_sim_data
    narrow_bottleneck
    predict_variants
-   multi_latent_phenos
    codonvariant_plot_formatting
    parsebarcodes_sim_data
 
