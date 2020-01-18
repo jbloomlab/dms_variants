@@ -275,7 +275,10 @@ Using the bottleneck likelihood also requires an estimation of the experimental
 bottleneck :math:`N_{\rm{bottle}}` when passaging the library from the pre-
 to post-selection conditions. A smaller bottleneck will correspond to more
 "noise" in the experiment, since random bottlenecking changes the frequencies
-of variants unpredictably.
+of variants unpredictably. You can either estimate :math:`N_{\rm{bottle}}`
+experimentally or from fluctuations in the relative frequencies of
+wildtype or synonymous variants, such as via
+:func:`dms_variants.bottlenecks.estimateBottleneck`.
 
 Given these experimentally measured parameters, the overall log likelihood is:
 
