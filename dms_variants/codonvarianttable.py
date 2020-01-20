@@ -16,11 +16,11 @@ import tempfile
 
 import Bio.SeqUtils.ProtParamData
 
+import numpy
+
 import pandas as pd
 
 import plotnine as p9
-
-import scipy
 
 import dms_variants.utils
 from dms_variants.constants import (AAS_NOSTOP,
@@ -667,18 +667,18 @@ class CodonVariantTable:
                 df_func_scores
                 .assign(
                     pseudocount=pseudocount,
-                    func_score=lambda x: scipy.log(
+                    func_score=lambda x: numpy.log(
                                          ((x.post_count + x.pseudocount) /
                                           (x.post_count_wt + x.pseudocount)) /
                                          ((x.pre_count + x.pseudocount) /
                                           (x.pre_count_wt + x.pseudocount))
-                                         ) / scipy.log(logbase),
+                                         ) / numpy.log(logbase),
                     func_score_var=lambda x: (
                                 1 / (x.post_count + x.pseudocount) +
                                 1 / (x.post_count_wt + x.pseudocount) +
                                 1 / (x.pre_count + x.pseudocount) +
                                 1 / (x.pre_count_wt + x.pseudocount)
-                                ) / (scipy.log(logbase)**2)
+                                ) / (numpy.log(logbase)**2)
                     )
                 # set column order in data frame
                 [['library', 'pre_sample', 'post_sample', by,
@@ -1398,7 +1398,7 @@ class CodonVariantTable:
 
         df = (df
               .assign(variant_call_support=lambda x:
-                      scipy.clip(x['variant_call_support'], None, max_support)
+                      numpy.clip(x['variant_call_support'], None, max_support)
                       )
               .groupby(['library', 'variant_call_support'],
                        observed=True)
@@ -1576,7 +1576,7 @@ class CodonVariantTable:
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
-        df[mut_col] = scipy.clip(df[mut_col], None, max_muts)
+        df[mut_col] = numpy.clip(df[mut_col], None, max_muts)
 
         df = (df
               .groupby(['library', 'sample', mut_col],

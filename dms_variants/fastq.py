@@ -14,7 +14,7 @@ import itertools
 import os
 import tempfile  # noqa: F401
 
-import scipy
+import numpy
 
 
 def qual_str_to_array(q_str, *, offset=33):
@@ -38,7 +38,7 @@ def qual_str_to_array(q_str, *, offset=33):
     array([ 0, 40, 25, 15, 38])
 
     """
-    return scipy.array([ord(q) - offset for q in q_str],
+    return numpy.array([ord(q) - offset for q in q_str],
                        dtype='int')
 
 
