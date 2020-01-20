@@ -325,12 +325,11 @@ def simulateSampleCounts(*,
             muts = codon_substitutions.split()
             if len(muts) == 0 or random.random() < 0.5:
                 # add mutation
-                mutatedsites = set(map(int,
-                                       [re.match(f"^({'|'.join(CODONS)})"
-                                                 r'(?P<r>\d+)'
-                                                 f"({'|'.join(CODONS)})$",
-                                                 mut).group('r')
-                                        for mut in muts]))
+                mutatedsites = {int(re.match(f"^({'|'.join(CODONS)})"
+                                             r'(?P<r>\d+)'
+                                             f"({'|'.join(CODONS)})$",
+                                             mut).group('r'))
+                                for mut in muts}
                 unmutatedsites = [r for r in variants.sites
                                   if r not in mutatedsites]
                 if not unmutatedsites:
