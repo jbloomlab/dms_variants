@@ -44,11 +44,23 @@ class BinaryMap:
         :meth:`dms_variants.codonvarianttable.CodonVariantTable.func_scores`.
     substitutions_col : str
         Column in `func_scores_df` giving substitutions for each variant.
-    func_score_col : str
-        Column in `func_scores_df` giving functional score for each variant.
+    func_score_col : str or None
+        Column in `func_scores_df` giving functional score for each variant,
+        or `None` if no functional scores available.
     func_score_var_col : str or None
         Column in `func_scores_df` giving variance on functional score
         estimate, or `None` if no variance available.
+    n_pre_col : str or None
+        Column in `func_scores_df` giving pre-selection counts for each
+        variant, or `None` if counts not available.
+    n_post_col : str or None
+        Column in `func_scores_df` giving post-selection counts for each
+        variant, or `None` if counts not available.
+    cols_optional : True
+        All of the `*_col` parameters are optional except `substitutions_col`.
+        If `cols_optional` is `True`, the absence of any of these columns
+        is taken the same as setting that column's parameter to zero: the
+        corresponding attribute is set to `None`.
     alphabet : list or tuple
         Allowed characters (e.g., amino acids or codons).
     expand : bool
@@ -83,6 +95,12 @@ class BinaryMap:
     func_scores_var : numpy.ndarray of floats, or None
         A 1D array of length `nvariants` giving variance on score for each
         variant, or `None` if no variance estimates provided.
+    n_pre : numpy.dnarray of integers, or None
+        A 1D array of length `nvariants` giving pre-selection counts for each
+        variant, or `None` if counts not provided.
+    n_post : numpy.dnarray of integers, or None
+        A 1D array of length `nvariants` giving post-selection counts for each
+        variant, or `None` if counts not provided.
     alphabet : tuple
         Allowed characters (e.g., amino acids or codons).
     substitutions_col : str
@@ -200,7 +218,74 @@ class BinaryMap:
     ...     assert subs_from_df == binmap_expand.binary_to_sub_str(binvar)
     ...     assert all(binvar == binmap_expand.sub_str_to_binary(subs_from_df))
 
+    Note that `binamp` does not have `n_pre` and `n_post` attributes set:
+
+    >>> binmap.n_pre == binmap.n_post == None
+    True
+
+    We would not have been able to initialize `binmap` if we weren't using
+    the `cols_optional` flag:
+
+    >>> BinaryMap(func_scores_df, alphabet=alphabet, cols_optional=False)
+    Traceback (most recent call last):
+      ...
+    ValueError: `func_scores_df` lacks column pre_count
+
+    Now assign values to `n_pre` and `n_post` attributes:
+
+    True
+    >>> func_scores_df_counts = (
+    ...         func_scores_df.assign(pre_count=[10, 20, 15, 5, 6, 8],
+    ...                               post_count=[0, 3, 12, 11, 9, 8])
+    ...         )
+    >>> binmap_counts = BinaryMap(func_scores_df_counts, alphabet=alphabet)
+    >>> binmap_counts.n_pre
+    array([10, 20, 15,  5,  6,  8])
+    >>> binmap_counts.n_post
+    array([ 0,  3, 12, 11,  9,  8])
+
     """
+
+    def __eq__(self, other):
+        """Test if equal to object `other`.
+
+        >>> df = pd.DataFrame({'aa_substitutions': ['', 'M1A'],
+        ...                    'func_score': [0.0, -1.2],
+        ...                    'func_score_var': [0.1, 0.15]})
+        >>> df2 = df.copy()
+        >>> df3 = df.assign(func_score=lambda x: x['func_score'] + 0.1)
+        >>> bmap1 = BinaryMap(df)
+        >>> bmap2 = BinaryMap(df2)
+        >>> bmap3 = BinaryMap(df3)
+        >>> bmap1 == bmap2
+        True
+        >>> bmap1 == bmap3
+        False
+
+        """
+        # following here: https://stackoverflow.com/a/390640
+        if type(other) != type(self):
+            return False
+        elif self.__dict__.keys() != other.__dict__.keys():
+            return False
+        else:
+            for key, val in self.__dict__.items():
+                val2 = getattr(other, key)
+                if type(val) != type(val2):
+                    return False
+                elif isinstance(val, numpy.ndarray):
+                    if not numpy.array_equal(val, val2):
+                        return False
+                elif isinstance(val, scipy.sparse.csr.csr_matrix):
+                    if (val - val2).nnz:
+                        return False
+                elif isinstance(val, (pd.DataFrame, pd.Series)):
+                    if not val.equals(val2):
+                        return False
+                else:
+                    if val != val2:
+                        return False
+            return True
 
     def __init__(self,
                  func_scores_df,
@@ -208,6 +293,9 @@ class BinaryMap:
                  substitutions_col='aa_substitutions',
                  func_score_col='func_score',
                  func_score_var_col='func_score_var',
+                 n_pre_col='pre_count',
+                 n_post_col='post_count',
+                 cols_optional=True,
                  alphabet=dms_variants.constants.AAS_WITHSTOP,
                  expand=False,
                  wtseq=None,
@@ -216,27 +304,29 @@ class BinaryMap:
         self.nvariants = len(func_scores_df)
         self.alphabet = tuple(alphabet)
 
-        if func_score_col not in func_scores_df.columns:
-            raise ValueError('`func_scores_df` lacks `func_score_col` ' +
-                             func_score_col)
-        self.func_scores = func_scores_df[func_score_col].values.astype(float)
-        assert self.func_scores.shape == (self.nvariants,)
-        if any(numpy.isnan(self.func_scores)):
-            raise ValueError('some functional scores are NaN')
-
-        if func_score_var_col is None:
-            self.func_scores_var = None
-        else:
-            if func_score_var_col not in func_scores_df.columns:
-                raise ValueError('`func_scores_df` lacks `func_score_var_col` '
-                                 + func_score_var_col)
-            self.func_scores_var = (func_scores_df[func_score_var_col]
-                                    .values.astype(float))
-            assert self.func_scores_var.shape == (self.nvariants,)
-            if any(numpy.isnan(self.func_scores_var)):
-                raise ValueError('some functional score variances are NaN')
-            if any(self.func_scores_var < 0):
-                raise ValueError('some functional score variances are < 0')
+        for col, attr, dtype, lim_min, lim_max in [
+                (func_score_col, 'func_scores', float, None, None),
+                (func_score_var_col, 'func_scores_var', float, 0, None),
+                (n_pre_col, 'n_pre', int, 0, None),
+                (n_post_col, 'n_post', int, 0, None),
+                ]:
+            if col not in func_scores_df.columns:
+                if cols_optional:
+                    setattr(self, attr, None)
+                else:
+                    raise ValueError(f"`func_scores_df` lacks column {col}")
+            else:
+                vals = func_scores_df[col].values.astype(dtype)
+                if not all(vals == func_scores_df[col].values):
+                    raise ValueError(f"{col} not of type {dtype}")
+                assert vals.shape == (self.nvariants,)
+                if any(numpy.isnan(vals)):
+                    raise ValueError(f"some entries in {col} are NaN")
+                if (lim_min is not None) and any(vals < lim_min):
+                    raise ValueError(f"some entries in {col} < {lim_min}")
+                if (lim_max is not None) and any(vals > lim_max):
+                    raise ValueError(f"some entries in {col} < {lim_min}")
+                setattr(self, attr, vals)
 
         # get list of substitution strings for each variant
         if substitutions_col not in func_scores_df.columns:
@@ -258,16 +348,16 @@ class BinaryMap:
             else:
                 raise ValueError(f"invalid alphabet character: {char}")
         chars = '|'.join(chars)
-        self._sub_regex = re.compile(rf"(?P<wt>{chars})"
-                                     rf"(?P<site>\d+)"
-                                     rf"(?P<mut>{chars})")
+        self._sub_regex = (rf"(?P<wt>{chars})"
+                           rf"(?P<site>\d+)"
+                           rf"(?P<mut>{chars})")
 
         # build mapping from substitution to binary map index
         wts = {}
         muts = collections.defaultdict(set)
         for subs in substitutions:
             for sub in subs.split():
-                m = self._sub_regex.fullmatch(sub)
+                m = re.fullmatch(self._sub_regex, sub)
                 if not m:
                     raise ValueError(f"could not match substitution: {sub}")
                 site = int(m.group('site'))
@@ -365,7 +455,7 @@ class BinaryMap:
         sites = set()
         indices = []
         for sub in sub_str.split():
-            m = self._sub_regex.fullmatch(sub)
+            m = re.fullmatch(self._sub_regex, sub)
             if not m:
                 raise ValueError(f"substitution {sub} in {sub_str} invalid "
                                  f"for alphabet {self.alphabet}")
@@ -403,7 +493,7 @@ class BinaryMap:
         if not set(binary).issubset({0, 1}):
             raise ValueError(f"`binary` not all 0 or 1:\n{binary}")
         subs = [s for s in map(self.i_to_sub, numpy.flatnonzero(binary)) if s]
-        sites = [self._sub_regex.fullmatch(sub) for sub in subs]
+        sites = [re.fullmatch(self._sub_regex, sub) for sub in subs]
         if len(sites) != len(set(sites)):
             raise ValueError('`binary` specifies multiple substitutions '
                              f"at same site:\n{binary}\n{' '.join(subs)}")

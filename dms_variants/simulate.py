@@ -325,12 +325,11 @@ def simulateSampleCounts(*,
             muts = codon_substitutions.split()
             if len(muts) == 0 or random.random() < 0.5:
                 # add mutation
-                mutatedsites = set(map(int,
-                                       [re.match(f"^({'|'.join(CODONS)})"
-                                                 r'(?P<r>\d+)'
-                                                 f"({'|'.join(CODONS)})$",
-                                                 mut).group('r')
-                                        for mut in muts]))
+                mutatedsites = {int(re.match(f"^({'|'.join(CODONS)})"
+                                             r'(?P<r>\d+)'
+                                             f"({'|'.join(CODONS)})$",
+                                             mut).group('r'))
+                                for mut in muts}
                 unmutatedsites = [r for r in variants.sites
                                   if r not in mutatedsites]
                 if not unmutatedsites:
@@ -694,7 +693,7 @@ class SigmoidPhenotypeSimulator:
         bins : int
             Number of bins in histogram.
         wt_vline : bool
-            Draw a vertical line at the wildtype latent phenotype.
+            Draw a vertical line at the wildtype value.
 
         Returns
         -------
@@ -722,6 +721,182 @@ class SigmoidPhenotypeSimulator:
         if wt_vline:
             p = p + p9.geom_vline(
                         xintercept=func(''),
+                        color=CBPALETTE[1],
+                        linetype='dashed')
+
+        return p
+
+
+class MultiLatentSigmoidPhenotypeSimulator:
+    r"""Simulate phenotype that derives from several latent phenotypes.
+
+    Note
+    -----
+    The observed phenotype is the sum of several sigmoid-transformed latent
+    phenotypes. Specifically, let there be :math:`k = 1, \ldots, K` latent
+    phenotypes, each of which is transformed into an observed phenotype
+    :math:`p_{\rm{observed}}^k as described in the docs for
+    :class:`SigmoidPhenotypeSimulator`. The overall observed phenotype is:
+
+    .. math::
+
+       p_{\rm{observed}} = \sum_k p_{\rm{observed}}^k
+
+    and the observed enrichment is:
+
+    .. math::
+
+       E_{\rm{observed}} = 2^{p_{\rm{observed}}}.
+
+    Parameters
+    -----------
+    sigmoid_phenotype_simulators : list
+        A list of :class:`SigmoidPhenotypeSimulator` objects, each of which
+        transforms one of the latent phenotypes to a component of the
+        observed phenotype.
+
+    Attributes
+    ----------
+    n_latent_phenotypes : int
+        The number of latent phenotypes.
+
+    """
+
+    def __init__(self, sigmoid_phenotype_simulators):
+        """See main class docstring."""
+        self.n_latent_phenotypes = len(sigmoid_phenotype_simulators)
+        if self.n_latent_phenotypes < 1:
+            raise ValueError('`sigmoid_phenotype_simulators` cannot be empty')
+        if not all(isinstance(m, SigmoidPhenotypeSimulator) for m in
+                   sigmoid_phenotype_simulators):
+            raise ValueError('entries in `sigmoid_phenotype_simulators` not '
+                             'all of SigmoidPhenotypeSimulator type')
+        self._sigmoid_phenotype_simulators = sigmoid_phenotype_simulators
+        self._all_subs = list(self._sigmoid_phenotype_simulators[0]
+                              .muteffects.keys())
+        for m in self._sigmoid_phenotype_simulators[1:]:
+            if set(self._all_subs) != set(m.muteffects.keys()):
+                raise ValueError('entries in `sigmoid_phenotype_simulators` '
+                                 'do not all represent same gene sequence')
+
+    def observedEnrichment(self, subs):
+        """Observed enrichment of a variant.
+
+        Parameters
+        ----------
+        subs : str
+            Space-delimited list of amino-acid substitutions.
+
+        Returns
+        -------
+        float
+            Observed enrichment relative to wildtype.
+
+        """
+        return 2**self.observedPhenotype(subs)
+
+    def observedPhenotype(self, subs):
+        """Observed phenotype of a variant.
+
+        Parameters
+        ----------
+        subs : str
+            Space-delimited list of amino-acid substitutions.
+
+        Returns
+        -------
+        float
+            Observed phenotype of a variant.
+
+        """
+        return sum(m.observedPhenotype(subs) for m in
+                   self._sigmoid_phenotype_simulators)
+
+    def latentPhenotype(self, subs, k):
+        """Latent phenotype :math:`k` of a variant.
+
+        Parameters
+        ----------
+        subs : str
+            Space-delimited list of amino-acid substitutions.
+        k : int
+            Latent phenotype to get (1 <= `k` <=
+            :attr:`MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes`).
+
+        Returns
+        -------
+        float
+            Latent phenotype `k`.
+
+        """
+        if isinstance(k, int) and 1 <= k <= self.n_latent_phenotypes:
+            return (self._sigmoid_phenotype_simulators[k - 1]
+                    .observedPhenotype(subs))
+        else:
+            raise ValueError(f"invalid `k` of {k}")
+
+    def plotMutsHistogram(self,
+                          value, *,
+                          k=None,
+                          mutant_order=1,
+                          bins=30,
+                          wt_vline=True,
+                          ):
+        """Plot distribution of phenotype for all mutants of a given order.
+
+        Parameters
+        ----------
+        value : {'latentPhenotype', 'observedPhenotype', 'observedEnrichment'}
+            What value to plot.
+        k : int or None
+            If value is `latentPhenotype, which phenotype (1 <= `k` <=
+            :attr:`MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes`)
+            to plot.
+        mutant_order : int
+            Plot mutations of this order. Currently only works for 1
+            (single mutants).
+        bins : int
+            Number of bins in histogram.
+        wt_vline : bool
+            Draw a vertical line at the wildtype value.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+            Histogram of phenotype for all mutants.
+
+        """
+        if mutant_order != 1:
+            raise ValueError('only implemented for `mutant_order` of 1')
+
+        if value == 'latentPhenotype':
+            if isinstance(k, int) and 1 <= k <= self.n_latent_phenotypes:
+                kwargs = {'k': k}
+                xlabel = f"latentPhenotype {k}"
+            else:
+                raise ValueError(f"invalid `k` of {k}")
+        else:
+            kwargs = {}
+            xlabel = value
+
+        if value not in {'latentPhenotype', 'observedPhenotype',
+                         'observedEnrichment'}:
+            raise ValueError(f"invalid `value` of {value}")
+        func = getattr(self, value)
+
+        xlist = [func(m, **kwargs) for m in self._all_subs]
+
+        p = (p9.ggplot(pd.DataFrame({value: xlist}),
+                       p9.aes(value)) +
+             p9.geom_histogram(bins=bins) +
+             p9.theme(figure_size=(3.5, 2.5)) +
+             p9.ylab(f"number of {mutant_order}-mutants") +
+             p9.xlab(xlabel)
+             )
+
+        if wt_vline:
+            p = p + p9.geom_vline(
+                        xintercept=func('', **kwargs),
                         color=CBPALETTE[1],
                         linetype='dashed')
 
