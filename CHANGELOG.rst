@@ -13,6 +13,8 @@ Fixed
 ++++++
 - Show estimates data frame for ``bottlenecks.estimateBottleneck`` doctest.
 
+- Remove use of deprecated ``scipy.array`` for ``numpy.array``.
+
 0.5.0
 --------
 
