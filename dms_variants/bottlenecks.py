@@ -145,6 +145,11 @@ def estimateBottleneck(df,
        ...                                 estimates,
        ...                                 columns=['actual', 'estimated'])
        >>> estimates_df  # doctest: +SKIP
+          actual  estimated
+       0     0.5        0.5
+       1     2.0        2.0
+       2    10.0        9.3
+       3   100.0       50.4
 
        Confirm that estimates are good when bottleneck is small:
 

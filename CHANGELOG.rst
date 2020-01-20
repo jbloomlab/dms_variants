@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.5.1
+-------
+
+Fixed
+++++++
+- Show estimates data frame for ``bottlenecks.estimateBottleneck`` doctest.
+
 0.5.0
 --------
 
