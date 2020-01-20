@@ -16,11 +16,11 @@ import tempfile
 
 import Bio.SeqUtils.ProtParamData
 
+import numpy
+
 import pandas as pd
 
 import plotnine as p9
-
-import numpy
 
 import dms_variants.utils
 from dms_variants.constants import (AAS_NOSTOP,
