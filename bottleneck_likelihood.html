@@ -1,0 +1,528 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Bottleneck likelihood for global epistasis models &#8212; dms_variants 0.5.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Bottleneck-likelihood-for-global-epistasis-models">
+<h1>Bottleneck likelihood for global epistasis models<a class="headerlink" href="#Bottleneck-likelihood-for-global-epistasis-models" title="Permalink to this headline">¶</a></h1>
+<p>This Python Jupyter notebook deals with a technical point: how to calculate the log likelihoods for the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">global epistasis models</a>. Specifically, it explains and illustrates the “bottleneck likelihood” calculation method, which is a way of calculating the likelihoods of variant phenotypes given sequencing counts from deep mutational scanning experiments that are subject to substantial bottlenecks when going from the
+pre- to post-selection conditions.</p>
+<div class="section" id="Motivation">
+<h2>Motivation<a class="headerlink" href="#Motivation" title="Permalink to this headline">¶</a></h2>
+<p>The bottleneck likelihood is appropriate when most noise in the experiment comes from a bottleneck when passaging the library from the pre-selection to post-selection condition. This will be the case when the total pre- and post-selection sequencing depths greatly exceed the number of variants that were physically passaged from the pre-selection library to the post-selection one. At least in Bloom lab deep mutational scanning experiments, this condition is quite common.</p>
+<p>When experimental bottlenecks are smaller than the sequencing depths, noise in the statistical estimation of the pre- and post-selection variant frequencies (which forms the basis for the Gaussian likelihood calculations of <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>) is overwhelmed by the experimental noise associated with the bottlenecking. Therefore, we can get more accurate calculations by focusing on making sure the likelihood calculation accounts for the
+bottlenecks.</p>
+</div>
+<div class="section" id="Mathematical-definition">
+<h2>Mathematical definition<a class="headerlink" href="#Mathematical-definition" title="Permalink to this headline">¶</a></h2>
+<p>Let <span class="math notranslate nohighlight">\(n_v^{\text{pre}}\)</span> and <span class="math notranslate nohighlight">\(n_v^{\text{post}}\)</span> be the pre-selection and post-selection counts for variant <span class="math notranslate nohighlight">\(v\)</span>. The estimated frequencies of the variant pre- and post-selection are</p>
+<div class="math notranslate nohighlight">
+\[f_v^{\text{pre}} = \frac{n_v^{\text{pre}} + C}{\sum_{v'} \left(n_{v'}^{\text{pre}} + C\right)}\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[f_v^{\text{post}} = \frac{n_v^{\text{post}} + C}{\sum_{v'} \left(n_{v'}^{\text{post}} + C\right)}\]</div>
+<p>where <span class="math notranslate nohighlight">\(C\)</span> is a pseudocount which by default is 0.5. Because the sequencing depth greatly exceeds the experiment bottleneck, we disregard statistical error in the estimation of <span class="math notranslate nohighlight">\(f_v^{\text{pre}}\)</span> and <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span> and instead take these as exact measurements.</p>
+<p>Let <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> be the bottleneck when passaging the pre-selection library to the post-selection condition. We require an external estimation of <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span>, which can be done experimentally or by applying the <code class="docutils literal notranslate"><span class="pre">bottlenecks.estimateBottleneck</span></code> function to the wildtype variants in the library. As mentioned above, we assume this bottleneck is much smaller than the sequencing depth (meaning that
+<span class="math notranslate nohighlight">\(N_{\text{bottle}} \ll \sum_{v} n_{v}^{\text{pre}}, \sum_{v} n_{v}^{\text{pre}}\)</span>). Let <span class="math notranslate nohighlight">\(n_v^{\text{bottle}}\)</span> be the number of variants <span class="math notranslate nohighlight">\(v\)</span> that survive the bottleneck, with <span class="math notranslate nohighlight">\(N_{\text{bottle}} = \sum_v n_v^{\text{bottle}}\)</span>. Note that <span class="math notranslate nohighlight">\(n_v^{\text{bottle}}\)</span> is <strong>not</strong> an experimental observable.</p>
+<p>After the bottleneck, selection will change the frequency of variant <span class="math notranslate nohighlight">\(v\)</span> by an amount proportional to <span class="math notranslate nohighlight">\(2^{p\left(v\right)}\)</span> where <span class="math notranslate nohighlight">\(p\left(v\right)\)</span> is the observed phenotype of the variant.</p>
+<p>So the frequency <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span> of a variant after selection is related to <span class="math notranslate nohighlight">\(n_v^{\text{bottle}}\)</span> and <span class="math notranslate nohighlight">\(p\left(v\right)\)</span> by:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+f_v^{\text{post}}
+&amp;=&amp;
+\frac{n_v^{\text{bottle}} 2^{p\left(v\right)}}
+     {\sum_{v'=1}^V n_{v'}^{\text{bottle}} 2^{p\left(v'\right)}} \\
+&amp;\approx&amp;
+\frac{n_v^{\text{bottle}} 2^{p\left(v\right)}}
+     {N_{\text{bottle}} \sum_{v'=1}^V f_{v'}^{\text{pre}} 2^{p\left(v'\right)}}, \\
+\end{eqnarray}\end{split}\]</div>
+<p>where the approximation on the second line involves assuming that although the bottleneck changes the frequency of individual variants, the mean population fitness after the bottleneck is the same as the mean population fitness before the bottleneck (in other words, assuming that <span class="math notranslate nohighlight">\(\sum_{v=1}^V f_v^{\text{pre}} 2^{p\left(v\right)} \approx \sum_{v=1}^V \frac{n_{v'}^{\text{bottle}}}{N_{\text{bottle}}} 2^{p\left(v\right)}\)</span>). We can then solve the above equation for <span class="math notranslate nohighlight">\(n_v^{\text{bottle}}\)</span>
+to yield:</p>
+<div class="math notranslate nohighlight">
+\[ n_v^{\text{bottle}}
+=
+\frac{f_v^{\text{post}} N_{\text{bottle}} \sum_{v'=1}^V f_{v'}^{\text{pre}} 2^{p\left(v'\right)}}{2^{p\left(v\right)}}.\]</div>
+<p>We also know that <span class="math notranslate nohighlight">\(n_v^{\text{bottle}}\)</span> should be Poisson distributed with mean <span class="math notranslate nohighlight">\(N_{\text{bottle}} \times f_v^{\text{pre}}\)</span>. In other words,</p>
+<div class="math notranslate nohighlight">
+\[\Pr\left(n_v^{\text{bottle}} \mid N_{\text{bottle}}, f_v^{\text{pre}}\right) = \exp\left(-N_{\text{bottle}} f_v^{\text{pre}}\right) \frac{\left(N_{\text{bottle}} f_v^{\text{pre}}\right)^{n_v^{\text{bottle}}}}{\Gamma\left(n_v^{\text{bottle}} + 1\right)}\]</div>
+<p>where we have used the “continuous Poisson distribution” defined by <a class="reference external" href="https://arxiv.org/abs/1303.5990">Ilenko (2013)</a> and <a class="reference external" href="http://pubs.sciepub.com/ijdeaor/2/1/2/">Abid and Mohammed (2016)</a>, but dropped the normalizing factor <span class="math notranslate nohighlight">\(c_{\lambda}\)</span> from their equations as the likelihoods do not have to integrate to one. In the above equation, <span class="math notranslate nohighlight">\(\Gamma\)</span> is the <a class="reference external" href="https://en.wikipedia.org/wiki/Gamma_function">gamma function</a>.</p>
+<p>So given values for <span class="math notranslate nohighlight">\(f_v^{\text{pre}}\)</span>, <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span>, <span class="math notranslate nohighlight">\(p\left(v\right)\)</span>, and <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span>, we can calculate the log likelihood for variant <span class="math notranslate nohighlight">\(v\)</span> of the implied <span class="math notranslate nohighlight">\(n_v^{\text{bottle}}\)</span> values as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{eqnarray}
+\mathcal{L}_v
+&amp;=&amp;
+\ln \left[\prod_{v=1}^V \exp\left(-N_{\text{bottle}} f_v^{\text{pre}}\right) \frac{\left(N_{\text{bottle}} f_v^{\text{pre}}\right)^{n_v^{\text{bottle}}}}{\Gamma\left(n_v^{\text{bottle}} + 1\right)}\right] \\
+&amp;=&amp;
+n_v^{\text{bottle}} \ln \left(N_{\text{bottle}} f_v^{\text{pre}}\right) -
+\ln \Gamma\left(n_v^{\text{bottle}} + 1\right) -
+N_{\text{bottle}} f_v^{\text{pre}}.
+\end{eqnarray}\end{split}\]</div>
+<p>In practice, the <span class="math notranslate nohighlight">\(f_v^{\text{pre}}\)</span> and <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span> values are calculated from the experimentally observed counts, and <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> is extimated experimentally—so fitting involves maximizing the likelihood with respect to the model-predicted phenotypes <span class="math notranslate nohighlight">\(p\left(v\right)\)</span>.</p>
+<p>Note also that the above formulation, the observed phenotypes <span class="math notranslate nohighlight">\(p\left(v\right)\)</span> can be arbitrarily scaled by adding any constant. So after fitting, we then re-scale them to set the observed phenotype of the wildtype to <span class="math notranslate nohighlight">\(p\left(\text{wt}\right) = 0\)</span>.</p>
+</div>
+<div class="section" id="Plotting-bottleneck-likelihood-versus-Gaussian-likelihood">
+<h2>Plotting bottleneck likelihood versus Gaussian likelihood<a class="headerlink" href="#Plotting-bottleneck-likelihood-versus-Gaussian-likelihood" title="Permalink to this headline">¶</a></h2>
+<p>Here we will plot the bottleneck likelihood as a function of various parameters, and compare it to the more standard Gaussian log likelihood.</p>
+<p>First, import the necessary Python modules:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">scipy.special</span>
+</pre></div>
+</div>
+</div>
+<p>In the plotting below, we don’t include the pseudocounts. We set plausible numbers for <span class="math notranslate nohighlight">\(f_v^{\text{pre}}\)</span>, and the mean enrichment <span class="math notranslate nohighlight">\(\sum_{v'=1}^V f_{v'}^{\text{pre}} 2^{p\left(v\right)}\)</span>. We then consider what is the likelihood of observing various values of <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">f_pre_v</span> <span class="o">=</span> <span class="mf">1e-5</span>
+<span class="n">mean_enrichment</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">f_post_v</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">f_pre_v</span> <span class="o">/</span> <span class="mi">100</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">f_pre_v</span> <span class="o">*</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now for a range of values of <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> and <span class="math notranslate nohighlight">\(p\left(v\right)\)</span> we compute the bottleneck log likelihood <span class="math notranslate nohighlight">\(\mathcal{L}_v\)</span>. We also compute the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#gaussian-likelihood">Gaussian log likelihood</a>, denoted <span class="math notranslate nohighlight">\(\mathcal{G}_v\)</span>, under the assumption that the sequencing depth is <span class="math notranslate nohighlight">\(10^7\)</span>, which implies an expectation of 100 counts of the variant pre-selection. The variances for the Gaussian log
+likelihood are calculated using the equation of <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>, both without (<span class="math notranslate nohighlight">\(\mathcal{G}_v\)</span>) and with <span class="math notranslate nohighlight">\(\mathcal{G}_v^{\text{HOC}}\)</span> adding some “house of cards” epistasis:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">tot_seq_depth</span> <span class="o">=</span> <span class="mf">1e7</span>  <span class="c1"># used for Gaussian log likelihood</span>
+<span class="n">epistasis_HOC</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># house of cards epistasis for Gaussian log likelihood</span>
+<span class="n">F_pre_wt</span> <span class="o">=</span> <span class="n">F_post_wt</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># wildtype frequencies for Gaussian log liklelihood</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({},</span>
+                  <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;N_bottle&#39;</span><span class="p">,</span> <span class="s1">&#39;p_v&#39;</span><span class="p">,</span> <span class="s1">&#39;f_post_v&#39;</span><span class="p">,</span> <span class="s1">&#39;L_v&#39;</span><span class="p">,</span> <span class="s1">&#39;G_v&#39;</span><span class="p">,</span> <span class="s1">&#39;G_v_HOC&#39;</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">N_bottle</span><span class="p">,</span> <span class="n">p_v</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">([</span><span class="mf">5e4</span><span class="p">,</span> <span class="mf">1e5</span><span class="p">,</span> <span class="mf">5e5</span><span class="p">,</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mf">5e6</span><span class="p">],</span>
+                                       <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]):</span>
+
+    <span class="c1"># bottleneck log likelihood</span>
+    <span class="n">n_v_bottle</span> <span class="o">=</span> <span class="n">f_post_v</span> <span class="o">*</span> <span class="n">N_bottle</span> <span class="o">*</span> <span class="n">mean_enrichment</span> <span class="o">/</span> <span class="mi">2</span><span class="o">**</span><span class="n">p_v</span>
+    <span class="n">L_v</span> <span class="o">=</span> <span class="n">n_v_bottle</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">N_bottle</span> <span class="o">*</span> <span class="n">f_pre_v</span><span class="p">)</span> <span class="o">-</span>  <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">loggamma</span><span class="p">(</span><span class="n">n_v_bottle</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">N_bottle</span> <span class="o">*</span> <span class="n">f_pre_v</span>
+
+    <span class="c1"># Gaussian log likelihood</span>
+    <span class="n">c_v_pre</span> <span class="o">=</span> <span class="n">f_pre_v</span> <span class="o">*</span> <span class="n">tot_seq_depth</span>
+    <span class="n">c_v_post</span> <span class="o">=</span> <span class="n">f_post_v</span> <span class="o">*</span> <span class="n">tot_seq_depth</span>
+    <span class="n">c_wt_pre</span> <span class="o">=</span> <span class="n">F_pre_wt</span> <span class="o">*</span> <span class="n">tot_seq_depth</span>
+    <span class="n">c_wt_post</span> <span class="o">=</span> <span class="n">F_post_wt</span> <span class="o">*</span> <span class="n">tot_seq_depth</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">c_v_pre</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">c_v_post</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">c_wt_pre</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">c_wt_post</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">c_v_post</span> <span class="o">/</span> <span class="n">c_v_pre</span><span class="p">)</span> <span class="o">-</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">c_wt_post</span> <span class="o">/</span> <span class="n">c_wt_pre</span><span class="p">)</span>
+    <span class="n">G_v</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">p_v</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">))</span>
+    <span class="n">G_v_HOC</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">p_v</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="n">epistasis_HOC</span><span class="p">))</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;N_bottle&#39;</span><span class="p">:</span> <span class="n">N_bottle</span><span class="p">,</span>
+                                 <span class="s1">&#39;p_v&#39;</span><span class="p">:</span> <span class="n">p_v</span><span class="p">,</span>
+                                 <span class="s1">&#39;f_post_v&#39;</span><span class="p">:</span> <span class="n">f_post_v</span><span class="p">,</span>
+                                 <span class="s1">&#39;L_v&#39;</span><span class="p">:</span> <span class="n">L_v</span><span class="p">,</span>
+                                 <span class="s1">&#39;G_v&#39;</span><span class="p">:</span> <span class="n">G_v</span><span class="p">,</span>
+                                 <span class="s1">&#39;G_v_HOC&#39;</span><span class="p">:</span> <span class="n">G_v_HOC</span><span class="p">,</span>
+                                 <span class="p">}))</span>
+</pre></div>
+</div>
+</div>
+<p>Below we plot all the log likelihoods. The vertical line shows the pre-selection frequency (<span class="math notranslate nohighlight">\(f_v^{\text{pre}}\)</span>). The values of <span class="math notranslate nohighlight">\(p\left(v\right)\)</span> are faceted in columns (top labels), and the values of <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> are faceted in rows (right labels).</p>
+<p>Note that a bottleneck of <span class="math notranslate nohighlight">\(10^5\)</span> corresponds to an expectation that one copy of the variant will get through. As seen below, the bottleneck likelihood puts very little penalty on a low post-selection frequency (<span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span> when there is a strong bottleneck, as there is a substantial chance the variant is randomly lost. However, as <span class="math notranslate nohighlight">\(1 / N_{\text{bottle}}\)</span> starts to exceed <span class="math notranslate nohighlight">\(f_v^{\text{pre}}\)</span>, then it becomes very unlikely the variant is lost to the bottleneck, so
+the penalty for low <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span> increases. However, even with the bottleneck likelihood there is substantial penalty on very large <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span>, as that requires selection and is unlikely to occur by bottlenecking alone.</p>
+<p>In contrast, the Gaussian likelihoods are totally insensitive to the bottleneck, and have the same behavior for every bottleneck. When there is bottlenecking, they over-penalize low <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span>, and when there is a small house-of-cards epistasis the Gaussian likelihoods have a strange multi-peak behavior due to the variance also getting larger for smaller values of <span class="math notranslate nohighlight">\(f_v^{\text{post}}\)</span>.</p>
+<p>The below plots therefore make clear why in the presence of substantial amounts of bottlenecking, the bottleneck likelihood gives a more reasonable behavior than the Gaussian likelihood.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">loglik</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;L_v&#39;</span><span class="p">,</span> <span class="s1">&#39;bottleneck likelihood&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;G_v&#39;</span><span class="p">,</span> <span class="s1">&#39;Gaussian likelihood&#39;</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;G_v_HOC&#39;</span><span class="p">,</span> <span class="s1">&#39;Gaussian likelihood with HOC epistasis&#39;</span><span class="p">)</span>
+        <span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+     <span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;f_post_v&#39;</span><span class="p">,</span> <span class="n">loglik</span><span class="p">))</span> <span class="o">+</span>
+     <span class="n">geom_path</span><span class="p">()</span> <span class="o">+</span>
+     <span class="n">facet_grid</span><span class="p">(</span><span class="s1">&#39;N_bottle ~ p_v&#39;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s1">&#39;free_y&#39;</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">scale_x_log10</span><span class="p">()</span> <span class="o">+</span>
+     <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span>
+           <span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">))</span> <span class="o">+</span>
+     <span class="n">geom_vline</span><span class="p">(</span><span class="n">xintercept</span><span class="o">=</span><span class="n">f_pre_v</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;log likelihood&#39;</span><span class="p">)</span> <span class="o">+</span>
+     <span class="n">ggtitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+     <span class="p">)</span>
+
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/bottleneck_likelihood_15_0.png" src="_images/bottleneck_likelihood_15_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/bottleneck_likelihood_15_1.png" src="_images/bottleneck_likelihood_15_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/bottleneck_likelihood_15_2.png" src="_images/bottleneck_likelihood_15_2.png" />
+</div>
+</div>
+<p>The top plot above also makes clear why <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> can’t be a variable fit by maximum likelihood (at least until the formulation is generalized to use a multinomial rather than Poisson equation): the peaks of the bottleneck likelihood for each value of <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> are sensible, but across different values of <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> the smaller <span class="math notranslate nohighlight">\(N_{\text{bottle}}\)</span> always yields a better “best” likelihood.</p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2020.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/bottleneck_likelihood.nblink.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -13,6 +13,7 @@ Submodules
 
    dms_variants.barcodes
    dms_variants.binarymap
+   dms_variants.bottlenecks
    dms_variants.codonvarianttable
    dms_variants.constants
    dms_variants.fastq

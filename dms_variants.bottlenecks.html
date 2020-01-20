@@ -1,0 +1,305 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>bottlenecks &#8212; dms_variants 0.5.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="codonvarianttable" href="dms_variants.codonvarianttable.html" />
+    <link rel="prev" title="binarymap" href="dms_variants.binarymap.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <span class="target" id="module-dms_variants.bottlenecks"></span><div class="section" id="bottlenecks">
+<h1>bottlenecks<a class="headerlink" href="#bottlenecks" title="Permalink to this headline">¶</a></h1>
+<p>Estimation of bottlenecks during experiments.</p>
+<dl class="function">
+<dt id="dms_variants.bottlenecks.estimateBottleneck">
+<code class="sig-prename descclassname">dms_variants.bottlenecks.</code><code class="sig-name descname">estimateBottleneck</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">*</em>, <em class="sig-param">n_pre_col='n_pre'</em>, <em class="sig-param">n_post_col='n_post'</em>, <em class="sig-param">pseudocount=0.5</em>, <em class="sig-param">min_variants=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/bottlenecks.html#estimateBottleneck"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.bottlenecks.estimateBottleneck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate <strong>neutral</strong> bottleneck from pre- and post-selection counts.</p>
+<p>This function estimates a bottleneck between a pre- and post-selection
+condition based on changes in frequencies of variants that are all
+selectively neutral with respect to each other. So in a deep mutational
+scanning experiment, you could apply it to a data frame of pre- and post-
+selection counts for all wildtype variants (or all synonymous variants if
+you assume those are neutral). Do <strong>not</strong> include variants that are
+expected to have different “fitness” values.</p>
+<p>The inference of the bottleneck size appears fairly accurate if the
+following conditions are met:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>The sequencing depth substantially exceeds the actual bottleneck size,
+so that differences in pre- and post-selection frequencies are the
+result of the bottleneck rather than sampling errors in the counts.</p></li>
+<li><p>There are a reasonably large number of variants.</p></li>
+<li><p>The variants are all of the same fitness (so to emphasize, only apply
+to wildtype (and possibly synonymous) variants in your experiment.</p></li>
+</ol>
+</div></blockquote>
+<p>The bottleneck is estimated using the method described in Equation (8) of
+<a class="reference external" href="http://dx.doi.org/10.1101/2020.01.03.891242">Ghafari et al (2020)</a>.
+Specifically, let the pre- and post-selection frequencies of each variant
+<span class="math notranslate nohighlight">\(v = 1, \ldots, V\)</span> be <span class="math notranslate nohighlight">\(f_v^{\rm{pre}}\)</span> and
+<span class="math notranslate nohighlight">\(f_v^{\rm{post}}\)</span>. (These frequencies are estimated from the counts
+plus a pseudocount). Then the log likelihood of a bottleneck of size
+<span class="math notranslate nohighlight">\(N\)</span> is estimated as</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L}\left(N\right) =
+\sum_{v=1}^V \ln \mathcal{N}\left(f_v^{\rm{post}}; f_v^{\rm{pre}},
+         \frac{f_v^{\rm{pre}}\left(1 - f_v^{\rm{pre}}\right)}{N}\right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathcal{N}\left(x; \mu, \sigma^2\right)\)</span> is the probability
+density function of a normal distribution with mean <span class="math notranslate nohighlight">\(\mu\)</span> and
+variance <span class="math notranslate nohighlight">\(\sigma^2\)</span>.</p>
+<p>Note that the returned value is the <strong>per-variant</strong> bottleneck (the total
+bottleneck <span class="math notranslate nohighlight">\(N\)</span> divided by the number of variants <span class="math notranslate nohighlight">\(V\)</span>). The
+reason we return the bottleneck per-variant is that you may have subsetted
+on just some variants (i.e., wildtype ones) to estimate the bottleneck.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame with counts. Each row gives counts for a different variant.</p></li>
+<li><p><strong>n_pre_col</strong> (<em>str</em>) – Column in <cite>df</cite> with pre-selection counts.</p></li>
+<li><p><strong>n_post_col</strong> (<em>str</em>) – Column in <cite>df</cite> with post-selection counts.</p></li>
+<li><p><strong>pseudocount</strong> (<em>float'</em>) – Pseudocount added to counts to estimate frequencies.</p></li>
+<li><p><strong>min_variants</strong> (<em>int</em>) – The inference will not be reliable if there are too few variants in
+<cite>df</cite>. Raise an error if fewer than this many variants.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The estimated bottleneck per variant, which is the mean number of
+copies of each variant that survives the bottleneck.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>Here is an example testing the bottleneck inferences on simulated data.
+Plausible data are simulated under a range of bottlenecks, and then
+the bottleneck size is estimated with <a class="reference internal" href="#dms_variants.bottlenecks.estimateBottleneck" title="dms_variants.bottlenecks.estimateBottleneck"><code class="xref py py-func docutils literal notranslate"><span class="pre">estimateBottleneck()</span></code></a>.
+As can be seen below, the estimated bottleneck is within 10% of the
+real one for bottleneck sizes ranging from half the number of variants
+to 10X the number of variants. The estimates only start to break down
+when the bottleneck size becomes so large it is comparable to the overall
+sequencing depth, so that the bottleneck is no longer the main source
+of noise. In addition, plots are shown at the bottom of the example of
+the counts distribution in each simulation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.bottlenecks</span> <span class="kn">import</span> <span class="n">estimateBottleneck</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># seed for reproducible output</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nvariants</span> <span class="o">=</span> <span class="mi">100000</span>  <span class="c1"># number of variants in library</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">depth</span> <span class="o">=</span> <span class="n">nvariants</span> <span class="o">*</span> <span class="mi">100</span>  <span class="c1"># sequencing depth 100X library size</span>
+</pre></div>
+</div>
+<p>Initial counts are multinomial draw from Dirichlet-distributed freqs:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">freqs_pre</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">dirichlet</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">nvariants</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">n_pre</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">freqs_pre</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create data frame with pre-selection counts and plot distribution:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;n_pre&#39;</span><span class="p">:</span> <span class="n">n_pre</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;n_pre&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">title</span><span class="o">=</span><span class="s1">&#39;pre-selection counts/variant&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Simulate counts after bottlenecks of various sizes, simulated
+as re-normalized multinomial draws of bottleneck size used to
+to parameterize new multinomial draws of sequencing counts. Then
+estimate the bottlenecks on the simulated data and compare to actual
+value:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">estimates</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">n_per_variant</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">]:</span>
+<span class="gp">... </span>    <span class="n">n_bottle</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span>
+<span class="gp">... </span>                                   <span class="nb">int</span><span class="p">(</span><span class="n">n_per_variant</span> <span class="o">*</span> <span class="n">nvariants</span><span class="p">),</span>
+<span class="gp">... </span>                                   <span class="n">n_pre</span> <span class="o">/</span> <span class="n">n_pre</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+<span class="gp">... </span>    <span class="n">freqs_bottle</span> <span class="o">=</span> <span class="n">n_bottle</span> <span class="o">/</span> <span class="n">n_bottle</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">n_post</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multinomial</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">freqs_bottle</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;n_post&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_post</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">_</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;n_post&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span>
+<span class="gp">... </span>                      <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+<span class="gp">... </span>                      <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;post-selection, </span><span class="si">{n_per_variant:.1g}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">n_per_variant_est</span> <span class="o">=</span> <span class="n">estimateBottleneck</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">estimates</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">n_per_variant</span><span class="p">,</span> <span class="n">n_per_variant_est</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">estimates_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>                                <span class="n">estimates</span><span class="p">,</span>
+<span class="gp">... </span>                                <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;actual&#39;</span><span class="p">,</span> <span class="s1">&#39;estimated&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">estimates_df</span>  
+</pre></div>
+</div>
+<p>Confirm that estimates are good when bottleneck is small:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">estimates_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;actual &lt;= 10&#39;</span><span class="p">)[</span><span class="s1">&#39;actual&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">estimates_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;actual &lt;= 10&#39;</span><span class="p">)[</span><span class="s1">&#39;estimated&#39;</span><span class="p">],</span>
+<span class="gp">... </span>        <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="figure align-default" id="id1">
+<img alt="_images/dms_variants-bottlenecks-1_00.png" src="_images/dms_variants-bottlenecks-1_00.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_00.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_00.pdf">pdf</a>)</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id2">
+<img alt="_images/dms_variants-bottlenecks-1_01.png" src="_images/dms_variants-bottlenecks-1_01.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_01.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_01.pdf">pdf</a>)</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id3">
+<img alt="_images/dms_variants-bottlenecks-1_02.png" src="_images/dms_variants-bottlenecks-1_02.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_02.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_02.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_02.pdf">pdf</a>)</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id4">
+<img alt="_images/dms_variants-bottlenecks-1_03.png" src="_images/dms_variants-bottlenecks-1_03.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_03.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_03.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_03.pdf">pdf</a>)</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+</div>
+<div class="figure align-default" id="id5">
+<img alt="_images/dms_variants-bottlenecks-1_04.png" src="_images/dms_variants-bottlenecks-1_04.png" />
+<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_04.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_04.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_04.pdf">pdf</a>)</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dms_variants.html">dms_variants package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.html#dms-variants">dms_variants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dms_variants.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="dms_variants.html">dms_variants package</a><ul>
+      <li>Previous: <a href="dms_variants.binarymap.html" title="previous chapter">binarymap</a></li>
+      <li>Next: <a href="dms_variants.codonvarianttable.html" title="next chapter">codonvarianttable</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2020.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/dms_variants.bottlenecks.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

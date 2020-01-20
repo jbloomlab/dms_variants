@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dms_variants.bottlenecks &#8212; dms_variants 0.5.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.bottlenecks</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===========</span>
+<span class="sd">bottlenecks</span>
+<span class="sd">===========</span>
+
+<span class="sd">Estimation of bottlenecks during experiments.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">import</span> <span class="nn">scipy.optimize</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+
+<div class="viewcode-block" id="estimateBottleneck"><a class="viewcode-back" href="../../dms_variants.bottlenecks.html#dms_variants.bottlenecks.estimateBottleneck">[docs]</a><span class="k">def</span> <span class="nf">estimateBottleneck</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                       <span class="o">*</span><span class="p">,</span>
+                       <span class="n">n_pre_col</span><span class="o">=</span><span class="s1">&#39;n_pre&#39;</span><span class="p">,</span>
+                       <span class="n">n_post_col</span><span class="o">=</span><span class="s1">&#39;n_post&#39;</span><span class="p">,</span>
+                       <span class="n">pseudocount</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                       <span class="n">min_variants</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                       <span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Estimate **neutral** bottleneck from pre- and post-selection counts.</span>
+
+<span class="sd">    This function estimates a bottleneck between a pre- and post-selection</span>
+<span class="sd">    condition based on changes in frequencies of variants that are all</span>
+<span class="sd">    selectively neutral with respect to each other. So in a deep mutational</span>
+<span class="sd">    scanning experiment, you could apply it to a data frame of pre- and post-</span>
+<span class="sd">    selection counts for all wildtype variants (or all synonymous variants if</span>
+<span class="sd">    you assume those are neutral). Do **not** include variants that are</span>
+<span class="sd">    expected to have different &quot;fitness&quot; values.</span>
+
+<span class="sd">    The inference of the bottleneck size appears fairly accurate if the</span>
+<span class="sd">    following conditions are met:</span>
+
+<span class="sd">     1. The sequencing depth substantially exceeds the actual bottleneck size,</span>
+<span class="sd">        so that differences in pre- and post-selection frequencies are the</span>
+<span class="sd">        result of the bottleneck rather than sampling errors in the counts.</span>
+<span class="sd">     2. There are a reasonably large number of variants.</span>
+<span class="sd">     3. The variants are all of the same fitness (so to emphasize, only apply</span>
+<span class="sd">        to wildtype (and possibly synonymous) variants in your experiment.</span>
+
+<span class="sd">    The bottleneck is estimated using the method described in Equation (8) of</span>
+<span class="sd">    `Ghafari et al (2020) &lt;http://dx.doi.org/10.1101/2020.01.03.891242&gt;`_.</span>
+<span class="sd">    Specifically, let the pre- and post-selection frequencies of each variant</span>
+<span class="sd">    :math:`v = 1, \ldots, V` be :math:`f_v^{\rm{pre}}` and</span>
+<span class="sd">    :math:`f_v^{\rm{post}}`. (These frequencies are estimated from the counts</span>
+<span class="sd">    plus a pseudocount). Then the log likelihood of a bottleneck of size</span>
+<span class="sd">    :math:`N` is estimated as</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       \mathcal{L}\left(N\right) =</span>
+<span class="sd">       \sum_{v=1}^V \ln \mathcal{N}\left(f_v^{\rm{post}}; f_v^{\rm{pre}},</span>
+<span class="sd">                \frac{f_v^{\rm{pre}}\left(1 - f_v^{\rm{pre}}\right)}{N}\right)</span>
+
+<span class="sd">    where :math:`\mathcal{N}\left(x; \mu, \sigma^2\right)` is the probability</span>
+<span class="sd">    density function of a normal distribution with mean :math:`\mu` and</span>
+<span class="sd">    variance :math:`\sigma^2`.</span>
+
+<span class="sd">    Note that the returned value is the **per-variant** bottleneck (the total</span>
+<span class="sd">    bottleneck :math:`N` divided by the number of variants :math:`V`). The</span>
+<span class="sd">    reason we return the bottleneck per-variant is that you may have subsetted</span>
+<span class="sd">    on just some variants (i.e., wildtype ones) to estimate the bottleneck.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Data frame with counts. Each row gives counts for a different variant.</span>
+<span class="sd">    n_pre_col : str</span>
+<span class="sd">        Column in `df` with pre-selection counts.</span>
+<span class="sd">    n_post_col : str</span>
+<span class="sd">        Column in `df` with post-selection counts.</span>
+<span class="sd">    pseudocount : float&#39;</span>
+<span class="sd">        Pseudocount added to counts to estimate frequencies.</span>
+<span class="sd">    min_variants : int</span>
+<span class="sd">        The inference will not be reliable if there are too few variants in</span>
+<span class="sd">        `df`. Raise an error if fewer than this many variants.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    float</span>
+<span class="sd">        The estimated bottleneck per variant, which is the mean number of</span>
+<span class="sd">        copies of each variant that survives the bottleneck.</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Here is an example testing the bottleneck inferences on simulated data.</span>
+<span class="sd">    Plausible data are simulated under a range of bottlenecks, and then</span>
+<span class="sd">    the bottleneck size is estimated with :func:`estimateBottleneck`.</span>
+<span class="sd">    As can be seen below, the estimated bottleneck is within 10% of the</span>
+<span class="sd">    real one for bottleneck sizes ranging from half the number of variants</span>
+<span class="sd">    to 10X the number of variants. The estimates only start to break down</span>
+<span class="sd">    when the bottleneck size becomes so large it is comparable to the overall</span>
+<span class="sd">    sequencing depth, so that the bottleneck is no longer the main source</span>
+<span class="sd">    of noise. In addition, plots are shown at the bottom of the example of</span>
+<span class="sd">    the counts distribution in each simulation.</span>
+
+<span class="sd">    .. plot::</span>
+<span class="sd">       :context: reset</span>
+
+<span class="sd">       &gt;&gt;&gt; import matplotlib.pyplot as plt</span>
+<span class="sd">       &gt;&gt;&gt; import numpy</span>
+<span class="sd">       &gt;&gt;&gt; import pandas as pd</span>
+<span class="sd">       &gt;&gt;&gt; from dms_variants.bottlenecks import estimateBottleneck</span>
+
+<span class="sd">       &gt;&gt;&gt; numpy.random.seed(1)  # seed for reproducible output</span>
+
+<span class="sd">       &gt;&gt;&gt; nvariants = 100000  # number of variants in library</span>
+<span class="sd">       &gt;&gt;&gt; depth = nvariants * 100  # sequencing depth 100X library size</span>
+
+<span class="sd">       Initial counts are multinomial draw from Dirichlet-distributed freqs:</span>
+
+<span class="sd">       &gt;&gt;&gt; freqs_pre = numpy.random.dirichlet(numpy.full(nvariants, 2))</span>
+<span class="sd">       &gt;&gt;&gt; n_pre = numpy.random.multinomial(depth, freqs_pre)</span>
+
+<span class="sd">       Create data frame with pre-selection counts and plot distribution:</span>
+
+<span class="sd">       &gt;&gt;&gt; df = pd.DataFrame({&#39;n_pre&#39;: n_pre})</span>
+<span class="sd">       &gt;&gt;&gt; _ = df[&#39;n_pre&#39;].plot.hist(bins=40,</span>
+<span class="sd">       ...                           title=&#39;pre-selection counts/variant&#39;)</span>
+
+<span class="sd">       Simulate counts after bottlenecks of various sizes, simulated</span>
+<span class="sd">       as re-normalized multinomial draws of bottleneck size used to</span>
+<span class="sd">       to parameterize new multinomial draws of sequencing counts. Then</span>
+<span class="sd">       estimate the bottlenecks on the simulated data and compare to actual</span>
+<span class="sd">       value:</span>
+
+<span class="sd">       &gt;&gt;&gt; estimates = []</span>
+<span class="sd">       &gt;&gt;&gt; for n_per_variant in [0.5, 2, 10, 100]:</span>
+<span class="sd">       ...     n_bottle = numpy.random.multinomial(</span>
+<span class="sd">       ...                                    int(n_per_variant * nvariants),</span>
+<span class="sd">       ...                                    n_pre / n_pre.sum())</span>
+<span class="sd">       ...     freqs_bottle = n_bottle / n_bottle.sum()</span>
+<span class="sd">       ...     n_post = numpy.random.multinomial(depth, freqs_bottle)</span>
+<span class="sd">       ...     df[&#39;n_post&#39;] = n_post</span>
+<span class="sd">       ...     _ = plt.figure()</span>
+<span class="sd">       ...     _ = df[&#39;n_post&#39;].plot.hist(</span>
+<span class="sd">       ...                       bins=40,</span>
+<span class="sd">       ...                       title=f&quot;post-selection, {n_per_variant:.1g}&quot;)</span>
+<span class="sd">       ...     n_per_variant_est = estimateBottleneck(df)</span>
+<span class="sd">       ...     estimates.append((n_per_variant, n_per_variant_est))</span>
+<span class="sd">       &gt;&gt;&gt; estimates_df = pd.DataFrame.from_records(</span>
+<span class="sd">       ...                                 estimates,</span>
+<span class="sd">       ...                                 columns=[&#39;actual&#39;, &#39;estimated&#39;])</span>
+<span class="sd">       &gt;&gt;&gt; estimates_df  # doctest: +SKIP</span>
+
+<span class="sd">       Confirm that estimates are good when bottleneck is small:</span>
+
+<span class="sd">       &gt;&gt;&gt; numpy.allclose(</span>
+<span class="sd">       ...         estimates_df.query(&#39;actual &lt;= 10&#39;)[&#39;actual&#39;],</span>
+<span class="sd">       ...         estimates_df.query(&#39;actual &lt;= 10&#39;)[&#39;estimated&#39;],</span>
+<span class="sd">       ...         rtol=0.1)</span>
+<span class="sd">       True</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_variants</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;number of variants in `df` ({len(df)}) is &lt; &quot;</span>
+                         <span class="sa">f</span><span class="s2">&quot;`min_variants` of </span><span class="si">{min_variants}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># estimate frequencies from counts</span>
+    <span class="k">if</span> <span class="n">pseudocount</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`pseudocount` must be &gt;= 0&#39;</span><span class="p">)</span>
+    <span class="n">freqs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">cond</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;pre&#39;</span><span class="p">,</span> <span class="n">n_pre_col</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;post&#39;</span><span class="p">,</span> <span class="n">n_post_col</span><span class="p">)]:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` lacks column </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` column </span><span class="si">{col}</span><span class="s2"> not all &gt;= 0&quot;</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">pseudocount</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="n">pseudocount</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">f</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{cond}</span><span class="s2"> freqs &lt;= 0; increase `pseudocount`&quot;</span><span class="p">)</span>
+        <span class="n">freqs</span><span class="p">[</span><span class="n">cond</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span>
+
+    <span class="c1"># initial guess for bottleneck</span>
+    <span class="n">init_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># negative likelihood function to minimize</span>
+    <span class="k">def</span> <span class="nf">neglikfunc</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">n</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">freqs</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">freqs</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">sd</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="s1">&#39;post&#39;</span><span class="p">],</span>
+                                         <span class="n">loc</span><span class="o">=</span><span class="n">freqs</span><span class="p">[</span><span class="s1">&#39;pre&#39;</span><span class="p">],</span>
+                                         <span class="n">scale</span><span class="o">=</span><span class="n">sd</span><span class="p">)</span>
+                 <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># perform minimization</span>
+    <span class="n">optres</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">neglikfunc</span><span class="p">,</span>
+                                     <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">init_n</span><span class="p">]),</span>
+                                     <span class="n">method</span><span class="o">=</span><span class="s1">&#39;Nelder-Mead&#39;</span><span class="p">,</span>
+                                     <span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">optres</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed to fit bottleneck:</span><span class="se">\n</span><span class="si">{optres}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">optres</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2020.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

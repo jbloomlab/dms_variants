@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.binarymap &#8212; dms_variants 0.4.7 documentation</title>
+    <title>dms_variants.binarymap &#8212; dms_variants 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -79,11 +79,23 @@
 <span class="sd">        :meth:`dms_variants.codonvarianttable.CodonVariantTable.func_scores`.</span>
 <span class="sd">    substitutions_col : str</span>
 <span class="sd">        Column in `func_scores_df` giving substitutions for each variant.</span>
-<span class="sd">    func_score_col : str</span>
-<span class="sd">        Column in `func_scores_df` giving functional score for each variant.</span>
+<span class="sd">    func_score_col : str or None</span>
+<span class="sd">        Column in `func_scores_df` giving functional score for each variant,</span>
+<span class="sd">        or `None` if no functional scores available.</span>
 <span class="sd">    func_score_var_col : str or None</span>
 <span class="sd">        Column in `func_scores_df` giving variance on functional score</span>
 <span class="sd">        estimate, or `None` if no variance available.</span>
+<span class="sd">    n_pre_col : str or None</span>
+<span class="sd">        Column in `func_scores_df` giving pre-selection counts for each</span>
+<span class="sd">        variant, or `None` if counts not available.</span>
+<span class="sd">    n_post_col : str or None</span>
+<span class="sd">        Column in `func_scores_df` giving post-selection counts for each</span>
+<span class="sd">        variant, or `None` if counts not available.</span>
+<span class="sd">    cols_optional : True</span>
+<span class="sd">        All of the `*_col` parameters are optional except `substitutions_col`.</span>
+<span class="sd">        If `cols_optional` is `True`, the absence of any of these columns</span>
+<span class="sd">        is taken the same as setting that column&#39;s parameter to zero: the</span>
+<span class="sd">        corresponding attribute is set to `None`.</span>
 <span class="sd">    alphabet : list or tuple</span>
 <span class="sd">        Allowed characters (e.g., amino acids or codons).</span>
 <span class="sd">    expand : bool</span>
@@ -118,6 +130,12 @@
 <span class="sd">    func_scores_var : numpy.ndarray of floats, or None</span>
 <span class="sd">        A 1D array of length `nvariants` giving variance on score for each</span>
 <span class="sd">        variant, or `None` if no variance estimates provided.</span>
+<span class="sd">    n_pre : numpy.dnarray of integers, or None</span>
+<span class="sd">        A 1D array of length `nvariants` giving pre-selection counts for each</span>
+<span class="sd">        variant, or `None` if counts not provided.</span>
+<span class="sd">    n_post : numpy.dnarray of integers, or None</span>
+<span class="sd">        A 1D array of length `nvariants` giving post-selection counts for each</span>
+<span class="sd">        variant, or `None` if counts not provided.</span>
 <span class="sd">    alphabet : tuple</span>
 <span class="sd">        Allowed characters (e.g., amino acids or codons).</span>
 <span class="sd">    substitutions_col : str</span>
@@ -235,7 +253,74 @@
 <span class="sd">    ...     assert subs_from_df == binmap_expand.binary_to_sub_str(binvar)</span>
 <span class="sd">    ...     assert all(binvar == binmap_expand.sub_str_to_binary(subs_from_df))</span>
 
+<span class="sd">    Note that `binamp` does not have `n_pre` and `n_post` attributes set:</span>
+
+<span class="sd">    &gt;&gt;&gt; binmap.n_pre == binmap.n_post == None</span>
+<span class="sd">    True</span>
+
+<span class="sd">    We would not have been able to initialize `binmap` if we weren&#39;t using</span>
+<span class="sd">    the `cols_optional` flag:</span>
+
+<span class="sd">    &gt;&gt;&gt; BinaryMap(func_scores_df, alphabet=alphabet, cols_optional=False)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      ...</span>
+<span class="sd">    ValueError: `func_scores_df` lacks column pre_count</span>
+
+<span class="sd">    Now assign values to `n_pre` and `n_post` attributes:</span>
+
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; func_scores_df_counts = (</span>
+<span class="sd">    ...         func_scores_df.assign(pre_count=[10, 20, 15, 5, 6, 8],</span>
+<span class="sd">    ...                               post_count=[0, 3, 12, 11, 9, 8])</span>
+<span class="sd">    ...         )</span>
+<span class="sd">    &gt;&gt;&gt; binmap_counts = BinaryMap(func_scores_df_counts, alphabet=alphabet)</span>
+<span class="sd">    &gt;&gt;&gt; binmap_counts.n_pre</span>
+<span class="sd">    array([10, 20, 15,  5,  6,  8])</span>
+<span class="sd">    &gt;&gt;&gt; binmap_counts.n_post</span>
+<span class="sd">    array([ 0,  3, 12, 11,  9,  8])</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Test if equal to object `other`.</span>
+
+<span class="sd">        &gt;&gt;&gt; df = pd.DataFrame({&#39;aa_substitutions&#39;: [&#39;&#39;, &#39;M1A&#39;],</span>
+<span class="sd">        ...                    &#39;func_score&#39;: [0.0, -1.2],</span>
+<span class="sd">        ...                    &#39;func_score_var&#39;: [0.1, 0.15]})</span>
+<span class="sd">        &gt;&gt;&gt; df2 = df.copy()</span>
+<span class="sd">        &gt;&gt;&gt; df3 = df.assign(func_score=lambda x: x[&#39;func_score&#39;] + 0.1)</span>
+<span class="sd">        &gt;&gt;&gt; bmap1 = BinaryMap(df)</span>
+<span class="sd">        &gt;&gt;&gt; bmap2 = BinaryMap(df2)</span>
+<span class="sd">        &gt;&gt;&gt; bmap3 = BinaryMap(df3)</span>
+<span class="sd">        &gt;&gt;&gt; bmap1 == bmap2</span>
+<span class="sd">        True</span>
+<span class="sd">        &gt;&gt;&gt; bmap1 == bmap3</span>
+<span class="sd">        False</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># following here: https://stackoverflow.com/a/390640</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">val2</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="n">val2</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">val2</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">val</span> <span class="o">-</span> <span class="n">val2</span><span class="p">)</span><span class="o">.</span><span class="n">nnz</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">val</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">val2</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="n">val2</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">func_scores_df</span><span class="p">,</span>
@@ -243,6 +328,9 @@
                  <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span>
                  <span class="n">func_score_col</span><span class="o">=</span><span class="s1">&#39;func_score&#39;</span><span class="p">,</span>
                  <span class="n">func_score_var_col</span><span class="o">=</span><span class="s1">&#39;func_score_var&#39;</span><span class="p">,</span>
+                 <span class="n">n_pre_col</span><span class="o">=</span><span class="s1">&#39;pre_count&#39;</span><span class="p">,</span>
+                 <span class="n">n_post_col</span><span class="o">=</span><span class="s1">&#39;post_count&#39;</span><span class="p">,</span>
+                 <span class="n">cols_optional</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">alphabet</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">constants</span><span class="o">.</span><span class="n">AAS_WITHSTOP</span><span class="p">,</span>
                  <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">wtseq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -251,27 +339,29 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nvariants</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alphabet</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">func_score_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func_scores_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`func_scores_df` lacks `func_score_col` &#39;</span> <span class="o">+</span>
-                             <span class="n">func_score_col</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="p">[</span><span class="n">func_score_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">func_scores</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,)</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func_scores</span><span class="p">)):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;some functional scores are NaN&#39;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">func_score_var_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">func_score_var_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func_scores_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`func_scores_df` lacks `func_score_var_col` &#39;</span>
-                                 <span class="o">+</span> <span class="n">func_score_var_col</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="o">=</span> <span class="p">(</span><span class="n">func_scores_df</span><span class="p">[</span><span class="n">func_score_var_col</span><span class="p">]</span>
-                                    <span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">))</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">func_scores_var</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,)</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func_scores_var</span><span class="p">)):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;some functional score variances are NaN&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func_scores_var</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;some functional score variances are &lt; 0&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">lim_min</span><span class="p">,</span> <span class="n">lim_max</span> <span class="ow">in</span> <span class="p">[</span>
+                <span class="p">(</span><span class="n">func_score_col</span><span class="p">,</span> <span class="s1">&#39;func_scores&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">func_score_var_col</span><span class="p">,</span> <span class="s1">&#39;func_scores_var&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">n_pre_col</span><span class="p">,</span> <span class="s1">&#39;n_pre&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">n_post_col</span><span class="p">,</span> <span class="s1">&#39;n_post&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="p">]:</span>
+            <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func_scores_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">cols_optional</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`func_scores_df` lacks column </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">vals</span> <span class="o">==</span> <span class="n">func_scores_df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{col}</span><span class="s2"> not of type </span><span class="si">{dtype}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">vals</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,)</span>
+                <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">vals</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;some entries in </span><span class="si">{col}</span><span class="s2"> are NaN&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">lim_min</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">vals</span> <span class="o">&lt;</span> <span class="n">lim_min</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;some entries in </span><span class="si">{col}</span><span class="s2"> &lt; </span><span class="si">{lim_min}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">lim_max</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">any</span><span class="p">(</span><span class="n">vals</span> <span class="o">&gt;</span> <span class="n">lim_max</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;some entries in </span><span class="si">{col}</span><span class="s2"> &lt; </span><span class="si">{lim_min}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">vals</span><span class="p">)</span>
 
         <span class="c1"># get list of substitution strings for each variant</span>
         <span class="k">if</span> <span class="n">substitutions_col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">func_scores_df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
@@ -293,16 +383,16 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid alphabet character: </span><span class="si">{char}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">chars</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chars</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;(?P&lt;wt&gt;</span><span class="si">{chars}</span><span class="s2">)&quot;</span>
-                                     <span class="sa">rf</span><span class="s2">&quot;(?P&lt;site&gt;\d+)&quot;</span>
-                                     <span class="sa">rf</span><span class="s2">&quot;(?P&lt;mut&gt;</span><span class="si">{chars}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span> <span class="o">=</span> <span class="p">(</span><span class="sa">rf</span><span class="s2">&quot;(?P&lt;wt&gt;</span><span class="si">{chars}</span><span class="s2">)&quot;</span>
+                           <span class="sa">rf</span><span class="s2">&quot;(?P&lt;site&gt;\d+)&quot;</span>
+                           <span class="sa">rf</span><span class="s2">&quot;(?P&lt;mut&gt;</span><span class="si">{chars}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
         <span class="c1"># build mapping from substitution to binary map index</span>
         <span class="n">wts</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">muts</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">subs</span> <span class="ow">in</span> <span class="n">substitutions</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">subs</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
-                <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;could not match substitution: </span><span class="si">{sub}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">site</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="s1">&#39;site&#39;</span><span class="p">))</span>
@@ -400,7 +490,7 @@
         <span class="n">sites</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">sub_str</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
-            <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">m</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;substitution </span><span class="si">{sub}</span><span class="s2"> in </span><span class="si">{sub_str}</span><span class="s2"> invalid &quot;</span>
                                  <span class="sa">f</span><span class="s2">&quot;for alphabet </span><span class="si">{self.alphabet}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -438,7 +528,7 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">binary</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">({</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">}):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`binary` not all 0 or 1:</span><span class="se">\n</span><span class="si">{binary}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">subs</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">i_to_sub</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">binary</span><span class="p">))</span> <span class="k">if</span> <span class="n">s</span><span class="p">]</span>
-        <span class="n">sites</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span> <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">]</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub_regex</span><span class="p">,</span> <span class="n">sub</span><span class="p">)</span> <span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">subs</span><span class="p">]</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sites</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">sites</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`binary` specifies multiple substitutions &#39;</span>
                              <span class="sa">f</span><span class="s2">&quot;at same site:</span><span class="se">\n</span><span class="si">{binary}</span><span class="se">\n</span><span class="s2">{&#39; &#39;.join(subs)}&quot;</span><span class="p">)</span>
@@ -591,7 +681,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2019.
+      &copy;2019--2020.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

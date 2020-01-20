@@ -1,0 +1,3 @@
+{
+    "path": "../notebooks/multi_latent_phenos.ipynb"
+}

@@ -1,0 +1,5 @@
+.. math::
+
+   \left[ n_v^{\rm{bottle}} \ln\left(N_{\rm{bottle}} f_v^{\text{pre}}\right)
+             - \ln \Gamma left(n_v^{\rm{bottle}} + 1\right)
+                     \right] - N_{\rm{bottle}}

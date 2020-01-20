@@ -1,0 +1,4 @@
+.. automodule:: dms_variants.bottlenecks
+   :members:
+   :undoc-members:
+   :show-inheritance:

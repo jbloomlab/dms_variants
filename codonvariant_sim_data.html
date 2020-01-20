@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.4.7 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.5.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -250,7 +250,9 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
@@ -2403,7 +2405,8 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
 <p>We now fit global epistasis models to the functional scores from each simulated experiment. For background on these models, see <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. The models we fits are implemented in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a>, which has extensive documentation.</p>
 <p>The primary model of interest is <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood">MonotonicSplineEpistasisGaussianLikelihood</a>, which assumes that the observed phenotype is a monotonic non-linear function of an underlying additive latent phenotype. As a control, we also fit a
-<a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">NoEpistasisGaussianLikelihood</a> model, which assumes that mutations simply contribute additively to the observed phenotype. Note that for both models we are using the Gaussian-likelihood calculation method to determine model fit (see <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a> for details).</p>
+<a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">NoEpistasisGaussianLikelihood</a> model, which assumes that mutations simply contribute additively to the observed phenotype. Note that for both models we are using the Gaussian-likelihood calculation method to determine model fit (see <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a> for details)–as
+described in a later example, you might want to use a Bottleneck- or Cauchy-likelihood if there is a lot of experimental noise.</p>
 <p>For the fitting, we first convert the set of functional scores into a binary representation using a <a class="reference external" href="(https://jbloomlab.github.io/dms_variants/dms_variants.binarymap.html#dms_variants.binarymap.BinaryMap)">BinaryMap</a>. Then we create the model, fit it, and store it:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
@@ -2450,8 +2453,8 @@ Fitting global epistasis model to tight_bottle, lib_2... fitting took 8.1 sec.
 Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.1 sec.
 </pre></div></div>
 </div>
-<p>Now we want to see which model fits the data better. To do this, we get the log likelihood of each model along with the number of model parameters and use it to calculate the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better, and below we see that the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> global epistasis model always fits
-the data much better:</p>
+<p>Now we want to see which model fits the data better. To do this, we get the log likelihood of each model along with the number of model parameters, as well as the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better, and below we see that the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> global epistasis model always fits the data
+much better:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
@@ -2461,12 +2464,11 @@ the data much better:</p>
 
 <span class="n">logliks_df</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
-            <span class="p">[(</span><span class="n">modeltype</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nparams</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">loglik</span><span class="p">)</span> <span class="k">for</span>
+            <span class="p">[(</span><span class="n">modeltype</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">nparams</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">loglik</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">aic</span><span class="p">)</span> <span class="k">for</span>
              <span class="p">(</span><span class="n">modeltype</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">),</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="o">.</span><span class="n">items</span><span class="p">()],</span>
             <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;model&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;n_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;log_likelihood&#39;</span><span class="p">]</span>
+                     <span class="s1">&#39;n_parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;log_likelihood&#39;</span><span class="p">,</span> <span class="s1">&#39;AIC&#39;</span><span class="p">]</span>
             <span class="p">)</span>
-    <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">AIC</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_parameters&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;log_likelihood&#39;</span><span class="p">])</span>
     <span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">])</span>
     <span class="p">)</span>
 
@@ -4427,7 +4429,7 @@ details. This is necessary since the preferences are normalized per site. If you
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2019.
+      &copy;2019--2020.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>

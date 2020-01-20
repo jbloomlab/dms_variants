@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.barcodes &#8212; dms_variants 0.4.7 documentation</title>
+    <title>dms_variants.barcodes &#8212; dms_variants 0.5.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -45,6 +45,8 @@
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">random</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
@@ -110,7 +112,7 @@
 <span class="sd">    ...                      for _ in range(nrand)) / nrand)</span>
 <span class="sd">    &gt;&gt;&gt; sim_rarefaction_curve = pd.DataFrame({&#39;ncounts&#39;: ncounts,</span>
 <span class="sd">    ...                                       &#39;nbarcodes&#39;: nbarcodes})</span>
-<span class="sd">    &gt;&gt;&gt; scipy.allclose(rarefaction_curve, sim_rarefaction_curve, atol=1e-2)</span>
+<span class="sd">    &gt;&gt;&gt; numpy.allclose(rarefaction_curve, sim_rarefaction_curve, atol=1e-2)</span>
 <span class="sd">    True</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -124,7 +126,7 @@
     <span class="n">K</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">)</span>
     <span class="n">Mj</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">Ni</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
 
-    <span class="n">Nk</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">Mj</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+    <span class="n">Nk</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">Mj</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
 
     <span class="c1"># use simplification that (N - Ni)Cr(n) / (N)Cr(n) =</span>
     <span class="c1"># [(N - Ni)! * (N - n)!] / [N! * (N - Ni - n)!]</span>
@@ -133,17 +135,17 @@
     <span class="n">nbarcodes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">lnFactorial_N</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">logspace</span> <span class="ow">and</span> <span class="n">N</span> <span class="o">&gt;</span> <span class="n">maxpoints</span><span class="p">:</span>
-        <span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
+        <span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span>
                        <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">N</span><span class="p">),</span>
                        <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+        <span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
                        <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">maxpoints</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)))</span>
     <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">ncounts</span><span class="p">:</span>
         <span class="n">lnFactorial_N_minus_n</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span> <span class="o">-</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># indices where this is true</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span> <span class="o">-</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>  <span class="c1"># indices where this is true</span>
         <span class="n">nbarcodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">K</span> <span class="o">-</span> <span class="p">(</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                <span class="n">K</span> <span class="o">-</span> <span class="p">(</span><span class="n">num</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
                             <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">gammaln</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nk</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
                             <span class="n">lnFactorial_N_minus_n</span> <span class="o">-</span>
                             <span class="n">lnFactorial_N</span> <span class="o">-</span>
@@ -245,7 +247,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2019.
+      &copy;2019--2020.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
