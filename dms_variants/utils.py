@@ -347,7 +347,7 @@ def tidy_to_corr(df, sample_col, label_col, value_col, *,
         .reset_index()
         )
 
-    del corr.columns.name  # remove name of columns index
+    corr.columns.name = None  # remove name of columns index
 
     if return_type == 'tidy_pairs':
         corr = (

@@ -852,7 +852,8 @@ class CodonVariantTable:
                        count_or_frequency='frequency',
                        libraries='all', samples='all', plotfile=None,
                        orientation='h', widthscale=1, heightscale=1,
-                       min_support=1, sample_rename=None):
+                       min_support=1, sample_rename=None,
+                       one_lib_facet=False):
         """Heatmap of mutation counts or frequencies.
 
         Parameters
@@ -918,11 +919,17 @@ class CodonVariantTable:
         nsamples = len(df['sample'].unique())
 
         if orientation == 'h':
-            facet_str = 'sample ~ library'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
             width = widthscale * (1.6 + 3.5 * nlibraries)
             height = heightscale * (0.8 + height_per * nsamples)
         elif orientation == 'v':
-            facet_str = 'library ~ sample'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
             width = widthscale * (1.6 + 3.5 * nsamples)
             height = heightscale * (0.8 + height_per * nlibraries)
         else:
@@ -945,10 +952,11 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = (p +
-                 p9.facet_wrap('~ library',
-                               nrow={'h': 1, 'v': nlibraries}[orientation])
-                 )
+            if nlibraries > 1 or one_lib_facet:
+                p = (p +
+                     p9.facet_wrap('~ library',
+                                   nrow={'h': 1, 'v': nlibraries}[orientation])
+                     )
         else:
             p = p + p9.facet_grid(facet_str)
 
@@ -961,7 +969,8 @@ class CodonVariantTable:
     def plotMutFreqs(self, variant_type, mut_type, *,
                      libraries='all', samples='all', plotfile=None,
                      orientation='h', widthscale=1, heightscale=1,
-                     min_support=1, sample_rename=None):
+                     min_support=1, sample_rename=None,
+                     one_lib_facet=False):
         """Mutation frequency along length of gene.
 
         Parameters
@@ -999,11 +1008,17 @@ class CodonVariantTable:
         nsamples = len(df['sample'].unique())
 
         if orientation == 'h':
-            facet_str = 'sample ~ library'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
             width = widthscale * (1.6 + 1.8 * nlibraries)
             height = heightscale * (0.8 + 1 * nsamples)
         elif orientation == 'v':
-            facet_str = 'library ~ sample'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
             width = widthscale * (1.6 + 1.8 * nsamples)
             height = heightscale * (0.8 + 1 * nlibraries)
         else:
@@ -1039,10 +1054,11 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = (p +
-                 p9.facet_wrap('~ library',
-                               nrow={'h': 1, 'v': nlibraries}[orientation])
-                 )
+            if nlibraries > 1 or one_lib_facet:
+                p = (p +
+                     p9.facet_wrap('~ library',
+                                   nrow={'h': 1, 'v': nlibraries}[orientation])
+                     )
         else:
             p = p + p9.facet_grid(facet_str)
 
@@ -1056,7 +1072,7 @@ class CodonVariantTable:
                                orientation='h', widthscale=1, heightscale=1,
                                min_support=1, mut_type='aa',
                                tot_variants_hline=True,
-                               sample_rename=None):
+                               sample_rename=None, one_lib_facet=False):
         """Plot number variants with >= that each number of counts.
 
         Parameters
@@ -1093,11 +1109,17 @@ class CodonVariantTable:
             raise ValueError(f"invalid `variant_type` {variant_type}")
 
         if orientation == 'h':
-            facet_str = 'sample ~ library'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
             width = widthscale * (1 + 1.5 * nlibraries)
             height = heightscale * (0.6 + 1.5 * nsamples)
         elif orientation == 'v':
-            facet_str = 'library ~ sample'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
             width = widthscale * (1 + 1.5 * nsamples)
             height = heightscale * (0.6 + 1.5 * nlibraries)
         else:
@@ -1121,11 +1143,12 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = (p +
-                 p9.facet_wrap('~ library',
-                               nrow={'h': 1, 'v': nlibraries}[orientation]) +
-                 p9.ylab('number of variants')
-                 )
+            p = p + p9.ylab('number of variants')
+            if nlibraries > 1 or one_lib_facet:
+                p = (p +
+                     p9.facet_wrap('~ library',
+                                   nrow={'h': 1, 'v': nlibraries}[orientation])
+                     )
         else:
             p = p + p9.facet_grid(facet_str)
 
@@ -1142,7 +1165,7 @@ class CodonVariantTable:
                              libraries='all', samples='all', plotfile=None,
                              orientation='h', widthscale=1, heightscale=1,
                              min_support=1, max_count=None,
-                             sample_rename=None):
+                             sample_rename=None, one_lib_facet=False):
         """Fraction of mutations seen <= some number of times.
 
         Parameters
@@ -1180,11 +1203,17 @@ class CodonVariantTable:
         nsamples = len(df['sample'].unique())
 
         if orientation == 'h':
-            facet_str = 'sample ~ library'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
             width = widthscale * (1.6 + 1.3 * nlibraries)
             height = heightscale * (1 + 1.2 * nsamples)
         elif orientation == 'v':
-            facet_str = 'library ~ sample'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
             width = widthscale * (1.6 + 1.3 * nsamples)
             height = heightscale * (1 + 1.2 * nlibraries)
         else:
@@ -1218,10 +1247,11 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = (p +
-                 p9.facet_wrap('~ library',
-                               nrow={'h': 1, 'v': nlibraries}[orientation])
-                 )
+            if nlibraries > 1 or one_lib_facet:
+                p = (p +
+                     p9.facet_wrap('~ library',
+                                   nrow={'h': 1, 'v': nlibraries}[orientation])
+                     )
         else:
             p = p + p9.facet_grid(facet_str)
 
@@ -1288,7 +1318,8 @@ class CodonVariantTable:
     def plotNumCodonMutsByType(self, variant_type, *,
                                libraries='all', samples='all', plotfile=None,
                                orientation='h', widthscale=1, heightscale=1,
-                               min_support=1, ylabel=None, sample_rename=None):
+                               min_support=1, ylabel=None, sample_rename=None,
+                               one_lib_facet=False):
         """Plot average nonsynonymous, synonymous, stop mutations per variant.
 
         Parameters
@@ -1316,11 +1347,17 @@ class CodonVariantTable:
                                      min_support=min_support,
                                      sample_rename=sample_rename)
         if orientation == 'h':
-            facet_str = 'sample ~ library'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
             width = widthscale * (1 + 1.4 * nlibraries)
             height = heightscale * (1 + 1.3 * nsamples)
         elif orientation == 'v':
-            facet_str = 'library ~ sample'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
             width = widthscale * (1 + 1.4 * nsamples)
             height = heightscale * (1 + 1.3 * nlibraries)
         else:
@@ -1349,10 +1386,11 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = (p +
-                 p9.facet_wrap('~ library',
-                               nrow={'h': 1, 'v': nlibraries}[orientation])
-                 )
+            if nlibraries > 1 or one_lib_facet:
+                p = (p +
+                     p9.facet_wrap('~ library',
+                                   nrow={'h': 1, 'v': nlibraries}[orientation])
+                     )
         else:
             p = p + p9.facet_grid(facet_str)
 
@@ -1365,7 +1403,7 @@ class CodonVariantTable:
                                     libraries='all', plotfile=None,
                                     orientation='h', widthscale=1,
                                     heightscale=1, max_support=None,
-                                    sample_rename=None):
+                                    sample_rename=None, one_lib_facet=False):
         """Plot histogram of variant call support for variants.
 
         Parameters
@@ -1412,9 +1450,11 @@ class CodonVariantTable:
                                    breaks=dms_variants.utils.integer_breaks) +
              p9.scale_y_continuous(name='number of variants',
                                    labels=dms_variants.utils.latex_sci_not) +
-             p9.facet_wrap('~ library', nrow=nrow) +
              p9.theme(figure_size=(width, height))
              )
+
+        if nlibraries > 1 or one_lib_facet:
+            p = p + p9.facet_wrap('~ library', nrow=nrow)
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
@@ -1463,7 +1503,8 @@ class CodonVariantTable:
     def plotAvgCountsPerVariant(self, *,
                                 libraries='all', samples='all', plotfile=None,
                                 orientation='h', widthscale=1, heightscale=1,
-                                min_support=1, sample_rename=None):
+                                min_support=1, sample_rename=None,
+                                one_lib_facet=False):
         """Get average counts per variant.
 
         Parameters
@@ -1503,11 +1544,13 @@ class CodonVariantTable:
              p9.geom_bar(stat='identity') +
              p9.xlab('') +
              p9.ylab('average counts per variant') +
-             p9.facet_wrap('~ library', nrow=nrow) +
              p9.theme(figure_size=(width, height),
                       axis_text_x=p9.element_text(angle=90)
                       )
              )
+
+        if nlibraries > 1 or one_lib_facet:
+            p = p + p9.facet_wrap('~ library', nrow=nrow)
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
@@ -1517,7 +1560,8 @@ class CodonVariantTable:
     def plotNumMutsHistogram(self, mut_type, *,
                              libraries='all', samples='all', plotfile=None,
                              orientation='h', widthscale=1, heightscale=1,
-                             min_support=1, max_muts=None, sample_rename=None):
+                             min_support=1, max_muts=None, sample_rename=None,
+                             one_lib_facet=False):
         """Plot histograms of number of mutations per variant.
 
         Parameters
@@ -1545,6 +1589,8 @@ class CodonVariantTable:
         sample_rename : dict or None
             Rename samples by specifying original name as key and new name
             as value.
+        one_lib_facet : bool
+            Plot library facet title even if just one library.
 
         Returns
         -------
@@ -1566,11 +1612,17 @@ class CodonVariantTable:
             raise ValueError(f"invalid mut_type {mut_type}")
 
         if orientation == 'h':
-            facet_str = 'sample ~ library'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
             width = widthscale * (1 + 1.5 * nlibraries)
             height = heightscale * (0.6 + 1.5 * nsamples)
         elif orientation == 'v':
-            facet_str = 'library ~ sample'
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
             width = widthscale * (1 + 1.5 * nsamples)
             height = heightscale * (0.6 + 1.5 * nlibraries)
         else:
@@ -1594,11 +1646,12 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = (p +
-                 p9.facet_wrap('~ library',
-                               nrow={'h': 1, 'v': nlibraries}[orientation]) +
-                 p9.ylab('number of variants')
-                 )
+            p = p + p9.ylab('number of variants')
+            if nlibraries > 1 or one_lib_facet:
+                p = (p +
+                     p9.facet_wrap('~ library',
+                                   nrow={'h': 1, 'v': nlibraries}[orientation])
+                     )
         else:
             p = p + p9.facet_grid(facet_str)
 
