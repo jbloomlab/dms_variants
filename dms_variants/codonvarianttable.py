@@ -1646,7 +1646,7 @@ class CodonVariantTable:
              )
 
         if samples is None:
-            p = p9.ylab('number of variants')
+            p = p + p9.ylab('number of variants')
             if nlibraries > 1 or one_lib_facet:
                 p = (p +
                      p9.facet_wrap('~ library',
