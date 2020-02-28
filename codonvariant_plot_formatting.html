@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Formatting CodonVariantTable plots &#8212; dms_variants 0.5.1 documentation</title>
+    <title>Formatting CodonVariantTable plots &#8212; dms_variants 0.5.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -420,7 +420,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+<span></span><span class="n">_</span> <span class="o">=</span> <span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
@@ -493,21 +493,11 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&#39;] not found. Falling back to DejaVu Sans.
-findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&#39;] not found. Falling back to DejaVu Sans.
-findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&#39;] not found. Falling back to DejaVu Sans.
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_plot_formatting_29_1.png" src="_images/codonvariant_plot_formatting_29_1.png" />
+<img alt="_images/codonvariant_plot_formatting_29_0.png" src="_images/codonvariant_plot_formatting_29_0.png" />
 </div>
 </div>
 <p>Note how the above call also used the <code class="docutils literal notranslate"><span class="pre">heightscale</span></code> and <code class="docutils literal notranslate"><span class="pre">widthscale</span></code> options (which exist for all plotting methods of a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>) to make the plot larger.</p>
@@ -550,7 +540,6 @@ findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&
                                                    <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">})</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-
 </pre></div>
 </div>
 </div>
@@ -561,7 +550,7 @@ findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&
 <img alt="_images/codonvariant_plot_formatting_33_0.png" src="_images/codonvariant_plot_formatting_33_0.png" />
 </div>
 </div>
-<p>Or only the merge of all libraries:</p>
+<p>Note that if you just specify one library, by default the library name is <strong>not</strong> shown in the facet title:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
@@ -569,7 +558,7 @@ findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
                                     <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
-                                    <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all_only&#39;</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lib_1&#39;</span><span class="p">],</span>
                                     <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
                                                    <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">})</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
@@ -584,9 +573,57 @@ findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&
 <img alt="_images/codonvariant_plot_formatting_35_0.png" src="_images/codonvariant_plot_formatting_35_0.png" />
 </div>
 </div>
-<p>Or only show some samples:</p>
+<p>You can change this behavior by setting the <code class="docutils literal notranslate"><span class="pre">one_lib_facet</span></code> parameter to <code class="docutils literal notranslate"><span class="pre">True</span></code>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;lib_1&#39;</span><span class="p">],</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">},</span>
+                                    <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_37_0.png" src="_images/codonvariant_plot_formatting_37_0.png" />
+</div>
+</div>
+<p>Or only the merge of all libraries:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                                    <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all_only&#39;</span><span class="p">,</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;loose bottle&#39;</span><span class="p">,</span>
+                                                   <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="s1">&#39;narrow bottle&#39;</span><span class="p">},</span>
+                                    <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_plot_formatting_39_0.png" src="_images/codonvariant_plot_formatting_39_0.png" />
+</div>
+</div>
+<p>Or only show some samples:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -604,12 +641,12 @@ findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_plot_formatting_37_0.png" src="_images/codonvariant_plot_formatting_37_0.png" />
+<img alt="_images/codonvariant_plot_formatting_41_0.png" src="_images/codonvariant_plot_formatting_41_0.png" />
 </div>
 </div>
 <p>You can also save the plots to image files using their <code class="docutils literal notranslate"><span class="pre">save</span></code> method. Here we show how to do this, saving the plot as a PNG to a temporary file and then displaying that PNG:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -623,7 +660,7 @@ findfont: Font family [&#39;xkcd&#39;, &#39;Humor Sans&#39;, &#39;Comic Sans MS&
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_plot_formatting_39_0.png" src="_images/codonvariant_plot_formatting_39_0.png" />
+<img alt="_images/codonvariant_plot_formatting_43_0.png" src="_images/codonvariant_plot_formatting_43_0.png" />
 </div>
 </div>
 </div>

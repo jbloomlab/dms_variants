@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.5.1 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.5.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -887,7 +887,8 @@
                        <span class="n">count_or_frequency</span><span class="o">=</span><span class="s1">&#39;frequency&#39;</span><span class="p">,</span>
                        <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                        <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                       <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                       <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Heatmap of mutation counts or frequencies.</span>
 
 <span class="sd">        Parameters</span>
@@ -953,11 +954,17 @@
         <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">3.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="n">height_per</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;~ sample&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">3.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="n">height_per</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -980,10 +987,11 @@
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
-                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
-                 <span class="p">)</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                     <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                                   <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
@@ -996,7 +1004,8 @@
 <div class="viewcode-block" id="CodonVariantTable.plotMutFreqs"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs">[docs]</a>    <span class="k">def</span> <span class="nf">plotMutFreqs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                      <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                     <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                     <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Mutation frequency along length of gene.</span>
 
 <span class="sd">        Parameters</span>
@@ -1034,11 +1043,17 @@
         <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">1.8</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;~ sample&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">1.8</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.8</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1074,10 +1089,11 @@
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
-                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
-                 <span class="p">)</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                     <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                                   <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
@@ -1091,7 +1107,7 @@
                                <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span>
                                <span class="n">tot_variants_hline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                               <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                               <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot number variants with &gt;= that each number of counts.</span>
 
 <span class="sd">        Parameters</span>
@@ -1128,11 +1144,17 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `variant_type` </span><span class="si">{variant_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;~ sample&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1156,11 +1178,12 @@
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
-                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">)</span>
-                 <span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                     <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                                   <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
@@ -1177,7 +1200,7 @@
                              <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                              <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                              <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_count</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                             <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                             <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Fraction of mutations seen &lt;= some number of times.</span>
 
 <span class="sd">        Parameters</span>
@@ -1215,11 +1238,17 @@
         <span class="n">nsamples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;sample&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;~ sample&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.6</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.2</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1253,10 +1282,11 @@
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
-                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
-                 <span class="p">)</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                     <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                                   <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
@@ -1323,7 +1353,8 @@
 <div class="viewcode-block" id="CodonVariantTable.plotNumCodonMutsByType"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumCodonMutsByType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                                <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                               <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                               <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot average nonsynonymous, synonymous, stop mutations per variant.</span>
 
 <span class="sd">        Parameters</span>
@@ -1351,11 +1382,17 @@
                                      <span class="n">min_support</span><span class="o">=</span><span class="n">min_support</span><span class="p">,</span>
                                      <span class="n">sample_rename</span><span class="o">=</span><span class="n">sample_rename</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;~ sample&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.4</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.3</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1384,10 +1421,11 @@
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
-                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
-                 <span class="p">)</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                     <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                                   <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
@@ -1400,7 +1438,7 @@
                                     <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                     <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                                     <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_support</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                    <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                    <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot histogram of variant call support for variants.</span>
 
 <span class="sd">        Parameters</span>
@@ -1447,9 +1485,11 @@
                                    <span class="n">breaks</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">integer_breaks</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_y_continuous</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;number of variants&#39;</span><span class="p">,</span>
                                    <span class="n">labels</span><span class="o">=</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">latex_sci_not</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1498,7 +1538,8 @@
 <div class="viewcode-block" id="CodonVariantTable.plotAvgCountsPerVariant"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant">[docs]</a>    <span class="k">def</span> <span class="nf">plotAvgCountsPerVariant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                                 <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                                 <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                                <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get average counts per variant.</span>
 
 <span class="sd">        Parameters</span>
@@ -1538,11 +1579,13 @@
              <span class="n">p9</span><span class="o">.</span><span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s1">&#39;identity&#39;</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;average counts per variant&#39;</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">)</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
                       <span class="n">axis_text_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span>
                       <span class="p">)</span>
              <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="n">nrow</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">plotfile</span><span class="p">:</span>
             <span class="n">p</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">plotfile</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -1552,7 +1595,8 @@
 <div class="viewcode-block" id="CodonVariantTable.plotNumMutsHistogram"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumMutsHistogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mut_type</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                              <span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">plotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                              <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">widthscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">heightscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                             <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_muts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                             <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_muts</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot histograms of number of mutations per variant.</span>
 
 <span class="sd">        Parameters</span>
@@ -1580,6 +1624,8 @@
 <span class="sd">        sample_rename : dict or None</span>
 <span class="sd">            Rename samples by specifying original name as key and new name</span>
 <span class="sd">            as value.</span>
+<span class="sd">        one_lib_facet : bool</span>
+<span class="sd">            Plot library facet title even if just one library.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1601,11 +1647,17 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid mut_type </span><span class="si">{mut_type}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;h&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~ library&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;sample ~&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">orientation</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span>
-            <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;library ~ sample&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">facet_str</span> <span class="o">=</span> <span class="s1">&#39;~ sample&#39;</span>
             <span class="n">width</span> <span class="o">=</span> <span class="n">widthscale</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nsamples</span><span class="p">)</span>
             <span class="n">height</span> <span class="o">=</span> <span class="n">heightscale</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6</span> <span class="o">+</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">nlibraries</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1629,11 +1681,12 @@
              <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
-                               <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span> <span class="o">+</span>
-                 <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">)</span>
-                 <span class="p">)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;number of variants&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">nlibraries</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">one_lib_facet</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span>
+                     <span class="n">p9</span><span class="o">.</span><span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span>
+                                   <span class="n">nrow</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;h&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">nlibraries</span><span class="p">}[</span><span class="n">orientation</span><span class="p">])</span>
+                     <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">facet_grid</span><span class="p">(</span><span class="n">facet_str</span><span class="p">)</span>
 
