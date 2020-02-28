@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.5.2
+------
+- In ``CodonVariantTable`` plotting, by default do not label facets for library when just one library, and add ``one_lib_facet`` parameter to plotting functions.
+
 0.5.1
 -------
 
