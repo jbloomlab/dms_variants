@@ -10,6 +10,8 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 ------
 - In ``CodonVariantTable`` plotting, by default do not label facets for library when just one library, and add ``one_lib_facet`` parameter to plotting functions.
 
+- Made compatible with ``pandas`` >= 1.0
+
 0.5.1
 -------
 
