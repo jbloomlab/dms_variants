@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.5.2 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.5.3 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -1267,7 +1267,8 @@
 
         <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">p9</span><span class="o">.</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">p9</span><span class="o">.</span><span class="n">aes</span><span class="p">(</span><span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;mutation_type&#39;</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">stat_ecdf</span><span class="p">(</span><span class="n">geom</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.75</span><span class="p">)</span> <span class="o">+</span>
-             <span class="n">p9</span><span class="o">.</span><span class="n">coord_cartesian</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_count</span><span class="p">))</span> <span class="o">+</span>
+             <span class="n">p9</span><span class="o">.</span><span class="n">coord_cartesian</span><span class="p">(</span><span class="n">xlim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">max_count</span><span class="p">),</span>
+                                <span class="n">ylim</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span>
              <span class="n">p9</span><span class="o">.</span><span class="n">scale_color_manual</span><span class="p">(</span>
                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_mutation_type_colors</span><span class="p">[</span><span class="n">m</span><span class="p">]</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span>
                  <span class="n">df</span><span class="o">.</span><span class="n">mutation_type</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">sort_values</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()],</span>
