@@ -1232,7 +1232,8 @@ class CodonVariantTable:
 
         p = (p9.ggplot(df, p9.aes('count', color='mutation_type')) +
              p9.stat_ecdf(geom='step', size=0.75) +
-             p9.coord_cartesian(xlim=(0, max_count)) +
+             p9.coord_cartesian(xlim=(0, max_count),
+                                ylim=(0, 1)) +
              p9.scale_color_manual(
                 [self._mutation_type_colors[m] for m in
                  df.mutation_type.unique().sort_values().tolist()],
