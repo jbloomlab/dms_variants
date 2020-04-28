@@ -56,6 +56,15 @@ class CodonVariantTable:
     substitutions_col : str
         Name of substitutions column in `barcode_variant_file` (use if you
         want it to be something other than "substitutions").
+    primary_target : str or None
+        Use this option if you have additional targets beyond the main gene
+        for which we are analyzing variants. This might be the case if you
+        have spiked other genes into the library. If this option is set to
+        something other than `None`, then there must be a column in
+        `barcode_variant_file` named "target" and one of these targets must
+        be equal to 'primary_target'. If there are other targets, they should
+        **not** have any substitutions as we don't parse substitutions in
+        non-primary targets.
 
     Attributes
     ----------
@@ -77,6 +86,9 @@ class CodonVariantTable:
         each variant for each sample. Differs from `barcode_variant_df`
         in that the former just holds barcode-variant definitions,
         whereas `variant_count_df` has counts for each sample.
+    primary_target : str or None
+        If multiple targets, name of the main target for which we are
+        calling variants.
 
     """
 
@@ -144,6 +156,9 @@ class CodonVariantTable:
         """
         df = pd.read_csv(variant_count_df_file)
 
+        if 'target' in df.columns:
+            raise ValueError('does not yet handle multiple targets')
+
         req_cols = ['barcode', 'library', 'variant_call_support',
                     'codon_substitutions', 'sample', 'count']
         if not (set(req_cols) < set(df.columns)):
@@ -175,7 +190,8 @@ class CodonVariantTable:
 
     def __init__(self, *, barcode_variant_file, geneseq,
                  substitutions_are_codon=False, extra_cols=None,
-                 substitutions_col='substitutions'):
+                 substitutions_col='substitutions',
+                 primary_target=None):
         """See main class doc string."""
         self.geneseq = geneseq.upper()
         if not re.match(f"^[{''.join(NTS)}]+$", self.geneseq):
@@ -190,9 +206,35 @@ class CodonVariantTable:
 
         df = (pd.read_csv(barcode_variant_file)
               .rename(columns={substitutions_col: 'substitutions'})
+              .assign(substitutions=lambda x: x['substitutions'].fillna(''))
               )
         required_cols = ['library', 'barcode',
                          'substitutions', 'variant_call_support']
+        self.primary_target = primary_target
+        if self.primary_target is not None:
+            required_cols += ['target']
+            if 'target' not in df.columns:
+                raise ValueError('cannot use `primary_target` as the variant '
+                                 'file lacks column named "target"')
+            if self.primary_target not in set(df['target']):
+                raise ValueError(f"{self.primary_target} not in 'target' col")
+            subs_non_primary = (
+                    df
+                    .query('target != @self.primary_target')
+                    .assign(has_subs=lambda x: (x['substitutions']
+                                                .str.strip()
+                                                .str.len()
+                                                .astype(bool)
+                                                )
+                            )
+                    .query('has_subs == True')
+                    )
+            if len(subs_non_primary):
+                raise ValueError('non-primary targets have substitutions:\n' +
+                                 subs_non_primary.head().to_csv())
+        elif 'target' in df.columns:
+            raise ValueError('variant file has column "target" but '
+                             'you did not specify `primary_target`')
         if not set(df.columns).issuperset(set(required_cols)):
             raise ValueError("`variantfile` does not have "
                              f"required columns {required_cols}")
@@ -223,7 +265,6 @@ class CodonVariantTable:
                 df
                 # info about codon and amino-acid substitutions
                 .assign(codon_substitutions=lambda x: (x['substitutions']
-                                                       .fillna('')
                                                        .apply(codonSubsFunc)),
                         aa_substitutions=lambda x: (x.codon_substitutions
                                                     .apply(self.codonToAAMuts)
@@ -244,6 +285,20 @@ class CodonVariantTable:
                 .sort_values(['library', 'barcode'])
                 .reset_index(drop=True)
                 )
+
+        assert ((self.primary_target is None and
+                 'target' not in self.barcode_variant_df.columns
+                 ) or
+                (self.primary_target is not None and
+                 'target' in self.barcode_variant_df.columns
+                 )
+                )
+        assert self.primary_target is None or not (
+                            self.barcode_variant_df
+                            .query('target != @self.primary_target')
+                            ['n_codon_substitutions']
+                            .any()
+                            )
 
         # check validity of codon substitutions given `geneseq`
         for codonmut in itertools.chain.from_iterable(
@@ -2135,7 +2190,8 @@ class CodonVariantTable:
                 raise ValueError(f"invalid nucleotide site {i}")
             if self.geneseq[i - 1] != wt_nt:
                 raise ValueError(f"nucleotide {i} should be "
-                                 f"{self.geneseq[i - 1]} not {wt_nt}")
+                                 f"{self.geneseq[i - 1]} not {wt_nt} in "
+                                 f"{nt_mut_str}")
             icodon = (i - 1) // 3 + 1
             i_nt = (i - 1) % 3
             assert self.codons[icodon][i_nt] == wt_nt
