@@ -344,11 +344,15 @@ class CodonVariantTable:
         if self.primary_target is not None:
             self.barcode_variant_df = (
                 self.barcode_variant_df
-                .assign(aa_substitutions=lambda x: x['aa_substitutions'].where(
+                .assign(
+                    aa_substitutions=lambda x: x['aa_substitutions'].where(
                                             x['target'] == self.primary_target,
                                             x['target']),
-                        codon_substitutions=lambda x: x['aa_substitutions'],
-                        )
+                    codon_substitutions=  # noqa: E251
+                        lambda x: x['codon_substitutions'].where(  # noqa: E321
+                                            x['target'] == self.primary_target,
+                                            x['target']),
+                    )
                 )
 
     def samples(self, library):
@@ -901,10 +905,12 @@ class CodonVariantTable:
         def _classify_mutation(mut_str):
             if mut_type == 'aa':
                 m = self._AA_SUB_RE.match(mut_str)
+                assert m is not None, f"cannot match aa mut: {mut_str}"
                 wt_aa = m.group('wt')
                 mut_aa = m.group('mut')
             else:
                 m = self._CODON_SUB_RE.match(mut_str)
+                assert m is not None, f"cannot match codon mut: {mut_str}"
                 wt_aa = CODON_TO_AA[m.group('wt')]
                 mut_aa = CODON_TO_AA[m.group('mut')]
             if wt_aa == mut_aa:
