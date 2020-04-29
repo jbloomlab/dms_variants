@@ -13,6 +13,10 @@ Added
 +++++
 - Added capability of having other "reference" targets in a ``CodonVariantTable``.
 
+Fixed
++++++
+- ``simulate.rand_seq`` generates unique sequences.
+
 0.5.3
 ------
 

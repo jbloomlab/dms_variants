@@ -45,6 +45,7 @@ def rand_seq(seqlen, *, exclude=None, nseqs=1):
     -------
     str or list
         A random sequence or list of them depending on value of `nseqs`.
+        If multiple sequences, they are all unique.
 
     Seed `random.seed` for reproducible output.
 
@@ -68,12 +69,13 @@ def rand_seq(seqlen, *, exclude=None, nseqs=1):
         if len(exclude) >= len(NTS)**seqlen:
             raise ValueError('excluding too many sequences, none valid.')
     else:
-        exclude = {}
+        exclude = set()
     seqs = []
     while len(seqs) < nseqs:
         seq = ''.join(random.choice(NTS) for _ in range(seqlen))
         if seq not in exclude:
             seqs.append(seq)
+            exclude.add(seq)
     if len(seqs) == 1:
         return seqs[0]
     else:
