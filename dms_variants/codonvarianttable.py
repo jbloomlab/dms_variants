@@ -222,9 +222,11 @@ class CodonVariantTable:
               )
         required_cols = ['library', 'barcode',
                          'substitutions', 'variant_call_support']
+        sort_cols = ['library', 'barcode']
         self.primary_target = primary_target
         if self.primary_target is not None:
-            required_cols.append('target')
+            required_cols.insert(0, 'target')
+            sort_cols.insert(0, 'target')
             if 'target' not in set(df.columns):
                 raise ValueError('cannot use `primary_target` as the variant '
                                  'file lacks column named "target"')
@@ -294,7 +296,7 @@ class CodonVariantTable:
                                                          self.libraries,
                                                          ordered=True)
                         )
-                .sort_values(['library', 'barcode'])
+                .sort_values(sort_cols)
                 .reset_index(drop=True)
                 )
 
