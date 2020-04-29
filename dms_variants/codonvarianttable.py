@@ -80,6 +80,8 @@ class CodonVariantTable:
         List of libraries in `barcode_variant_file`.
     barcode_variant_df : pandas.DataFrame
         Info about codon mutations parsed from `barcode_variant_file`.
+        For non-primary targets, the mutations column just hold the
+        target name.
     variant_count_df : pandas.DataFrame or None
         Initially `None`, but after data added with
         :class:`CodonVariantTable.addSampleCounts`, holds counts of
@@ -334,6 +336,18 @@ class CodonVariantTable:
                 'synonymous': CBPALETTE[2],
                 'stop': CBPALETTE[3]
                 }
+
+        # for "safety" make the substitutions column for non-primary targets
+        # just the target name
+        if self.primary_target is not None:
+            self.barcode_variant_df = (
+                self.barcode_variant_df
+                .assign(aa_substitutions=lambda x: x['aa_substitutions'].where(
+                                            x['target'] == self.primary_target,
+                                            x['target']),
+                        codon_substitutions=lambda x: x['aa_substitutions'],
+                        )
+                )
 
     def samples(self, library):
         """List of all samples for `library`.
