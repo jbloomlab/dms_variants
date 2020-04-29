@@ -2294,7 +2294,7 @@ class CodonVariantTable:
         >>> variants._ntToCodonMuts('A1G G4C G6T')
         Traceback (most recent call last):
         ...
-        ValueError: nucleotide 6 should be A not G
+        ValueError: nucleotide 6 should be A not G in A1G G4C G6T
 
         """
         mut_codons = collections.defaultdict(set)
