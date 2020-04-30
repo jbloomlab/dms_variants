@@ -1,0 +1,4006 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Libraries with secondary target genes &#8212; dms_variants 0.6.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Fitting gobal epistasis models with experimental “noise”" href="narrow_bottleneck.html" />
+    <link rel="prev" title="Analyze simulated library of codon variants" href="codonvariant_sim_data.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 5ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<div class="section" id="Libraries-with-secondary-target-genes">
+<h1>Libraries with secondary target genes<a class="headerlink" href="#Libraries-with-secondary-target-genes" title="Permalink to this headline">¶</a></h1>
+<p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> is designed to handle mutations to a specific target gene. But in some cases, you might also want to include specific targets that are <strong>not</strong> point mutants of this primary target gene, but rather are entirely different genes that are spiked into the library as a control or for comparison. Because these secondary targets might not be closely
+related to the primary target gene, we do not want to define them simply by their mutations relative to the primary target. Rather, we handle them as different targets by adding a “targets” column in the data.</p>
+<p>This notebook illustrates how to do this.</p>
+<div class="section" id="Setup-for-analysis">
+<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Import Python modules / packages:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">scipy</span>
+
+<span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
+<span class="kn">import</span> <span class="nn">dms_variants.plotnine_themes</span>
+<span class="kn">import</span> <span class="nn">dms_variants.simulate</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="kn">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
+</pre></div>
+</div>
+</div>
+<p>Set parameters that define the simulated data for the primary target gene. Except for that fact that we use a short gene to reduce the computational run-time of this notebook, these simulation parameters are designed to reflect what we might observe in a real Bloom lab deep mutational scanning experiment:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">primary_target</span> <span class="o">=</span> <span class="s1">&#39;primary_target_gene&#39;</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
+<span class="n">genelength</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># gene length in codons</span>
+<span class="n">libs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lib_1&#39;</span><span class="p">,</span> <span class="s1">&#39;lib_2&#39;</span><span class="p">]</span>  <span class="c1"># distinct libraries of gene</span>
+<span class="n">variants_per_lib</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">genelength</span>  <span class="c1"># variants per library</span>
+<span class="n">avgmuts</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># average codon mutations per variant</span>
+<span class="n">bclen</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># length of nucleotide barcode for each variant</span>
+<span class="n">variant_error_rate</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># rate at which variant sequence mis-called</span>
+<span class="n">avgdepth_per_variant</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># average per-variant sequencing depth</span>
+<span class="n">lib_uniformity</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># uniformity of library pre-selection</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="mf">0.02</span>  <span class="c1"># random noise in selections</span>
+<span class="n">bottlenecks</span> <span class="o">=</span> <span class="p">{</span>  <span class="c1"># bottlenecks from pre- to post-selection</span>
+        <span class="s1">&#39;tight_bottle&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s1">&#39;loose_bottle&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>We also define some secondary targets:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">secondary_targets</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;secondary_target_</span><span class="si">{i}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+<p>Seed random number generator for reproducible output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+<span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Set pandas display options to show large chunks of Data Frames in this example:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.width&#39;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Hide warnings that clutter output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Set the gray grid <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html?highlight=themes">plotnine theme</a> defined in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.plotnine_themes.html">dms_variants.plotnine_themes</a> as this gives a nice appearance for the plots:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Simulate-library-with-primary-and-secondary-variants">
+<h2>Simulate library with primary and secondary variants<a class="headerlink" href="#Simulate-library-with-primary-and-secondary-variants" title="Permalink to this headline">¶</a></h2>
+<p>Simulate wildtype gene sequence:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Wildtype gene of 30 codons:
+AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAACATCCGGCTG
+</pre></div></div>
+</div>
+<p>Generate a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">simulate_CodonVariantTable</a> function, then get the barcode-variant data frame for it. This data frame gives the variants for the <strong>primary</strong> target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">primary_bc_variant_df</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
+                        <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+                        <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+                        <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="n">lib</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
+                                             <span class="s1">&#39;nvariants&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span><span class="p">}</span>
+                                       <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">},</span>
+                        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                        <span class="p">)</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+
+<span class="n">primary_bc_variant_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>barcode</th>
+      <th>variant_call_support</th>
+      <th>codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>n_codon_substitutions</th>
+      <th>n_aa_substitutions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>AAAAAAAACGTTTTGT</td>
+      <td>1</td>
+      <td>CTG5TGG TCA11TCT</td>
+      <td>L5W</td>
+      <td>2</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>AAAAAAAGGCTTATAC</td>
+      <td>5</td>
+      <td>TCA11TGC</td>
+      <td>S11C</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>AAAAAAATCGTCCGTG</td>
+      <td>2</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>AAAAAAGACAACACCG</td>
+      <td>5</td>
+      <td>ATC25TTC</td>
+      <td>I25F</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>AAAAAAGATGTGGTGG</td>
+      <td>3</td>
+      <td>TCA11TTA CGG12GGT CGT15TGA ATC25GGA ATC28CGC</td>
+      <td>S11L R12G R15* I25G I28R</td>
+      <td>5</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>This data frame gives variants for the primary target, so add a column specifying that fact:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">primary_bc_variant_df</span> <span class="o">=</span> <span class="n">primary_bc_variant_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">primary_target</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now add some barcodes for each secondary targets. We simulate barcodes for each secondary target and each library. Note that the secondary targets are defined genes, so we don’t add any information on substitutions for these:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">existing_barcodes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">primary_bc_variant_df</span><span class="p">[</span><span class="s1">&#39;barcode&#39;</span><span class="p">])</span>
+
+<span class="n">secondary_bc_variant_df</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">lib</span><span class="p">,</span> <span class="n">secondary_target</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">libs</span><span class="p">,</span> <span class="n">secondary_targets</span><span class="p">):</span>
+    <span class="n">secondary_target_barcodes</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">rand_seq</span><span class="p">(</span>
+                                                <span class="n">seqlen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+                                                <span class="n">exclude</span><span class="o">=</span><span class="n">existing_barcodes</span><span class="p">,</span>
+                                                <span class="n">nseqs</span><span class="o">=</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                                                <span class="p">)</span>
+    <span class="n">existing_barcodes</span> <span class="o">=</span> <span class="n">existing_barcodes</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">secondary_target_barcodes</span><span class="p">)</span>
+    <span class="n">secondary_bc_variant_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;target&#39;</span><span class="p">:</span> <span class="n">secondary_target</span><span class="p">,</span>
+                                                 <span class="s1">&#39;barcode&#39;</span><span class="p">:</span> <span class="n">secondary_target_barcodes</span><span class="p">,</span>
+                                                 <span class="s1">&#39;library&#39;</span><span class="p">:</span> <span class="n">lib</span><span class="p">,</span>
+                                                 <span class="s1">&#39;variant_call_support&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">}))</span>
+
+<span class="n">secondary_bc_variant_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">secondary_bc_variant_df</span><span class="p">,</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">secondary_bc_variant_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>barcode</th>
+      <th>library</th>
+      <th>variant_call_support</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>secondary_target_1</td>
+      <td>TCCTGTACGATATCCC</td>
+      <td>lib_1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>secondary_target_1</td>
+      <td>GGGTGTGGCGTTTCCT</td>
+      <td>lib_1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>secondary_target_1</td>
+      <td>TAGCCTCTATTGCCTT</td>
+      <td>lib_1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>secondary_target_1</td>
+      <td>CGGAGACGTCACGGCG</td>
+      <td>lib_1</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>secondary_target_1</td>
+      <td>GGGGACAATTATCCCT</td>
+      <td>lib_1</td>
+      <td>10</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Concatenate the data frame for the primary target (which has mutants) with that for the secondary targets. Because there are no mutations for the secondary targets, fill that information is as empty strings (for substitution columns) or 0 (for number of mutations). This data frame below ends the simulation of the library, and represents the type of information you would typically have at the outset of an experiment:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">bc_variant_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">primary_bc_variant_df</span>
+                 <span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">secondary_bc_variant_df</span><span class="p">,</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                 <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">codon_substitutions</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+                         <span class="n">aa_substitutions</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+                         <span class="n">n_codon_substitutions</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_codon_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+                         <span class="n">n_aa_substitutions</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+                 <span class="p">)</span>
+
+<span class="n">bc_variant_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>barcode</th>
+      <th>variant_call_support</th>
+      <th>codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>n_codon_substitutions</th>
+      <th>n_aa_substitutions</th>
+      <th>target</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>AAAAAAAACGTTTTGT</td>
+      <td>1</td>
+      <td>CTG5TGG TCA11TCT</td>
+      <td>L5W</td>
+      <td>2</td>
+      <td>1</td>
+      <td>primary_target_gene</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>AAAAAAAGGCTTATAC</td>
+      <td>5</td>
+      <td>TCA11TGC</td>
+      <td>S11C</td>
+      <td>1</td>
+      <td>1</td>
+      <td>primary_target_gene</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>AAAAAAATCGTCCGTG</td>
+      <td>2</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+      <td>primary_target_gene</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>AAAAAAGACAACACCG</td>
+      <td>5</td>
+      <td>ATC25TTC</td>
+      <td>I25F</td>
+      <td>1</td>
+      <td>1</td>
+      <td>primary_target_gene</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>AAAAAAGATGTGGTGG</td>
+      <td>3</td>
+      <td>TCA11TTA CGG12GGT CGT15TGA ATC25GGA ATC28CGC</td>
+      <td>S11L R12G R15* I25G I28R</td>
+      <td>5</td>
+      <td>5</td>
+      <td>primary_target_gene</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>429</th>
+      <td>lib_2</td>
+      <td>GCGGCCTGGAGTTGAA</td>
+      <td>10</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+    </tr>
+    <tr>
+      <th>430</th>
+      <td>lib_2</td>
+      <td>TGATCACTACGTCCTT</td>
+      <td>10</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+    </tr>
+    <tr>
+      <th>431</th>
+      <td>lib_2</td>
+      <td>TTTAGGAATCTCCCGT</td>
+      <td>10</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+    </tr>
+    <tr>
+      <th>432</th>
+      <td>lib_2</td>
+      <td>TGTGCTTAGAGCACCG</td>
+      <td>10</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+    </tr>
+    <tr>
+      <th>433</th>
+      <td>lib_2</td>
+      <td>TTCTTACTGAAGTTCC</td>
+      <td>10</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+    </tr>
+  </tbody>
+</table>
+<p>30434 rows × 8 columns</p>
+</div></div>
+</div>
+<p>Now create the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>. Note how we specify the <code class="docutils literal notranslate"><span class="pre">primary_target</span></code> option to the name of that target; this is required when using multiple targets:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">bc_variant_df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+    <span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="p">(</span>
+                    <span class="n">barcode_variant_file</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+                    <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">,</span>
+                    <span class="n">primary_target</span><span class="o">=</span><span class="n">primary_target</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We can get basic information about the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>, such as the sites, wildtype codons, and wildtype amino acids. Below we do this for the first few sites. Note that all of this information is for the <strong>primary target</strong>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span> <span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>[1, 2, 3, 4, 5]
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span> <span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>[&#39;AGA&#39;, &#39;TCC&#39;, &#39;GTG&#39;, &#39;ATT&#39;, &#39;CTG&#39;]
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">aas</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span> <span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>[&#39;R&#39;, &#39;S&#39;, &#39;V&#39;, &#39;I&#39;, &#39;L&#39;]
+</pre></div>
+</div>
+</div>
+<p>The different libraries in the table:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="output_area highlight-none notranslate"><div class="highlight"><pre>
+<span></span>[&#39;lib_1&#39;, &#39;lib_2&#39;]
+</pre></div>
+</div>
+</div>
+<p>Here is the data frame that contains all of the information on the barcoded variants. Note that the list of substitutions for the secondary targets just repeat the target name (so you are not confused with thinking mutations are actually enumerated in these secondary targets):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>barcode</th>
+      <th>variant_call_support</th>
+      <th>codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>n_codon_substitutions</th>
+      <th>n_aa_substitutions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>AAAAAAAACGTTTTGT</td>
+      <td>1</td>
+      <td>CTG5TGG TCA11TCT</td>
+      <td>L5W</td>
+      <td>2</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>AAAAAAAGGCTTATAC</td>
+      <td>5</td>
+      <td>TCA11TGC</td>
+      <td>S11C</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>AAAAAAATCGTCCGTG</td>
+      <td>2</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>AAAAAAGACAACACCG</td>
+      <td>5</td>
+      <td>ATC25TTC</td>
+      <td>I25F</td>
+      <td>1</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>AAAAAAGATGTGGTGG</td>
+      <td>3</td>
+      <td>TCA11TTA CGG12GGT CGT15TGA ATC25GGA ATC28CGC</td>
+      <td>S11L R12G R15* I25G I28R</td>
+      <td>5</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>30429</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>TGTGCTTAGAGCACCG</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>30430</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>TTCCGACACGTTGACC</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>30431</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>TTCTATTACGCTGGGG</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>30432</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>TTCTTACTGAAGTTCC</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>30433</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>TTTAGGAATCTCCCGT</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>30434 rows × 8 columns</p>
+</div></div>
+</div>
+</div>
+<div class="section" id="Analyze-library-composition">
+<h2>Analyze library composition<a class="headerlink" href="#Analyze-library-composition" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> has methods for summarizing and plotting properties of the barcoded variants. These methods can be used to analyze the barcoded variants themselves, or to analyze the frequency (or counts) of variants in the library in samples that have undergone some type of selection.</p>
+<p>We have not yet added counts of the variants in any specific samples, so we just analyze the composition of the variant library itself. This is done by setting <code class="docutils literal notranslate"><span class="pre">samples=None</span></code> in the method calls below.</p>
+<p>Number of variants in each library:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>sample</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>15000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>15000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>30000</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>secondary_target_1</td>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>52</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>secondary_target_1</td>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>82</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>134</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>secondary_target_2</td>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>89</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>secondary_target_2</td>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>69</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>158</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>secondary_target_3</td>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>87</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>55</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>142</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>We can also get this information for just the primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>15000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>15000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>30000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Plot distribution of variant call supports, grouping together all variants with support <span class="math notranslate nohighlight">\(\ge 8\)</span>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotVariantSupportHistogram</span><span class="p">(</span><span class="n">max_support</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_39_0.png" src="_images/codonvariant_sim_data_multi_targets_39_0.png" />
+</div>
+</div>
+<p>Same plot for only the primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotVariantSupportHistogram</span><span class="p">(</span><span class="n">max_support</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_41_0.png" src="_images/codonvariant_sim_data_multi_targets_41_0.png" />
+</div>
+</div>
+<p>The set of valid barcodes for each library:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First few barcodes for library </span><span class="si">{lib}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="n">lib</span><span class="p">))[</span> <span class="p">:</span> <span class="mi">3</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+First few barcodes for library lib_1:
+[&#39;AAAAAAAACGTTTTGT&#39;, &#39;AAAAAAAGGCTTATAC&#39;, &#39;AAAAAAATCGTCCGTG&#39;]
+First few barcodes for library lib_2:
+[&#39;AAAAAACCCAGACTTA&#39;, &#39;AAAAAACCGGCGGCAG&#39;, &#39;AAAAAATCTACTGCGT&#39;]
+</pre></div></div>
+</div>
+<p>Plot the number of amino-acid mutations per variant. Note that this plot is <strong>only</strong> for the primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_45_0.png" src="_images/codonvariant_sim_data_multi_targets_45_0.png" />
+</div>
+</div>
+<p>Average number of codon mutations per variant of each type of mutation. We make these plots for: 1. Just single-mutant and wildtype variants 2. For all variants</p>
+<p>Again, these are <strong>only</strong> for the primary target, since mutations are only defined for that target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">mut_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">mut_type</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_47_0.png" src="_images/codonvariant_sim_data_multi_targets_47_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_47_1.png" src="_images/codonvariant_sim_data_multi_targets_47_1.png" />
+</div>
+</div>
+<p>Here are the numerical data in the plots above:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation_type</th>
+      <th>num_muts_count</th>
+      <th>count</th>
+      <th>number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>3615</td>
+      <td>6112</td>
+      <td>0.591</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>194</td>
+      <td>6112</td>
+      <td>0.032</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>211</td>
+      <td>6112</td>
+      <td>0.035</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>3716</td>
+      <td>6114</td>
+      <td>0.608</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>235</td>
+      <td>6114</td>
+      <td>0.038</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>179</td>
+      <td>6114</td>
+      <td>0.029</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>7331</td>
+      <td>12226</td>
+      <td>0.600</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>429</td>
+      <td>12226</td>
+      <td>0.035</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>390</td>
+      <td>12226</td>
+      <td>0.032</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation_type</th>
+      <th>num_muts_count</th>
+      <th>count</th>
+      <th>number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>26916</td>
+      <td>15000</td>
+      <td>1.794</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>1510</td>
+      <td>15000</td>
+      <td>0.101</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>1424</td>
+      <td>15000</td>
+      <td>0.095</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>26960</td>
+      <td>15000</td>
+      <td>1.797</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>1498</td>
+      <td>15000</td>
+      <td>0.100</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>1371</td>
+      <td>15000</td>
+      <td>0.091</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>53876</td>
+      <td>30000</td>
+      <td>1.796</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>3008</td>
+      <td>30000</td>
+      <td>0.100</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>2795</td>
+      <td>30000</td>
+      <td>0.093</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Examine how well amino-acid mutations <strong>to the primary target</strong> are sampled in the library by looking at the fraction of mutations seen &lt;= some number of times. Here we do that for amino-acid mutations, making separate plots for single mutants and all mutants:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span>
+                                      <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">,</span>
+                                      <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_52_0.png" src="_images/codonvariant_sim_data_multi_targets_52_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_52_1.png" src="_images/codonvariant_sim_data_multi_targets_52_1.png" />
+</div>
+</div>
+<p>We can also get the numerical information plotted above (here for single mutants only):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation</th>
+      <th>count</th>
+      <th>mutation_type</th>
+      <th>site</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>V16L</td>
+      <td>25</td>
+      <td>nonsynonymous</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>C19R</td>
+      <td>21</td>
+      <td>nonsynonymous</td>
+      <td>19</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>R12S</td>
+      <td>21</td>
+      <td>nonsynonymous</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>R26L</td>
+      <td>21</td>
+      <td>nonsynonymous</td>
+      <td>26</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>S11R</td>
+      <td>21</td>
+      <td>nonsynonymous</td>
+      <td>11</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Here are the frequencies of mutations along the <strong>primary target</strong> gene, looking both at single mutants and all mutants:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutFreqs</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span>
+                              <span class="s1">&#39;codon&#39;</span><span class="p">,</span>
+                              <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_56_0.png" src="_images/codonvariant_sim_data_multi_targets_56_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_56_1.png" src="_images/codonvariant_sim_data_multi_targets_56_1.png" />
+</div>
+</div>
+<p>We can also look at mutation frequencies in the primary target gene a heat-map form:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutHeatmap</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;aa&#39;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_58_0.png" src="_images/codonvariant_sim_data_multi_targets_58_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Simulate-counts-for-samples">
+<h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Permalink to this headline">¶</a></h2>
+<p>An experiment involves subjecting the library to different selections and looking at how the frequencies of the variants changes by using sequencing to count the barcodes in each condition.</p>
+<p>Here, we simulate an experiment by simulating variant counts for samples that have undergone various selections.</p>
+<p>For these simulations, we first need to define a “phenotype” for each variant. The phenotype represents how much the frequency of the variant is expected to increase or decrease after selection.</p>
+<div class="section" id="Define-phenotype-function">
+<h3>Define phenotype function<a class="headerlink" href="#Define-phenotype-function" title="Permalink to this headline">¶</a></h3>
+<p>First, we define a “phenotype” function. We will do this using a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, which follow the “global epistasis” concepts of <a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and <a class="reference external" href="https://doi.org/10.1534/genetics.116.195214">Sailer and Harms</a> to define the phenotype in two steps: an underlying latent phenotype that mutations affect additively,
+and then an observed phenotype that is a non-linear function of the latent phenotype. The variants are then simulated according to their observed enrichments, which are the exponentials of the observed phenotypes.</p>
+<p>First, we initialize the simulator:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span>
+                                            <span class="n">geneseq</span><span class="p">,</span>
+                                            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Plot the simulated relationship of the latent phenotype with the observed enrichment and phenotype, with a dashed vertical line indicating the wildtype latent phenotype:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;enrichment&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotLatentVsObserved</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_62_0.png" src="_images/codonvariant_sim_data_multi_targets_62_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_62_1.png" src="_images/codonvariant_sim_data_multi_targets_62_1.png" />
+</div>
+</div>
+<p>Plot the latent phenotype, observed phenotype, and observed enrichment of all single amino-acid mutants, with a dashed vertical line indicating the wildtype:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;latentPhenotype&#39;</span><span class="p">,</span> <span class="s1">&#39;observedPhenotype&#39;</span><span class="p">,</span> <span class="s1">&#39;observedEnrichment&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotMutsHistogram</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_64_0.png" src="_images/codonvariant_sim_data_multi_targets_64_0.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_64_1.png" src="_images/codonvariant_sim_data_multi_targets_64_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_64_2.png" src="_images/codonvariant_sim_data_multi_targets_64_2.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Phenotypes-for-secondary-targets">
+<h3>Phenotypes for secondary targets<a class="headerlink" href="#Phenotypes-for-secondary-targets" title="Permalink to this headline">¶</a></h3>
+<p>We also specify phenotypes as observed enrichments for the secondary targets:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">secondary_target_phenotypes</span> <span class="o">=</span> <span class="p">{</span><span class="n">secondary_target</span><span class="p">:</span> <span class="nb">round</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+                               <span class="k">for</span> <span class="n">secondary_target</span> <span class="ow">in</span> <span class="n">secondary_targets</span><span class="p">}</span>
+
+<span class="c1"># display the observed enrichments for the secondary targets</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">secondary_target_phenotypes</span><span class="p">)</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="s1">&#39;observed_enrichment&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>observed_enrichment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>secondary_target_1</th>
+      <td>0.883</td>
+    </tr>
+    <tr>
+      <th>secondary_target_2</th>
+      <td>1.211</td>
+    </tr>
+    <tr>
+      <th>secondary_target_3</th>
+      <td>1.789</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+<div class="section" id="Simulate-variant-counts">
+<h3>Simulate variant counts<a class="headerlink" href="#Simulate-variant-counts" title="Permalink to this headline">¶</a></h3>
+<p>Now we use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulateSampleCounts">simulateSampleCounts</a> to simulate counts of variants when selection on each variant is proportional to its observed enrichment. In these simulations, we can fine-tune the simulations to reflect real experiments, such as by setting the error-rate in variant calling, bottlenecks when going from the pre- to post-selection samples, and non-uniformity in library composition.</p>
+<p>Here we simulate using several bottlenecks in the library going from the pre- to post-selection samples, since in real experiments this seems to be the biggest source of noise / error:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
+        <span class="n">variants</span><span class="o">=</span><span class="n">variants</span><span class="p">,</span>
+        <span class="n">phenotype_func</span><span class="o">=</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">,</span>
+        <span class="n">variant_error_rate</span><span class="o">=</span><span class="n">variant_error_rate</span><span class="p">,</span>
+        <span class="n">pre_sample</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span>
+                        <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
+                    <span class="s1">&#39;uniformity&#39;</span><span class="p">:</span> <span class="n">lib_uniformity</span><span class="p">},</span>
+        <span class="n">pre_sample_name</span><span class="o">=</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+        <span class="n">post_samples</span><span class="o">=</span><span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;noise&#39;</span><span class="p">:</span> <span class="n">noise</span><span class="p">,</span>
+                             <span class="s1">&#39;total_count&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span>
+                                 <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
+                             <span class="s1">&#39;bottleneck&#39;</span><span class="p">:</span> <span class="n">bottle</span><span class="p">}</span>
+                          <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">bottle</span> <span class="ow">in</span> <span class="n">bottlenecks</span><span class="o">.</span><span class="n">items</span><span class="p">()},</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="n">secondary_target_phenotypes</span><span class="o">=</span><span class="n">secondary_target_phenotypes</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Data frame with the simulated counts:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">counts</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>barcode</th>
+      <th>sample</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>AAAAAAAACGTTTTGT</td>
+      <td>pre-selection</td>
+      <td>317</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>AAAAAAAGGCTTATAC</td>
+      <td>pre-selection</td>
+      <td>133</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>AAAAAAATCGTCCGTG</td>
+      <td>pre-selection</td>
+      <td>127</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>AAAAAAGACAACACCG</td>
+      <td>pre-selection</td>
+      <td>97</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>AAAAAAGATGTGGTGG</td>
+      <td>pre-selection</td>
+      <td>324</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_1</td>
+      <td>AAAAAAGTCATACTCG</td>
+      <td>pre-selection</td>
+      <td>118</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+<div class="section" id="Add-counts-to-variant-table">
+<h3>Add counts to variant table<a class="headerlink" href="#Add-counts-to-variant-table" title="Permalink to this headline">¶</a></h3>
+<p>Now add the simulated counts for each library / sample to the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Confirm that we have added the expected number of counts per library / sample:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="s1">&#39;all_only&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>sample</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>5439967</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>5366820</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>5916597</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>23756</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>54373</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>57359</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>29184</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>92595</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>98230</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>27093</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>126212</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>137814</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Look only for primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">primary_target_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>2719365</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>2674231</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>2949688</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>2720602</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>2692589</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>2966909</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>5439967</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>5366820</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>5916597</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Analyze-sample-variant-counts">
+<h2>Analyze sample variant counts<a class="headerlink" href="#Analyze-sample-variant-counts" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> has methods for summarizing and plotting the variant counts for different samples. These methods are mostly the same as we used above to analyze the variant composition of the libraries themselves, but now we set <code class="docutils literal notranslate"><span class="pre">samples</span></code> to the samples that we want to analyze (typically <code class="docutils literal notranslate"><span class="pre">'all'</span></code>). Therefore, rather than each variant always counting once,
+each variant is counted in each sample in proportion to how many counts it has.</p>
+<p>In the rawest form, we can directly access a data frame giving the counts of each variant in each sample:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>sample</th>
+      <th>barcode</th>
+      <th>count</th>
+      <th>variant_call_support</th>
+      <th>codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>n_codon_substitutions</th>
+      <th>n_aa_substitutions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>AACCCGTTCACCACCA</td>
+      <td>692</td>
+      <td>2</td>
+      <td>ATC17CGA CGG29TGC</td>
+      <td>I17R R29C</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>ACTACGGACGATTATT</td>
+      <td>633</td>
+      <td>1</td>
+      <td>GCT7TCT AAA14GAT AAC20CGA</td>
+      <td>A7S K14D N20R</td>
+      <td>3</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>GGACTATCTCAGTATG</td>
+      <td>615</td>
+      <td>2</td>
+      <td></td>
+      <td></td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>CCAGAAAACCCACCAA</td>
+      <td>614</td>
+      <td>7</td>
+      <td>TTA18CTC</td>
+      <td></td>
+      <td>1</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>ACGGCCTAAACTCACA</td>
+      <td>611</td>
+      <td>3</td>
+      <td>CGT6GTA GAC22CAC</td>
+      <td>R6V D22H</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>91297</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>CAACCTAATTGGGATC</td>
+      <td>187</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91298</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>TGGGCACGATGCAATA</td>
+      <td>186</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91299</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>ACGAGTACCCCACTTC</td>
+      <td>182</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91300</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>TATATCGGCGTGAAGA</td>
+      <td>176</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>91301</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>CAGTGGTAATTAAACG</td>
+      <td>0</td>
+      <td>10</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>91302 rows × 10 columns</p>
+</div></div>
+</div>
+<p>Get the <strong>average</strong> number of counts per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">variants</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">()</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>sample</th>
+      <th>avg_counts_per_variant</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>181.3</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>178.3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>196.6</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>primary_target_gene</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>181.4</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>primary_target_gene</td>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>179.5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>primary_target_gene</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>197.8</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>181.3</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>178.9</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>primary_target_gene</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>197.2</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>secondary_target_1</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>166.1</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>secondary_target_1</td>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>378.2</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>secondary_target_1</td>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>401.7</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>secondary_target_1</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>184.4</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>secondary_target_1</td>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>423.2</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>secondary_target_1</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>444.8</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>177.3</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>405.8</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>secondary_target_1</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>428.1</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>secondary_target_2</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>173.2</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>secondary_target_2</td>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>556.6</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>secondary_target_2</td>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>611.9</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>secondary_target_2</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>199.5</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>secondary_target_2</td>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>624.0</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>secondary_target_2</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>634.3</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>184.7</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>586.0</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>secondary_target_2</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>621.7</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>secondary_target_3</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>190.6</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>secondary_target_3</td>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>880.0</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>secondary_target_3</td>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>919.1</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>191.1</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>902.7</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>1051.8</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>190.8</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>888.8</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>secondary_target_3</td>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>970.5</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Above the counts are grouped by target. To not group by target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">(</span><span class="n">by_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>avg_counts_per_variant</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>181.2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>185.2</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>203.9</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>181.5</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>185.5</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>204.2</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>all libraries</td>
+      <td>pre-selection</td>
+      <td>181.4</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>all libraries</td>
+      <td>loose_bottle</td>
+      <td>185.3</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>all libraries</td>
+      <td>tight_bottle</td>
+      <td>204.0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>We also plot the average counts per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotAvgCountsPerVariant</span><span class="p">(</span><span class="n">heightscale</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_84_0.png" src="_images/codonvariant_sim_data_multi_targets_84_0.png" />
+</div>
+</div>
+<p>Here is the same plot <strong>not</strong> faceted by target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotAvgCountsPerVariant</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">by_target</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_86_0.png" src="_images/codonvariant_sim_data_multi_targets_86_0.png" />
+</div>
+</div>
+<p>Plot the number of counts for each variant in each sample. The horizontal dashed line shows the total number of variants. The plot shows that all variants are well-sampled in the pre-selection libraries, but that post- selection some variants are sampled more or less. This is expected since selection will decrease and increase the frequency of variants. By default, this plot shows only the primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_88_0.png" src="_images/codonvariant_sim_data_multi_targets_88_0.png" />
+</div>
+</div>
+<p>Similar plot showing all targets:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">(</span><span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_90_0.png" src="_images/codonvariant_sim_data_multi_targets_90_0.png" />
+</div>
+</div>
+<p>Distribution of the number of amino-acid mutations per variant in each sample. This is only for the primary target. As expected, mutations go down after selection:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_92_0.png" src="_images/codonvariant_sim_data_multi_targets_92_0.png" />
+</div>
+</div>
+<p>Average number of mutations of each type per variant among just single mutants (and wildtype) and among all variants, again only for primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_94_0.png" src="_images/codonvariant_sim_data_multi_targets_94_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_94_1.png" src="_images/codonvariant_sim_data_multi_targets_94_1.png" />
+</div>
+</div>
+<p>Here are the numerical data plotted above (just for the individual libraries and all mutations):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation_type</th>
+      <th>num_muts_count</th>
+      <th>count</th>
+      <th>number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>nonsynonymous</td>
+      <td>4864651</td>
+      <td>2719365</td>
+      <td>1.789</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>synonymous</td>
+      <td>275311</td>
+      <td>2719365</td>
+      <td>0.101</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>stop</td>
+      <td>257132</td>
+      <td>2719365</td>
+      <td>0.095</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>nonsynonymous</td>
+      <td>2330462</td>
+      <td>2674231</td>
+      <td>0.871</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>synonymous</td>
+      <td>270348</td>
+      <td>2674231</td>
+      <td>0.101</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_1</td>
+      <td>loose_bottle</td>
+      <td>stop</td>
+      <td>809</td>
+      <td>2674231</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>nonsynonymous</td>
+      <td>2574335</td>
+      <td>2949688</td>
+      <td>0.873</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>synonymous</td>
+      <td>289539</td>
+      <td>2949688</td>
+      <td>0.098</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>lib_1</td>
+      <td>tight_bottle</td>
+      <td>stop</td>
+      <td>948</td>
+      <td>2949688</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>nonsynonymous</td>
+      <td>4872431</td>
+      <td>2720602</td>
+      <td>1.791</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>synonymous</td>
+      <td>279586</td>
+      <td>2720602</td>
+      <td>0.103</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>stop</td>
+      <td>249866</td>
+      <td>2720602</td>
+      <td>0.092</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>nonsynonymous</td>
+      <td>2433719</td>
+      <td>2692589</td>
+      <td>0.904</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>synonymous</td>
+      <td>271738</td>
+      <td>2692589</td>
+      <td>0.101</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>lib_2</td>
+      <td>loose_bottle</td>
+      <td>stop</td>
+      <td>1253</td>
+      <td>2692589</td>
+      <td>0.000</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>nonsynonymous</td>
+      <td>2669151</td>
+      <td>2966909</td>
+      <td>0.900</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>synonymous</td>
+      <td>288678</td>
+      <td>2966909</td>
+      <td>0.097</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>lib_2</td>
+      <td>tight_bottle</td>
+      <td>stop</td>
+      <td>1060</td>
+      <td>2966909</td>
+      <td>0.000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Here are mutation frequencies as a function of primary sequence among all variants of the primary target:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutFreqs</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+                          <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;codon&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_98_0.png" src="_images/codonvariant_sim_data_multi_targets_98_0.png" />
+</div>
+</div>
+<p>Plot how thoroughly amino-acid mutations are sampled, doing this separately among all variants and single-mutant variants for the primary target. The plots below show that the stop mutations are sampled very poorly post-selection because they are eliminated during selection:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="n">variant_type</span><span class="p">,</span>
+                                      <span class="n">mut_type</span><span class="o">=</span><span class="s1">&#39;aa&#39;</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_100_0.png" src="_images/codonvariant_sim_data_multi_targets_100_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_100_1.png" src="_images/codonvariant_sim_data_multi_targets_100_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Functional-scores-for-variants">
+<h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">CodonVariantTable.func_scores</a> method calculates a functional score for each variant based on its change in frequency from pre- to post-selection.</p>
+<p>To calculate these scores, we need to pair each post-selection sample with a pre-selection one. In this case, the pre-selection sample is named ‘pre-selection’ for all post-selection samples:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+                                   <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The resulting data frame has a functional score (and its variance) for each barcoded variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">func_scores</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>pre_sample</th>
+      <th>post_sample</th>
+      <th>barcode</th>
+      <th>func_score</th>
+      <th>func_score_var</th>
+      <th>pre_count</th>
+      <th>post_count</th>
+      <th>pre_count_wt</th>
+      <th>post_count_wt</th>
+      <th>pseudocount</th>
+      <th>codon_substitutions</th>
+      <th>n_codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>n_aa_substitutions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>AACCCGTTCACCACCA</td>
+      <td>-1.060</td>
+      <td>0.005</td>
+      <td>692</td>
+      <td>847</td>
+      <td>381697</td>
+      <td>973820</td>
+      <td>0.5</td>
+      <td>ATC17CGA CGG29TGC</td>
+      <td>2</td>
+      <td>I17R R29C</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>ACTACGGACGATTATT</td>
+      <td>-3.845</td>
+      <td>0.022</td>
+      <td>633</td>
+      <td>112</td>
+      <td>381697</td>
+      <td>973820</td>
+      <td>0.5</td>
+      <td>GCT7TCT AAA14GAT AAC20CGA</td>
+      <td>3</td>
+      <td>A7S K14D N20R</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>GGACTATCTCAGTATG</td>
+      <td>-0.188</td>
+      <td>0.005</td>
+      <td>615</td>
+      <td>1378</td>
+      <td>381697</td>
+      <td>973820</td>
+      <td>0.5</td>
+      <td></td>
+      <td>0</td>
+      <td></td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>CCAGAAAACCCACCAA</td>
+      <td>-0.052</td>
+      <td>0.005</td>
+      <td>614</td>
+      <td>1512</td>
+      <td>381697</td>
+      <td>973820</td>
+      <td>0.5</td>
+      <td>TTA18CTC</td>
+      <td>1</td>
+      <td></td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>ACGGCCTAAACTCACA</td>
+      <td>-3.228</td>
+      <td>0.016</td>
+      <td>611</td>
+      <td>166</td>
+      <td>381697</td>
+      <td>973820</td>
+      <td>0.5</td>
+      <td>CGT6GTA GAC22CAC</td>
+      <td>2</td>
+      <td>R6V D22H</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>60863</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>TGTGCTTAGAGCACCG</td>
+      <td>0.953</td>
+      <td>0.033</td>
+      <td>74</td>
+      <td>412</td>
+      <td>359334</td>
+      <td>1028011</td>
+      <td>0.5</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>60864</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>CCTGGATTTCTGATTT</td>
+      <td>1.546</td>
+      <td>0.034</td>
+      <td>69</td>
+      <td>580</td>
+      <td>359334</td>
+      <td>1028011</td>
+      <td>0.5</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>60865</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>CAGTGGTAATTAAACG</td>
+      <td>-8.614</td>
+      <td>4.193</td>
+      <td>68</td>
+      <td>0</td>
+      <td>359334</td>
+      <td>1028011</td>
+      <td>0.5</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>60866</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>CTTGTTGTATACTAGC</td>
+      <td>2.630</td>
+      <td>0.042</td>
+      <td>52</td>
+      <td>929</td>
+      <td>359334</td>
+      <td>1028011</td>
+      <td>0.5</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>60867</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>ACTGACCATGATAGTC</td>
+      <td>1.247</td>
+      <td>0.084</td>
+      <td>28</td>
+      <td>193</td>
+      <td>359334</td>
+      <td>1028011</td>
+      <td>0.5</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+      <td>secondary_target_3</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>60868 rows × 16 columns</p>
+</div></div>
+</div>
+<p>We can also calculate functional scores at the level of amino-acid or codon substitutions rather than at the level of variants. This calculation groups all variants with the same substitutions before calculating the functional score. Here are scores grouping by amino-acid substitutions; we also set <code class="docutils literal notranslate"><span class="pre">syn_as_wt=True</span></code> to include variants with only synonymous mutations in the counts of wild type in this case:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">aa_func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
+                                      <span class="n">by</span><span class="o">=</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span>
+                                      <span class="n">syn_as_wt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                      <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span>
+<span class="n">aa_func_scores</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>library</th>
+      <th>pre_sample</th>
+      <th>post_sample</th>
+      <th>aa_substitutions</th>
+      <th>func_score</th>
+      <th>func_score_var</th>
+      <th>pre_count</th>
+      <th>post_count</th>
+      <th>pre_count_wt</th>
+      <th>post_count_wt</th>
+      <th>pseudocount</th>
+      <th>n_aa_substitutions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>I17R R29C</td>
+      <td>-1.062</td>
+      <td>0.005</td>
+      <td>692</td>
+      <td>847</td>
+      <td>418909</td>
+      <td>1070114</td>
+      <td>0.5</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>A7S K14D N20R</td>
+      <td>-3.846</td>
+      <td>0.022</td>
+      <td>633</td>
+      <td>112</td>
+      <td>418909</td>
+      <td>1070114</td>
+      <td>0.5</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td></td>
+      <td>0.000</td>
+      <td>0.000</td>
+      <td>418909</td>
+      <td>1070114</td>
+      <td>418909</td>
+      <td>1070114</td>
+      <td>0.5</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>R6V D22H</td>
+      <td>-3.230</td>
+      <td>0.016</td>
+      <td>611</td>
+      <td>166</td>
+      <td>418909</td>
+      <td>1070114</td>
+      <td>0.5</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>primary_target_gene</td>
+      <td>lib_1</td>
+      <td>pre-selection</td>
+      <td>loose_bottle</td>
+      <td>R1A</td>
+      <td>0.119</td>
+      <td>0.002</td>
+      <td>1863</td>
+      <td>5168</td>
+      <td>418909</td>
+      <td>1070114</td>
+      <td>0.5</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>35995</th>
+      <td>primary_target_gene</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>V3P N21G D22S</td>
+      <td>2.246</td>
+      <td>0.136</td>
+      <td>16</td>
+      <td>222</td>
+      <td>404611</td>
+      <td>1150576</td>
+      <td>0.5</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>35996</th>
+      <td>primary_target_gene</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>L5S A7Y I25S</td>
+      <td>-5.208</td>
+      <td>4.483</td>
+      <td>6</td>
+      <td>0</td>
+      <td>404611</td>
+      <td>1150576</td>
+      <td>0.5</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>35997</th>
+      <td>secondary_target_1</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>secondary_target_1</td>
+      <td>-0.237</td>
+      <td>0.000</td>
+      <td>15119</td>
+      <td>36473</td>
+      <td>404611</td>
+      <td>1150576</td>
+      <td>0.5</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>35998</th>
+      <td>secondary_target_2</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>secondary_target_2</td>
+      <td>0.161</td>
+      <td>0.000</td>
+      <td>13766</td>
+      <td>43769</td>
+      <td>404611</td>
+      <td>1150576</td>
+      <td>0.5</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>35999</th>
+      <td>secondary_target_3</td>
+      <td>lib_2</td>
+      <td>pre-selection</td>
+      <td>tight_bottle</td>
+      <td>secondary_target_3</td>
+      <td>0.952</td>
+      <td>0.000</td>
+      <td>10513</td>
+      <td>57849</td>
+      <td>404611</td>
+      <td>1150576</td>
+      <td>0.5</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+<p>36000 rows × 13 columns</p>
+</div></div>
+</div>
+<p>We can plot the distribution of the functional scores for variants. These plots are most informative if we classify variants by the “types” of mutations they have, which we do here using the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants">CodonVariantTable.classifyVariants</a> method, which adds a column called <code class="docutils literal notranslate"><span class="pre">variant_class</span></code> to the data frame:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span><span class="n">func_scores</span><span class="p">)</span>
+
+<span class="p">(</span><span class="n">func_scores</span>
+ <span class="p">[[</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">,</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_class&#39;</span><span class="p">]]</span>
+ <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>target</th>
+      <th>codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>variant_class</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>primary_target_gene</td>
+      <td>ATC17CGA CGG29TGC</td>
+      <td>I17R R29C</td>
+      <td>&gt;1 nonsynonymous</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>primary_target_gene</td>
+      <td>GCT7TCT AAA14GAT AAC20CGA</td>
+      <td>A7S K14D N20R</td>
+      <td>&gt;1 nonsynonymous</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>primary_target_gene</td>
+      <td></td>
+      <td></td>
+      <td>wildtype</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>primary_target_gene</td>
+      <td>TTA18CTC</td>
+      <td></td>
+      <td>synonymous</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>primary_target_gene</td>
+      <td>CGT6GTA GAC22CAC</td>
+      <td>R6V D22H</td>
+      <td>&gt;1 nonsynonymous</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>60863</th>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>wildtype</td>
+    </tr>
+    <tr>
+      <th>60864</th>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>wildtype</td>
+    </tr>
+    <tr>
+      <th>60865</th>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>wildtype</td>
+    </tr>
+    <tr>
+      <th>60866</th>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>wildtype</td>
+    </tr>
+    <tr>
+      <th>60867</th>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>secondary_target_3</td>
+      <td>wildtype</td>
+    </tr>
+  </tbody>
+</table>
+<p>60868 rows × 4 columns</p>
+</div></div>
+</div>
+<p>Now we use <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> to plot the distributions of scores in ggplot2-like syntax, coloring by the variant class. This plot shows the expected behavior for different variant classes; for instance, stop codon variants tend to have low scores and synonymous variants tend to have wildtype-like (near 0) scores. We only plot this for the primary target. As expected, there is more noise with a tighter bottleneck:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">ggplot</span><span class="p">(</span><span class="n">func_scores</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;target == @primary_target&#39;</span><span class="p">),</span>
+           <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;variant_class&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">))</span> <span class="o">+</span>
+    <span class="n">geom_violin</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s1">&#39;variant_class&#39;</span><span class="p">))</span> <span class="o">+</span>
+    <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;functional score&#39;</span><span class="p">)</span> <span class="o">+</span>
+    <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
+    <span class="n">facet_grid</span><span class="p">(</span><span class="s1">&#39;post_sample ~ library&#39;</span><span class="p">)</span> <span class="o">+</span>
+    <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.75</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">libs</span><span class="p">),</span>
+                       <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">bottlenecks</span><span class="p">)),</span>
+          <span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
+          <span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">(),</span>  <span class="c1"># no vertical grid lines</span>
+          <span class="p">)</span> <span class="o">+</span>
+    <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">guide</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_multi_targets_110_0.png" src="_images/codonvariant_sim_data_multi_targets_110_0.png" />
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Libraries with secondary target genes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="predict_variants.html">Predict unseen variants using global epistasis models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="codonvariant_sim_data.html" title="previous chapter">Analyze simulated library of codon variants</a></li>
+      <li>Next: <a href="narrow_bottleneck.html" title="next chapter">Fitting gobal epistasis models with experimental “noise”</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2020.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/codonvariant_sim_data_multi_targets.nblink.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

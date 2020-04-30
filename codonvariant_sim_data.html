@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.5.3 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Fitting gobal epistasis models with experimental “noise”" href="narrow_bottleneck.html" />
+    <link rel="next" title="Libraries with secondary target genes" href="codonvariant_sim_data_multi_targets.html" />
     <link rel="prev" title="Examples" href="examples.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -1489,10 +1489,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>barcode</th>
-      <th>count</th>
       <th>library</th>
       <th>sample</th>
+      <th>barcode</th>
+      <th>count</th>
       <th>variant_call_support</th>
       <th>codon_substitutions</th>
       <th>aa_substitutions</th>
@@ -1503,10 +1503,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
   <tbody>
     <tr>
       <th>0</th>
-      <td>AACCCGTTCACCACCA</td>
-      <td>722</td>
       <td>lib_1</td>
       <td>pre-selection</td>
+      <td>AACCCGTTCACCACCA</td>
+      <td>722</td>
       <td>2</td>
       <td>ATC17CGA CGG29TGC</td>
       <td>I17R R29C</td>
@@ -1515,10 +1515,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
     </tr>
     <tr>
       <th>1</th>
-      <td>CGCAAAAGTCTATTAC</td>
-      <td>646</td>
       <td>lib_1</td>
       <td>pre-selection</td>
+      <td>CGCAAAAGTCTATTAC</td>
+      <td>646</td>
       <td>1</td>
       <td>TCA11GCG</td>
       <td>S11A</td>
@@ -1527,10 +1527,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
     </tr>
     <tr>
       <th>2</th>
-      <td>TCCATTTGAATTGTTT</td>
-      <td>640</td>
       <td>lib_1</td>
       <td>pre-selection</td>
+      <td>TCCATTTGAATTGTTT</td>
+      <td>640</td>
       <td>1</td>
       <td>CGG12CCA CGT15CCG</td>
       <td>R12P R15P</td>
@@ -1539,10 +1539,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
     </tr>
     <tr>
       <th>3</th>
-      <td>CCAGAAAACCCACCAA</td>
-      <td>623</td>
       <td>lib_1</td>
       <td>pre-selection</td>
+      <td>CCAGAAAACCCACCAA</td>
+      <td>623</td>
       <td>7</td>
       <td>TTA18CTC</td>
       <td></td>
@@ -1551,10 +1551,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
     </tr>
     <tr>
       <th>4</th>
-      <td>TTTGCGCGACTTTTAG</td>
-      <td>610</td>
       <td>lib_1</td>
       <td>pre-selection</td>
+      <td>TTTGCGCGACTTTTAG</td>
+      <td>610</td>
       <td>1</td>
       <td>AAC21CAT ATC28TGG</td>
       <td>N21H I28W</td>
@@ -2443,14 +2443,14 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Fitting global epistasis model to loose_bottle, lib_1... fitting took 11.4 sec.
-Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.1 sec.
-Fitting global epistasis model to loose_bottle, lib_2... fitting took 15.6 sec.
-Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.1 sec.
-Fitting global epistasis model to tight_bottle, lib_1... fitting took 8.4 sec.
-Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.1 sec.
-Fitting global epistasis model to tight_bottle, lib_2... fitting took 8.1 sec.
-Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.1 sec.
+Fitting global epistasis model to loose_bottle, lib_1... fitting took 35.4 sec.
+Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.2 sec.
+Fitting global epistasis model to loose_bottle, lib_2... fitting took 21.5 sec.
+Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.2 sec.
+Fitting global epistasis model to tight_bottle, lib_1... fitting took 14.5 sec.
+Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.2 sec.
+Fitting global epistasis model to tight_bottle, lib_2... fitting took 16.1 sec.
+Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.2 sec.
 </pre></div></div>
 </div>
 <p>Now we want to see which model fits the data better. To do this, we get the log likelihood of each model along with the number of model parameters, as well as the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better, and below we see that the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> global epistasis model always fits the data
@@ -2520,8 +2520,8 @@ much better:</p>
       <th>lib_1</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-13353.3</td>
-      <td>27922.6</td>
+      <td>-13127.2</td>
+      <td>27470.5</td>
     </tr>
     <tr>
       <th>lib_1</th>
@@ -2534,8 +2534,8 @@ much better:</p>
       <th>lib_2</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-12800.8</td>
-      <td>26817.6</td>
+      <td>-12823.8</td>
+      <td>26863.6</td>
     </tr>
     <tr>
       <th>lib_2</th>
@@ -2549,8 +2549,8 @@ much better:</p>
       <th>lib_1</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-21871.0</td>
-      <td>44958.0</td>
+      <td>-21872.0</td>
+      <td>44959.9</td>
     </tr>
     <tr>
       <th>lib_1</th>
@@ -2563,8 +2563,8 @@ much better:</p>
       <th>lib_2</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-22463.9</td>
-      <td>46143.9</td>
+      <td>-22462.7</td>
+      <td>46141.4</td>
     </tr>
     <tr>
       <th>lib_2</th>
@@ -2643,11 +2643,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>I17R R29C</td>
       <td>-0.82</td>
       <td>0.00</td>
-      <td>-0.89</td>
-      <td>-1.26</td>
+      <td>-0.77</td>
+      <td>-1.25</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.43</td>
+      <td>0.44</td>
       <td>0.56</td>
     </tr>
     <tr>
@@ -2655,7 +2655,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>S11A</td>
       <td>-0.12</td>
       <td>0.00</td>
-      <td>-0.14</td>
+      <td>-0.13</td>
       <td>-0.05</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
@@ -2667,7 +2667,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>R12P R15P</td>
       <td>-2.14</td>
       <td>0.01</td>
-      <td>-1.06</td>
+      <td>-0.92</td>
       <td>-2.61</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
@@ -2691,8 +2691,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>N21H I28W</td>
       <td>-6.61</td>
       <td>0.13</td>
-      <td>-1.78</td>
-      <td>-6.32</td>
+      <td>-1.54</td>
+      <td>-6.40</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>0.01</td>
@@ -2815,11 +2815,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>I17R R29C</td>
       <td>-0.82</td>
       <td>0.00</td>
-      <td>-0.89</td>
-      <td>-1.26</td>
+      <td>-0.77</td>
+      <td>-1.25</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.43</td>
+      <td>0.44</td>
       <td>0.56</td>
       <td>-0.01</td>
       <td>0.50</td>
@@ -2830,7 +2830,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>S11A</td>
       <td>-0.12</td>
       <td>0.00</td>
-      <td>-0.14</td>
+      <td>-0.13</td>
       <td>-0.05</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
@@ -2845,7 +2845,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>R12P R15P</td>
       <td>-2.14</td>
       <td>0.01</td>
-      <td>-1.06</td>
+      <td>-0.92</td>
       <td>-2.61</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
@@ -2875,8 +2875,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>N21H I28W</td>
       <td>-6.61</td>
       <td>0.13</td>
-      <td>-1.78</td>
-      <td>-6.32</td>
+      <td>-1.54</td>
+      <td>-6.40</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>0.01</td>
@@ -3182,9 +3182,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-0.82</td>
       <td>0.56</td>
-      <td>-0.89</td>
-      <td>-1.26</td>
-      <td>0.43</td>
+      <td>-0.77</td>
+      <td>-1.25</td>
+      <td>0.44</td>
     </tr>
     <tr>
       <th>1</th>
@@ -3194,7 +3194,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-0.03</td>
       <td>0.98</td>
-      <td>-0.14</td>
+      <td>-0.13</td>
       <td>-0.05</td>
       <td>1.00</td>
     </tr>
@@ -3206,7 +3206,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-2.14</td>
       <td>0.23</td>
-      <td>-1.06</td>
+      <td>-0.92</td>
       <td>-2.61</td>
       <td>0.17</td>
     </tr>
@@ -3230,8 +3230,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-6.61</td>
       <td>0.01</td>
-      <td>-1.78</td>
-      <td>-6.32</td>
+      <td>-1.54</td>
+      <td>-6.40</td>
       <td>0.01</td>
     </tr>
   </tbody>
@@ -3308,9 +3308,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-0.82</td>
       <td>0.56</td>
-      <td>-0.89</td>
-      <td>-1.26</td>
-      <td>0.43</td>
+      <td>-0.77</td>
+      <td>-1.25</td>
+      <td>0.44</td>
       <td>-0.01</td>
       <td>0.50</td>
       <td>-0.99</td>
@@ -3323,7 +3323,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-0.03</td>
       <td>0.98</td>
-      <td>-0.14</td>
+      <td>-0.13</td>
       <td>-0.05</td>
       <td>1.00</td>
       <td>4.14</td>
@@ -3338,7 +3338,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-2.14</td>
       <td>0.23</td>
-      <td>-1.06</td>
+      <td>-0.92</td>
       <td>-2.61</td>
       <td>0.17</td>
       <td>-1.28</td>
@@ -3368,8 +3368,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-6.61</td>
       <td>0.01</td>
-      <td>-1.78</td>
-      <td>-6.32</td>
+      <td>-1.54</td>
+      <td>-6.40</td>
       <td>0.01</td>
       <td>-5.00</td>
       <td>0.01</td>
@@ -3571,7 +3571,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-0.03</td>
       <td>0.98</td>
-      <td>-0.14</td>
+      <td>-0.13</td>
       <td>-0.05</td>
       <td>1.00</td>
       <td>4.14</td>
@@ -3586,7 +3586,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>0.06</td>
       <td>1.04</td>
-      <td>0.13</td>
+      <td>0.11</td>
       <td>-0.05</td>
       <td>1.00</td>
       <td>5.76</td>
@@ -3601,8 +3601,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-6.89</td>
       <td>0.01</td>
-      <td>-1.92</td>
-      <td>-6.79</td>
+      <td>-1.63</td>
+      <td>-6.77</td>
       <td>0.01</td>
       <td>-4.96</td>
       <td>0.01</td>
@@ -3616,7 +3616,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>0.00</td>
       <td>1.00</td>
-      <td>-0.38</td>
+      <td>-0.31</td>
       <td>-0.05</td>
       <td>1.00</td>
       <td>3.15</td>
@@ -3631,8 +3631,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-10.47</td>
       <td>0.00</td>
-      <td>-3.10</td>
-      <td>-8.61</td>
+      <td>-2.45</td>
+      <td>-8.59</td>
       <td>0.00</td>
       <td>-10.00</td>
       <td>0.00</td>
@@ -3827,43 +3827,43 @@ model-predicted enrichments for each variant (recall that the functional score /
   <tbody>
     <tr>
       <th>0</th>
-      <td>L23*</td>
-      <td>L</td>
-      <td>23</td>
-      <td>*</td>
-      <td>-5.41</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>V13*</td>
-      <td>V</td>
-      <td>13</td>
-      <td>*</td>
-      <td>-5.41</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>R26*</td>
-      <td>R</td>
-      <td>26</td>
-      <td>*</td>
-      <td>-5.18</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>V3L</td>
-      <td>V</td>
-      <td>3</td>
-      <td>L</td>
-      <td>-5.16</td>
-    </tr>
-    <tr>
-      <th>4</th>
       <td>R6*</td>
       <td>R</td>
       <td>6</td>
       <td>*</td>
-      <td>-5.12</td>
+      <td>-4.82</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>R26*</td>
+      <td>R</td>
+      <td>26</td>
+      <td>*</td>
+      <td>-4.82</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>L23*</td>
+      <td>L</td>
+      <td>23</td>
+      <td>*</td>
+      <td>-4.81</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>R15E</td>
+      <td>R</td>
+      <td>15</td>
+      <td>E</td>
+      <td>-4.78</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>V13*</td>
+      <td>V</td>
+      <td>13</td>
+      <td>*</td>
+      <td>-4.78</td>
     </tr>
   </tbody>
 </table>
@@ -3916,22 +3916,14 @@ model-predicted enrichments for each variant (recall that the functional score /
   <tbody>
     <tr>
       <th>0</th>
-      <td>L23*</td>
-      <td>L</td>
-      <td>23</td>
+      <td>R6*</td>
+      <td>R</td>
+      <td>6</td>
       <td>*</td>
       <td>-3.41</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>V13*</td>
-      <td>V</td>
-      <td>13</td>
-      <td>*</td>
-      <td>-3.41</td>
-    </tr>
-    <tr>
-      <th>2</th>
       <td>R26*</td>
       <td>R</td>
       <td>26</td>
@@ -3939,18 +3931,26 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-3.41</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>V3L</td>
-      <td>V</td>
-      <td>3</td>
+      <th>2</th>
+      <td>L23*</td>
       <td>L</td>
+      <td>23</td>
+      <td>*</td>
+      <td>-3.41</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>R15E</td>
+      <td>R</td>
+      <td>15</td>
+      <td>E</td>
       <td>-3.41</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>R6*</td>
-      <td>R</td>
-      <td>6</td>
+      <td>V13*</td>
+      <td>V</td>
+      <td>13</td>
       <td>*</td>
       <td>-3.41</td>
     </tr>
@@ -4035,24 +4035,24 @@ details. This is necessary since the preferences are normalized per site. If you
       <th>0</th>
       <td>1</td>
       <td>0.094</td>
-      <td>0.028</td>
+      <td>0.027</td>
       <td>0.001</td>
-      <td>0.011</td>
-      <td>0.196</td>
-      <td>0.009</td>
-      <td>0.025</td>
+      <td>0.010</td>
+      <td>0.201</td>
+      <td>0.008</td>
+      <td>0.024</td>
       <td>0.006</td>
-      <td>0.173</td>
+      <td>0.176</td>
       <td>...</td>
       <td>0.018</td>
-      <td>0.040</td>
+      <td>0.039</td>
       <td>0.071</td>
       <td>0.072</td>
       <td>0.076</td>
       <td>0.002</td>
       <td>0.059</td>
-      <td>0.035</td>
-      <td>0.044</td>
+      <td>0.034</td>
+      <td>0.043</td>
       <td>0.001</td>
     </tr>
     <tr>
@@ -4061,45 +4061,45 @@ details. This is necessary since the preferences are normalized per site. If you
       <td>0.096</td>
       <td>0.018</td>
       <td>0.096</td>
-      <td>0.006</td>
+      <td>0.005</td>
       <td>0.000</td>
       <td>0.007</td>
       <td>0.003</td>
-      <td>0.027</td>
+      <td>0.026</td>
       <td>0.003</td>
       <td>...</td>
       <td>0.095</td>
-      <td>0.049</td>
+      <td>0.048</td>
       <td>0.006</td>
       <td>0.065</td>
-      <td>0.020</td>
-      <td>0.155</td>
-      <td>0.004</td>
-      <td>0.153</td>
-      <td>0.066</td>
+      <td>0.019</td>
+      <td>0.158</td>
+      <td>0.003</td>
+      <td>0.156</td>
+      <td>0.065</td>
       <td>0.000</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>0.125</td>
-      <td>0.033</td>
-      <td>0.000</td>
-      <td>0.145</td>
-      <td>0.044</td>
+      <td>0.126</td>
+      <td>0.032</td>
+      <td>0.001</td>
+      <td>0.148</td>
+      <td>0.043</td>
       <td>0.005</td>
-      <td>0.026</td>
-      <td>0.069</td>
-      <td>0.029</td>
+      <td>0.025</td>
+      <td>0.068</td>
+      <td>0.028</td>
       <td>...</td>
-      <td>0.002</td>
+      <td>0.001</td>
       <td>0.006</td>
-      <td>0.147</td>
-      <td>0.053</td>
+      <td>0.149</td>
+      <td>0.052</td>
       <td>0.002</td>
       <td>0.100</td>
       <td>0.002</td>
-      <td>0.119</td>
+      <td>0.120</td>
       <td>0.002</td>
       <td>0.090</td>
     </tr>
@@ -4107,47 +4107,47 @@ details. This is necessary since the preferences are normalized per site. If you
       <th>3</th>
       <td>4</td>
       <td>0.012</td>
-      <td>0.013</td>
+      <td>0.012</td>
       <td>0.001</td>
       <td>0.063</td>
-      <td>0.029</td>
-      <td>0.160</td>
+      <td>0.028</td>
+      <td>0.164</td>
       <td>0.067</td>
       <td>0.085</td>
-      <td>0.055</td>
+      <td>0.054</td>
       <td>...</td>
       <td>0.043</td>
       <td>0.062</td>
       <td>0.002</td>
       <td>0.008</td>
-      <td>0.044</td>
+      <td>0.043</td>
       <td>0.090</td>
-      <td>0.112</td>
-      <td>0.046</td>
-      <td>0.007</td>
+      <td>0.113</td>
+      <td>0.045</td>
+      <td>0.006</td>
       <td>0.055</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>0.072</td>
+      <td>0.071</td>
       <td>0.004</td>
+      <td>0.003</td>
+      <td>0.006</td>
       <td>0.003</td>
       <td>0.007</td>
-      <td>0.003</td>
-      <td>0.008</td>
-      <td>0.062</td>
-      <td>0.005</td>
+      <td>0.061</td>
+      <td>0.004</td>
       <td>0.059</td>
       <td>...</td>
-      <td>0.224</td>
-      <td>0.113</td>
-      <td>0.004</td>
-      <td>0.004</td>
+      <td>0.231</td>
+      <td>0.114</td>
+      <td>0.003</td>
+      <td>0.003</td>
       <td>0.113</td>
       <td>0.084</td>
-      <td>0.015</td>
-      <td>0.027</td>
+      <td>0.014</td>
+      <td>0.026</td>
       <td>0.077</td>
       <td>0.002</td>
     </tr>
@@ -4205,35 +4205,35 @@ details. This is necessary since the preferences are normalized per site. If you
       <td>S</td>
       <td>11</td>
       <td>C</td>
-      <td>0.232</td>
+      <td>0.237</td>
     </tr>
     <tr>
       <th>596</th>
       <td>P</td>
       <td>24</td>
       <td>Y</td>
-      <td>0.232</td>
+      <td>0.238</td>
     </tr>
     <tr>
       <th>597</th>
       <td>I</td>
       <td>25</td>
       <td>Y</td>
-      <td>0.234</td>
+      <td>0.241</td>
     </tr>
     <tr>
       <th>598</th>
       <td>N</td>
       <td>10</td>
       <td>D</td>
-      <td>0.238</td>
+      <td>0.244</td>
     </tr>
     <tr>
       <th>599</th>
       <td>R</td>
       <td>29</td>
       <td>I</td>
-      <td>0.248</td>
+      <td>0.255</td>
     </tr>
   </tbody>
 </table>
@@ -4319,15 +4319,6 @@ details. This is necessary since the preferences are normalized per site. If you
 <img alt="_images/codonvariant_sim_data_139_0.png" src="_images/codonvariant_sim_data_139_0.png" />
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span>
-</pre></div>
-</div>
-</div>
 </div>
 </div>
 </div>
@@ -4384,6 +4375,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data_multi_targets.html">Libraries with secondary target genes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
 <li class="toctree-l2"><a class="reference internal" href="predict_variants.html">Predict unseen variants using global epistasis models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
@@ -4401,7 +4393,7 @@ details. This is necessary since the preferences are normalized per site. If you
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="examples.html">Examples</a><ul>
       <li>Previous: <a href="examples.html" title="previous chapter">Examples</a></li>
-      <li>Next: <a href="narrow_bottleneck.html" title="next chapter">Fitting gobal epistasis models with experimental “noise”</a></li>
+      <li>Next: <a href="codonvariant_sim_data_multi_targets.html" title="next chapter">Libraries with secondary target genes</a></li>
   </ul></li>
   </ul></li>
 </ul>

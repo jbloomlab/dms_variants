@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>codonvarianttable &#8212; dms_variants 0.5.3 documentation</title>
+    <title>codonvarianttable &#8212; dms_variants 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -40,7 +40,7 @@
 handling codon variants of a gene.</p>
 <dl class="class">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.codonvarianttable.</code><code class="sig-name descname">CodonVariantTable</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">barcode_variant_file</em>, <em class="sig-param">geneseq</em>, <em class="sig-param">substitutions_are_codon=False</em>, <em class="sig-param">extra_cols=None</em>, <em class="sig-param">substitutions_col='substitutions'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.codonvarianttable.</code><code class="sig-name descname">CodonVariantTable</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">barcode_variant_file</em>, <em class="sig-param">geneseq</em>, <em class="sig-param">substitutions_are_codon=False</em>, <em class="sig-param">extra_cols=None</em>, <em class="sig-param">substitutions_col='substitutions'</em>, <em class="sig-param">primary_target=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Store and handle counts of barcoded codon variants of a gene.</p>
 <dl class="field-list simple">
@@ -59,6 +59,15 @@ substitutions as codon rather than nucleotide mutations (e.g.,
 <cite>barcode_variant_df</cite> and <cite>variant_count_df</cite> attributes.</p></li>
 <li><p><strong>substitutions_col</strong> (<em>str</em>) – Name of substitutions column in <cite>barcode_variant_file</cite> (use if you
 want it to be something other than “substitutions”).</p></li>
+<li><p><strong>primary_target</strong> (<em>str</em><em> or </em><em>None</em>) – Use this option if you have additional targets beyond the main gene
+for which we are analyzing variants. This might be the case if you
+have spiked other genes into the library. If this option is set to
+something other than <cite>None</cite>, then there must be a column in
+<cite>barcode_variant_file</cite> named “target” and one of these targets must
+be equal to ‘primary_target’. If there are other targets, they should
+<strong>not</strong> have any substitutions as we don’t parse substitutions in
+non-primary targets. Instead, <cite>substitutions_col</cite> for secondary targets
+should be empty or just have the name of the secondary target.</p></li>
 </ul>
 </dd>
 </dl>
@@ -120,7 +129,9 @@ want it to be something other than “substitutions”).</p></li>
 <dl class="attribute">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.barcode_variant_df">
 <code class="sig-name descname">barcode_variant_df</code><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.barcode_variant_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Info about codon mutations parsed from <cite>barcode_variant_file</cite>.</p>
+<dd><p>Info about codon mutations parsed from <cite>barcode_variant_file</cite>.
+For non-primary targets, the mutations column just hold the
+target name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
@@ -139,6 +150,18 @@ whereas <cite>variant_count_df</cite> has counts for each sample.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>pandas.DataFrame or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dms_variants.codonvarianttable.CodonVariantTable.primary_target">
+<code class="sig-name descname">primary_target</code><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.primary_target" title="Permalink to this definition">¶</a></dt>
+<dd><p>If multiple targets, name of the main target for which we are
+calling variants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -195,7 +218,7 @@ data frames are returned by
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs">
 <code class="sig-name descname">add_full_seqs</code><span class="sig-paren">(</span><em class="sig-param">df</em>, <em class="sig-param">*</em>, <em class="sig-param">aa_seq_col='aa_sequence'</em>, <em class="sig-param">codon_seq_col='codon_sequence'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_full_seqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add full sequences to data frame.</p>
+<dd><p>Add full sequences to data frame, for primary target only.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -209,7 +232,9 @@ or the result of calling <a class="reference internal" href="#dms_variants.codon
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Copy of <cite>df</cite> with columns <cite>aa_seq_col</cite> and/or <cite>codon_seq_col</cite>.</p>
+<dd class="field-even"><p>Copy of <cite>df</cite> with columns <cite>aa_seq_col</cite> and/or <cite>codon_seq_col</cite>,
+and only the primary target retained if there is a ‘target’
+column in <cite>df</cite>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
@@ -233,7 +258,7 @@ that library including zero-count ones.</p>
 
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant">
-<code class="sig-name descname">avgCountsPerVariant</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.avgCountsPerVariant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">avgCountsPerVariant</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">by_target=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.avgCountsPerVariant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get average counts per variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -244,10 +269,12 @@ libraries, or a list of libraries.</p></li>
 <li><p><strong>min_support</strong> (<em>int</em>) – Only include variants with variant call support &gt;= this.</p></li>
 <li><p><strong>sample_rename</strong> (<em>dict</em><em> or </em><em>None</em>) – Rename samples by specifying original name as key and new name
 as value.</p></li>
+<li><p><strong>by_target</strong> (<em>bool</em>) – If <cite>True</cite>, also group counts by target if multiple targets.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Gives average counts per variant for each library and sample.</p>
+<dd class="field-even"><p>Average counts per variant for each library and sample, and
+possibly target.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
@@ -356,7 +383,7 @@ mutations, or is ‘&gt;{max_aa}’ if more than <cite>max_aa</cite>.</p></li>
 
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df">
-<em class="property">classmethod </em><code class="sig-name descname">from_variant_count_df</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">variant_count_df_file</em>, <em class="sig-param">geneseq</em>, <em class="sig-param">drop_all_libs=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.from_variant_count_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">from_variant_count_df</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">variant_count_df_file</em>, <em class="sig-param">geneseq</em>, <em class="sig-param">drop_all_libs=True</em>, <em class="sig-param">primary_target=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.from_variant_count_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> from CSV of <cite>variant_count_df</cite>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -373,6 +400,7 @@ following columns: “barcode”, “library”, “variant_call_support”,
 <li><p><strong>drop_all_libs</strong> (<em>bool</em>) – If there is a library named “all libraries”, drop it as it probably
 added by <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries" title="dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.addMergedLibraries()</span></code></a> and
 duplicates information for the individual libraries.</p></li>
+<li><p><strong>primary_target</strong> (<em>None</em><em> or </em><em>str</em>) – Meaning described in main <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> doc string.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -412,6 +440,8 @@ n^{wt}_{post}}{n^v_{pre} / n^{wt}_{pre}}\right).\]</div>
 is added to each count first. The wildtype counts are computed
 across all <strong>fully wildtype</strong> variants (see <cite>syn_as_wt</cite> for
 how this is defined).</p>
+<p>If there are multiple targets, the functional scores for all
+targets are relative to the wildtype of the primary target.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -470,7 +500,7 @@ as can be retained given value of <cite>by</cite>.</p></li>
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.mutCounts">
 <code class="sig-name descname">mutCounts</code><span class="sig-paren">(</span><em class="sig-param">variant_type</em>, <em class="sig-param">mut_type</em>, <em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.mutCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.mutCounts" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get counts of each individual mutation.</p>
+<dd><p>Get counts of each individual mutations (only in primary target).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -480,7 +510,9 @@ as can be retained given value of <cite>by</cite>.</p></li>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Tidy data frame with columns named “library”, “sample”,
-“mutation”, “count”, “mutation_type”, and “site”.</p>
+“mutation”, “count”, “mutation_type”, and “site”. If there
+are multiple targets, only returns counts for the primary
+target.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
@@ -490,14 +522,15 @@ as can be retained given value of <cite>by</cite>.</p></li>
 
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.n_variants_df">
-<code class="sig-name descname">n_variants_df</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">variant_type='all'</em>, <em class="sig-param">mut_type=None</em>, <em class="sig-param">sample_rename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get number of variants per library / sample.</p>
+<code class="sig-name descname">n_variants_df</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">variant_type='all'</em>, <em class="sig-param">mut_type=None</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">primary_target_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get number variants per library / sample (and target if specified).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include all variants or just those with &lt;= 1 <cite>mut_type</cite> mutation.</p></li>
 <li><p><strong>mut_type</strong> (<em>{'aa'</em><em>, </em><em>'codon'</em><em>, </em><em>None}</em>) – If <cite>variant_type</cite> is ‘single’, indicate what type of single
 mutants we are filtering for.</p></li>
+<li><p><strong>primary_target_only</strong> (<em>bool</em>) – Only return counts for the primary target.</p></li>
 <li><p><strong>other args</strong> (<em>All</em>) – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
@@ -514,6 +547,7 @@ mutants we are filtering for.</p></li>
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType">
 <code class="sig-name descname">numCodonMutsByType</code><span class="sig-paren">(</span><em class="sig-param">variant_type</em>, <em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.numCodonMutsByType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get average nonsynonymous, synonymous, stop mutations per variant.</p>
+<p>These statistics are only for the primary target.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>all_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumCodonMutsByType()</span></code></a>.</p>
@@ -529,14 +563,15 @@ mutants we are filtering for.</p></li>
 
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant">
-<code class="sig-name descname">plotAvgCountsPerVariant</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotAvgCountsPerVariant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get average counts per variant.</p>
+<code class="sig-name descname">plotAvgCountsPerVariant</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em>, <em class="sig-param">by_target=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotAvgCountsPerVariant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot average counts per variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>libraries</strong> (<em>{'all'</em><em>, </em><em>'all_only'</em><em>, </em><em>list}</em>) – Include all libraries including a merge, only a merge of all
 libraries, or a list of libraries.</p></li>
 <li><p><strong>samples</strong> (<em>{'all'</em><em>, </em><em>list}</em>) – Include all samples or just samples in list.</p></li>
+<li><p><strong>by_target</strong> (<em>bool</em>) – If <cite>True</cite>, also group counts by target if multiple targets.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
@@ -552,7 +587,7 @@ libraries, or a list of libraries.</p></li>
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage">
 <code class="sig-name descname">plotCumulMutCoverage</code><span class="sig-paren">(</span><em class="sig-param">variant_type</em>, <em class="sig-param">mut_type</em>, <em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">max_count=None</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulMutCoverage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="Permalink to this definition">¶</a></dt>
-<dd><p>Fraction of mutations seen &lt;= some number of times.</p>
+<dd><p>Frac mutations seen &lt;= some number of times (primary target only).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -573,13 +608,14 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts">
-<code class="sig-name descname">plotCumulVariantCounts</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">variant_type='all'</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">mut_type='aa'</em>, <em class="sig-param">tot_variants_hline=True</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulVariantCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plotCumulVariantCounts</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">variant_type='all'</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">mut_type='aa'</em>, <em class="sig-param">tot_variants_hline=True</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em>, <em class="sig-param">primary_target_only=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulVariantCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot number variants with &gt;= that each number of counts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include all variants or just those with &lt;=1 <cite>mut_type</cite> mutation.</p></li>
 <li><p><strong>tot_variants_hline</strong> (<em>bool</em>) – Include dotted horizontal line indicating total number of variants.</p></li>
+<li><p><strong>primary_target_only</strong> (<em>bool</em>) – Only show counts for the primary target.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram()</span></code></a>.</p></li>
 </ul>
 </dd>
@@ -595,7 +631,7 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs">
 <code class="sig-name descname">plotMutFreqs</code><span class="sig-paren">(</span><em class="sig-param">variant_type</em>, <em class="sig-param">mut_type</em>, <em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotMutFreqs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mutation frequency along length of gene.</p>
+<dd><p>Mutation frequency along length of gene (primary target only).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>parameters</strong> (<em>All</em>) – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</p>
@@ -612,7 +648,7 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap">
 <code class="sig-name descname">plotMutHeatmap</code><span class="sig-paren">(</span><em class="sig-param">variant_type</em>, <em class="sig-param">mut_type</em>, <em class="sig-param">*</em>, <em class="sig-param">count_or_frequency='frequency'</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotMutHeatmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Heatmap of mutation counts or frequencies.</p>
+<dd><p>Heatmap of mutation counts or frequencies (for primary target only).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -633,6 +669,7 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">
 <code class="sig-name descname">plotNumCodonMutsByType</code><span class="sig-paren">(</span><em class="sig-param">variant_type</em>, <em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotNumCodonMutsByType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot average nonsynonymous, synonymous, stop mutations per variant.</p>
+<p>These statistics are only for the primary target.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -653,7 +690,7 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">
 <code class="sig-name descname">plotNumMutsHistogram</code><span class="sig-paren">(</span><em class="sig-param">mut_type</em>, <em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">samples='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">min_support=1</em>, <em class="sig-param">max_muts=None</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotNumMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot histograms of number of mutations per variant.</p>
+<dd><p>Plot histogram of num mutations per variant (primary target only).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -684,13 +721,14 @@ as value.</p></li>
 
 <dl class="method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram">
-<code class="sig-name descname">plotVariantSupportHistogram</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">max_support=None</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotVariantSupportHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plotVariantSupportHistogram</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">libraries='all'</em>, <em class="sig-param">plotfile=None</em>, <em class="sig-param">orientation='h'</em>, <em class="sig-param">widthscale=1</em>, <em class="sig-param">heightscale=1</em>, <em class="sig-param">max_support=None</em>, <em class="sig-param">sample_rename=None</em>, <em class="sig-param">one_lib_facet=False</em>, <em class="sig-param">primary_target_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotVariantSupportHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot histogram of variant call support for variants.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>max_support</strong> (<em>int</em><em> or </em><em>None</em>) – Group together all variants with &gt;= this support.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
+<li><p><strong>primary_target_only</strong> (<em>bool</em>) – Only include variants that are of the primary target.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -777,6 +815,7 @@ amino acid depending on value of <cite>subs_type</cite>.</p>
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts">
 <code class="sig-name descname">writeCodonCounts</code><span class="sig-paren">(</span><em class="sig-param">single_or_all</em>, <em class="sig-param">*</em>, <em class="sig-param">outdir=None</em>, <em class="sig-param">include_all_libs=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.writeCodonCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write codon counts files for all libraries and samples.</p>
+<p>Only writes the counts for the primary target.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Useful if you want to analyze individual mutations using

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.simulate &#8212; dms_variants 0.5.3 documentation</title>
+    <title>dms_variants.simulate &#8212; dms_variants 0.6.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -80,6 +80,7 @@
 <span class="sd">    -------</span>
 <span class="sd">    str or list</span>
 <span class="sd">        A random sequence or list of them depending on value of `nseqs`.</span>
+<span class="sd">        If multiple sequences, they are all unique.</span>
 
 <span class="sd">    Seed `random.seed` for reproducible output.</span>
 
@@ -103,12 +104,13 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exclude</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span><span class="o">**</span><span class="n">seqlen</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;excluding too many sequences, none valid.&#39;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">exclude</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">exclude</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="n">seqs</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">seqs</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">nseqs</span><span class="p">:</span>
         <span class="n">seq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seqlen</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">seq</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
             <span class="n">seqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+            <span class="n">exclude</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seqs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">seqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
@@ -293,6 +295,7 @@
                          <span class="n">variant_error_rate</span><span class="p">,</span>
                          <span class="n">pre_sample</span><span class="p">,</span>
                          <span class="n">post_samples</span><span class="p">,</span>
+                         <span class="n">secondary_target_phenotypes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">pre_sample_name</span><span class="o">=</span><span class="s1">&#39;pre-selection&#39;</span><span class="p">,</span>
                          <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simulate pre- and post-selection variant counts.</span>
@@ -310,6 +313,9 @@
 <span class="sd">        Takes a space-delimited string of amino-acid substitutions and returns</span>
 <span class="sd">        a number giving enrichment of variant relative to wildtype. For</span>
 <span class="sd">        instance, :meth:`SigmoidPhenotypeSimulator.observedEnrichment`.</span>
+<span class="sd">        If there are multiple targets in `variants`, this function is only</span>
+<span class="sd">        applied to the primary target. See `secondary_target_phenotypes` for</span>
+<span class="sd">        the secondary targets.</span>
 <span class="sd">    variant_error_rate : float</span>
 <span class="sd">        Rate at which variants mis-called. Provide the probability that a</span>
 <span class="sd">        variant has a spuriously called (or missing) codon mutation; each</span>
@@ -330,6 +336,10 @@
 <span class="sd">        passing through bottleneck of indicated size, and adding noise</span>
 <span class="sd">        by mutiplying phenotype by a random variable with mean 1 and</span>
 <span class="sd">        standard deviation specified by &#39;noise&#39; (0 is no noise).</span>
+<span class="sd">    secondary_target_phenotypes : None or dict</span>
+<span class="sd">        If there are secondary targets in `variants`, this should be keyed</span>
+<span class="sd">        by each secondary target name and give the associated phenotypes</span>
+<span class="sd">        as values.</span>
 <span class="sd">    pre_sample_name : str</span>
 <span class="sd">        Name used for the pre-selection sample.</span>
 <span class="sd">    seed : None or int</span>
@@ -382,9 +392,18 @@
             <span class="k">return</span> <span class="n">codon_substitutions</span>
     <span class="c1"># -----------------------------------------</span>
 
-    <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
-        <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]]</span>
+    <span class="k">if</span> <span class="n">variants</span><span class="o">.</span><span class="n">primary_target</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">primary_df</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">secondary_df</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">primary_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+                      <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;target == @variants.primary_target&#39;</span><span class="p">))</span>
+        <span class="n">secondary_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+                        <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;target != @variants.primary_target&#39;</span><span class="p">))</span>
+
+    <span class="n">primary_df</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">primary_df</span>
+        <span class="p">[[</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]]</span>
         <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
             <span class="n">codon_substitutions</span><span class="o">=</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">]</span>
                                  <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">_add_variant_errors</span><span class="p">)),</span>
@@ -395,6 +414,23 @@
             <span class="p">)</span>
         <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]]</span>
         <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">secondary_df</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">secondary_target_phenotypes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">secondary_target_phenotypes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">secondary_target_phenotypes</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span>
+                    <span class="n">secondary_df</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`secondary_target_phenotypes` lacks some &#39;</span>
+                             <span class="s1">&#39;secondary targets&#39;</span><span class="p">)</span>
+        <span class="n">secondary_df</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">secondary_df</span>
+                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">phenotype</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+                                        <span class="n">secondary_target_phenotypes</span><span class="p">))</span>
+                <span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;phenotype&#39;</span><span class="p">]]</span>
+                <span class="p">)</span>
+        <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="n">primary_df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">secondary_df</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">barcode_variant_df</span> <span class="o">=</span> <span class="n">primary_df</span>
 
     <span class="n">libraries</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
 

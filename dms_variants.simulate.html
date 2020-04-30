@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>simulate &#8212; dms_variants 0.5.3 documentation</title>
+    <title>simulate &#8212; dms_variants 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -414,7 +414,8 @@ in the form ‘ATG1TAC GGC3GGG’ where the number refers to the
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><em>str or list</em> – A random sequence or list of them depending on value of <cite>nseqs</cite>.</p></li>
+<li><p><em>str or list</em> – A random sequence or list of them depending on value of <cite>nseqs</cite>.
+If multiple sequences, they are all unique.</p></li>
 <li><p>Seed <cite>random.seed</cite> for reproducible output.</p></li>
 </ul>
 </p>
@@ -440,7 +441,7 @@ in the form ‘ATG1TAC GGC3GGG’ where the number refers to the
 
 <dl class="function">
 <dt id="dms_variants.simulate.simulateSampleCounts">
-<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">simulateSampleCounts</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">variants</em>, <em class="sig-param">phenotype_func</em>, <em class="sig-param">variant_error_rate</em>, <em class="sig-param">pre_sample</em>, <em class="sig-param">post_samples</em>, <em class="sig-param">pre_sample_name='pre-selection'</em>, <em class="sig-param">seed=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulateSampleCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.simulateSampleCounts" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">simulateSampleCounts</code><span class="sig-paren">(</span><em class="sig-param">*</em>, <em class="sig-param">variants</em>, <em class="sig-param">phenotype_func</em>, <em class="sig-param">variant_error_rate</em>, <em class="sig-param">pre_sample</em>, <em class="sig-param">post_samples</em>, <em class="sig-param">secondary_target_phenotypes=None</em>, <em class="sig-param">pre_sample_name='pre-selection'</em>, <em class="sig-param">seed=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulateSampleCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.simulateSampleCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate pre- and post-selection variant counts.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -453,7 +454,10 @@ in the form ‘ATG1TAC GGC3GGG’ where the number refers to the
 <li><p><strong>variants</strong> (class:<cite>dms_variants.codonvarianttable.CodonVariantTable</cite>) – Holds variants used in simulation.</p></li>
 <li><p><strong>phenotype_func</strong> (<em>function</em>) – Takes a space-delimited string of amino-acid substitutions and returns
 a number giving enrichment of variant relative to wildtype. For
-instance, <a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment" title="dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedEnrichment()</span></code></a>.</p></li>
+instance, <a class="reference internal" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment" title="dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedEnrichment()</span></code></a>.
+If there are multiple targets in <cite>variants</cite>, this function is only
+applied to the primary target. See <cite>secondary_target_phenotypes</cite> for
+the secondary targets.</p></li>
 <li><p><strong>variant_error_rate</strong> (<em>float</em>) – Rate at which variants mis-called. Provide the probability that a
 variant has a spuriously called (or missing) codon mutation; each
 variant then has a random codon mutation added or removed with this
@@ -471,6 +475,9 @@ multinomial parameterized by pre-selection frerquencies after
 passing through bottleneck of indicated size, and adding noise
 by mutiplying phenotype by a random variable with mean 1 and
 standard deviation specified by ‘noise’ (0 is no noise).</p></li>
+<li><p><strong>secondary_target_phenotypes</strong> (<em>None</em><em> or </em><em>dict</em>) – If there are secondary targets in <cite>variants</cite>, this should be keyed
+by each secondary target name and give the associated phenotypes
+as values.</p></li>
 <li><p><strong>pre_sample_name</strong> (<em>str</em>) – Name used for the pre-selection sample.</p></li>
 <li><p><strong>seed</strong> (<em>None</em><em> or </em><em>int</em>) – If not <cite>None</cite>, random number seed.</p></li>
 </ul>

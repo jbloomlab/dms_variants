@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Parse barcodes &#8212; dms_variants 0.5.3 documentation</title>
+    <title>Parse barcodes &#8212; dms_variants 0.6.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -359,7 +359,7 @@ div.rendered_html tbody tr:hover {
   </thead>
   <tbody>
     <tr>
-      <td>0</td>
+      <th>0</th>
       <td>lib_1</td>
       <td>ATTCCCGT</td>
       <td>1</td>
@@ -369,7 +369,7 @@ div.rendered_html tbody tr:hover {
       <td>2</td>
     </tr>
     <tr>
-      <td>1</td>
+      <th>1</th>
       <td>lib_1</td>
       <td>TACGATTA</td>
       <td>1</td>
@@ -379,7 +379,7 @@ div.rendered_html tbody tr:hover {
       <td>1</td>
     </tr>
     <tr>
-      <td>2</td>
+      <th>2</th>
       <td>lib_1</td>
       <td>TCACAACC</td>
       <td>1</td>
@@ -466,19 +466,19 @@ div.rendered_html tbody tr:hover {
   </thead>
   <tbody>
     <tr>
-      <td>0</td>
+      <th>0</th>
       <td>lib_1</td>
       <td>ATTCCCGT</td>
       <td>2</td>
     </tr>
     <tr>
-      <td>1</td>
+      <th>1</th>
       <td>lib_1</td>
       <td>TACGATTA</td>
       <td>1</td>
     </tr>
     <tr>
-      <td>2</td>
+      <th>2</th>
       <td>lib_1</td>
       <td>TCACAACC</td>
       <td>2</td>
@@ -702,21 +702,21 @@ ATTCCCGTTCGTATCATG
   </thead>
   <tbody>
     <tr>
-      <td>0</td>
+      <th>0</th>
       <td>ATTCCCGT</td>
       <td>2</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <td>1</td>
+      <th>1</th>
       <td>TCACAACC</td>
       <td>2</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <td>2</td>
+      <th>2</th>
       <td>TACGATTA</td>
       <td>1</td>
       <td>lib_1</td>
@@ -767,35 +767,35 @@ ATTCCCGTTCGTATCATG
   </thead>
   <tbody>
     <tr>
-      <td>0</td>
+      <th>0</th>
       <td>valid barcode</td>
       <td>5</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <td>1</td>
+      <th>1</th>
       <td>invalid barcode</td>
       <td>3</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <td>2</td>
+      <th>2</th>
       <td>unparseable barcode</td>
       <td>2</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <td>3</td>
+      <th>3</th>
       <td>low quality barcode</td>
       <td>1</td>
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
     <tr>
-      <td>4</td>
+      <th>4</th>
       <td>failed chastity filter</td>
       <td>0</td>
       <td>lib_1</td>
@@ -852,10 +852,10 @@ Here are the counts added to the variant table:
   <thead>
     <tr style="text-align: right;">
       <th></th>
-      <th>barcode</th>
-      <th>count</th>
       <th>library</th>
       <th>sample</th>
+      <th>barcode</th>
+      <th>count</th>
       <th>variant_call_support</th>
       <th>codon_substitutions</th>
       <th>aa_substitutions</th>
@@ -865,11 +865,11 @@ Here are the counts added to the variant table:
   </thead>
   <tbody>
     <tr>
-      <td>0</td>
-      <td>ATTCCCGT</td>
-      <td>2</td>
+      <th>0</th>
       <td>lib_1</td>
       <td>sample_1</td>
+      <td>ATTCCCGT</td>
+      <td>2</td>
       <td>1</td>
       <td>CAG1CTA AGA7GCT</td>
       <td>Q1L R7A</td>
@@ -877,11 +877,11 @@ Here are the counts added to the variant table:
       <td>2</td>
     </tr>
     <tr>
-      <td>1</td>
-      <td>TCACAACC</td>
-      <td>2</td>
+      <th>1</th>
       <td>lib_1</td>
       <td>sample_1</td>
+      <td>TCACAACC</td>
+      <td>2</td>
       <td>1</td>
       <td></td>
       <td></td>
@@ -889,11 +889,11 @@ Here are the counts added to the variant table:
       <td>0</td>
     </tr>
     <tr>
-      <td>2</td>
-      <td>TACGATTA</td>
-      <td>1</td>
+      <th>2</th>
       <td>lib_1</td>
       <td>sample_1</td>
+      <td>TACGATTA</td>
+      <td>1</td>
       <td>1</td>
       <td>TCT9AAA</td>
       <td>S9K</td>
@@ -1037,6 +1037,7 @@ Here are the counts added to the variant table:
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data_multi_targets.html">Libraries with secondary target genes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
 <li class="toctree-l2"><a class="reference internal" href="predict_variants.html">Predict unseen variants using global epistasis models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
