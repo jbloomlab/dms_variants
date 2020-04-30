@@ -444,6 +444,13 @@ class CodonVariantTable:
                 ))
 
         # make library and sample categorical and sort
+        sort_cols = ['library', 'sample', 'count']
+        order_cols = self.variant_count_df.columns.tolist()
+        if self.primary_target is not None:
+            sort_cols.insert(0, 'target')
+            assert 'target' in order_cols
+            order_cols.remove('target')
+            order_cols.insert(0, 'target')
         self.variant_count_df = (
                 self.variant_count_df
                 .assign(library=lambda x: pd.Categorical(x['library'],
@@ -453,9 +460,10 @@ class CodonVariantTable:
                                                         unique_samples,
                                                         ordered=True),
                         )
-                .sort_values(['library', 'sample', 'count'],
-                             ascending=[True, True, False])
+                .sort_values(sort_cols,
+                             ascending=[True] * (len(sort_cols) - 1) + [False])
                 .reset_index(drop=True)
+                [order_cols]
                 )
 
     def add_sample_counts_df(self, counts_df):
@@ -517,6 +525,13 @@ class CodonVariantTable:
                 ))
 
         # make library and sample categorical and sort
+        sort_cols = ['library', 'sample', 'count']
+        order_cols = self.variant_count_df.columns.tolist()
+        if self.primary_target is not None:
+            sort_cols.insert(0, 'target')
+            assert 'target' in order_cols
+            order_cols.remove('target')
+            order_cols.insert(0, 'target')
         self.variant_count_df = (
                 self.variant_count_df
                 .assign(library=lambda x: pd.Categorical(x['library'],
@@ -526,11 +541,10 @@ class CodonVariantTable:
                                                         unique_samples,
                                                         ordered=True),
                         )
-                .sort_values(['library', 'sample', 'count', 'barcode'],
-                             ascending=[True, True, False, True])
+                .sort_values(sort_cols,
+                             ascending=[True] * (len(sort_cols) - 1) + [False])
                 .reset_index(drop=True)
-                [['barcode', 'count'] + [c for c in self.variant_count_df
-                                         if c not in {'barcode', 'count'}]]
+                [order_cols]
                 )
 
     def valid_barcodes(self, library):
