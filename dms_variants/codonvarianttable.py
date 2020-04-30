@@ -1662,7 +1662,7 @@ class CodonVariantTable:
         if self.primary_target is None:
             assert 'target' not in set(df.columns)
         else:
-            assert 'target' not in set(df.columns)
+            assert 'target' in set(df.columns)
             if by_target:
                 group_cols.insert(0, 'target')
 
