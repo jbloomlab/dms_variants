@@ -64,7 +64,8 @@ class CodonVariantTable:
         `barcode_variant_file` named "target" and one of these targets must
         be equal to 'primary_target'. If there are other targets, they should
         **not** have any substitutions as we don't parse substitutions in
-        non-primary targets.
+        non-primary targets. Instead, `substitutions_col` for secondary targets
+        should be empty or just have the name of the secondary target.
 
     Attributes
     ----------
@@ -232,6 +233,13 @@ class CodonVariantTable:
                                  'file lacks column named "target"')
             if self.primary_target not in set(df['target']):
                 raise ValueError(f"{self.primary_target} not in 'target' col")
+            df = (df  # if substitutions col is secondary target name, make ''
+                  .assign(substitutions=lambda x: x['substitutions'].where(
+                            ((x['target'] == self.primary_target) |
+                             (x['substitutions'] != x['target'])),
+                            '')
+                          )
+                  )
             subs_non_primary = (
                     df
                     .query('target != @self.primary_target')
