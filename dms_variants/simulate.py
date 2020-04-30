@@ -260,6 +260,7 @@ def simulateSampleCounts(*,
                          variant_error_rate,
                          pre_sample,
                          post_samples,
+                         secondary_target_phenotypes=None,
                          pre_sample_name='pre-selection',
                          seed=1):
     """Simulate pre- and post-selection variant counts.
@@ -277,6 +278,9 @@ def simulateSampleCounts(*,
         Takes a space-delimited string of amino-acid substitutions and returns
         a number giving enrichment of variant relative to wildtype. For
         instance, :meth:`SigmoidPhenotypeSimulator.observedEnrichment`.
+        If there are multiple targets in `variants`, this function is only
+        applied to the primary target. See `secondary_target_phenotypes` for
+        the secondary targets.
     variant_error_rate : float
         Rate at which variants mis-called. Provide the probability that a
         variant has a spuriously called (or missing) codon mutation; each
@@ -297,6 +301,10 @@ def simulateSampleCounts(*,
         passing through bottleneck of indicated size, and adding noise
         by mutiplying phenotype by a random variable with mean 1 and
         standard deviation specified by 'noise' (0 is no noise).
+    secondary_target_phenotypes : None or dict
+        If there are secondary targets in `variants`, this should be keyed
+        by each secondary target name and give the associated phenotypes
+        as values.
     pre_sample_name : str
         Name used for the pre-selection sample.
     seed : None or int
@@ -349,9 +357,18 @@ def simulateSampleCounts(*,
             return codon_substitutions
     # -----------------------------------------
 
-    barcode_variant_df = (
-        variants.barcode_variant_df
-        [['library', 'barcode', 'codon_substitutions']]
+    if variants.primary_target is None:
+        primary_df = variants.barcode_variant_df.assign(target=None)
+        secondary_df = None
+    else:
+        primary_df = (variants.barcode_variant_df
+                      .query('target == @variants.primary_target'))
+        secondary_df = (variants.barcode_variant_df
+                        .query('target != @variants.primary_target'))
+
+    primary_df = (
+        primary_df
+        [['target', 'library', 'barcode', 'codon_substitutions']]
         .assign(
             codon_substitutions=(lambda x: x['codon_substitutions']
                                  .map(_add_variant_errors)),
@@ -362,6 +379,23 @@ def simulateSampleCounts(*,
             )
         [['library', 'barcode', 'phenotype']]
         )
+
+    if secondary_df is not None:
+        if secondary_target_phenotypes is None:
+            secondary_target_phenotypes = {}
+        if not set(secondary_target_phenotypes).issuperset(
+                    secondary_df['target']):
+            raise ValueError('`secondary_target_phenotypes` lacks some '
+                             'secondary targets')
+        secondary_df = (
+                secondary_df
+                .assign(phenotype=lambda x: x['target'].map(
+                                        secondary_target_phenotypes))
+                [['library', 'barcode', 'phenotype']]
+                )
+        barcode_variant_df = primary_df.append(secondary_df)
+    else:
+        barcode_variant_df = primary_df
 
     libraries = variants.libraries
 
