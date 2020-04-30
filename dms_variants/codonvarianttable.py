@@ -723,7 +723,7 @@ class CodonVariantTable:
         group_cols = ['codon_substitutions', 'n_codon_substitutions',
                       'aa_substitutions', 'n_aa_substitutions']
         if self.primary_target is not None:
-            group_cols.insert(0, 'target')
+            group_cols.append('target')
         if by in {'aa_substitutions', 'codon_substitutions'}:
             group_cols = group_cols[group_cols.index(by) + 1:]
             df = (df
@@ -1715,10 +1715,12 @@ class CodonVariantTable:
             nrow = ntargets
             width = widthscale * nlibraries * (0.9 + 0.2 * nsamples)
             height = 2.1 * heightscale * ntargets
+            facet_grid_str = 'target ~ library'
         elif orientation == 'v':
             nrow = nlibraries
             width = widthscale * (0.9 + 0.2 * nsamples) * ntargets
             height = 2.1 * nlibraries
+            facet_grid_str = 'library ~ target'
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
@@ -1733,7 +1735,7 @@ class CodonVariantTable:
 
         if nlibraries > 1 or one_lib_facet:
             if ntargets > 1:
-                p = p + p9.facet_grid('target ~ library')
+                p = p + p9.facet_grid(facet_grid_str)
             else:
                 p = p + p9.facet_wrap('~ library', nrow=nrow)
         elif ntargets > 1:
