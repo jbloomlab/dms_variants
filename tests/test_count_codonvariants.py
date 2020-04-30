@@ -144,7 +144,8 @@ class test_count_codonvariants(unittest.TestCase):
         counts_df = pd.concat(counts_df)
         variants2.add_sample_counts_df(counts_df)
         assert_frame_equal(variants.variant_count_df,
-                           variants2.variant_count_df)
+                           variants2.variant_count_df,
+                           check_like=True)
 
         # concatenate read fates into one data frame
         fates = (pd.concat(fates, ignore_index=True, sort=False)

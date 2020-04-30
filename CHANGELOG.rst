@@ -6,12 +6,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.6.0
+------
+
+Added
++++++
+- Added capability of having other "reference" targets in a ``CodonVariantTable``.
+
+Fixed
++++++
+- ``simulate.rand_seq`` generates unique sequences.
+
 0.5.3
 ------
+
+Fixed
+++++++
 - ``plotCumultMutCoverage`` now has y-axis that extends from 0 to 1.
 
 0.5.2
 ------
+
+Added
+++++++
 - In ``CodonVariantTable`` plotting, by default do not label facets for library when just one library, and add ``one_lib_facet`` parameter to plotting functions.
 
 - Made compatible with ``pandas`` >= 1.0

@@ -56,6 +56,16 @@ class CodonVariantTable:
     substitutions_col : str
         Name of substitutions column in `barcode_variant_file` (use if you
         want it to be something other than "substitutions").
+    primary_target : str or None
+        Use this option if you have additional targets beyond the main gene
+        for which we are analyzing variants. This might be the case if you
+        have spiked other genes into the library. If this option is set to
+        something other than `None`, then there must be a column in
+        `barcode_variant_file` named "target" and one of these targets must
+        be equal to 'primary_target'. If there are other targets, they should
+        **not** have any substitutions as we don't parse substitutions in
+        non-primary targets. Instead, `substitutions_col` for secondary targets
+        should be empty or just have the name of the secondary target.
 
     Attributes
     ----------
@@ -71,12 +81,17 @@ class CodonVariantTable:
         List of libraries in `barcode_variant_file`.
     barcode_variant_df : pandas.DataFrame
         Info about codon mutations parsed from `barcode_variant_file`.
+        For non-primary targets, the mutations column just hold the
+        target name.
     variant_count_df : pandas.DataFrame or None
         Initially `None`, but after data added with
         :class:`CodonVariantTable.addSampleCounts`, holds counts of
         each variant for each sample. Differs from `barcode_variant_df`
         in that the former just holds barcode-variant definitions,
         whereas `variant_count_df` has counts for each sample.
+    primary_target : str or None
+        If multiple targets, name of the main target for which we are
+        calling variants.
 
     """
 
@@ -116,7 +131,7 @@ class CodonVariantTable:
 
     @classmethod
     def from_variant_count_df(cls, *, variant_count_df_file, geneseq,
-                              drop_all_libs=True):
+                              drop_all_libs=True, primary_target=None):
         """:class:`CodonVariantTable` from CSV of `variant_count_df`.
 
         Note
@@ -136,6 +151,8 @@ class CodonVariantTable:
             If there is a library named "all libraries", drop it as it probably
             added by :meth:`CodonVariantTable.addMergedLibraries` and
             duplicates information for the individual libraries.
+        primary_target : None or str
+            Meaning described in main :class:`CodonVariantTable` doc string.
 
         Returns
         -------
@@ -146,6 +163,15 @@ class CodonVariantTable:
 
         req_cols = ['barcode', 'library', 'variant_call_support',
                     'codon_substitutions', 'sample', 'count']
+
+        if primary_target is not None:
+            if 'target' not in set(df.columns):
+                raise ValueError('primary_target not None but no "target" col')
+            req_cols.append('target')
+        else:
+            if 'target' in set(df.columns):
+                raise ValueError('primary_target is None but "target" col')
+
         if not (set(req_cols) < set(df.columns)):
             raise ValueError(f"{variant_count_df_file} lacks required "
                              f"columns {req_cols}. It has: {set(df.columns)}")
@@ -167,7 +193,9 @@ class CodonVariantTable:
             cvt = cls(barcode_variant_file=f.name,
                       geneseq=geneseq,
                       substitutions_are_codon=True,
-                      substitutions_col='codon_substitutions')
+                      substitutions_col='codon_substitutions',
+                      primary_target=primary_target,
+                      )
 
         cvt.add_sample_counts_df(df[['library', 'sample', 'barcode', 'count']])
 
@@ -175,7 +203,8 @@ class CodonVariantTable:
 
     def __init__(self, *, barcode_variant_file, geneseq,
                  substitutions_are_codon=False, extra_cols=None,
-                 substitutions_col='substitutions'):
+                 substitutions_col='substitutions',
+                 primary_target=None):
         """See main class doc string."""
         self.geneseq = geneseq.upper()
         if not re.match(f"^[{''.join(NTS)}]+$", self.geneseq):
@@ -190,9 +219,44 @@ class CodonVariantTable:
 
         df = (pd.read_csv(barcode_variant_file)
               .rename(columns={substitutions_col: 'substitutions'})
+              .assign(substitutions=lambda x: x['substitutions'].fillna(''))
               )
         required_cols = ['library', 'barcode',
                          'substitutions', 'variant_call_support']
+        sort_cols = ['library', 'barcode']
+        self.primary_target = primary_target
+        if self.primary_target is not None:
+            required_cols.insert(0, 'target')
+            sort_cols.insert(0, 'target')
+            if 'target' not in set(df.columns):
+                raise ValueError('cannot use `primary_target` as the variant '
+                                 'file lacks column named "target"')
+            if self.primary_target not in set(df['target']):
+                raise ValueError(f"{self.primary_target} not in 'target' col")
+            df = (df  # if substitutions col is secondary target name, make ''
+                  .assign(substitutions=lambda x: x['substitutions'].where(
+                            ((x['target'] == self.primary_target) |
+                             (x['substitutions'] != x['target'])),
+                            '')
+                          )
+                  )
+            subs_non_primary = (
+                    df
+                    .query('target != @self.primary_target')
+                    .assign(has_subs=lambda x: (x['substitutions']
+                                                .str.strip()
+                                                .str.len()
+                                                .astype(bool)
+                                                )
+                            )
+                    .query('has_subs == True')
+                    )
+            if len(subs_non_primary):
+                raise ValueError('non-primary targets have substitutions:\n' +
+                                 subs_non_primary.head().to_csv())
+        elif 'target' in set(df.columns):
+            raise ValueError('variant file has column "target" but '
+                             'you did not specify `primary_target`')
         if not set(df.columns).issuperset(set(required_cols)):
             raise ValueError("`variantfile` does not have "
                              f"required columns {required_cols}")
@@ -223,7 +287,6 @@ class CodonVariantTable:
                 df
                 # info about codon and amino-acid substitutions
                 .assign(codon_substitutions=lambda x: (x['substitutions']
-                                                       .fillna('')
                                                        .apply(codonSubsFunc)),
                         aa_substitutions=lambda x: (x.codon_substitutions
                                                     .apply(self.codonToAAMuts)
@@ -241,9 +304,23 @@ class CodonVariantTable:
                                                          self.libraries,
                                                          ordered=True)
                         )
-                .sort_values(['library', 'barcode'])
+                .sort_values(sort_cols)
                 .reset_index(drop=True)
                 )
+
+        assert ((self.primary_target is None and
+                 'target' not in set(self.barcode_variant_df.columns)
+                 ) or
+                (self.primary_target is not None and
+                 'target' in set(self.barcode_variant_df.columns)
+                 )
+                )
+        assert self.primary_target is None or not (
+                            self.barcode_variant_df
+                            .query('target != @self.primary_target')
+                            ['n_codon_substitutions']
+                            .any()
+                            )
 
         # check validity of codon substitutions given `geneseq`
         for codonmut in itertools.chain.from_iterable(
@@ -269,6 +346,22 @@ class CodonVariantTable:
                 'synonymous': CBPALETTE[2],
                 'stop': CBPALETTE[3]
                 }
+
+        # for "safety" make the substitutions column for non-primary targets
+        # just the target name
+        if self.primary_target is not None:
+            self.barcode_variant_df = (
+                self.barcode_variant_df
+                .assign(
+                    aa_substitutions=lambda x: x['aa_substitutions'].where(
+                                            x['target'] == self.primary_target,
+                                            x['target']),
+                    codon_substitutions=  # noqa: E251
+                        lambda x: x['codon_substitutions'].where(  # noqa: E321
+                                            x['target'] == self.primary_target,
+                                            x['target']),
+                    )
+                )
 
     def samples(self, library):
         """List of all samples for `library`.
@@ -359,6 +452,13 @@ class CodonVariantTable:
                 ))
 
         # make library and sample categorical and sort
+        sort_cols = ['library', 'sample', 'count']
+        order_cols = self.variant_count_df.columns.tolist()
+        if self.primary_target is not None:
+            sort_cols.insert(0, 'target')
+            assert 'target' in order_cols
+            order_cols.remove('target')
+            order_cols.insert(0, 'target')
         self.variant_count_df = (
                 self.variant_count_df
                 .assign(library=lambda x: pd.Categorical(x['library'],
@@ -368,9 +468,10 @@ class CodonVariantTable:
                                                         unique_samples,
                                                         ordered=True),
                         )
-                .sort_values(['library', 'sample', 'count'],
-                             ascending=[True, True, False])
+                .sort_values(sort_cols,
+                             ascending=[True] * (len(sort_cols) - 1) + [False])
                 .reset_index(drop=True)
+                [order_cols]
                 )
 
     def add_sample_counts_df(self, counts_df):
@@ -432,6 +533,13 @@ class CodonVariantTable:
                 ))
 
         # make library and sample categorical and sort
+        sort_cols = ['library', 'sample', 'count']
+        order_cols = self.variant_count_df.columns.tolist()
+        if self.primary_target is not None:
+            sort_cols.insert(0, 'target')
+            assert 'target' in order_cols
+            order_cols.remove('target')
+            order_cols.insert(0, 'target')
         self.variant_count_df = (
                 self.variant_count_df
                 .assign(library=lambda x: pd.Categorical(x['library'],
@@ -441,11 +549,10 @@ class CodonVariantTable:
                                                         unique_samples,
                                                         ordered=True),
                         )
-                .sort_values(['library', 'sample', 'count', 'barcode'],
-                             ascending=[True, True, False, True])
+                .sort_values(sort_cols,
+                             ascending=[True] * (len(sort_cols) - 1) + [False])
                 .reset_index(drop=True)
-                [['barcode', 'count'] + [c for c in self.variant_count_df
-                                         if c not in {'barcode', 'count'}]]
+                [order_cols]
                 )
 
     def valid_barcodes(self, library):
@@ -506,6 +613,9 @@ class CodonVariantTable:
         is added to each count first. The wildtype counts are computed
         across all **fully wildtype** variants (see `syn_as_wt` for
         how this is defined).
+
+        If there are multiple targets, the functional scores for all
+        targets are relative to the wildtype of the primary target.
 
         Parameters
         ----------
@@ -605,7 +715,11 @@ class CodonVariantTable:
         wt_counts = (
                 df
                 .assign(count=lambda x: (x['count'] *
-                                         (0 == x[wt_col]).astype('int')))
+                                         (0 == x[wt_col]).astype('int') *
+                                         (self.primary_target is None or
+                                          x['target'] == self.primary_target)
+                                         )
+                        )
                 .groupby(['library', 'sample'], sort=False)
                 .aggregate({'count': 'sum'})
                 .reset_index()
@@ -616,10 +730,12 @@ class CodonVariantTable:
         # sum counts in groups specified by `by`
         group_cols = ['codon_substitutions', 'n_codon_substitutions',
                       'aa_substitutions', 'n_aa_substitutions']
+        if self.primary_target is not None:
+            group_cols.append('target')
         if by in {'aa_substitutions', 'codon_substitutions'}:
             group_cols = group_cols[group_cols.index(by) + 1:]
             df = (df
-                  .groupby(['library', 'sample', by] + group_cols,
+                  .groupby(['library', 'sample', by, *group_cols],
                            observed=True, sort=False)
                   .aggregate({'count': 'sum'})
                   .reset_index()
@@ -680,19 +796,26 @@ class CodonVariantTable:
                                 1 / (x.pre_count_wt + x.pseudocount)
                                 ) / (numpy.log(logbase)**2)
                     )
-                # set column order in data frame
-                [['library', 'pre_sample', 'post_sample', by,
-                  'func_score', 'func_score_var', 'pre_count',
-                  'post_count', 'pre_count_wt', 'post_count_wt',
-                  'pseudocount'] + group_cols]
                 )
 
-        return df_func_scores
+        col_order = ['library', 'pre_sample', 'post_sample', by,
+                     'func_score', 'func_score_var', 'pre_count',
+                     'post_count', 'pre_count_wt', 'post_count_wt',
+                     'pseudocount', *group_cols]
+        if self.primary_target is not None:
+            assert col_order.count('target') == 1
+            col_order.remove('target')
+            col_order.insert(0, 'target')
+        else:
+            assert 'target' not in col_order
+
+        return df_func_scores[col_order]
 
     def n_variants_df(self, *, libraries='all', samples='all',
                       min_support=1, variant_type='all',
-                      mut_type=None, sample_rename=None):
-        """Get number of variants per library / sample.
+                      mut_type=None, sample_rename=None,
+                      primary_target_only=False):
+        """Get number variants per library / sample (and target if specified).
 
         Parameters
         ----------
@@ -701,6 +824,8 @@ class CodonVariantTable:
         mut_type : {'aa', 'codon', None}
             If `variant_type` is 'single', indicate what type of single
             mutants we are filtering for.
+        primary_target_only : bool
+            Only return counts for the primary target.
         All other args
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
@@ -709,10 +834,12 @@ class CodonVariantTable:
         pandas.DataFrame
 
         """
-        df, nlibraries, nsamples = self._getPlotData(libraries,
-                                                     samples,
-                                                     min_support,
-                                                     sample_rename)
+        df, nlibraries, nsamples = self._getPlotData(
+                                    libraries,
+                                    samples,
+                                    min_support,
+                                    primary_target_only=primary_target_only,
+                                    sample_rename=sample_rename)
 
         if variant_type == 'single':
             if mut_type in {'aa', 'codon'}:
@@ -722,9 +849,15 @@ class CodonVariantTable:
         elif variant_type != 'all':
             raise ValueError(f"invalid `variant_type` {variant_type}")
 
+        group_cols = ['library', 'sample']
+        if (self.primary_target is not None) and (not primary_target_only):
+            group_cols.insert(0, 'target')
+            assert 'target' in set(df.columns)
+        else:
+            assert 'target' not in set(df.columns)
+
         return (df
-                .groupby(['library', 'sample'],
-                         observed=True)
+                .groupby(group_cols, observed=True)
                 .aggregate({'count': 'sum'})
                 .reset_index()
                 )
@@ -732,7 +865,7 @@ class CodonVariantTable:
     def mutCounts(self, variant_type, mut_type, *,
                   libraries='all', samples='all', min_support=1,
                   sample_rename=None):
-        """Get counts of each individual mutation.
+        """Get counts of each individual mutations (only in primary target).
 
         Parameters
         ----------
@@ -745,12 +878,16 @@ class CodonVariantTable:
         -------
         pandas.DataFrame
             Tidy data frame with columns named "library", "sample",
-            "mutation", "count", "mutation_type", and "site".
+            "mutation", "count", "mutation_type", and "site". If there
+            are multiple targets, only returns counts for the primary
+            target.
 
         """
         df, nlibraries, nsamples = self._getPlotData(libraries,
                                                      samples,
-                                                     min_support)
+                                                     min_support,
+                                                     primary_target_only=True)
+        assert 'target' not in set(df.columns)
 
         samplelist = df['sample'].unique().tolist()
         librarylist = df['library'].unique().tolist()
@@ -790,10 +927,12 @@ class CodonVariantTable:
         def _classify_mutation(mut_str):
             if mut_type == 'aa':
                 m = self._AA_SUB_RE.match(mut_str)
+                assert m is not None, f"cannot match aa mut: {mut_str}"
                 wt_aa = m.group('wt')
                 mut_aa = m.group('mut')
             else:
                 m = self._CODON_SUB_RE.match(mut_str)
+                assert m is not None, f"cannot match codon mut: {mut_str}"
                 wt_aa = CODON_TO_AA[m.group('wt')]
                 mut_aa = CODON_TO_AA[m.group('mut')]
             if wt_aa == mut_aa:
@@ -854,7 +993,7 @@ class CodonVariantTable:
                        orientation='h', widthscale=1, heightscale=1,
                        min_support=1, sample_rename=None,
                        one_lib_facet=False):
-        """Heatmap of mutation counts or frequencies.
+        """Heatmap of mutation counts or frequencies (for primary target only).
 
         Parameters
         ----------
@@ -871,13 +1010,16 @@ class CodonVariantTable:
         df = self.mutCounts(variant_type, mut_type, samples=samples,
                             libraries=libraries, min_support=min_support,
                             sample_rename=sample_rename)
+        assert 'target' not in set(df.columns)
 
-        n_variants = (self.n_variants_df(libraries=libraries,
-                                         samples=samples,
-                                         min_support=min_support,
-                                         variant_type=variant_type,
-                                         mut_type=mut_type,
-                                         sample_rename=sample_rename)
+        n_variants = (self.n_variants_df(
+                                    libraries=libraries,
+                                    samples=samples,
+                                    min_support=min_support,
+                                    variant_type=variant_type,
+                                    mut_type=mut_type,
+                                    sample_rename=sample_rename,
+                                    primary_target_only=True)
                       .rename(columns={'count': 'nseqs'})
                       )
 
@@ -910,6 +1052,7 @@ class CodonVariantTable:
                                                         ordered=True)
                       )
               )
+        assert 'target' not in set(df.columns)
 
         if count_or_frequency not in {'count', 'frequency'}:
             raise ValueError(f"invalid count_or_frequency "
@@ -971,7 +1114,7 @@ class CodonVariantTable:
                      orientation='h', widthscale=1, heightscale=1,
                      min_support=1, sample_rename=None,
                      one_lib_facet=False):
-        """Mutation frequency along length of gene.
+        """Mutation frequency along length of gene (primary target only).
 
         Parameters
         ----------
@@ -992,9 +1135,12 @@ class CodonVariantTable:
                                          min_support=min_support,
                                          variant_type=variant_type,
                                          mut_type=mut_type,
-                                         sample_rename=sample_rename)
+                                         sample_rename=sample_rename,
+                                         primary_target_only=True)
                       .rename(columns={'count': 'nseqs'})
                       )
+
+        assert 'target' not in set(df.columns).union(set(n_variants.columns))
 
         df = (df
               .groupby(['library', 'sample', 'mutation_type', 'site'])
@@ -1072,7 +1218,8 @@ class CodonVariantTable:
                                orientation='h', widthscale=1, heightscale=1,
                                min_support=1, mut_type='aa',
                                tot_variants_hline=True,
-                               sample_rename=None, one_lib_facet=False):
+                               sample_rename=None, one_lib_facet=False,
+                               primary_target_only=True):
         """Plot number variants with >= that each number of counts.
 
         Parameters
@@ -1081,6 +1228,8 @@ class CodonVariantTable:
             Include all variants or just those with <=1 `mut_type` mutation.
         tot_variants_hline : bool
             Include dotted horizontal line indicating total number of variants.
+        primary_target_only : bool
+            Only show counts for the primary target.
         other_parameters
             Same as for :meth:`CodonVariantTable.plotNumMutsHistogram`.
 
@@ -1089,10 +1238,12 @@ class CodonVariantTable:
         plotnine.ggplot.ggplot
 
         """
-        df, nlibraries, nsamples = self._getPlotData(libraries,
-                                                     samples,
-                                                     min_support,
-                                                     sample_rename)
+        df, nlibraries, nsamples = self._getPlotData(
+                                                libraries,
+                                                samples,
+                                                min_support,
+                                                primary_target_only,
+                                                sample_rename=sample_rename)
 
         if variant_type == 'single':
             if mut_type == 'aa':
@@ -1166,7 +1317,7 @@ class CodonVariantTable:
                              orientation='h', widthscale=1, heightscale=1,
                              min_support=1, max_count=None,
                              sample_rename=None, one_lib_facet=False):
-        """Fraction of mutations seen <= some number of times.
+        """Frac mutations seen <= some number of times (primary target only).
 
         Parameters
         ----------
@@ -1186,6 +1337,7 @@ class CodonVariantTable:
         df = self.mutCounts(variant_type, mut_type, samples=samples,
                             libraries=libraries, min_support=min_support,
                             sample_rename=sample_rename)
+        assert 'target' not in set(df.columns)
 
         # add one to counts to plot fraction found < this many
         # as stat_ecdf by default does <=
@@ -1266,6 +1418,8 @@ class CodonVariantTable:
                            sample_rename=None):
         """Get average nonsynonymous, synonymous, stop mutations per variant.
 
+        These statistics are only for the primary target.
+
         Parameters
         ----------
         all_parameters
@@ -1278,7 +1432,9 @@ class CodonVariantTable:
 
         """
         df, _, _ = self._getPlotData(libraries, samples, min_support,
-                                     sample_rename)
+                                     primary_target_only=True,
+                                     sample_rename=sample_rename)
+        assert 'target' not in set(df.columns)
 
         if variant_type == 'single':
             df = df.query('n_codon_substitutions <= 1')
@@ -1323,6 +1479,8 @@ class CodonVariantTable:
                                one_lib_facet=False):
         """Plot average nonsynonymous, synonymous, stop mutations per variant.
 
+        These statistics are only for the primary target.
+
         Parameters
         ----------
         variant_type : {'single', 'all'}
@@ -1337,16 +1495,20 @@ class CodonVariantTable:
         plotnine.ggplot.ggplot
 
         """
-        _, nlibraries, nsamples = self._getPlotData(libraries,
-                                                    samples,
-                                                    min_support,
-                                                    sample_rename)
+        _, nlibraries, nsamples = self._getPlotData(
+                                            libraries,
+                                            samples,
+                                            min_support,
+                                            primary_target_only=True,
+                                            sample_rename=sample_rename)
 
         df = self.numCodonMutsByType(variant_type=variant_type,
                                      libraries=libraries,
                                      samples=samples,
                                      min_support=min_support,
                                      sample_rename=sample_rename)
+        assert 'target' not in set(df.columns)
+
         if orientation == 'h':
             if nlibraries > 1 or one_lib_facet:
                 facet_str = 'sample ~ library'
@@ -1404,7 +1566,8 @@ class CodonVariantTable:
                                     libraries='all', plotfile=None,
                                     orientation='h', widthscale=1,
                                     heightscale=1, max_support=None,
-                                    sample_rename=None, one_lib_facet=False):
+                                    sample_rename=None, one_lib_facet=False,
+                                    primary_target_only=False):
         """Plot histogram of variant call support for variants.
 
         Parameters
@@ -1413,16 +1576,20 @@ class CodonVariantTable:
             Group together all variants with >= this support.
         other_parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
+        primary_target_only : bool
+            Only include variants that are of the primary target.
 
         Returns
         -------
         plotnine.ggplot.ggplot
 
         """
-        df, nlibraries, nsamples = self._getPlotData(libraries,
-                                                     None,
-                                                     1,
-                                                     sample_rename)
+        df, nlibraries, nsamples = self._getPlotData(
+                                    libraries,
+                                    None,
+                                    min_support=1,
+                                    primary_target_only=primary_target_only,
+                                    sample_rename=sample_rename)
 
         if orientation == 'h':
             width = widthscale * (1 + 1.4 * nlibraries)
@@ -1464,7 +1631,7 @@ class CodonVariantTable:
 
     def avgCountsPerVariant(self, *,
                             libraries='all', samples='all', min_support=1,
-                            sample_rename=None):
+                            sample_rename=None, by_target=True):
         """Get average counts per variant.
 
         Parameters
@@ -1479,23 +1646,36 @@ class CodonVariantTable:
         sample_rename : dict or None
             Rename samples by specifying original name as key and new name
             as value.
+        by_target : bool
+            If `True`, also group counts by target if multiple targets.
 
         Returns
         -------
         pandas.DataFrame
-            Gives average counts per variant for each library and sample.
+            Average counts per variant for each library and sample, and
+            possibly target.
 
         """
         if samples is None:
             raise ValueError('`samples` cannot be `None`')
 
-        df, nlibraries, nsamples = self._getPlotData(libraries,
-                                                     samples,
-                                                     min_support,
-                                                     sample_rename)
+        df, nlibraries, nsamples = self._getPlotData(
+                                                libraries,
+                                                samples,
+                                                min_support,
+                                                primary_target_only=False,
+                                                sample_rename=sample_rename)
+
+        group_cols = ['library', 'sample']
+        if self.primary_target is None:
+            assert 'target' not in set(df.columns)
+        else:
+            assert 'target' in set(df.columns)
+            if by_target:
+                group_cols.insert(0, 'target')
 
         return (df
-                .groupby(['library', 'sample'], observed=True)
+                .groupby(group_cols, observed=True)
                 .aggregate({'count': 'mean'})
                 .rename(columns={'count': 'avg_counts_per_variant'})
                 .reset_index()
@@ -1505,8 +1685,8 @@ class CodonVariantTable:
                                 libraries='all', samples='all', plotfile=None,
                                 orientation='h', widthscale=1, heightscale=1,
                                 min_support=1, sample_rename=None,
-                                one_lib_facet=False):
-        """Get average counts per variant.
+                                one_lib_facet=False, by_target=True):
+        """Plot average counts per variant.
 
         Parameters
         ----------
@@ -1515,6 +1695,8 @@ class CodonVariantTable:
             libraries, or a list of libraries.
         samples : {'all', list}
             Include all samples or just samples in list.
+        by_target : bool
+            If `True`, also group counts by target if multiple targets.
         other_parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
@@ -1525,19 +1707,28 @@ class CodonVariantTable:
         """
         df = self.avgCountsPerVariant(libraries=libraries, samples=samples,
                                       min_support=min_support,
-                                      sample_rename=sample_rename)
+                                      sample_rename=sample_rename,
+                                      by_target=by_target)
 
-        nsamples = len(df['sample'].unique())
-        nlibraries = len(df['library'].unique())
+        nsamples = df['sample'].nunique()
+        nlibraries = df['library'].nunique()
+        if 'target' in set(df.columns):
+            assert (self.primary_target is not None) and by_target
+            ntargets = df['library'].nunique()
+        else:
+            ntargets = 1
+            assert (self.primary_target is None) or not by_target
+
         if orientation == 'h':
-            nrow = 1
+            nrow = ntargets
             width = widthscale * nlibraries * (0.9 + 0.2 * nsamples)
-            height = 2.1 * heightscale
+            height = 2.1 * heightscale * ntargets
+            facet_grid_str = 'target ~ library'
         elif orientation == 'v':
             nrow = nlibraries
-            width = widthscale * 0.25 * nsamples
-            width = widthscale * (0.9 + 0.2 * nsamples)
+            width = widthscale * (0.9 + 0.2 * nsamples) * ntargets
             height = 2.1 * nlibraries
+            facet_grid_str = 'library ~ target'
         else:
             raise ValueError(f"invalid `orientation` {orientation}")
 
@@ -1551,7 +1742,12 @@ class CodonVariantTable:
              )
 
         if nlibraries > 1 or one_lib_facet:
-            p = p + p9.facet_wrap('~ library', nrow=nrow)
+            if ntargets > 1:
+                p = p + p9.facet_grid(facet_grid_str)
+            else:
+                p = p + p9.facet_wrap('~ library', nrow=nrow)
+        elif ntargets > 1:
+            p = p + p9.facet_wrap('~ target', nrow=nrow)
 
         if plotfile:
             p.save(plotfile, height=height, width=width, verbose=False)
@@ -1563,7 +1759,7 @@ class CodonVariantTable:
                              orientation='h', widthscale=1, heightscale=1,
                              min_support=1, max_muts=None, sample_rename=None,
                              one_lib_facet=False):
-        """Plot histograms of number of mutations per variant.
+        """Plot histogram of num mutations per variant (primary target only).
 
         Parameters
         ----------
@@ -1598,10 +1794,13 @@ class CodonVariantTable:
         plotnine.ggplot.ggplot
 
         """
-        df, nlibraries, nsamples = self._getPlotData(libraries,
-                                                     samples,
-                                                     min_support,
-                                                     sample_rename)
+        df, nlibraries, nsamples = self._getPlotData(
+                                            libraries,
+                                            samples,
+                                            min_support,
+                                            primary_target_only=True,
+                                            sample_rename=sample_rename)
+        assert 'target' not in set(df.columns)
 
         if mut_type == 'aa':
             mut_col = 'n_aa_substitutions'
@@ -1665,6 +1864,8 @@ class CodonVariantTable:
                          outdir=None, include_all_libs=False):
         """Write codon counts files for all libraries and samples.
 
+        Only writes the counts for the primary target.
+
         Note
         ----
         Useful if you want to analyze individual mutations using
@@ -1717,6 +1918,15 @@ class CodonVariantTable:
                                          all_lib='all-libraries')
         else:
             df = self.variant_count_df
+
+        if self.primary_target is not None:
+            assert 'target' in set(df.columns)
+            df = (df
+                  .query('target == @self.primary_target')
+                  .drop(columns='target')
+                  )
+        else:
+            assert 'target' not in set(df.columns)
 
         countfiles = []
         liblist = []
@@ -1928,12 +2138,14 @@ class CodonVariantTable:
         return df
 
     def _getPlotData(self, libraries, samples, min_support,
-                     sample_rename=None):
+                     primary_target_only, *, sample_rename=None):
         """Get data to plot from library and sample filters.
 
         Parameters
         ----------
-        All parameters
+        primary_target_only : bool
+            Only return data for the primary target.
+        All other parameters
             Same as for :class:`CodonVariantTable.plotNumMutsHistogram`.
 
         Returns
@@ -2008,6 +2220,16 @@ class CodonVariantTable:
                                 ordered=True),
                 )
               )
+
+        if self.primary_target is not None:
+            assert 'target' in set(df.columns)
+            if primary_target_only:
+                df = (df
+                      .query('target == @self.primary_target')
+                      .drop(columns='target')
+                      )
+        else:
+            assert 'target' not in set(df.columns)
 
         return (df, nlibraries, nsamples)
 
@@ -2118,7 +2340,7 @@ class CodonVariantTable:
         >>> variants._ntToCodonMuts('A1G G4C G6T')
         Traceback (most recent call last):
         ...
-        ValueError: nucleotide 6 should be A not G
+        ValueError: nucleotide 6 should be A not G in A1G G4C G6T
 
         """
         mut_codons = collections.defaultdict(set)
@@ -2135,7 +2357,8 @@ class CodonVariantTable:
                 raise ValueError(f"invalid nucleotide site {i}")
             if self.geneseq[i - 1] != wt_nt:
                 raise ValueError(f"nucleotide {i} should be "
-                                 f"{self.geneseq[i - 1]} not {wt_nt}")
+                                 f"{self.geneseq[i - 1]} not {wt_nt} in "
+                                 f"{nt_mut_str}")
             icodon = (i - 1) // 3 + 1
             i_nt = (i - 1) % 3
             assert self.codons[icodon][i_nt] == wt_nt
@@ -2216,7 +2439,7 @@ class CodonVariantTable:
                       aa_seq_col='aa_sequence',
                       codon_seq_col='codon_sequence',
                       ):
-        """Add full sequences to data frame.
+        """Add full sequences to data frame, for primary target only.
 
         Parameters
         ----------
@@ -2234,13 +2457,22 @@ class CodonVariantTable:
         Returns
         -------
         pandas.DataFrame
-            Copy of `df` with columns `aa_seq_col` and/or `codon_seq_col`.
+            Copy of `df` with columns `aa_seq_col` and/or `codon_seq_col`,
+            and only the primary target retained if there is a 'target'
+            column in `df`.
 
         """
         if (not aa_seq_col) and (not codon_seq_col):
             raise ValueError('specify either `aa_seq_col` or `codon_seq_col`')
 
         df = df.copy(deep=True)
+
+        if 'target' in set(df.columns):
+            if self.primary_target is None:
+                raise ValueError('`df` has "target" col but no primary target')
+            else:
+                df = df.query('target == @self.primary_target')
+
         for coltype, col in [('aa', aa_seq_col), ('codon', codon_seq_col)]:
             if col:
                 if col in df.columns:
