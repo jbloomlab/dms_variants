@@ -350,15 +350,12 @@ class CodonVariantTable:
         # for "safety" make the substitutions column for non-primary targets
         # just the target name
         if self.primary_target is not None:
-            self.barcode_variant_df = (
-                self.barcode_variant_df
-                .assign(
-                    **{col: lambda x: x[col].where(
-                                            x['target'] == self.primary_target,
-                                            x['target'])
-                       for col in ['aa_substitutions', 'codon_substitutions']}
-                    )
-                )
+            targets = self.barcode_variant_df['target']
+            primary = (targets == self.primary_target)
+            for col in ['aa_substitutions', 'codon_substitutions']:
+                self.barcode_variant_df[col] = (
+                        self.barcode_variant_df[col].where(primary, targets)
+                        )
 
     def samples(self, library):
         """List of all samples for `library`.
