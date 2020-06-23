@@ -353,13 +353,10 @@ class CodonVariantTable:
             self.barcode_variant_df = (
                 self.barcode_variant_df
                 .assign(
-                    aa_substitutions=lambda x: x['aa_substitutions'].where(
+                    **{col: lambda x: x[col].where(
                                             x['target'] == self.primary_target,
-                                            x['target']),
-                    codon_substitutions=  # noqa: E251
-                        lambda x: x['codon_substitutions'].where(  # noqa: E321
-                                            x['target'] == self.primary_target,
-                                            x['target']),
+                                            x['target'])
+                       for col in ['aa_substitutions', 'codon_substitutions']}
                     )
                 )
 
