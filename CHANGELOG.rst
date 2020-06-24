@@ -9,6 +9,10 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 0.7.0
 ------
 
+Added
++++++
+- Added ``CodonVariantTable.escape_scores``
+
 0.6.0
 ------
 
