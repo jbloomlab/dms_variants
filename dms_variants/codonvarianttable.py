@@ -2033,6 +2033,7 @@ class CodonVariantTable:
         ...          ('GAA', 'G5H', 1, 2),
         ...          ('CTT', 'M1C G5C', 2, 3),
         ...          ('CTT', 'M1A L3T G5C', 3, 3),
+        ...          ('AAG', '', 0, 1),
         ...          ],
         ...         columns=['barcode', 'aa_substitutions',
         ...                  'n_aa_substitutions', 'n_codon_substitutions']
@@ -2051,6 +2052,7 @@ class CodonVariantTable:
         3     GAA   1 nonsynonymous
         4     CTT  >1 nonsynonymous
         5     CTT  >1 nonsynonymous
+        6     AAG        synonymous
         >>> df_syn_as_wt = CodonVariantTable.classifyVariants(df,
         ...                                                   syn_as_wt=True)
         >>> df_syn_as_wt[['barcode', 'variant_class']]
@@ -2061,6 +2063,7 @@ class CodonVariantTable:
         3     GAA   1 nonsynonymous
         4     CTT  >1 nonsynonymous
         5     CTT  >1 nonsynonymous
+        6     AAG          wildtype
 
         """
         req_cols = ['aa_substitutions', 'n_aa_substitutions']
@@ -2084,9 +2087,18 @@ class CodonVariantTable:
             else:
                 return f">{max_aa - 1} nonsynonymous"
 
-        df = df.copy(deep=True)
-        df[variant_class_col] = df.apply(_classify_func, axis=1)
-        return df
+        # to speed up, if variants present multiple times just classify
+        # once and then merge into overall data frame.
+        class_df = df[req_cols].drop_duplicates()
+        class_df[variant_class_col] = class_df.apply(_classify_func, axis=1)
+        return (df
+                .drop(columns=variant_class_col, errors='ignore')
+                .merge(class_df,
+                       on=req_cols,
+                       validate='many_to_one',
+                       how='left',
+                       )
+                )
 
     @staticmethod
     def addMergedLibraries(df, *, all_lib='all libraries'):
