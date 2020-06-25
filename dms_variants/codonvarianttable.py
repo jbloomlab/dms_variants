@@ -2279,7 +2279,10 @@ class CodonVariantTable:
                          *,
                          variant_class_col='variant_class',
                          max_aa=2,
-                         syn_as_wt=False):
+                         syn_as_wt=False,
+                         primary_target=None,
+                         non_primary_target_class='secondary target',
+                         ):
         """Classifies codon variants in `df`.
 
         Parameters
@@ -2299,6 +2302,13 @@ class CodonVariantTable:
             Do not have a category of 'synonymous' and instead classify
             synonymous variants as 'wildtype'. If using this option, `df`
             does not need column 'n_codon_substitutions'.
+        primary_target : None or str
+            If `df` has a column named 'target', then this must specify
+            primary target (e.g., :attr:`CodonVariantTable.primary_target`).
+            Variants not from primary target are classified as
+            `non_primary_target_class`.
+        non_primary_target_class : str
+            Classification used for non-primary targets.
 
         Returns
         -------
@@ -2309,6 +2319,7 @@ class CodonVariantTable:
               - 'stop': at least one stop-codon mutation
               - '{n_aa} nonsynonymous' where `n_aa` is number of amino-acid
                 mutations, or is '>{max_aa}' if more than `max_aa`.
+              - potentially `non_primary_target_class`.
 
         Example
         -------
@@ -2319,6 +2330,7 @@ class CodonVariantTable:
         ...          ('GAA', 'G5H', 1, 2),
         ...          ('CTT', 'M1C G5C', 2, 3),
         ...          ('CTT', 'M1A L3T G5C', 3, 3),
+        ...          ('AAG', '', 0, 1),
         ...          ],
         ...         columns=['barcode', 'aa_substitutions',
         ...                  'n_aa_substitutions', 'n_codon_substitutions']
@@ -2337,6 +2349,7 @@ class CodonVariantTable:
         3     GAA   1 nonsynonymous
         4     CTT  >1 nonsynonymous
         5     CTT  >1 nonsynonymous
+        6     AAG        synonymous
         >>> df_syn_as_wt = CodonVariantTable.classifyVariants(df,
         ...                                                   syn_as_wt=True)
         >>> df_syn_as_wt[['barcode', 'variant_class']]
@@ -2347,6 +2360,32 @@ class CodonVariantTable:
         3     GAA   1 nonsynonymous
         4     CTT  >1 nonsynonymous
         5     CTT  >1 nonsynonymous
+        6     AAG          wildtype
+
+        Now show how we need to specify how to handle when multiple targets:
+
+        >>> df['target'] = ['secondary'] + ['primary'] * 6
+        >>> (CodonVariantTable.classifyVariants(df)
+        ...  [['target', 'barcode', 'variant_class']])
+        Traceback (most recent call last):
+            ...
+        ValueError: `df` has "target" so give `primary_target`
+
+        We need to specify how to handle targets:
+
+        >>> (CodonVariantTable.classifyVariants(
+        ...                         df,
+        ...                         primary_target='primary',
+        ...                         non_primary_target_class='homolog')
+        ...  [['target', 'barcode', 'variant_class']])
+              target barcode     variant_class
+        0  secondary     AAA           homolog
+        1    primary     AAG        synonymous
+        2    primary     ATA              stop
+        3    primary     GAA   1 nonsynonymous
+        4    primary     CTT  >1 nonsynonymous
+        5    primary     CTT  >1 nonsynonymous
+        6    primary     AAG        synonymous
 
         """
         req_cols = ['aa_substitutions', 'n_aa_substitutions']
@@ -2355,8 +2394,21 @@ class CodonVariantTable:
         if not (set(req_cols) <= set(df.columns)):
             raise ValueError(f"`df` does not have columns {req_cols}")
 
+        if 'target' in set(df.columns):
+            req_cols.append('target')
+            if primary_target is None:
+                raise ValueError('`df` has "target" so give `primary_target`')
+            if primary_target not in set(df['target']):
+                raise ValueError(f"`primary_target` {primary_target} not in "
+                                 f"`df` targets:\n{set(df['target'])}")
+        else:
+            primary_target is None
+
         def _classify_func(row):
-            if row['n_aa_substitutions'] == 0:
+            if (primary_target is not None) and (row['target'] !=
+                                                 primary_target):
+                return non_primary_target_class
+            elif row['n_aa_substitutions'] == 0:
                 if syn_as_wt:
                     return 'wildtype'
                 elif row['n_codon_substitutions'] == 0:
@@ -2370,9 +2422,18 @@ class CodonVariantTable:
             else:
                 return f">{max_aa - 1} nonsynonymous"
 
-        df = df.copy(deep=True)
-        df[variant_class_col] = df.apply(_classify_func, axis=1)
-        return df
+        # to speed up, if variants present multiple times just classify
+        # once and then merge into overall data frame.
+        class_df = df[req_cols].drop_duplicates()
+        class_df[variant_class_col] = class_df.apply(_classify_func, axis=1)
+        return (df
+                .drop(columns=variant_class_col, errors='ignore')
+                .merge(class_df,
+                       on=req_cols,
+                       validate='many_to_one',
+                       how='left',
+                       )
+                )
 
     @staticmethod
     def addMergedLibraries(df, *, all_lib='all libraries'):

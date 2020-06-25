@@ -13,6 +13,10 @@ Added
 +++++
 - Added ``CodonVariantTable.escape_scores``
 
+Fixed
+++++++
+- ``CodonVariantTable.classifyVariants`` requires instructions on how to handle non-primary targets.
+
 0.6.0
 ------
 
