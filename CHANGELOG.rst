@@ -9,6 +9,10 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 0.7.0
 ------
 
+Fixed
+++++++
+- ``CodonVariantTable.classifyVariants`` requires instructions on how to handle non-primary targets.
+
 0.6.0
 ------
 
