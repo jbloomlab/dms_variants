@@ -573,7 +573,6 @@ class CodonVariantTable:
                       *,
                       pseudocount=0.5,
                       by='barcode',
-                      libraries='all',
                       logbase=2,
                       floor_B=0.01,
                       handle_small_B='floor',
@@ -676,7 +675,7 @@ class CodonVariantTable:
         sample_df : pandas.DataFrame
             Comparisons we use to compute the functional scores. Should have
             these columns: 'pre_sample' (pre-selection sample), 'post_sample'
-            (post-selection sample), 'name' (name assigned to this comparison),
+            (post-selection sample), 'library', 'name' (name for output),
             'frac_escape' (the overall fraction escaping :math:`F`).
         pseudocount : float
             Pseudocount added to each count.
@@ -684,11 +683,6 @@ class CodonVariantTable:
             Compute effects for each barcode", set of amino-acid substitutions,
             or set of codon substitutions. In the last two cases, all barcodes
             with each set of substitutions are combined.
-        libraries : {'all', 'all_only', list}
-            Perform calculation for all libraries including a merge
-            (named "all libraries"), only for the merge of all libraries,
-            or for the libraries in the list. If `by` is 'barcode', then
-            the barcodes for the merge have the library name pre-pended.
         logbase : float
             Base for logarithm when calculating functional score.
         floor_B : float
@@ -702,7 +696,7 @@ class CodonVariantTable:
         pandas.DataFrame
             Has the following columns:
               - 'name': specified in `sample_df`
-              - 'library': the library (all with specified pre-, post-samples)
+              - 'library': the library
               - 'pre_sample': specified in `sample_df`
               - 'post_sample': specified in `sample_df`
               - the grouping used to compute scores (the value of `by`)
@@ -718,37 +712,33 @@ class CodonVariantTable:
                 makes sense to retain given value of `by`.
 
         """
-        req_cols = {'pre_sample', 'post_sample', 'name', 'frac_escape'}
+        req_cols = {'pre_sample', 'post_sample', 'library', 'name',
+                    'frac_escape'}
         if not set(sample_df.columns).issuperset(req_cols):
             raise ValueError(f"`sample_df` lacks required columns: {req_cols}")
-        if len(sample_df) != sample_df['name'].nunique():
-            raise ValueError('names in `sample_df` not unique')
+        if len(sample_df) != len(sample_df.groupby(['name', 'library'])):
+            raise ValueError('names / libraries in `sample_df` not unique')
         if (0 >= sample_df['frac_escape']).any() or (sample_df['frac_escape']
                                                      >= 1).any():
             raise ValueError('in `sample_df`, `frac_escape` must be > 0, < 1')
 
         # get data frame with samples of interest
-        samples = set(sample_df['pre_sample']).union(
-                            set(sample_df['post_sample']))
-        all_samples = set(itertools.chain.from_iterable(
-                    self.samples(lib) for lib in self.libraries))
-        if not samples.issubset(set(all_samples)):
-            raise ValueError('invalid samples in `sample_df`')
-        if self.variant_count_df is None:
-            raise ValueError('no sample variant counts have been added')
-        df = self.variant_count_df.query('sample in @samples')
-        if libraries == 'all':
-            df = self.addMergedLibraries(df)
-        elif libraries == 'all_only':
-            df = (self.addMergedLibraries(df)
-                  .query('library == "all libraries"')
-                  )
-        else:
-            if set(libraries) > set(self.libraries):
-                raise ValueError(f"invalid `libraries` of {libraries}. Must "
-                                 'be "all", "all_only", or a list containing '
-                                 f"some subset of {self.libraries}")
-            df = df.query('library in @libraries')
+        df = []
+        already_added = set()
+        for tup in sample_df.itertuples():
+            lib = tup.library
+            for stype in ['pre_sample', 'post_sample']:
+                sample = getattr(tup, stype)
+                if (sample, lib) in already_added:
+                    continue
+                already_added.add((sample, lib))
+                tup_df = (self.variant_count_df
+                          .query('(sample == @sample) and (library == @lib)')
+                          )
+                if len(tup_df) < 1:
+                    raise ValueError(f"no sample {sample} library {lib}")
+                df.append(tup_df)
+        df = pd.concat(df, ignore_index=True, sort=False)
 
         # sum counts in groups specified by `by`
         group_cols = ['codon_substitutions', 'n_codon_substitutions',
@@ -770,11 +760,12 @@ class CodonVariantTable:
         df_scores = []
         for tup in sample_df.itertuples():
             name_dfs = []
+            lib = getattr(tup, 'library')  # noqa: F841
             for stype in ('pre_sample', 'post_sample'):
                 s_name = getattr(tup, stype)  # noqa: F841
                 name_dfs.append(
                     df
-                    .query('sample == @s_name')
+                    .query('(sample == @s_name) and (library == @lib)')
                     .rename(columns={'count': stype.split('_')[0] + '_count',
                                      'sample': stype})
                     .assign(name=tup.name, frac_escape=tup.frac_escape)
