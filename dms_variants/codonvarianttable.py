@@ -575,8 +575,8 @@ class CodonVariantTable:
                       by='barcode',
                       libraries='all',
                       logbase=2,
-                      floor_B=0.001,
-                      handle_small_B='raise',
+                      floor_B=0.01,
+                      handle_small_B='floor',
                       ):
         r"""Compute a score designed to represent escape from binding.
 
@@ -634,6 +634,18 @@ class CodonVariantTable:
                                            {n_v^{\rm{pre}} N^{\rm{post}}}
                          \right) \\
 
+        A complication is that :math:`s_v` is undefined if :math:`B_v \le 0`,
+        which happens if
+        :math:`\frac{f_v^{\rm{post}}}{f_v^{\rm{pre}}} \ge \frac{1}{F}`. In
+        principle this should never happen as a variant cannot be enriched
+        more than the reciprocal of the fraction of the library that
+        survives the selection, but due to experimental errors the numbers
+        could lead to :math:`B_v \le 0`. We therefore have two options for how
+        to handle that: raise an error, or set a floor on :math:`B_v` so
+        that values less than the floor are set to the flooer, which should be
+        set to some value close to zero such as 0.01. This effectively
+        places a ceiling on :math:`s_v`.
+
         We can also calculate the variance :math:`\sigma_{s_v}^2` of the
         estimates of :math:`s_v` from the variances on the counts, which
         we assume are :math:`\sigma_{n_v^{\rm{pre}}}^2 = n_v^{\rm{pre}}`
@@ -649,33 +661,15 @@ class CodonVariantTable:
            \left(\frac{\partial s_v}{\partial n_v^{\rm{post}}}\right)^2
            \sigma_{n_v^{\rm{post}}}^2 \\
            &=&
-           \left(\frac{\partial \log_b B_v}{\partial n_v^{\rm{pre}}}\right)^2
+           \left(\frac{\partial s_v}{\partial n_v^{\rm{pre}}}\right)^2
            n_v^{\rm{pre}} +
-           \left(\frac{\partial \log_b B_v}{\partial n_v^{\rm{post}}}\right)^2
-           n_v^{\rm{post}} \\
-           &=&
-           \frac{1}{\left(B_v \ln b\right)^2} \left[
-           \left(\frac{\partial B_v}{\partial n_v^{\rm{pre}}}\right)^2
-           n_v^{\rm{pre}} +
-           \left(\frac{\partial B_v}{\partial n_v^{\rm{post}}}\right)^2
-           n_v^{\rm{post}}
-           \right] \\
-           &=&
-           \left(\frac{F N^{\rm{pre}}}{N^{\rm{post}} B_v \ln b }\right)^2
-           \left[\frac{\left(n_v^{\rm{post}}\right)^2}
-                      {\left(n_v^{\rm{pre}}\right)^3} +
-                 \frac{n_v^{\rm{post}}}{\left(n_v^{\rm{pre}}\right)^2} \right].
+           \left(\frac{\partial s_v}{\partial n_v^{\rm{post}}}\right)^2
+           n_v^{\rm{post}}.
 
-        A complication is that :math:`s_v` is undefined if :math:`B_v \le 0`,
-        which happens if
-        :math:`\frac{f_v^{\rm{post}}}{f_v^{\rm{pre}}} \ge \frac{1}{F}`. In
-        principle this should never happen as a variant cannot be enriched
-        more than the reciprocal of the fraction of the library that
-        survives the selection, but due to experimental errors the numbers
-        could lead to :math:`B_v \le 0`. We therefore have two options for how
-        to handle that: raise an error, or set a floor on :math:`B_v` so
-        it is estimated as its value computed from the value or this floor,
-        which should be set to some value close to zero such as 0.001.
+        We calculate the derivatives of :math:`s_v` with respect to the counts
+        numerically with a step size of one rather than analytically, since
+        analytical calculations are confounded by the fact that we have a floor
+        on :math:`B_v`.
 
         Parameters
         -----------
@@ -714,6 +708,9 @@ class CodonVariantTable:
               - the grouping used to compute scores (the value of `by`)
               - 'score': :math:`s_v`
               - 'score_var': :math:`\sigma_{s_v}^2`
+              - 'score_at_ceil': if using the floor on :math:`B_v`, which
+                is a ceiling on :math:`s_v`, indicate if score is at ceiling.
+              - 'bind_frac': :math:`B_v`
               - 'pre_count': :math:`n_v^{\rm{pre}}` (without pseudocount)
               - 'post_count': :math:`n_v^{\rm{post}}` (without pseudocount)
               - as many of 'aa_substitutions', 'n_aa_substitutions',
@@ -794,45 +791,60 @@ class CodonVariantTable:
                              '`pseudocount` > 0')
 
         # compute escape scores
-        df_scores = (
-            df_scores
-            .assign(
-                n_v_pre=lambda x: x['pre_count'] + pseudocount,
-                n_v_post=lambda x: x['post_count'] + pseudocount,
-                N_pre=lambda x: (x.groupby(['name', 'library'])
-                                 ['n_v_pre'].transform('sum')),
-                N_post=lambda x: (x.groupby(['name', 'library'])
-                                  ['n_v_post'].transform('sum')),
-                B_v=lambda x: (1 - x['frac_escape'] * x['n_v_post'] *
-                               x['N_pre'] / (x['n_v_pre'] * x['N_post'])),
-                )
-            )
-        if handle_small_B == 'floor':
-            if floor_B <= 0:
-                raise ValueError('`floor_B` must be > 0')
-            df_scores['B_v'] = numpy.clip(df_scores['B_v'], floor_B, None)
-        elif handle_small_B == 'error':
-            if df_scores['B_v'].min() <= 0:
-                raise ValueError('some B_v <= 0; see `handle_small_B`')
-        else:
-            raise ValueError(f"invalid `handle_small_B` of {handle_small_B}")
-        df_scores = (
-            df_scores
-            .assign(score=lambda x: -numpy.log(x['B_v']) / numpy.log(logbase),
-                    score_var=lambda x: (
-                                (x['frac_escape'] * x['N_pre'] /
-                                 (x['N_post'] * x['B_v'] * numpy.log(logbase))
-                                 )**2 *
-                                (x['n_v_post']**2 / x['n_v_pre']**3 +
-                                 x['n_v_post'] / x['n_v_pre']**2)
-                                ),
+        def _compute_escape_scores(pre_pseudocount, post_pseudocount):
+            _df_scores = (
+                df_scores
+                .assign(
+                    n_v_pre=lambda x: x['pre_count'] + pre_pseudocount,
+                    n_v_post=lambda x: x['post_count'] + post_pseudocount,
+                    N_pre=lambda x: (x.groupby(['name', 'library'])
+                                     ['n_v_pre'].transform('sum')),
+                    N_post=lambda x: (x.groupby(['name', 'library'])
+                                      ['n_v_post'].transform('sum')),
+                    B_v=lambda x: (1 - x['frac_escape'] * x['n_v_post'] *
+                                   x['N_pre'] / (x['n_v_pre'] * x['N_post'])),
                     )
-            )
+                )
+            if handle_small_B == 'floor':
+                if floor_B <= 0:
+                    raise ValueError('`floor_B` must be > 0')
+                _df_scores['B_v'] = numpy.clip(_df_scores['B_v'],
+                                               floor_B, None)
+                _df_scores['score_at_ceil'] = _df_scores['B_v'] <= floor_B
+            elif handle_small_B == 'error':
+                if _df_scores['B_v'].min() <= 0:
+                    raise ValueError('some B_v <= 0; see `handle_small_B`')
+                _df_scores['score_at_ceil'] = False
+            else:
+                raise ValueError(f"invalid `handle_small_B` {handle_small_B}")
+            _df_scores = (
+                _df_scores
+                .assign(score=lambda x: (-numpy.log(x['B_v']) /
+                                         numpy.log(logbase))
+                        )
+                .rename(columns={'B_v': 'bind_frac'})
+                )
+            return _df_scores
+
+        df_scores = _compute_escape_scores(pseudocount, pseudocount)
+
+        # get numerical derivatives
+        d_count = 1
+        df_scores_dpre = _compute_escape_scores(pseudocount + d_count,
+                                                pseudocount)
+        df_scores_dpost = _compute_escape_scores(pseudocount,
+                                                 pseudocount + d_count)
+        ds_dpre_2 = ((df_scores_dpre['score'] - df_scores['score']) /
+                     d_count)**2
+        ds_dpost_2 = ((df_scores_dpost['score'] - df_scores['score']) /
+                      d_count)**2
+        df_scores['score_var'] = (ds_dpre_2 * df_scores['pre_count'] +
+                                  ds_dpost_2 * df_scores['post_count'])
 
         # get columns to keep
         col_order = ['name', 'library', 'pre_sample', 'post_sample', by,
-                     'score', 'score_var', 'pre_count', 'post_count',
-                     *group_cols]
+                     'score', 'score_var', 'score_at_ceil', 'bind_frac',
+                     'pre_count', 'post_count', *group_cols]
         if self.primary_target is not None:
             assert col_order.count('target') == 1
             col_order.remove('target')
