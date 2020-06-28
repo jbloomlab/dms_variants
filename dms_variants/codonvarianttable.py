@@ -1268,7 +1268,7 @@ class CodonVariantTable:
                              orientation='h', widthscale=1, heightscale=1,
                              min_support=1, mut_type='aa',
                              sample_rename=None, one_lib_facet=False,
-                             primary_target_only=True):
+                             primary_target_only=False):
         """Plot variant index versus counts (or frac counts).
 
         Parameters
@@ -2318,7 +2318,7 @@ class CodonVariantTable:
                                  f"`df` targets:\n{set(df['target'])}")
             cats.append(non_primary_target_class)
         else:
-            primary_target is None
+            primary_target = None
 
         def _classify_func(row):
             if (primary_target is not None) and (row['target'] !=
