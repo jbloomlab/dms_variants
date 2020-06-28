@@ -2586,6 +2586,8 @@ class CodonVariantTable:
         cats = ['wildtype', 'synonymous',
                 *[f"{n} nonsynonymous" for n in range(1, max_aa)],
                 f">{max_aa - 1} nonsynonymous", 'stop']
+        if syn_as_wt:
+            cats.remove('synonymous')
         if 'target' in set(df.columns):
             req_cols.append('target')
             if primary_target is None:
