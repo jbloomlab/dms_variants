@@ -357,6 +357,56 @@ class CodonVariantTable:
                         self.barcode_variant_df[col].where(primary, targets)
                         )
 
+    @classmethod
+    def add_frac_counts(self, variant_count_df):
+        """Add fraction of counts from each variant in library/sample.
+
+        Parameters
+        ----------
+        variant_count_df : pandas.DataFrame
+            Same format as :attr:`CodonVariantTable`.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A copy of `variant_count_df` with added column 'frac_counts'
+            that gives fraction of all counts in that library / sample for
+            that variant.
+
+        Example
+        --------
+        >>> variant_count_df = pd.DataFrame.from_records(
+        ...        [('lib1', 's1', 'AA', 1),
+        ...         ('lib1', 's1', 'AT', 3),
+        ...         ('lib1', 's2', 'GG', 0),
+        ...         ('lib1', 's2', 'GA', 10),
+        ...         ('lib2', 's1', 'CC', 5),
+        ...         ('lib2', 's1', 'GA', 5),
+        ...         ],
+        ...        columns=['library', 'sample', 'barcode', 'count'],
+        ...        )
+        >>> CodonVariantTable.add_frac_counts(variant_count_df)
+          library sample barcode  count  frac_counts
+        0    lib1     s1      AA      1         0.25
+        1    lib1     s1      AT      3         0.75
+        2    lib1     s2      GG      0         0.00
+        3    lib1     s2      GA     10         1.00
+        4    lib2     s1      CC      5         0.50
+        5    lib2     s1      GA      5         0.50
+
+        """
+        if variant_count_df is None:
+            return None
+        return (variant_count_df
+                .assign(frac_counts=lambda x: (x['count'] /
+                                               x.groupby(['library', 'sample'],
+                                                         observed=True)
+                                               ['count']
+                                               .transform('sum')
+                                               )
+                        )
+                )
+
     def samples(self, library):
         """List of all samples for `library`.
 
@@ -1484,6 +1534,150 @@ class CodonVariantTable:
 
         return p
 
+    def plotCountsPerVariant(self,
+                             *,
+                             ystat='frac_counts',
+                             logy=True,
+                             by_variant_class=False,
+                             classifyVariants_kwargs=None,
+                             variant_type='all',
+                             libraries='all', samples='all', plotfile=None,
+                             orientation='h', widthscale=1, heightscale=1,
+                             min_support=1, mut_type='aa',
+                             sample_rename=None, one_lib_facet=False,
+                             primary_target_only=True):
+        """Plot variant index versus counts (or frac counts).
+
+        Parameters
+        -----------
+        ystat : {'frac_counts', 'count'}
+            Is y-axis counts from variant, or fraction of counts in
+            library / sample from variant?
+        logy : bool
+            Show the y-axis on a log scale. If so, all values of 0 are
+            set to half the minimum observed value > 0, and dashed line
+            is drawn to indicate that points below it are not observed.
+        other_parameters
+            Same as for :meth:`CodonVariantTable.plotCumulVariantCounts`.
+
+        Returns
+        -------
+        plotnine.ggplot.ggplot
+
+        """
+        if samples is None:
+            raise ValueError('plot nonsensical with `samples` of `None`')
+
+        df, nlibraries, nsamples = self._getPlotData(
+                                                libraries,
+                                                samples,
+                                                min_support,
+                                                primary_target_only,
+                                                sample_rename=sample_rename)
+
+        if variant_type == 'single':
+            if mut_type == 'aa':
+                mutstr = 'amino acid'
+            elif mut_type == 'codon':
+                mutstr = mut_type
+            else:
+                raise ValueError(f"invalid `mut_type` {mut_type}")
+            ylabel = f"single {mutstr} variants with >= this many counts"
+            df = df.query(f"n_{mut_type}_substitutions <= 1")
+        elif variant_type == 'all':
+            ylabel = 'variants with >= this many counts'
+        else:
+            raise ValueError(f"invalid `variant_type` {variant_type}")
+
+        if orientation == 'h':
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'sample ~ library'
+            else:
+                facet_str = 'sample ~'
+            width = widthscale * (1 + 1.8 * nlibraries)
+            height = heightscale * (0.6 + 1.5 * nsamples)
+        elif orientation == 'v':
+            if nlibraries > 1 or one_lib_facet:
+                facet_str = 'library ~ sample'
+            else:
+                facet_str = '~ sample'
+            width = widthscale * (1 + 1.5 * nsamples)
+            height = heightscale * (0.6 + 1.5 * nlibraries)
+        else:
+            raise ValueError(f"invalid `orientation` {orientation}")
+
+        if ystat == 'frac_counts':
+            df = self.add_frac_counts(df).drop(columns='count')
+            ylabel = 'fraction of counts'
+        elif ystat == 'count':
+            ylabel = 'number of counts'
+        else:
+            raise ValueError(f"invalid `ystat` of {ystat}")
+
+        ivariant_group_cols = ['library', 'sample']
+        if by_variant_class:
+            ivariant_group_cols.append('variant class')
+            if not classifyVariants_kwargs:
+                kw_args = {}
+            else:
+                kw_args = {k: v for k, v in classifyVariants_kwargs.items()}
+            if 'primary_target' not in kw_args:
+                kw_args['primary_target'] = self.primary_target
+            if 'class_as_categorical' not in kw_args:
+                kw_args['class_as_categorical'] = True
+            df = (self.classifyVariants(df, **kw_args)
+                  .rename(columns={'variant_class': 'variant class'})
+                  )
+            aes = p9.aes('ivariant', ystat, color='variant class')
+        else:
+            aes = p9.aes('ivariant', ystat)
+
+        df = (df
+              .sort_values(ystat, ascending=False)
+              .assign(ivariant=lambda x: (x
+                                          .groupby(ivariant_group_cols)
+                                          .cumcount()
+                                          + 1
+                                          )
+                      )
+              )
+
+        if logy:
+            min_gt_0 = df.query(f"{ystat} > 0")[ystat].min()
+            min_y = min_gt_0 / 2
+            df[ystat] = numpy.clip(df[ystat], min_y, None)
+            yscale = p9.scale_y_log10(
+                        labels=dms_variants.utils.latex_sci_not)
+            hline = p9.geom_hline(yintercept=(min_y + min_gt_0) / 2,
+                                  linetype='dotted',
+                                  color=CBPALETTE[0],
+                                  size=1,
+                                  )
+        else:
+            yscale = p9.scale_y_continuous(
+                        labels=dms_variants.utils.latex_sci_not)
+            hline = None
+
+        p = (p9.ggplot(df) +
+             aes +
+             p9.geom_step() +
+             p9.xlab('variant number') +
+             p9.ylab(ylabel) +
+             yscale +
+             p9.theme(figure_size=(width, height),
+                      axis_text_x=p9.element_text(angle=90),
+                      ) +
+             p9.facet_grid(facet_str) +
+             p9.scale_color_manual(values=CBPALETTE[1:])
+             )
+        if hline is not None:
+            p = p + hline
+
+        if plotfile:
+            p.save(plotfile, height=height, width=width, verbose=False)
+
+        return p
+
     def plotCumulVariantCounts(self, *, variant_type='all',
                                libraries='all', samples='all', plotfile=None,
                                orientation='h', widthscale=1, heightscale=1,
@@ -2273,6 +2467,7 @@ class CodonVariantTable:
                          syn_as_wt=False,
                          primary_target=None,
                          non_primary_target_class='secondary target',
+                         class_as_categorical=False,
                          ):
         """Classifies codon variants in `df`.
 
@@ -2300,6 +2495,9 @@ class CodonVariantTable:
             `non_primary_target_class`.
         non_primary_target_class : str
             Classification used for non-primary targets.
+        class_as_categorical : bool
+            Return `variant_class` as a categorical variable with a
+            reasonable ordering.
 
         Returns
         -------
@@ -2385,6 +2583,9 @@ class CodonVariantTable:
         if not (set(req_cols) <= set(df.columns)):
             raise ValueError(f"`df` does not have columns {req_cols}")
 
+        cats = ['wildtype', 'synonymous',
+                *[f"{n} nonsynonymous" for n in range(1, max_aa)],
+                f">{max_aa - 1} nonsynonymous", 'stop']
         if 'target' in set(df.columns):
             req_cols.append('target')
             if primary_target is None:
@@ -2392,6 +2593,7 @@ class CodonVariantTable:
             if primary_target not in set(df['target']):
                 raise ValueError(f"`primary_target` {primary_target} not in "
                                  f"`df` targets:\n{set(df['target'])}")
+            cats.append(non_primary_target_class)
         else:
             primary_target is None
 
@@ -2417,6 +2619,12 @@ class CodonVariantTable:
         # once and then merge into overall data frame.
         class_df = df[req_cols].drop_duplicates()
         class_df[variant_class_col] = class_df.apply(_classify_func, axis=1)
+        if class_as_categorical:
+            assert set(class_df[variant_class_col]).issubset(set(cats))
+            class_df[variant_class_col] = pd.Categorical(
+                                            class_df[variant_class_col],
+                                            cats,
+                                            ordered=True)
         return (df
                 .drop(columns=variant_class_col, errors='ignore')
                 .merge(class_df,

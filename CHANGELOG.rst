@@ -13,6 +13,10 @@ Added
 +++++
 - Added ``CodonVariantTable.escape_scores``
 
+- Added ``CodonVariantTable.add_frac_counts``
+
+- Added ``CodonVariantTable.plotCountsPerVariant``
+
 Fixed
 ++++++
 - ``CodonVariantTable.classifyVariants`` requires instructions on how to handle non-primary targets.
