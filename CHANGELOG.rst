@@ -9,6 +9,12 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 0.7.0
 ------
 
+Added
++++++
+- Added ``CodonVariantTable.add_frac_counts``
+
+- Added ``CodonVariantTable.plotCountsPerVariant``
+
 Fixed
 ++++++
 - ``CodonVariantTable.classifyVariants`` requires instructions on how to handle non-primary targets.
