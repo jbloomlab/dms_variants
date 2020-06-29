@@ -19,7 +19,6 @@ script:
 branches:
   only:
     - master
-    - 0.7.0
 
 notifications:
   slack: jbloomlab:kkopSfK2B3d2QYQGpPcDMVHx
