@@ -172,7 +172,7 @@ class CodonVariantTable:
             if 'target' in set(df.columns):
                 raise ValueError('primary_target is None but "target" col')
 
-        if not (set(req_cols) < set(df.columns)):
+        if not set(req_cols).issubset((df.columns)):
             raise ValueError(f"{variant_count_df_file} lacks required "
                              f"columns {req_cols}. It has: {set(df.columns)}")
         else:
@@ -618,6 +618,290 @@ class CodonVariantTable:
         else:
             return self._valid_barcodes[library]
 
+    def escape_scores(self,
+                      sample_df,
+                      *,
+                      pseudocount=0.5,
+                      by='barcode',
+                      logbase=2,
+                      floor_B=0.01,
+                      handle_small_B='floor',
+                      ):
+        r"""Compute a score designed to represent escape from binding.
+
+        Note
+        ----
+        The scores are designed to represent the case where we are looking at
+        how well variants escape binding. Here we couch the explanation in
+        terms of variant escape from antibody binding.
+
+        Let :math:`v` be a variant in the library, and let :math:`B_v` be the
+        fraction of the variants that are bound by antibody. So a variant that
+        complete escapes binding has :math:`B_v = 0`, and a variant that is
+        completely bound has :math:`B_v = 1`. We define the escape score as
+        :math:`s_v = -\log_b B_v` where :math:`b` is the logarithm base.
+        So larger values of :math:`s_v` indicate more escape from binding.
+
+        Let :math:`f_v^{\rm{pre}}` be the fraction of the library that is
+        :math:`v` prior to selection for binding (so
+        :math:`\sum_v f_v^{\rm{pre}} = 1`). Then the fraction of the library
+        that is :math:`v` **after** selecting for unbound variants is
+
+        .. math::
+
+           f_v^{\rm{post}} =
+           \frac{f_v^{\rm{pre}} \times \left(1 - B_v\right)}
+                {\sum_{v'} f_{v'}^{\rm{pre}} \times \left(1 - B_{v'}\right)}.
+
+        Note that the denominator of the above equation,
+        :math:`F = \sum_v f_v^{\rm{pre}} \times \left(1 - B_v\right)`,
+        represents the overall fraction of the library that escapes binding,
+        **which we assume is directly measured experimentally**.
+
+        We can easily solve the above equation for :math:`B_v`:
+
+        .. math::
+
+           B_v = 1 - \frac{F \times f_v^{\rm{post}}}{f_v^{\rm{pre}}}.
+
+        We can calculate :math:`B_v` (and therefore :math:`s_v`) directly
+        from the actual counts of the variants pre- and post-selection.
+        Let :math:`n_v^{\rm{pre}}` and :math:`n_v^{\rm{post}}` be the
+        counts of variant :math:`v` pre- and post-selection **after** adding
+        a pseudocount of :math:`P \ge 0`, and let
+        :math:`N^{\rm{pre}} = \sum_v n_v^{\rm{pre}}` and
+        :math:`N^{\rm{post}} = \sum_v n_v^{\rm{post}}` be the total counts of
+        all variants pre- and post-selection. Then:
+
+        .. math::
+
+           s_v
+           &=&
+           -\log_b B_v \\
+           &=&
+           -\log_b \left(1 - F \times \frac{n_v^{\rm{post}} N^{\rm{pre}}}
+                                           {n_v^{\rm{pre}} N^{\rm{post}}}
+                         \right) \\
+
+        A complication is that :math:`s_v` is undefined if :math:`B_v \le 0`,
+        which happens if
+        :math:`\frac{f_v^{\rm{post}}}{f_v^{\rm{pre}}} \ge \frac{1}{F}`. In
+        principle this should never happen as a variant cannot be enriched
+        more than the reciprocal of the fraction of the library that
+        survives the selection, but due to experimental errors the numbers
+        could lead to :math:`B_v \le 0`. We therefore have two options for how
+        to handle that: raise an error, or set a floor on :math:`B_v` so
+        that values less than the floor are set to the flooer, which should be
+        set to some value close to zero such as 0.01. This effectively
+        places a ceiling on :math:`s_v`.
+
+        We can also calculate the variance :math:`\sigma_{s_v}^2` of the
+        estimates of :math:`s_v` from the variances on the counts, which
+        we assume are :math:`\sigma_{n_v^{\rm{pre}}}^2 = n_v^{\rm{pre}}`
+        and :math:`\sigma_{n_v^{\rm{post}}}^2 = n_v^{\rm{post}}` from
+        Poisson counting statistics. To do this, we propagate the errors:
+
+        .. math::
+
+           \sigma_{s_v}^2
+           &=&
+           \left(\frac{\partial s_v}{\partial n_v^{\rm{pre}}}\right)^2
+           \sigma_{n_v^{\rm{pre}}}^2 +
+           \left(\frac{\partial s_v}{\partial n_v^{\rm{post}}}\right)^2
+           \sigma_{n_v^{\rm{post}}}^2 \\
+           &=&
+           \left(\frac{\partial s_v}{\partial n_v^{\rm{pre}}}\right)^2
+           n_v^{\rm{pre}} +
+           \left(\frac{\partial s_v}{\partial n_v^{\rm{post}}}\right)^2
+           n_v^{\rm{post}}.
+
+        We calculate the derivatives of :math:`s_v` with respect to the counts
+        numerically with a step size of one rather than analytically, since
+        analytical calculations are confounded by the fact that we have a floor
+        on :math:`B_v`.
+
+        Parameters
+        -----------
+        sample_df : pandas.DataFrame
+            Comparisons we use to compute the functional scores. Should have
+            these columns: 'pre_sample' (pre-selection sample), 'post_sample'
+            (post-selection sample), 'library', 'name' (name for output),
+            'frac_escape' (the overall fraction escaping :math:`F`).
+        pseudocount : float
+            Pseudocount added to each count.
+        by : {'barcode', 'aa_substitutions', 'codon_substitutions'}
+            Compute effects for each barcode", set of amino-acid substitutions,
+            or set of codon substitutions. In the last two cases, all barcodes
+            with each set of substitutions are combined.
+        logbase : float
+            Base for logarithm when calculating functional score.
+        floor_B : float
+            The floor assigned to :math:`B_v` if `handle_small_B` is 'floor'.
+        handle_small_B : {'error', 'floor'}
+            Assign :math:`B_v` to have a minimum value of `floor_B`, or
+            raise an error if any :math:`B_v \le 0`?
+
+        Returns
+        -------
+        pandas.DataFrame
+            Has the following columns:
+              - 'name': specified in `sample_df`
+              - 'library': the library
+              - 'pre_sample': specified in `sample_df`
+              - 'post_sample': specified in `sample_df`
+              - the grouping used to compute scores (the value of `by`)
+              - 'score': :math:`s_v`
+              - 'score_var': :math:`\sigma_{s_v}^2`
+              - 'score_at_ceil': if using the floor on :math:`B_v`, which
+                is a ceiling on :math:`s_v`, indicate if score is at ceiling.
+              - 'bind_frac': :math:`B_v`
+              - 'pre_count': :math:`n_v^{\rm{pre}}` (without pseudocount)
+              - 'post_count': :math:`n_v^{\rm{post}}` (without pseudocount)
+              - as many of 'aa_substitutions', 'n_aa_substitutions',
+                'codon_substitutions', and 'n_codon_substitutions' as
+                makes sense to retain given value of `by`.
+
+        Note
+        ----
+        The scores will likely be inaccurate / noisy for very low pre-selection
+        counts, and may often by at the score "ceiling." So look at this
+        carefully, and you probably want to filter for scores with a reasonably
+        high number of pre-selection counts.
+
+        """
+        req_cols = {'pre_sample', 'post_sample', 'library', 'name',
+                    'frac_escape'}
+        if not set(sample_df.columns).issuperset(req_cols):
+            raise ValueError(f"`sample_df` lacks required columns: {req_cols}")
+        if len(sample_df) != len(sample_df.groupby(['name', 'library'])):
+            raise ValueError('names / libraries in `sample_df` not unique')
+        if (0 >= sample_df['frac_escape']).any() or (sample_df['frac_escape']
+                                                     >= 1).any():
+            raise ValueError('in `sample_df`, `frac_escape` must be > 0, < 1')
+
+        # get data frame with samples of interest
+        df = []
+        already_added = set()
+        for tup in sample_df.itertuples():
+            lib = tup.library
+            for stype in ['pre_sample', 'post_sample']:
+                sample = getattr(tup, stype)
+                if (sample, lib) in already_added:
+                    continue
+                already_added.add((sample, lib))
+                tup_df = (self.variant_count_df
+                          .query('(sample == @sample) and (library == @lib)')
+                          )
+                if len(tup_df) < 1:
+                    raise ValueError(f"no sample {sample} library {lib}")
+                df.append(tup_df)
+        df = pd.concat(df, ignore_index=True, sort=False)
+
+        # sum counts in groups specified by `by`
+        group_cols = ['codon_substitutions', 'n_codon_substitutions',
+                      'aa_substitutions', 'n_aa_substitutions']
+        if self.primary_target is not None:
+            group_cols.append('target')
+        if by in {'aa_substitutions', 'codon_substitutions'}:
+            group_cols = group_cols[group_cols.index(by) + 1:]
+            df = (df
+                  .groupby(['library', 'sample', by, *group_cols],
+                           observed=True, sort=False)
+                  .aggregate({'count': 'sum'})
+                  .reset_index()
+                  )
+        elif by != 'barcode':
+            raise ValueError(f"invalid `by` of {by}")
+
+        # get data frame with pre- and post-selection samples / counts
+        df_scores = []
+        for tup in sample_df.itertuples():
+            name_dfs = []
+            lib = getattr(tup, 'library')  # noqa: F841
+            for stype in ('pre_sample', 'post_sample'):
+                s_name = getattr(tup, stype)  # noqa: F841
+                name_dfs.append(
+                    df
+                    .query('(sample == @s_name) and (library == @lib)')
+                    .rename(columns={'count': stype.split('_')[0] + '_count',
+                                     'sample': stype})
+                    .assign(name=tup.name, frac_escape=tup.frac_escape)
+                    )
+            df_scores.append(pd.merge(*name_dfs, how='inner', validate='1:1'))
+        df_scores = pd.concat(df_scores, ignore_index=True, sort=False)
+
+        # check pseudocount
+        if pseudocount < 0:
+            raise ValueError(f"`pseudocount` is < 0: {pseudocount}")
+        elif (pseudocount == 0) and any((df_scores[c] <= 0).any() for c
+                                        in ['pre_count', 'post_count']):
+            raise ValueError('some counts are zero, you must use '
+                             '`pseudocount` > 0')
+
+        # compute escape scores
+        def _compute_escape_scores(pre_pseudocount, post_pseudocount):
+            _df_scores = (
+                df_scores
+                .assign(
+                    n_v_pre=lambda x: x['pre_count'] + pre_pseudocount,
+                    n_v_post=lambda x: x['post_count'] + post_pseudocount,
+                    N_pre=lambda x: (x.groupby(['name', 'library'])
+                                     ['n_v_pre'].transform('sum')),
+                    N_post=lambda x: (x.groupby(['name', 'library'])
+                                      ['n_v_post'].transform('sum')),
+                    B_v=lambda x: (1 - x['frac_escape'] * x['n_v_post'] *
+                                   x['N_pre'] / (x['n_v_pre'] * x['N_post'])),
+                    )
+                )
+            if handle_small_B == 'floor':
+                if floor_B <= 0:
+                    raise ValueError('`floor_B` must be > 0')
+                _df_scores['B_v'] = numpy.clip(_df_scores['B_v'],
+                                               floor_B, None)
+                _df_scores['score_at_ceil'] = _df_scores['B_v'] <= floor_B
+            elif handle_small_B == 'error':
+                if _df_scores['B_v'].min() <= 0:
+                    raise ValueError('some B_v <= 0; see `handle_small_B`')
+                _df_scores['score_at_ceil'] = False
+            else:
+                raise ValueError(f"invalid `handle_small_B` {handle_small_B}")
+            _df_scores = (
+                _df_scores
+                .assign(score=lambda x: (-numpy.log(x['B_v']) /
+                                         numpy.log(logbase))
+                        )
+                .rename(columns={'B_v': 'bind_frac'})
+                )
+            return _df_scores
+
+        df_scores = _compute_escape_scores(pseudocount, pseudocount)
+
+        # get numerical derivatives
+        d_count = 1
+        df_scores_dpre = _compute_escape_scores(pseudocount + d_count,
+                                                pseudocount)
+        df_scores_dpost = _compute_escape_scores(pseudocount,
+                                                 pseudocount + d_count)
+        ds_dpre_2 = ((df_scores_dpre['score'] - df_scores['score']) /
+                     d_count)**2
+        ds_dpost_2 = ((df_scores_dpost['score'] - df_scores['score']) /
+                      d_count)**2
+        df_scores['score_var'] = (ds_dpre_2 * df_scores['pre_count'] +
+                                  ds_dpost_2 * df_scores['post_count'])
+
+        # get columns to keep
+        col_order = ['name', 'library', 'pre_sample', 'post_sample', by,
+                     'score', 'score_var', 'score_at_ceil', 'bind_frac',
+                     'pre_count', 'post_count', *group_cols]
+        if self.primary_target is not None:
+            assert col_order.count('target') == 1
+            col_order.remove('target')
+            col_order.insert(1, 'target')
+        else:
+            assert 'target' not in col_order
+
+        return df_scores[col_order]
+
     def func_scores(self, preselection, *,
                     pseudocount=0.5, by="barcode",
                     libraries='all', syn_as_wt=False, logbase=2,
@@ -673,8 +957,8 @@ class CodonVariantTable:
         by : {'barcode', 'aa_substitutions', 'codon_substitutions'}
             Compute effects for each barcode", set of amino-acid substitutions,
             or set of codon substitutions. In the last two cases, all barcodes
-            with each set of substitutions are combined (see `combine_libs`).
-            If you use "aa_substitutions" then it may be more sensible to set
+            with each set of substitutions are combined. If you use
+            "aa_substitutions" then it may be more sensible to set
             `syn_as_wt` to `True`.
         syn_as_wt : bool
             In formula for functional scores, consider variants with only

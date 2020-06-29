@@ -11,6 +11,8 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Added
 +++++
+- Added ``CodonVariantTable.escape_scores``
+
 - Added ``CodonVariantTable.add_frac_counts``
 
 - Added ``CodonVariantTable.plotCountsPerVariant``
