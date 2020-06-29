@@ -595,7 +595,7 @@ class Isplines:
         """numpy.ndarray: Points at which spline is evaluated."""
         return self._x
 
-    def I(self, i):  # noqa: E743
+    def I(self, i):  # noqa: E743,E741
         r"""Evaluate spline :math:`I_i` at point(s) :attr:`Isplines.x`.
 
         Parameters

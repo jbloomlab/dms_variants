@@ -201,7 +201,7 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
         raise ValueError('empty `library_specs`')
 
     if variant_call_support <= 0:
-        raise ValueError(f"`variant_call_support` must be int > 0")
+        raise ValueError('`variant_call_support` must be int > 0')
 
     if len(geneseq) % 3 != 0:
         raise ValueError('length of `geneseq` not multiple of 3')
