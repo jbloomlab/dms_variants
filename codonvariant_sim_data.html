@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.6.0 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.7.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -245,7 +245,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Setup-for-analysis">
 <h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
 <p>Import Python modules / packages:</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -275,6 +275,16 @@ div.rendered_html tbody tr:hover {
 <span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="kn">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/fh/fast/bloom_j/software/conda_v2/envs/BloomLab/lib/python3.6/site-packages/dmslogo/logo.py:40: MatplotlibDeprecationWarning:
+The createFontList function was deprecated in Matplotlib 3.2 and will be removed two minor releases later. Use FontManager.addfont instead.
+  matplotlib.font_manager.findSystemFonts(_FONT_PATH)))
+</pre></div></div>
 </div>
 <p>Set parameters that define the simulated data. Except for that fact that we use a short gene to reduce the computational run-time of this notebook, these simulation parameters are designed to reflect what we might observe in a real Bloom lab deep mutational scanning experiment:</p>
 <div class="nbinput nblast docutils container">
@@ -1699,9 +1709,85 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <img alt="_images/codonvariant_sim_data_68_0.png" src="_images/codonvariant_sim_data_68_0.png" />
 </div>
 </div>
-<p>Distribution of the number of amino-acid mutations per variant in each sample. As expected, mutations go down after selection:</p>
+<p>An alternative way to see how many any given variant dominates the library. One way to do that is to determine fraction of counts in each library from each variant and then plot how these fractions are distributed among variants.</p>
+<p>In the plot below, variants with no counts are shown on the log y-scale below the dotted gray line:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_70_0.png" src="_images/codonvariant_sim_data_70_0.png" />
+</div>
+</div>
+<p>We can also make a similar plot showing the values for each class of variant separately, where we can see how post-selection some classes of variants drop in counts more than others:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                  <span class="n">by_variant_class</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_72_0.png" src="_images/codonvariant_sim_data_72_0.png" />
+</div>
+</div>
+<p>We can also show total counts rather than fraction of counts:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                  <span class="n">ystat</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_74_0.png" src="_images/codonvariant_sim_data_74_0.png" />
+</div>
+</div>
+<p>Or plot on a non-log y-scale (although this generally is less informative):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span>
+                                  <span class="n">logy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_76_0.png" src="_images/codonvariant_sim_data_76_0.png" />
+</div>
+</div>
+<p>Distribution of the number of amino-acid mutations per variant in each sample. As expected, mutations go down after selection:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1715,12 +1801,12 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_70_0.png" src="_images/codonvariant_sim_data_70_0.png" />
+<img alt="_images/codonvariant_sim_data_78_0.png" src="_images/codonvariant_sim_data_78_0.png" />
 </div>
 </div>
 <p>Average number of mutations of each type per variant among just single mutants (and wildtype) and among all variants:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1735,19 +1821,19 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_72_0.png" src="_images/codonvariant_sim_data_72_0.png" />
+<img alt="_images/codonvariant_sim_data_80_0.png" src="_images/codonvariant_sim_data_80_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_72_1.png" src="_images/codonvariant_sim_data_72_1.png" />
+<img alt="_images/codonvariant_sim_data_80_1.png" src="_images/codonvariant_sim_data_80_1.png" />
 </div>
 </div>
 <p>Here are the numerical data plotted above (just for the individual libraries and all mutations):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1758,7 +1844,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1957,7 +2043,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <p>Here are mutation frequencies as a function of primary sequence among all variants:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1971,12 +2057,12 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_76_0.png" src="_images/codonvariant_sim_data_76_0.png" />
+<img alt="_images/codonvariant_sim_data_84_0.png" src="_images/codonvariant_sim_data_84_0.png" />
 </div>
 </div>
 <p>Plot how thoroughly amino-acid mutations are sampled, doing this separately among all variants and single-mutant variants. The plots below show that the stop mutations are sampled very poorly post-selection because they are eliminated during selection:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1991,14 +2077,14 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_78_0.png" src="_images/codonvariant_sim_data_78_0.png" />
+<img alt="_images/codonvariant_sim_data_86_0.png" src="_images/codonvariant_sim_data_86_0.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_78_1.png" src="_images/codonvariant_sim_data_78_1.png" />
+<img alt="_images/codonvariant_sim_data_86_1.png" src="_images/codonvariant_sim_data_86_1.png" />
 </div>
 </div>
 </div>
@@ -2007,7 +2093,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <p>The <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">CodonVariantTable.func_scores</a> method calculates a functional score for each variant based on its change in frequency from pre- to post-selection.</p>
 <p>To calculate these scores, we need to pair each post-selection sample with a pre-selection one. In this case, the pre-selection sample is named ‘pre-selection’ for all post-selection samples:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2018,7 +2104,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <p>The resulting data frame has a functional score (and its variance) for each barcoded variant:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2027,7 +2113,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2163,7 +2249,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <p>We can also calculate functional scores at the level of amino-acid or codon substitutions rather than at the level of variants. This calculation groups all variants with the same substitutions before calculating the functional score. Here are scores grouping by amino-acid substitutions; we also set <code class="docutils literal notranslate"><span class="pre">syn_as_wt=True</span></code> to include variants with only synonymous mutations in the counts of wild type in this case:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2176,7 +2262,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2294,7 +2380,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <p>We can plot the distribution of the functional scores for variants. These plots are most informative if we classify variants by the “types” of mutations they have, which we do here using the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants">CodonVariantTable.classifyVariants</a> method, which adds a column called <code class="docutils literal notranslate"><span class="pre">variant_class</span></code> to the data frame:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2308,7 +2394,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2372,7 +2458,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <p>Now we use <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> to plot the distributions of scores in ggplot2-like syntax, coloring by the variant class. This plot shows the expected behavior for different variant classes; for instance, stop codon variants tend to have low scores and synonymous variants tend to have wildtype-like (near 0) scores. As expected, there is more noise with a tighter bottleneck:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2397,7 +2483,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_88_0.png" src="_images/codonvariant_sim_data_88_0.png" />
+<img alt="_images/codonvariant_sim_data_96_0.png" src="_images/codonvariant_sim_data_96_0.png" />
 </div>
 </div>
 </div>
@@ -2409,7 +2495,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 described in a later example, you might want to use a Bottleneck- or Cauchy-likelihood if there is a lot of experimental noise.</p>
 <p>For the fitting, we first convert the set of functional scores into a binary representation using a <a class="reference external" href="(https://jbloomlab.github.io/dms_variants/dms_variants.binarymap.html#dms_variants.binarymap.BinaryMap)">BinaryMap</a>. Then we create the model, fit it, and store it:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2443,20 +2529,20 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Fitting global epistasis model to loose_bottle, lib_1... fitting took 35.4 sec.
+Fitting global epistasis model to loose_bottle, lib_1... fitting took 29.6 sec.
 Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.2 sec.
-Fitting global epistasis model to loose_bottle, lib_2... fitting took 21.5 sec.
+Fitting global epistasis model to loose_bottle, lib_2... fitting took 29.0 sec.
 Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.2 sec.
-Fitting global epistasis model to tight_bottle, lib_1... fitting took 14.5 sec.
+Fitting global epistasis model to tight_bottle, lib_1... fitting took 8.0 sec.
 Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.2 sec.
-Fitting global epistasis model to tight_bottle, lib_2... fitting took 16.1 sec.
+Fitting global epistasis model to tight_bottle, lib_2... fitting took 14.6 sec.
 Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.2 sec.
 </pre></div></div>
 </div>
 <p>Now we want to see which model fits the data better. To do this, we get the log likelihood of each model along with the number of model parameters, as well as the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better, and below we see that the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> global epistasis model always fits the data
 much better:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2477,7 +2563,7 @@ much better:</p>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2520,8 +2606,8 @@ much better:</p>
       <th>lib_1</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-13127.2</td>
-      <td>27470.5</td>
+      <td>-12028.1</td>
+      <td>25272.3</td>
     </tr>
     <tr>
       <th>lib_1</th>
@@ -2534,8 +2620,8 @@ much better:</p>
       <th>lib_2</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-12823.8</td>
-      <td>26863.6</td>
+      <td>-12776.8</td>
+      <td>26769.6</td>
     </tr>
     <tr>
       <th>lib_2</th>
@@ -2549,8 +2635,8 @@ much better:</p>
       <th>lib_1</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-21872.0</td>
-      <td>44959.9</td>
+      <td>-21882.9</td>
+      <td>44981.8</td>
     </tr>
     <tr>
       <th>lib_1</th>
@@ -2563,8 +2649,8 @@ much better:</p>
       <th>lib_2</th>
       <td>global epistasis</td>
       <td>608</td>
-      <td>-22462.7</td>
-      <td>46141.4</td>
+      <td>-22463.9</td>
+      <td>46143.9</td>
     </tr>
     <tr>
       <th>lib_2</th>
@@ -2581,7 +2667,7 @@ much better:</p>
 <p>First, we will examine how the model looks on all the actual variants used to fit the model. We use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.phenotypes_df">AbstractEpistasis.phenotypes_df</a> to get a data frame of all the variants used to fit each global epistasis model along with their functional scores and the latent and observed phenotypes predicted by each model. We also compute the measured and
 model-predicted enrichments for each variant (recall that the functional score / observed phenotype is the <span class="math notranslate nohighlight">\(\log_2\)</span> of the enrichment as described <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">here</a>):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2604,7 +2690,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2643,11 +2729,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>I17R R29C</td>
       <td>-0.82</td>
       <td>0.00</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
+      <td>-0.80</td>
+      <td>-1.06</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.44</td>
+      <td>0.49</td>
       <td>0.56</td>
     </tr>
     <tr>
@@ -2655,8 +2741,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>S11A</td>
       <td>-0.12</td>
       <td>0.00</td>
-      <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.12</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2667,11 +2753,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>R12P R15P</td>
       <td>-2.14</td>
       <td>0.01</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
+      <td>-0.99</td>
+      <td>-2.24</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.17</td>
+      <td>0.22</td>
       <td>0.23</td>
     </tr>
     <tr>
@@ -2680,7 +2766,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.22</td>
       <td>0.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2691,8 +2777,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>N21H I28W</td>
       <td>-6.61</td>
       <td>0.13</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.63</td>
+      <td>-6.74</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>0.01</td>
@@ -2704,7 +2790,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Below we plot the relationships among the latent phenotype from the model, the observed phenotype from the model, and the measured functional score for all variants used to fit the model:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2728,21 +2814,21 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_97_0.png" src="_images/codonvariant_sim_data_97_0.png" />
+<img alt="_images/codonvariant_sim_data_105_0.png" src="_images/codonvariant_sim_data_105_0.png" />
 </div>
 </div>
 <div class="nboutput docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_97_1.png" src="_images/codonvariant_sim_data_97_1.png" />
+<img alt="_images/codonvariant_sim_data_105_1.png" src="_images/codonvariant_sim_data_105_1.png" />
 </div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_97_2.png" src="_images/codonvariant_sim_data_97_2.png" />
+<img alt="_images/codonvariant_sim_data_105_2.png" src="_images/codonvariant_sim_data_105_2.png" />
 </div>
 </div>
 </div>
@@ -2750,7 +2836,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <h2>Model vs measurements vs truth for all variants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-all-variants" title="Permalink to this headline">¶</a></h2>
 <p>Because we simulated the variants, we can also use the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a> used in these simulations to get the <strong>true</strong> phenotype of each variant. (Obviously in real non-simulated experiments the true phenotypes are unknown.) We get the true latent phenotype, the true observed phenotype (which corresponds to the functional score), and true enrichment:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2773,7 +2859,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2815,11 +2901,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>I17R R29C</td>
       <td>-0.82</td>
       <td>0.00</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
+      <td>-0.80</td>
+      <td>-1.06</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.44</td>
+      <td>0.49</td>
       <td>0.56</td>
       <td>-0.01</td>
       <td>0.50</td>
@@ -2830,8 +2916,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>S11A</td>
       <td>-0.12</td>
       <td>0.00</td>
-      <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.12</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2845,11 +2931,11 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>R12P R15P</td>
       <td>-2.14</td>
       <td>0.01</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
+      <td>-0.99</td>
+      <td>-2.24</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
-      <td>0.17</td>
+      <td>0.22</td>
       <td>0.23</td>
       <td>-1.28</td>
       <td>0.22</td>
@@ -2861,7 +2947,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.22</td>
       <td>0.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>1.00</td>
@@ -2875,8 +2961,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>N21H I28W</td>
       <td>-6.61</td>
       <td>0.13</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.63</td>
+      <td>-6.74</td>
       <td>loose_bottle</td>
       <td>lib_1</td>
       <td>0.01</td>
@@ -2891,7 +2977,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Now we calculate the correlations between the true enrichment (from the simulation) and the measured enrichment or model-predicted enrichment, calculating the correlations across all variants. We do this using enrichment rather than observed phenotype as we expect the observed phenotypes to be very noisy at the “low end” (since experiments lose the sensitivity to distinguish among bad and really-bad variants):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -2920,7 +3006,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[53]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2958,23 +3044,23 @@ model-predicted enrichments for each variant (recall that the functional score /
       <th rowspan="2" valign="top">loose_bottle</th>
       <th>lib_1</th>
       <td>0.98</td>
-      <td>0.99</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>lib_2</th>
       <td>0.98</td>
-      <td>1.00</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th rowspan="2" valign="top">tight_bottle</th>
       <th>lib_1</th>
       <td>0.83</td>
-      <td>1.00</td>
+      <td>1.0</td>
     </tr>
     <tr>
       <th>lib_2</th>
       <td>0.82</td>
-      <td>1.00</td>
+      <td>1.0</td>
     </tr>
   </tbody>
 </table>
@@ -2982,7 +3068,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>And below are the correlation plots corresponding to the correlation coefficients tabulated above:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3010,7 +3096,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_105_0.png" src="_images/codonvariant_sim_data_105_0.png" />
+<img alt="_images/codonvariant_sim_data_113_0.png" src="_images/codonvariant_sim_data_113_0.png" />
 </div>
 </div>
 <p>These results show that the model predictions are closer to the true values than the actual measurements, which is great! This could be because modeling the data helps extract more signal from multiple mutants–but it could also be for the trivial reason that the model effectively averages over multiple variants with the same mutations, which could be more accurate than the individual measurements. Therefore, in the next section we look at this issue…</p>
@@ -3020,7 +3106,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <p>We want to see if the model still outperforms the experiments if look at the level of <strong>amino-acid</strong> variants (meaning we pool the counts for all variants with the same amino-acid substitutions together before calculating the functional scores). Recall that above we already got such functional scores into the variable <code class="docutils literal notranslate"><span class="pre">aa_func_scores</span></code>:</p>
 <p>First we get a data frame of simulated functional scores calculated at the level of amino-acid variants (pooling all barcoded variants with the same amino-acid mutations):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3037,7 +3123,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3119,7 +3205,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Now we add the model-predicted latent phenotype, observed phenotype, and enrichment for each amino-acid variant using the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.add_phenotypes_to_df">AbstractEpistasis.add_phenotypes_to_df</a> method:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3140,7 +3226,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3182,9 +3268,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-0.82</td>
       <td>0.56</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
-      <td>0.44</td>
+      <td>-0.80</td>
+      <td>-1.06</td>
+      <td>0.49</td>
     </tr>
     <tr>
       <th>1</th>
@@ -3194,8 +3280,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-0.03</td>
       <td>0.98</td>
-      <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.12</td>
+      <td>-0.03</td>
       <td>1.00</td>
     </tr>
     <tr>
@@ -3206,9 +3292,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-2.14</td>
       <td>0.23</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
-      <td>0.17</td>
+      <td>-0.99</td>
+      <td>-2.24</td>
+      <td>0.22</td>
     </tr>
     <tr>
       <th>3</th>
@@ -3219,7 +3305,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.00</td>
       <td>1.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
     </tr>
     <tr>
@@ -3230,8 +3316,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-6.61</td>
       <td>0.01</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.63</td>
+      <td>-6.74</td>
       <td>0.01</td>
     </tr>
   </tbody>
@@ -3240,7 +3326,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Now we add the “true” values from the simulator:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3263,7 +3349,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[58]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3308,9 +3394,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-0.82</td>
       <td>0.56</td>
-      <td>-0.77</td>
-      <td>-1.25</td>
-      <td>0.44</td>
+      <td>-0.80</td>
+      <td>-1.06</td>
+      <td>0.49</td>
       <td>-0.01</td>
       <td>0.50</td>
       <td>-0.99</td>
@@ -3323,8 +3409,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-0.03</td>
       <td>0.98</td>
-      <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.12</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>4.14</td>
       <td>0.99</td>
@@ -3338,9 +3424,9 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-2.14</td>
       <td>0.23</td>
-      <td>-0.92</td>
-      <td>-2.61</td>
-      <td>0.17</td>
+      <td>-0.99</td>
+      <td>-2.24</td>
+      <td>0.22</td>
       <td>-1.28</td>
       <td>0.22</td>
       <td>-2.18</td>
@@ -3354,7 +3440,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>0.00</td>
       <td>1.00</td>
       <td>0.00</td>
-      <td>-0.05</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>5.00</td>
       <td>1.00</td>
@@ -3368,8 +3454,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>2</td>
       <td>-6.61</td>
       <td>0.01</td>
-      <td>-1.54</td>
-      <td>-6.40</td>
+      <td>-1.63</td>
+      <td>-6.74</td>
       <td>0.01</td>
       <td>-5.00</td>
       <td>0.01</td>
@@ -3381,7 +3467,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Now we calculate and plot the correlations between the true enrichments from the simulations and the measured values and the ones predicted by the model:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3410,7 +3496,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3471,7 +3557,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3499,7 +3585,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_116_0.png" src="_images/codonvariant_sim_data_116_0.png" />
+<img alt="_images/codonvariant_sim_data_124_0.png" src="_images/codonvariant_sim_data_124_0.png" />
 </div>
 </div>
 <p>The results above show that the model still outperforms the direct measurements even when the measurements are aggregated at the level of amino-acid variants.</p>
@@ -3509,7 +3595,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <p>Now we repeat the above analysis for just <strong>single</strong> amino-acid mutants.</p>
 <p>First, get the single amino-acid mutant variants:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3526,7 +3612,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3571,8 +3657,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>-0.03</td>
       <td>0.98</td>
-      <td>-0.13</td>
-      <td>-0.05</td>
+      <td>-0.12</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>4.14</td>
       <td>0.99</td>
@@ -3586,8 +3672,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>0.06</td>
       <td>1.04</td>
-      <td>0.11</td>
-      <td>-0.05</td>
+      <td>0.12</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>5.76</td>
       <td>1.00</td>
@@ -3602,7 +3688,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-6.89</td>
       <td>0.01</td>
       <td>-1.63</td>
-      <td>-6.77</td>
+      <td>-6.75</td>
       <td>0.01</td>
       <td>-4.96</td>
       <td>0.01</td>
@@ -3616,8 +3702,8 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>1</td>
       <td>0.00</td>
       <td>1.00</td>
-      <td>-0.31</td>
-      <td>-0.05</td>
+      <td>-0.32</td>
+      <td>-0.03</td>
       <td>1.00</td>
       <td>3.15</td>
       <td>0.97</td>
@@ -3632,7 +3718,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-10.47</td>
       <td>0.00</td>
       <td>-2.45</td>
-      <td>-8.59</td>
+      <td>-8.62</td>
       <td>0.00</td>
       <td>-10.00</td>
       <td>0.00</td>
@@ -3644,7 +3730,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Now tabulate and plot how the model predictions and measurements compare to the true values:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3673,7 +3759,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[64]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3722,7 +3808,7 @@ model-predicted enrichments for each variant (recall that the functional score /
       <th rowspan="2" valign="top">tight_bottle</th>
       <th>lib_1</th>
       <td>0.93</td>
-      <td>1.00</td>
+      <td>0.99</td>
     </tr>
     <tr>
       <th>lib_2</th>
@@ -3734,7 +3820,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3762,7 +3848,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_124_0.png" src="_images/codonvariant_sim_data_124_0.png" />
+<img alt="_images/codonvariant_sim_data_132_0.png" src="_images/codonvariant_sim_data_132_0.png" />
 </div>
 </div>
 <p>We see that even for single mutants, fitting the global epistasis model leads to more accurate measurements of the effects of mutations. Presumably this is because these models are able to effectively extract information from the multiple mutants.</p>
@@ -3782,7 +3868,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <p>The epistasis models have a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.single_mut_effects">single_mut_effects</a> method to get these mutational effects. By default, this method scales the effects so that their mean absolute value is one.</p>
 <p>Mutational effects on the latent phenotype:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3795,7 +3881,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[67]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3827,43 +3913,43 @@ model-predicted enrichments for each variant (recall that the functional score /
   <tbody>
     <tr>
       <th>0</th>
-      <td>R6*</td>
-      <td>R</td>
-      <td>6</td>
-      <td>*</td>
-      <td>-4.82</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>R26*</td>
-      <td>R</td>
-      <td>26</td>
-      <td>*</td>
-      <td>-4.82</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>L23*</td>
-      <td>L</td>
-      <td>23</td>
-      <td>*</td>
-      <td>-4.81</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>R15E</td>
-      <td>R</td>
-      <td>15</td>
-      <td>E</td>
-      <td>-4.78</td>
-    </tr>
-    <tr>
-      <th>4</th>
       <td>V13*</td>
       <td>V</td>
       <td>13</td>
       <td>*</td>
-      <td>-4.78</td>
+      <td>-5.41</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>L23*</td>
+      <td>L</td>
+      <td>23</td>
+      <td>*</td>
+      <td>-5.40</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>V3L</td>
+      <td>V</td>
+      <td>3</td>
+      <td>L</td>
+      <td>-5.18</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>R26*</td>
+      <td>R</td>
+      <td>26</td>
+      <td>*</td>
+      <td>-5.15</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>N27*</td>
+      <td>N</td>
+      <td>27</td>
+      <td>*</td>
+      <td>-5.10</td>
     </tr>
   </tbody>
 </table>
@@ -3871,7 +3957,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 <p>Mutational effects on the observed phenotype:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3884,7 +3970,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -3916,22 +4002,14 @@ model-predicted enrichments for each variant (recall that the functional score /
   <tbody>
     <tr>
       <th>0</th>
-      <td>R6*</td>
-      <td>R</td>
-      <td>6</td>
+      <td>V13*</td>
+      <td>V</td>
+      <td>13</td>
       <td>*</td>
       <td>-3.41</td>
     </tr>
     <tr>
       <th>1</th>
-      <td>R26*</td>
-      <td>R</td>
-      <td>26</td>
-      <td>*</td>
-      <td>-3.41</td>
-    </tr>
-    <tr>
-      <th>2</th>
       <td>L23*</td>
       <td>L</td>
       <td>23</td>
@@ -3939,18 +4017,26 @@ model-predicted enrichments for each variant (recall that the functional score /
       <td>-3.41</td>
     </tr>
     <tr>
+      <th>2</th>
+      <td>V3L</td>
+      <td>V</td>
+      <td>3</td>
+      <td>L</td>
+      <td>-3.41</td>
+    </tr>
+    <tr>
       <th>3</th>
-      <td>R15E</td>
+      <td>R26*</td>
       <td>R</td>
-      <td>15</td>
-      <td>E</td>
+      <td>26</td>
+      <td>*</td>
       <td>-3.41</td>
     </tr>
     <tr>
       <th>4</th>
-      <td>V13*</td>
-      <td>V</td>
-      <td>13</td>
+      <td>N27*</td>
+      <td>N</td>
+      <td>27</td>
       <td>*</td>
       <td>-3.41</td>
     </tr>
@@ -3972,7 +4058,7 @@ not within an epistasis model).</p>
 details. This is necessary since the preferences are normalized per site. If you are missing just a few measurements this extrapolation of missing values may be fine, but it probably is not a good idea if you are missing lots of measurements.</p>
 <p>For instance, the next cell converts the latent effects to a data frame of preferences using an exponent base of 10:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -3985,7 +4071,7 @@ details. This is necessary since the preferences are normalized per site. If you
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[69]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -4035,24 +4121,24 @@ details. This is necessary since the preferences are normalized per site. If you
       <th>0</th>
       <td>1</td>
       <td>0.094</td>
-      <td>0.027</td>
+      <td>0.028</td>
       <td>0.001</td>
-      <td>0.010</td>
-      <td>0.201</td>
-      <td>0.008</td>
-      <td>0.024</td>
+      <td>0.011</td>
+      <td>0.196</td>
+      <td>0.009</td>
+      <td>0.025</td>
       <td>0.006</td>
-      <td>0.176</td>
+      <td>0.173</td>
       <td>...</td>
       <td>0.018</td>
-      <td>0.039</td>
+      <td>0.040</td>
       <td>0.071</td>
       <td>0.072</td>
       <td>0.076</td>
       <td>0.002</td>
       <td>0.059</td>
-      <td>0.034</td>
-      <td>0.043</td>
+      <td>0.035</td>
+      <td>0.044</td>
       <td>0.001</td>
     </tr>
     <tr>
@@ -4061,45 +4147,45 @@ details. This is necessary since the preferences are normalized per site. If you
       <td>0.096</td>
       <td>0.018</td>
       <td>0.096</td>
-      <td>0.005</td>
+      <td>0.006</td>
       <td>0.000</td>
       <td>0.007</td>
       <td>0.003</td>
-      <td>0.026</td>
+      <td>0.027</td>
       <td>0.003</td>
       <td>...</td>
       <td>0.095</td>
       <td>0.048</td>
       <td>0.006</td>
       <td>0.065</td>
-      <td>0.019</td>
-      <td>0.158</td>
-      <td>0.003</td>
+      <td>0.020</td>
       <td>0.156</td>
-      <td>0.065</td>
+      <td>0.004</td>
+      <td>0.154</td>
+      <td>0.066</td>
       <td>0.000</td>
     </tr>
     <tr>
       <th>2</th>
       <td>3</td>
-      <td>0.126</td>
-      <td>0.032</td>
-      <td>0.001</td>
-      <td>0.148</td>
-      <td>0.043</td>
+      <td>0.125</td>
+      <td>0.033</td>
+      <td>0.000</td>
+      <td>0.146</td>
+      <td>0.044</td>
       <td>0.005</td>
       <td>0.025</td>
-      <td>0.068</td>
-      <td>0.028</td>
+      <td>0.069</td>
+      <td>0.029</td>
       <td>...</td>
-      <td>0.001</td>
+      <td>0.002</td>
       <td>0.006</td>
-      <td>0.149</td>
-      <td>0.052</td>
+      <td>0.147</td>
+      <td>0.053</td>
       <td>0.002</td>
       <td>0.100</td>
       <td>0.002</td>
-      <td>0.120</td>
+      <td>0.119</td>
       <td>0.002</td>
       <td>0.090</td>
     </tr>
@@ -4110,44 +4196,44 @@ details. This is necessary since the preferences are normalized per site. If you
       <td>0.012</td>
       <td>0.001</td>
       <td>0.063</td>
-      <td>0.028</td>
-      <td>0.164</td>
+      <td>0.029</td>
+      <td>0.160</td>
       <td>0.067</td>
       <td>0.085</td>
-      <td>0.054</td>
+      <td>0.055</td>
       <td>...</td>
       <td>0.043</td>
       <td>0.062</td>
       <td>0.002</td>
       <td>0.008</td>
-      <td>0.043</td>
+      <td>0.044</td>
       <td>0.090</td>
-      <td>0.113</td>
-      <td>0.045</td>
-      <td>0.006</td>
-      <td>0.055</td>
+      <td>0.112</td>
+      <td>0.046</td>
+      <td>0.007</td>
+      <td>0.056</td>
     </tr>
     <tr>
       <th>4</th>
       <td>5</td>
-      <td>0.071</td>
+      <td>0.072</td>
       <td>0.004</td>
-      <td>0.003</td>
-      <td>0.006</td>
       <td>0.003</td>
       <td>0.007</td>
-      <td>0.061</td>
-      <td>0.004</td>
+      <td>0.003</td>
+      <td>0.008</td>
+      <td>0.062</td>
+      <td>0.005</td>
       <td>0.059</td>
       <td>...</td>
-      <td>0.231</td>
-      <td>0.114</td>
-      <td>0.003</td>
-      <td>0.003</td>
+      <td>0.225</td>
+      <td>0.113</td>
+      <td>0.004</td>
+      <td>0.004</td>
       <td>0.113</td>
       <td>0.084</td>
-      <td>0.014</td>
-      <td>0.026</td>
+      <td>0.015</td>
+      <td>0.027</td>
       <td>0.077</td>
       <td>0.002</td>
     </tr>
@@ -4158,7 +4244,7 @@ details. This is necessary since the preferences are normalized per site. If you
 </div>
 <p>We can also get the preferences in tidy format:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -4171,7 +4257,7 @@ details. This is necessary since the preferences are normalized per site. If you
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -4202,38 +4288,38 @@ details. This is necessary since the preferences are normalized per site. If you
   <tbody>
     <tr>
       <th>595</th>
-      <td>S</td>
-      <td>11</td>
-      <td>C</td>
-      <td>0.237</td>
-    </tr>
-    <tr>
-      <th>596</th>
       <td>P</td>
       <td>24</td>
       <td>Y</td>
-      <td>0.238</td>
+      <td>0.232</td>
+    </tr>
+    <tr>
+      <th>596</th>
+      <td>S</td>
+      <td>11</td>
+      <td>C</td>
+      <td>0.232</td>
     </tr>
     <tr>
       <th>597</th>
       <td>I</td>
       <td>25</td>
       <td>Y</td>
-      <td>0.241</td>
+      <td>0.234</td>
     </tr>
     <tr>
       <th>598</th>
       <td>N</td>
       <td>10</td>
       <td>D</td>
-      <td>0.244</td>
+      <td>0.238</td>
     </tr>
     <tr>
       <th>599</th>
       <td>R</td>
       <td>29</td>
       <td>I</td>
-      <td>0.255</td>
+      <td>0.250</td>
     </tr>
   </tbody>
 </table>
@@ -4241,7 +4327,7 @@ details. This is necessary since the preferences are normalized per site. If you
 </div>
 <p>Here we will plot these preferences using <a class="reference external" href="https://jbloomlab.github.io/dmslogo">dmslogo</a>:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[75]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -4259,12 +4345,12 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_135_0.png" src="_images/codonvariant_sim_data_135_0.png" />
+<img alt="_images/codonvariant_sim_data_143_0.png" src="_images/codonvariant_sim_data_143_0.png" />
 </div>
 </div>
 <p>Note how the preferences plotted above look rather “flat”, with no amino acid appearing to be vastly more preferred than another. If we re-plot the data using a larger exponent base, the preferences are now less flat and more peaked:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[76]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -4284,7 +4370,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_137_0.png" src="_images/codonvariant_sim_data_137_0.png" />
+<img alt="_images/codonvariant_sim_data_145_0.png" src="_images/codonvariant_sim_data_145_0.png" />
 </div>
 </div>
 <p>So what is the “best” exponent base to use? It turns out that different exponent bases simply correspond to different linear scalings of the phenotypic effects of mutations (you can see this by working through the math in the equation above to convert the phenotypes to preferences). So it’s not obvious what is the “best” exponent base when converting phenotypic effects to preferences, particularly for the latent effects of mutations which are themselves arbitrarily scaled.</p>
@@ -4292,7 +4378,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <p>An <strong>important caveat</strong> in doing this is that for numerical reasons, <a class="reference external" href="https://jbloomlab.github.io/phydms">phydms</a> can only fit stringency parameters up to a maximum bound (currently 10). So if you are gettting that upper bound stringency parameter, you should use a larger exponent base when initially converting the phenotypic effects into preferences.</p>
 <p>After you’ve gotten a stringency parameter, you can use it to re-scale the preferences you obtain from an epistasis model. For instance:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -4316,7 +4402,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/codonvariant_sim_data_139_0.png" src="_images/codonvariant_sim_data_139_0.png" />
+<img alt="_images/codonvariant_sim_data_147_0.png" src="_images/codonvariant_sim_data_147_0.png" />
 </div>
 </div>
 </div>
