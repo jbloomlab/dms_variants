@@ -761,6 +761,13 @@ class CodonVariantTable:
                 'codon_substitutions', and 'n_codon_substitutions' as
                 makes sense to retain given value of `by`.
 
+        Note
+        ----
+        The scores will likely be inaccurate / noisy for very low pre-selection
+        counts, and may often by at the score "ceiling." So look at this
+        carefully, and you probably want to filter for scores with a reasonably
+        high number of pre-selection counts.
+
         """
         req_cols = {'pre_sample', 'post_sample', 'library', 'name',
                     'frac_escape'}
