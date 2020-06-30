@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.7.0 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.7.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -435,7 +435,8 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">variant_count_df</span>
                 <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">frac_counts</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span> <span class="o">/</span>
                                                <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">],</span>
-                                                         <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                                                         <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                         <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                                                <span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
                                                <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
                                                <span class="p">)</span>
@@ -880,10 +881,20 @@
                 <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
                     <span class="n">n_v_pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;pre_count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pre_pseudocount</span><span class="p">,</span>
                     <span class="n">n_v_post</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;post_count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">post_pseudocount</span><span class="p">,</span>
-                    <span class="n">N_pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">])</span>
-                                     <span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)),</span>
-                    <span class="n">N_post</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">])</span>
-                                      <span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)),</span>
+                    <span class="n">N_pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span>
+                                     <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">],</span>
+                                              <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                              <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                                     <span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span>
+                                     <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+                                     <span class="p">),</span>
+                    <span class="n">N_post</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span>
+                                      <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">],</span>
+                                               <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                               <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                                      <span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span>
+                                      <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+                                      <span class="p">),</span>
                     <span class="n">B_v</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;frac_escape&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span> <span class="o">*</span>
                                    <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_pre&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_post&#39;</span><span class="p">])),</span>
                     <span class="p">)</span>
@@ -910,6 +921,7 @@
             <span class="k">return</span> <span class="n">_df_scores</span>
 
         <span class="n">df_scores</span> <span class="o">=</span> <span class="n">_compute_escape_scores</span><span class="p">(</span><span class="n">pseudocount</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
         <span class="c1"># get numerical derivatives</span>
         <span class="n">d_count</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1083,7 +1095,7 @@
                                           <span class="n">x</span><span class="p">[</span><span class="s1">&#39;target&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_target</span><span class="p">)</span>
                                          <span class="p">)</span>
                         <span class="p">)</span>
-                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">],</span> <span class="n">sort</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="s1">&#39;sum&#39;</span><span class="p">})</span>
                 <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
                 <span class="p">)</span>
