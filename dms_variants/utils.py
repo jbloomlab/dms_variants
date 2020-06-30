@@ -211,9 +211,12 @@ def cumul_rows_by_count(df, *, count_col='count', n_col='n_rows',
          .assign(**{n_col: lambda x: x.groupby(group_cols)[n_col].cumsum()})
 
          # add new column that is total number of rows
-         .assign(**{tot_col: lambda x: (x.groupby(group_cols)[n_col]
+         .assign(**{tot_col: lambda x: (x
+                                        .groupby(group_cols, sort=False)
+                                        [n_col]
                                         .transform('max'))})
          )
+    assert df[tot_col].notnull().all()
 
     if drop_group_cols:
         df = df.drop(group_cols, axis='columns')
@@ -691,7 +694,7 @@ def scores_to_prefs(df, mutation_col, score_col, base,
           .assign(unscaled_prefs=lambda x: (base**x[score_col]
                                             )**stringency_param,
                   preference=lambda x: (x['unscaled_prefs'] /
-                                        (x.groupby('site')
+                                        (x.groupby('site', sort=False)
                                          ['unscaled_prefs']
                                          .transform('sum')
                                          )
