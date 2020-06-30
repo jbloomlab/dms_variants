@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.7.1
+------
+
+Fixed
++++++
+- Fixed bug in ``CodonVariantTable.escape_scores`` that sometimes gives null escape scores.
+
 0.7.0
 ------
 

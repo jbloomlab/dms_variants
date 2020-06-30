@@ -400,7 +400,8 @@ class CodonVariantTable:
         return (variant_count_df
                 .assign(frac_counts=lambda x: (x['count'] /
                                                x.groupby(['library', 'sample'],
-                                                         observed=True)
+                                                         observed=True,
+                                                         sort=False)
                                                ['count']
                                                .transform('sum')
                                                )
@@ -845,10 +846,20 @@ class CodonVariantTable:
                 .assign(
                     n_v_pre=lambda x: x['pre_count'] + pre_pseudocount,
                     n_v_post=lambda x: x['post_count'] + post_pseudocount,
-                    N_pre=lambda x: (x.groupby(['name', 'library'])
-                                     ['n_v_pre'].transform('sum')),
-                    N_post=lambda x: (x.groupby(['name', 'library'])
-                                      ['n_v_post'].transform('sum')),
+                    N_pre=lambda x: (x
+                                     .groupby(['name', 'library'],
+                                              observed=True,
+                                              sort=False)
+                                     ['n_v_pre']
+                                     .transform('sum')
+                                     ),
+                    N_post=lambda x: (x
+                                      .groupby(['name', 'library'],
+                                               observed=True,
+                                               sort=False)
+                                      ['n_v_post']
+                                      .transform('sum')
+                                      ),
                     B_v=lambda x: (1 - x['frac_escape'] * x['n_v_post'] *
                                    x['N_pre'] / (x['n_v_pre'] * x['N_post'])),
                     )
@@ -875,6 +886,7 @@ class CodonVariantTable:
             return _df_scores
 
         df_scores = _compute_escape_scores(pseudocount, pseudocount)
+        assert df_scores['score'].notnull().all()
 
         # get numerical derivatives
         d_count = 1
@@ -1048,7 +1060,7 @@ class CodonVariantTable:
                                           x['target'] == self.primary_target)
                                          )
                         )
-                .groupby(['library', 'sample'], sort=False)
+                .groupby(['library', 'sample'], sort=False, observed=True)
                 .aggregate({'count': 'sum'})
                 .reset_index()
                 )
