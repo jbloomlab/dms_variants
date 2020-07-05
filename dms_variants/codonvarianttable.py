@@ -844,12 +844,12 @@ class CodonVariantTable:
             raise ValueError('`floor_E` must be > 0')
 
         # compute escape scores
-        def _compute_escape_scores(pre_pseudocount, post_pseudocount):
+        def _compute_escape_scores():
             _df_scores = (
                 df_scores
                 .assign(
-                    n_v_pre=lambda x: x['pre_count'] + pre_pseudocount,
-                    n_v_post=lambda x: x['post_count'] + post_pseudocount,
+                    n_v_pre=lambda x: x['pre_count'] + pseudocount,
+                    n_v_post=lambda x: x['post_count'] + pseudocount,
                     N_pre=lambda x: (x
                                      .groupby(['name', 'library'],
                                               observed=True,
@@ -867,45 +867,49 @@ class CodonVariantTable:
                     E_v=lambda x: (x['frac_escape'] * x['n_v_post'] *
                                    x['N_pre'] / (x['n_v_pre'] * x['N_post'])),
                     B_v=lambda x: 1 - x['E_v'],
+                    # for computing derivatives, increment counts by one
+                    n_v_pre_d=lambda x: x['n_v_pre'] + 1,
+                    n_v_post_d=lambda x: x['n_v_post'] + 1,
+                    N_pre_d=lambda x: x['N_pre'] + 1,
+                    N_post_d=lambda x: x['N_post'] + 1,
+                    E_v_dpre=lambda x: (x['frac_escape'] * x['n_v_post'] *
+                                        x['N_pre_d'] /
+                                        (x['n_v_pre_d'] * x['N_post'])),
+                    E_v_dpost=lambda x: (x['frac_escape'] * x['n_v_post_d'] *
+                                         x['N_pre'] /
+                                         (x['n_v_pre'] * x['N_post_d'])),
+                    B_v_dpre=lambda x: 1 - x['E_v_dpre'],
+                    B_v_dpost=lambda x: 1 - x['E_v_dpost'],
                     )
                 )
             if score_type == 'minus_log_bind':
-                _df_scores = (
-                    _df_scores
-                    .assign(B_v=lambda x: numpy.clip(x['B_v'], floor_B, None),
-                            score_at_limit=lambda x: x['B_v'] <= floor_B,
-                            score=lambda x: (-numpy.log(x['B_v']) /
-                                             numpy.log(logbase)),
-                            )
-                    )
+                floor = floor_B
+                cols = ['B_v', 'B_v_dpre', 'B_v_dpost']
+                sign = -1
             elif score_type == 'log_escape':
-                _df_scores = (
-                    _df_scores
-                    .assign(E_v=lambda x: numpy.clip(x['E_v'], floor_E, None),
-                            score_at_limit=lambda x: x['E_v'] <= floor_E,
-                            score=lambda x: (numpy.log(x['E_v']) /
-                                             numpy.log(logbase)),
-                            )
-                    )
+                floor = floor_E
+                cols = ['E_v', 'E_v_dpre', 'E_v_dpost']
+                sign = 1
             else:
                 raise ValueError(f"invalid `score_type` {score_type}")
+            for col in cols:
+                _df_scores[col] = numpy.clip(_df_scores[col], floor, None)
+            _df_scores['score_at_limit'] = _df_scores[cols[0]] <= floor
+            _df_scores['score'] = (sign * numpy.log(_df_scores[cols[0]]) /
+                                   numpy.log(logbase))
+            _df_scores['score_dpre'] = (sign * numpy.log(_df_scores[cols[1]])
+                                        / numpy.log(logbase))
+            _df_scores['score_dpost'] = (sign * numpy.log(_df_scores[cols[2]])
+                                         / numpy.log(logbase))
+            _df_scores['score_var'] = (
+                    (_df_scores['score_dpre'] - _df_scores['score'])**2 *
+                    _df_scores['n_v_pre'] +
+                    (_df_scores['score_dpost'] - _df_scores['score'])**2 *
+                    _df_scores['n_v_post'])
             return _df_scores
 
-        df_scores = _compute_escape_scores(pseudocount, pseudocount)
+        df_scores = _compute_escape_scores()
         assert df_scores['score'].notnull().all()
-
-        # get numerical derivatives
-        d_count = 1
-        df_scores_dpre = _compute_escape_scores(pseudocount + d_count,
-                                                pseudocount)
-        df_scores_dpost = _compute_escape_scores(pseudocount,
-                                                 pseudocount + d_count)
-        ds_dpre_2 = ((df_scores_dpre['score'] - df_scores['score']) /
-                     d_count)**2
-        ds_dpost_2 = ((df_scores_dpost['score'] - df_scores['score']) /
-                      d_count)**2
-        df_scores['score_var'] = (ds_dpre_2 * df_scores['pre_count'] +
-                                  ds_dpost_2 * df_scores['post_count'])
 
         # get columns to keep
         col_order = ['name', 'library', 'pre_sample', 'post_sample', by,

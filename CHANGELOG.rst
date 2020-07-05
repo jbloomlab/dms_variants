@@ -13,6 +13,10 @@ Changed
 ++++++++
 - ``CodonVariantTable.escape_scores`` now requires specification of score type, and implements a new score type of log fraction escape. The output of this method is also slightly changed.
 
+Fixed
++++++
+- Bug in calculation of variance in ``CodonVariantTable.escape_scores``.
+
 0.7.1
 ------
 
