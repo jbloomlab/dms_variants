@@ -628,6 +628,8 @@ class CodonVariantTable:
                       logbase=2,
                       floor_B=0.01,
                       floor_E=0.01,
+                      ceil_B=1.0,
+                      ceil_E=1.0,
                       ):
         r"""Compute a score that represents escape from binding.
 
@@ -697,8 +699,8 @@ class CodonVariantTable:
         (:math:`s_v = -\log_b B_v`), then :math:`s_v` is undefined if
         :math:`B_v \le 0`, so we put a floor on :math:`B_v` by defining
         defining :math:`s_v = -\log_b \max\left(B_v, B_{\rm{floor}}\right)`.
-        Placing these floors on :math:`E_v` or :math:`B_v` effectively
-        place floors or ceilings on :math:`s_v`, respectively.
+        We similarly define ceilings on :math:`E_v` and :math:`B_v`, although
+        these ceilings are optional.
 
         We also estimate the variance :math:`\sigma_{s_v}^2` on
         :math:`s_v` from the variances on the counts, which we assume
@@ -749,6 +751,10 @@ class CodonVariantTable:
         floor_E : float
             Floor assigned to :math:`E_v`, :math:`E_{\rm{floor}}`
             if `score_type` is 'log_escape'.
+        ceil_B : float or None
+            Ceiling assigned to :math:`B_v`, or `None` if no ceiling.
+        ceil_E : float or None
+            Ceiling assigned to :math:`E_v`, or `None` if no ceiling.
 
         Returns
         -------
@@ -761,8 +767,6 @@ class CodonVariantTable:
               - the grouping used to compute scores (the value of `by`)
               - 'score': :math:`s_v`
               - 'score_var': :math:`\sigma_{s_v}^2`
-              - 'score_at_limit': indicate if score is at limit imposed by
-                floor on :math:`E_v` or `B_v`.
               - 'pre_count': :math:`n_v^{\rm{pre}}` (without pseudocount)
               - 'post_count': :math:`n_v^{\rm{post}}` (without pseudocount)
               - as many of 'aa_substitutions', 'n_aa_substitutions',
@@ -842,6 +846,10 @@ class CodonVariantTable:
             raise ValueError('`floor_B` must be > 0')
         if floor_E <= 0:
             raise ValueError('`floor_E` must be > 0')
+        if (ceil_B is not None) and (ceil_B <= floor_B):
+            raise ValueError('`ceil_B` must be > `floor_B`')
+        if (ceil_E is not None) and (ceil_E <= floor_E):
+            raise ValueError('`ceil_E` must be > `floor_E`')
 
         # compute escape scores
         def _compute_escape_scores():
@@ -884,17 +892,18 @@ class CodonVariantTable:
                 )
             if score_type == 'minus_log_bind':
                 floor = floor_B
+                ceil = ceil_B
                 cols = ['B_v', 'B_v_dpre', 'B_v_dpost']
                 sign = -1
             elif score_type == 'log_escape':
                 floor = floor_E
+                ceil = ceil_E
                 cols = ['E_v', 'E_v_dpre', 'E_v_dpost']
                 sign = 1
             else:
                 raise ValueError(f"invalid `score_type` {score_type}")
             for col in cols:
-                _df_scores[col] = numpy.clip(_df_scores[col], floor, None)
-            _df_scores['score_at_limit'] = _df_scores[cols[0]] <= floor
+                _df_scores[col] = numpy.clip(_df_scores[col], floor, ceil)
             _df_scores['score'] = (sign * numpy.log(_df_scores[cols[0]]) /
                                    numpy.log(logbase))
             _df_scores['score_dpre'] = (sign * numpy.log(_df_scores[cols[1]])
@@ -913,7 +922,7 @@ class CodonVariantTable:
 
         # get columns to keep
         col_order = ['name', 'library', 'pre_sample', 'post_sample', by,
-                     'score', 'score_var', 'score_at_limit',
+                     'score', 'score_var',
                      'pre_count', 'post_count', *group_cols]
         if self.primary_target is not None:
             assert col_order.count('target') == 1
