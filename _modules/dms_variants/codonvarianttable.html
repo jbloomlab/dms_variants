@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.7.1 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.8.0 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -656,85 +656,91 @@
 
 <div class="viewcode-block" id="CodonVariantTable.escape_scores"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.escape_scores">[docs]</a>    <span class="k">def</span> <span class="nf">escape_scores</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                       <span class="n">sample_df</span><span class="p">,</span>
+                      <span class="n">score_type</span><span class="p">,</span>
                       <span class="o">*</span><span class="p">,</span>
                       <span class="n">pseudocount</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
                       <span class="n">by</span><span class="o">=</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span>
                       <span class="n">logbase</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                       <span class="n">floor_B</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
-                      <span class="n">handle_small_B</span><span class="o">=</span><span class="s1">&#39;floor&#39;</span><span class="p">,</span>
+                      <span class="n">floor_E</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+                      <span class="n">ceil_B</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                      <span class="n">ceil_E</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
                       <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute a score designed to represent escape from binding.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute a score that represents escape from binding.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
-<span class="sd">        The scores are designed to represent the case where we are looking at</span>
-<span class="sd">        how well variants escape binding. Here we couch the explanation in</span>
-<span class="sd">        terms of variant escape from antibody binding.</span>
+<span class="sd">        Here we couch the explanation in terms of variant escape from</span>
+<span class="sd">        antibody binding.</span>
 
-<span class="sd">        Let :math:`v` be a variant in the library, and let :math:`B_v` be the</span>
-<span class="sd">        fraction of the variants that are bound by antibody. So a variant that</span>
-<span class="sd">        complete escapes binding has :math:`B_v = 0`, and a variant that is</span>
-<span class="sd">        completely bound has :math:`B_v = 1`. We define the escape score as</span>
-<span class="sd">        :math:`s_v = -\log_b B_v` where :math:`b` is the logarithm base.</span>
-<span class="sd">        So larger values of :math:`s_v` indicate more escape from binding.</span>
+<span class="sd">        Let :math:`v` be a variant, let :math:`B_v` be the fraction of this</span>
+<span class="sd">        variant that is bound by antibody, and let :math:`E_v = 1 - B_v` be</span>
+<span class="sd">        the fraction that escapes binding. A variant that completely escapes</span>
+<span class="sd">        binding has :math:`B_v = 0` and :math:`E_v = 1`; a variant that is</span>
+<span class="sd">        completely bound has :math:`B_v = 1` and :math:`E_v = 0`.</span>
 
-<span class="sd">        Let :math:`f_v^{\rm{pre}}` be the fraction of the library that is</span>
-<span class="sd">        :math:`v` prior to selection for binding (so</span>
+<span class="sd">        We define the escape score in one of two ways (depending on value of</span>
+<span class="sd">        `score_type` parameter). The first way is as the log of the escape</span>
+<span class="sd">        fraction, so :math:`s_v = \log_b E_v` where :math:`b` is the</span>
+<span class="sd">        logarithm base. The second way is as minus the log of the binding</span>
+<span class="sd">        fraction, so :math:`s_v = -\log_b B_v`. In either case, larger</span>
+<span class="sd">        values of :math:`s_v` indicate more escape from binding.</span>
+
+<span class="sd">        We calculate :math:`E_v` as follows. Let :math:`f_v^{\rm{pre}}` be</span>
+<span class="sd">        the frequency of :math:`v` prior  to selection for binding (so</span>
 <span class="sd">        :math:`\sum_v f_v^{\rm{pre}} = 1`). Then the fraction of the library</span>
 <span class="sd">        that is :math:`v` **after** selecting for unbound variants is</span>
 
 <span class="sd">        .. math::</span>
 
 <span class="sd">           f_v^{\rm{post}} =</span>
-<span class="sd">           \frac{f_v^{\rm{pre}} \times \left(1 - B_v\right)}</span>
-<span class="sd">                {\sum_{v&#39;} f_{v&#39;}^{\rm{pre}} \times \left(1 - B_{v&#39;}\right)}.</span>
+<span class="sd">           \frac{f_v^{\rm{pre}} \times E_v}</span>
+<span class="sd">                {\sum_{v&#39;} f_{v&#39;}^{\rm{pre}} \times E_{v&#39;}}.</span>
 
 <span class="sd">        Note that the denominator of the above equation,</span>
-<span class="sd">        :math:`F = \sum_v f_v^{\rm{pre}} \times \left(1 - B_v\right)`,</span>
+<span class="sd">        :math:`F = \sum_v f_v^{\rm{pre}} \times E_v`,</span>
 <span class="sd">        represents the overall fraction of the library that escapes binding,</span>
 <span class="sd">        **which we assume is directly measured experimentally**.</span>
 
-<span class="sd">        We can easily solve the above equation for :math:`B_v`:</span>
+<span class="sd">        We can easily solve for :math:`E_v` as</span>
 
 <span class="sd">        .. math::</span>
 
-<span class="sd">           B_v = 1 - \frac{F \times f_v^{\rm{post}}}{f_v^{\rm{pre}}}.</span>
+<span class="sd">           E_v = \frac{F \times f_v^{\rm{post}}}{f_v^{\rm{pre}}},</span>
 
-<span class="sd">        We can calculate :math:`B_v` (and therefore :math:`s_v`) directly</span>
-<span class="sd">        from the actual counts of the variants pre- and post-selection.</span>
-<span class="sd">        Let :math:`n_v^{\rm{pre}}` and :math:`n_v^{\rm{post}}` be the</span>
-<span class="sd">        counts of variant :math:`v` pre- and post-selection **after** adding</span>
-<span class="sd">        a pseudocount of :math:`P \ge 0`, and let</span>
-<span class="sd">        :math:`N^{\rm{pre}} = \sum_v n_v^{\rm{pre}}` and</span>
+<span class="sd">        and can similarly obtain :math:`B_v` from :math:`B_v = 1 - E_v`.</span>
+
+<span class="sd">        We calculate :math:`E_v` directly from the actual counts of the</span>
+<span class="sd">        variants pre- and post-selection. Let :math:`n_v^{\rm{pre}}` and</span>
+<span class="sd">        :math:`n_v^{\rm{post}}` be the counts of variant :math:`v` pre-</span>
+<span class="sd">        and post-selection **after** adding a pseudocount of :math:`P \ge 0`,</span>
+<span class="sd">        and let :math:`N^{\rm{pre}} = \sum_v n_v^{\rm{pre}}` and</span>
 <span class="sd">        :math:`N^{\rm{post}} = \sum_v n_v^{\rm{post}}` be the total counts of</span>
 <span class="sd">        all variants pre- and post-selection. Then:</span>
 
 <span class="sd">        .. math::</span>
 
-<span class="sd">           s_v</span>
-<span class="sd">           &amp;=&amp;</span>
-<span class="sd">           -\log_b B_v \\</span>
-<span class="sd">           &amp;=&amp;</span>
-<span class="sd">           -\log_b \left(1 - F \times \frac{n_v^{\rm{post}} N^{\rm{pre}}}</span>
-<span class="sd">                                           {n_v^{\rm{pre}} N^{\rm{post}}}</span>
-<span class="sd">                         \right) \\</span>
+<span class="sd">           E_v</span>
+<span class="sd">           =</span>
+<span class="sd">           F \times \frac{n_v^{\rm{post}} N^{\rm{pre}}}</span>
+<span class="sd">                         {n_v^{\rm{pre}} N^{\rm{post}}}</span>
 
-<span class="sd">        A complication is that :math:`s_v` is undefined if :math:`B_v \le 0`,</span>
-<span class="sd">        which happens if</span>
-<span class="sd">        :math:`\frac{f_v^{\rm{post}}}{f_v^{\rm{pre}}} \ge \frac{1}{F}`. In</span>
-<span class="sd">        principle this should never happen as a variant cannot be enriched</span>
-<span class="sd">        more than the reciprocal of the fraction of the library that</span>
-<span class="sd">        survives the selection, but due to experimental errors the numbers</span>
-<span class="sd">        could lead to :math:`B_v \le 0`. We therefore have two options for how</span>
-<span class="sd">        to handle that: raise an error, or set a floor on :math:`B_v` so</span>
-<span class="sd">        that values less than the floor are set to the flooer, which should be</span>
-<span class="sd">        set to some value close to zero such as 0.01. This effectively</span>
-<span class="sd">        places a ceiling on :math:`s_v`.</span>
+<span class="sd">        A complication is that :math:`s_v` is undefined for certain values</span>
+<span class="sd">        of :math:`E_v` or :math:`B_v`. Specifically, when using the log escape</span>
+<span class="sd">        fraction definition (:math:`s_v = \log_b E_v`) then :math:`s_v` is</span>
+<span class="sd">        undefined if :math:`E_v = 0`, so we put a floor on :math:`E_v` by</span>
+<span class="sd">        defining :math:`s_v = \log_b \max\left(E_v, E_{\rm{floor}}\right)`.</span>
+<span class="sd">        When using the minus log binding fraction definition</span>
+<span class="sd">        (:math:`s_v = -\log_b B_v`), then :math:`s_v` is undefined if</span>
+<span class="sd">        :math:`B_v \le 0`, so we put a floor on :math:`B_v` by defining</span>
+<span class="sd">        defining :math:`s_v = -\log_b \max\left(B_v, B_{\rm{floor}}\right)`.</span>
+<span class="sd">        We similarly define ceilings on :math:`E_v` and :math:`B_v`, although</span>
+<span class="sd">        these ceilings are optional.</span>
 
-<span class="sd">        We can also calculate the variance :math:`\sigma_{s_v}^2` of the</span>
-<span class="sd">        estimates of :math:`s_v` from the variances on the counts, which</span>
-<span class="sd">        we assume are :math:`\sigma_{n_v^{\rm{pre}}}^2 = n_v^{\rm{pre}}`</span>
-<span class="sd">        and :math:`\sigma_{n_v^{\rm{post}}}^2 = n_v^{\rm{post}}` from</span>
+<span class="sd">        We also estimate the variance :math:`\sigma_{s_v}^2` on</span>
+<span class="sd">        :math:`s_v` from the variances on the counts, which we assume</span>
+<span class="sd">        are :math:`\sigma_{n_v^{\rm{pre}}}^2 = n_v^{\rm{pre}}` and</span>
+<span class="sd">        :math:`\sigma_{n_v^{\rm{post}}}^2 = n_v^{\rm{post}}` from</span>
 <span class="sd">        Poisson counting statistics. To do this, we propagate the errors:</span>
 
 <span class="sd">        .. math::</span>
@@ -753,8 +759,8 @@
 
 <span class="sd">        We calculate the derivatives of :math:`s_v` with respect to the counts</span>
 <span class="sd">        numerically with a step size of one rather than analytically, since</span>
-<span class="sd">        analytical calculations are confounded by the fact that we have a floor</span>
-<span class="sd">        on :math:`B_v`.</span>
+<span class="sd">        analytical calculations are confounded by the floors on :math:`E_v`</span>
+<span class="sd">        or :math:`B_v`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -763,6 +769,9 @@
 <span class="sd">            these columns: &#39;pre_sample&#39; (pre-selection sample), &#39;post_sample&#39;</span>
 <span class="sd">            (post-selection sample), &#39;library&#39;, &#39;name&#39; (name for output),</span>
 <span class="sd">            &#39;frac_escape&#39; (the overall fraction escaping :math:`F`).</span>
+<span class="sd">        score_type : {&#39;log_escape&#39;, &#39;minus_log_bind&#39;}</span>
+<span class="sd">            How to define escape score: :math:`\log_b E_v` if &#39;log_escape&#39;;</span>
+<span class="sd">            :math:`-\log_b B_v` if &#39;minus_log_bind&#39;.</span>
 <span class="sd">        pseudocount : float</span>
 <span class="sd">            Pseudocount added to each count.</span>
 <span class="sd">        by : {&#39;barcode&#39;, &#39;aa_substitutions&#39;, &#39;codon_substitutions&#39;}</span>
@@ -772,10 +781,15 @@
 <span class="sd">        logbase : float</span>
 <span class="sd">            Base for logarithm when calculating functional score.</span>
 <span class="sd">        floor_B : float</span>
-<span class="sd">            The floor assigned to :math:`B_v` if `handle_small_B` is &#39;floor&#39;.</span>
-<span class="sd">        handle_small_B : {&#39;error&#39;, &#39;floor&#39;}</span>
-<span class="sd">            Assign :math:`B_v` to have a minimum value of `floor_B`, or</span>
-<span class="sd">            raise an error if any :math:`B_v \le 0`?</span>
+<span class="sd">            Floor assigned to :math:`B_v`, :math:`B_{\rm{floor}}`</span>
+<span class="sd">            if `score_type` is &#39;minus_log_bind&#39;.</span>
+<span class="sd">        floor_E : float</span>
+<span class="sd">            Floor assigned to :math:`E_v`, :math:`E_{\rm{floor}}`</span>
+<span class="sd">            if `score_type` is &#39;log_escape&#39;.</span>
+<span class="sd">        ceil_B : float or None</span>
+<span class="sd">            Ceiling assigned to :math:`B_v`, or `None` if no ceiling.</span>
+<span class="sd">        ceil_E : float or None</span>
+<span class="sd">            Ceiling assigned to :math:`E_v`, or `None` if no ceiling.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -788,21 +802,11 @@
 <span class="sd">              - the grouping used to compute scores (the value of `by`)</span>
 <span class="sd">              - &#39;score&#39;: :math:`s_v`</span>
 <span class="sd">              - &#39;score_var&#39;: :math:`\sigma_{s_v}^2`</span>
-<span class="sd">              - &#39;score_at_ceil&#39;: if using the floor on :math:`B_v`, which</span>
-<span class="sd">                is a ceiling on :math:`s_v`, indicate if score is at ceiling.</span>
-<span class="sd">              - &#39;bind_frac&#39;: :math:`B_v`</span>
 <span class="sd">              - &#39;pre_count&#39;: :math:`n_v^{\rm{pre}}` (without pseudocount)</span>
 <span class="sd">              - &#39;post_count&#39;: :math:`n_v^{\rm{post}}` (without pseudocount)</span>
 <span class="sd">              - as many of &#39;aa_substitutions&#39;, &#39;n_aa_substitutions&#39;,</span>
 <span class="sd">                &#39;codon_substitutions&#39;, and &#39;n_codon_substitutions&#39; as</span>
 <span class="sd">                makes sense to retain given value of `by`.</span>
-
-<span class="sd">        Note</span>
-<span class="sd">        ----</span>
-<span class="sd">        The scores will likely be inaccurate / noisy for very low pre-selection</span>
-<span class="sd">        counts, and may often by at the score &quot;ceiling.&quot; So look at this</span>
-<span class="sd">        carefully, and you probably want to filter for scores with a reasonably</span>
-<span class="sd">        high number of pre-selection counts.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">req_cols</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;pre_sample&#39;</span><span class="p">,</span> <span class="s1">&#39;post_sample&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
@@ -873,14 +877,22 @@
                                         <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;pre_count&#39;</span><span class="p">,</span> <span class="s1">&#39;post_count&#39;</span><span class="p">]):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;some counts are zero, you must use &#39;</span>
                              <span class="s1">&#39;`pseudocount` &gt; 0&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">floor_B</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`floor_B` must be &gt; 0&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">floor_E</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`floor_E` must be &gt; 0&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ceil_B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ceil_B</span> <span class="o">&lt;=</span> <span class="n">floor_B</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`ceil_B` must be &gt; `floor_B`&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ceil_E</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ceil_E</span> <span class="o">&lt;=</span> <span class="n">floor_E</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`ceil_E` must be &gt; `floor_E`&#39;</span><span class="p">)</span>
 
         <span class="c1"># compute escape scores</span>
-        <span class="k">def</span> <span class="nf">_compute_escape_scores</span><span class="p">(</span><span class="n">pre_pseudocount</span><span class="p">,</span> <span class="n">post_pseudocount</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">_compute_escape_scores</span><span class="p">():</span>
             <span class="n">_df_scores</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">df_scores</span>
                 <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-                    <span class="n">n_v_pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;pre_count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pre_pseudocount</span><span class="p">,</span>
-                    <span class="n">n_v_post</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;post_count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">post_pseudocount</span><span class="p">,</span>
+                    <span class="n">n_v_pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;pre_count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span><span class="p">,</span>
+                    <span class="n">n_v_post</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;post_count&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pseudocount</span><span class="p">,</span>
                     <span class="n">N_pre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span>
                                      <span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">],</span>
                                               <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -895,50 +907,57 @@
                                       <span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span>
                                       <span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
                                       <span class="p">),</span>
-                    <span class="n">B_v</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;frac_escape&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span> <span class="o">*</span>
+                    <span class="n">E_v</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;frac_escape&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span> <span class="o">*</span>
                                    <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_pre&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_post&#39;</span><span class="p">])),</span>
+                    <span class="n">B_v</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;E_v&#39;</span><span class="p">],</span>
+                    <span class="c1"># for computing derivatives, increment counts by one</span>
+                    <span class="n">n_v_pre_d</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">n_v_post_d</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">N_pre_d</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_pre&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">N_post_d</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_post&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">E_v_dpre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;frac_escape&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">]</span> <span class="o">*</span>
+                                        <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_pre_d&#39;</span><span class="p">]</span> <span class="o">/</span>
+                                        <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_pre_d&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_post&#39;</span><span class="p">])),</span>
+                    <span class="n">E_v_dpost</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;frac_escape&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_post_d&#39;</span><span class="p">]</span> <span class="o">*</span>
+                                         <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_pre&#39;</span><span class="p">]</span> <span class="o">/</span>
+                                         <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;N_post_d&#39;</span><span class="p">])),</span>
+                    <span class="n">B_v_dpre</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;E_v_dpre&#39;</span><span class="p">],</span>
+                    <span class="n">B_v_dpost</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;E_v_dpost&#39;</span><span class="p">],</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
-            <span class="k">if</span> <span class="n">handle_small_B</span> <span class="o">==</span> <span class="s1">&#39;floor&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">floor_B</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`floor_B` must be &gt; 0&#39;</span><span class="p">)</span>
-                <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">],</span>
-                                               <span class="n">floor_B</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_at_ceil&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">floor_B</span>
-            <span class="k">elif</span> <span class="n">handle_small_B</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;some B_v &lt;= 0; see `handle_small_B`&#39;</span><span class="p">)</span>
-                <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_at_ceil&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s1">&#39;minus_log_bind&#39;</span><span class="p">:</span>
+                <span class="n">floor</span> <span class="o">=</span> <span class="n">floor_B</span>
+                <span class="n">ceil</span> <span class="o">=</span> <span class="n">ceil_B</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">,</span> <span class="s1">&#39;B_v_dpre&#39;</span><span class="p">,</span> <span class="s1">&#39;B_v_dpost&#39;</span><span class="p">]</span>
+                <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s1">&#39;log_escape&#39;</span><span class="p">:</span>
+                <span class="n">floor</span> <span class="o">=</span> <span class="n">floor_E</span>
+                <span class="n">ceil</span> <span class="o">=</span> <span class="n">ceil_E</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;E_v&#39;</span><span class="p">,</span> <span class="s1">&#39;E_v_dpre&#39;</span><span class="p">,</span> <span class="s1">&#39;E_v_dpost&#39;</span><span class="p">]</span>
+                <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `handle_small_B` </span><span class="si">{handle_small_B}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">_df_scores</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">_df_scores</span>
-                <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">score</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">])</span> <span class="o">/</span>
-                                         <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
-                        <span class="p">)</span>
-                <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;B_v&#39;</span><span class="p">:</span> <span class="s1">&#39;bind_frac&#39;</span><span class="p">})</span>
-                <span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `score_type` </span><span class="si">{score_type}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+                <span class="n">_df_scores</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceil</span><span class="p">)</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">/</span>
+                                   <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+                                        <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+                                         <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_var&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpre&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
+                    <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span> <span class="o">+</span>
+                    <span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpost&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
+                    <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;n_v_post&#39;</span><span class="p">])</span>
             <span class="k">return</span> <span class="n">_df_scores</span>
 
-        <span class="n">df_scores</span> <span class="o">=</span> <span class="n">_compute_escape_scores</span><span class="p">(</span><span class="n">pseudocount</span><span class="p">,</span> <span class="n">pseudocount</span><span class="p">)</span>
+        <span class="n">df_scores</span> <span class="o">=</span> <span class="n">_compute_escape_scores</span><span class="p">()</span>
         <span class="k">assert</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-
-        <span class="c1"># get numerical derivatives</span>
-        <span class="n">d_count</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">df_scores_dpre</span> <span class="o">=</span> <span class="n">_compute_escape_scores</span><span class="p">(</span><span class="n">pseudocount</span> <span class="o">+</span> <span class="n">d_count</span><span class="p">,</span>
-                                                <span class="n">pseudocount</span><span class="p">)</span>
-        <span class="n">df_scores_dpost</span> <span class="o">=</span> <span class="n">_compute_escape_scores</span><span class="p">(</span><span class="n">pseudocount</span><span class="p">,</span>
-                                                 <span class="n">pseudocount</span> <span class="o">+</span> <span class="n">d_count</span><span class="p">)</span>
-        <span class="n">ds_dpre_2</span> <span class="o">=</span> <span class="p">((</span><span class="n">df_scores_dpre</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span> <span class="o">/</span>
-                     <span class="n">d_count</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-        <span class="n">ds_dpost_2</span> <span class="o">=</span> <span class="p">((</span><span class="n">df_scores_dpost</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span> <span class="o">/</span>
-                      <span class="n">d_count</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
-        <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score_var&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">ds_dpre_2</span> <span class="o">*</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;pre_count&#39;</span><span class="p">]</span> <span class="o">+</span>
-                                  <span class="n">ds_dpost_2</span> <span class="o">*</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;post_count&#39;</span><span class="p">])</span>
 
         <span class="c1"># get columns to keep</span>
         <span class="n">col_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;pre_sample&#39;</span><span class="p">,</span> <span class="s1">&#39;post_sample&#39;</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span>
-                     <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;score_var&#39;</span><span class="p">,</span> <span class="s1">&#39;score_at_ceil&#39;</span><span class="p">,</span> <span class="s1">&#39;bind_frac&#39;</span><span class="p">,</span>
+                     <span class="s1">&#39;score&#39;</span><span class="p">,</span> <span class="s1">&#39;score_var&#39;</span><span class="p">,</span>
                      <span class="s1">&#39;pre_count&#39;</span><span class="p">,</span> <span class="s1">&#39;post_count&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">group_cols</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_target</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">col_order</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s1">&#39;target&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
