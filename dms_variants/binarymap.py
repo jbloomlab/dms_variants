@@ -233,7 +233,6 @@ class BinaryMap:
 
     Now assign values to `n_pre` and `n_post` attributes:
 
-    True
     >>> func_scores_df_counts = (
     ...         func_scores_df.assign(pre_count=[10, 20, 15, 5, 6, 8],
     ...                               post_count=[0, 3, 12, 11, 9, 8])
