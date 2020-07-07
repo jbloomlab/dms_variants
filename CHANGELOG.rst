@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.8.1
+-----
+
+Added
++++++
+- ``CodonVariantTable.escape_scores`` now computes score type ``frac_escape``.
+
 0.8.0
 -----
 
