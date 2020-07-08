@@ -3081,6 +3081,138 @@ class CodonVariantTable:
         return df
 
 
+def filter_by_subs_observed(df,
+                            min_single_counts,
+                            min_any_counts,
+                            *,
+                            and_vs_or='and',
+                            subs_col='aa_substitutions',
+                            n_subs_col='n_aa_substitutions',
+                            ):
+    """Filter for variants by observations substitutions in entire data frame.
+
+    Filter data frames of the type returned by :class:`CodonVariantTable` to
+    get just variants that have substitutions that are observed in some other
+    number of variants.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Data frame containing variants as rows.
+    min_single_counts : int
+        Only keep variants with substitutions that are observed as single-
+        substitution variants in at least this many variants.
+    min_any_counts : int
+        Only keep variants with substitutions that are observed in at
+        least this many variants with any number of substitutions.
+    and_vs_or : {'and', 'or'}
+        Require variants to pass the `min_single_counts` **and** the
+        'min_any_counts' filters, or just require to pass one **or** the
+        other.
+    subs_col : 'aa_substitutions'
+        Column in `df` with the substitutions as space-delimited strings.
+    n_subs_col : 'n_aa_substitutions'
+        Column in `df` with the number of substitutions per variant.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A copy of `df` that only contains the variants that pass the filters.
+
+    Examples
+    --------
+    Create a data frame of variants to filter:
+
+    >>> df = pd.DataFrame.from_records([
+    ...          ('var1', '', 0),
+    ...          ('var2', 'M1A', 1),
+    ...          ('var3', 'M1A G2A', 2),
+    ...          ('var4', 'M1A G2C', 2),
+    ...          ('var5', 'G2A', 1),
+    ...          ('var6', 'M1A', 1),
+    ...          ('var7', 'M1C', 1),
+    ...          ],
+    ...          columns=['barcode', 'aa_substitutions', 'n_aa_substitutions'])
+
+    Calling with `min_single_counts=1` and `min_any_counts=1` gets only
+    variants with substitutions that are observed in single-substitution
+    variants:
+
+    >>> filter_by_subs_observed(df, 1, 1)
+      barcode aa_substitutions  n_aa_substitutions
+    0    var1                                    0
+    1    var2              M1A                   1
+    2    var3          M1A G2A                   2
+    3    var5              G2A                   1
+    4    var6              M1A                   1
+    5    var7              M1C                   1
+
+    We can also require substitutions to be seen multiple times as
+    single variants:
+
+    >>> filter_by_subs_observed(df, 2, 1)
+      barcode aa_substitutions  n_aa_substitutions
+    0    var1                                    0
+    1    var2              M1A                   1
+    2    var6              M1A                   1
+
+    Or that substitutions be seen a specified number of times
+    in both single- and multi-substitution contexts:
+
+    >>> filter_by_subs_observed(df, 1, 2)
+      barcode aa_substitutions  n_aa_substitutions
+    0    var1                                    0
+    1    var2              M1A                   1
+    2    var3          M1A G2A                   2
+    3    var5              G2A                   1
+    4    var6              M1A                   1
+
+    We can also make the requirement **or** rather than **and**:
+
+    >>> filter_by_subs_observed(df, 1, 2, and_vs_or='or')
+      barcode aa_substitutions  n_aa_substitutions
+    0    var1                                    0
+    1    var2              M1A                   1
+    2    var3          M1A G2A                   2
+    3    var5              G2A                   1
+    4    var6              M1A                   1
+    5    var7              M1C                   1
+
+    """
+    df = df.copy()
+
+    for col in [subs_col, n_subs_col]:
+        if col not in df.columns:
+            raise ValueError(f"`df` lacks column {col}")
+
+    if and_vs_or not in {'and', 'or'}:
+        raise ValueError(f"invalid `and_vs_or` of {and_vs_or}")
+
+    for var_type, min_counts, df_to_count in [
+            ('any', min_any_counts, df),
+            ('single', min_single_counts, df.query(f"{n_subs_col} == 1")),
+            ]:
+        subs_counts = collections.Counter(
+                    itertools.chain.from_iterable(df_to_count
+                                                  [subs_col]
+                                                  .str
+                                                  .split()
+                                                  ))
+        subs_valid = {s for s, n in subs_counts.items() if n >= min_counts}
+        filter_col = f"_pass_{var_type}_filter"
+        if filter_col in df.columns:
+            raise ValueError(f"`df` cannot have column {filter_col}")
+        df[filter_col] = df[subs_col].map(lambda s: set(s.split()).issubset(
+                                                                subs_valid))
+
+    return (df
+            .query('(_pass_any_filter == True) ' + and_vs_or +
+                   '(_pass_single_filter == True)')
+            .drop(columns=['_pass_any_filter', '_pass_single_filter'])
+            .reset_index(drop=True)
+            )
+
+
 class _dict_missing_is_key(dict):
     """dict that returns key as value for missing keys.
 
