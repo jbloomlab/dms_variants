@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.8.0 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.8.2 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -679,12 +679,18 @@
 <span class="sd">        binding has :math:`B_v = 0` and :math:`E_v = 1`; a variant that is</span>
 <span class="sd">        completely bound has :math:`B_v = 1` and :math:`E_v = 0`.</span>
 
-<span class="sd">        We define the escape score in one of two ways (depending on value of</span>
-<span class="sd">        `score_type` parameter). The first way is as the log of the escape</span>
-<span class="sd">        fraction, so :math:`s_v = \log_b E_v` where :math:`b` is the</span>
-<span class="sd">        logarithm base. The second way is as minus the log of the binding</span>
-<span class="sd">        fraction, so :math:`s_v = -\log_b B_v`. In either case, larger</span>
-<span class="sd">        values of :math:`s_v` indicate more escape from binding.</span>
+<span class="sd">        We define the escape score :math:`s_v` in one of three ways depending</span>
+<span class="sd">        on the value of `score_type` parameter:</span>
+
+<span class="sd">          1. As the escape fraction, so :math:`s_v = E_v`.</span>
+
+<span class="sd">          2. As the log of the escape fraction, so</span>
+<span class="sd">             :math:`s_v = \log_b E_v` where :math:`b` is the logarithm base.</span>
+
+<span class="sd">          3. As minus the log of the binding fraction, so</span>
+<span class="sd">             :math:`s_v = -\log_b B_v`.</span>
+
+<span class="sd">        In all cases, larger values of :math:`s_v` indicate more escape.</span>
 
 <span class="sd">        We calculate :math:`E_v` as follows. Let :math:`f_v^{\rm{pre}}` be</span>
 <span class="sd">        the frequency of :math:`v` prior  to selection for binding (so</span>
@@ -725,7 +731,7 @@
 <span class="sd">           F \times \frac{n_v^{\rm{post}} N^{\rm{pre}}}</span>
 <span class="sd">                         {n_v^{\rm{pre}} N^{\rm{post}}}</span>
 
-<span class="sd">        A complication is that :math:`s_v` is undefined for certain values</span>
+<span class="sd">        A complication is that :math:`s_v` can be undefined for certain values</span>
 <span class="sd">        of :math:`E_v` or :math:`B_v`. Specifically, when using the log escape</span>
 <span class="sd">        fraction definition (:math:`s_v = \log_b E_v`) then :math:`s_v` is</span>
 <span class="sd">        undefined if :math:`E_v = 0`, so we put a floor on :math:`E_v` by</span>
@@ -769,9 +775,10 @@
 <span class="sd">            these columns: &#39;pre_sample&#39; (pre-selection sample), &#39;post_sample&#39;</span>
 <span class="sd">            (post-selection sample), &#39;library&#39;, &#39;name&#39; (name for output),</span>
 <span class="sd">            &#39;frac_escape&#39; (the overall fraction escaping :math:`F`).</span>
-<span class="sd">        score_type : {&#39;log_escape&#39;, &#39;minus_log_bind&#39;}</span>
-<span class="sd">            How to define escape score: :math:`\log_b E_v` if &#39;log_escape&#39;;</span>
-<span class="sd">            :math:`-\log_b B_v` if &#39;minus_log_bind&#39;.</span>
+<span class="sd">        score_type : {&#39;frac_escape&#39;, &#39;log_escape&#39;, &#39;minus_log_bind&#39;}</span>
+<span class="sd">            How to define escape score: :math:`E_v` if &#39;frac_escape&#39;;</span>
+<span class="sd">            :math:`\log_b E_v` if &#39;log_escape&#39;; :math:`-\log_b B_v` if</span>
+<span class="sd">            &#39;minus_log_bind&#39;.</span>
 <span class="sd">        pseudocount : float</span>
 <span class="sd">            Pseudocount added to each count.</span>
 <span class="sd">        by : {&#39;barcode&#39;, &#39;aa_substitutions&#39;, &#39;codon_substitutions&#39;}</span>
@@ -785,7 +792,7 @@
 <span class="sd">            if `score_type` is &#39;minus_log_bind&#39;.</span>
 <span class="sd">        floor_E : float</span>
 <span class="sd">            Floor assigned to :math:`E_v`, :math:`E_{\rm{floor}}`</span>
-<span class="sd">            if `score_type` is &#39;log_escape&#39;.</span>
+<span class="sd">            if `score_type` is &#39;frac_escape&#39; or &#39;log_escape&#39;.</span>
 <span class="sd">        ceil_B : float or None</span>
 <span class="sd">            Ceiling assigned to :math:`B_v`, or `None` if no ceiling.</span>
 <span class="sd">        ceil_E : float or None</span>
@@ -879,7 +886,7 @@
                              <span class="s1">&#39;`pseudocount` &gt; 0&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">floor_B</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`floor_B` must be &gt; 0&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">floor_E</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">floor_E</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">score_type</span> <span class="o">!=</span> <span class="s1">&#39;frac_escape&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`floor_E` must be &gt; 0&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">ceil_B</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ceil_B</span> <span class="o">&lt;=</span> <span class="n">floor_B</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`ceil_B` must be &gt; `floor_B`&#39;</span><span class="p">)</span>
@@ -929,22 +936,24 @@
                 <span class="n">floor</span> <span class="o">=</span> <span class="n">floor_B</span>
                 <span class="n">ceil</span> <span class="o">=</span> <span class="n">ceil_B</span>
                 <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;B_v&#39;</span><span class="p">,</span> <span class="s1">&#39;B_v_dpre&#39;</span><span class="p">,</span> <span class="s1">&#39;B_v_dpost&#39;</span><span class="p">]</span>
-                <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="o">-</span><span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s1">&#39;log_escape&#39;</span><span class="p">:</span>
                 <span class="n">floor</span> <span class="o">=</span> <span class="n">floor_E</span>
                 <span class="n">ceil</span> <span class="o">=</span> <span class="n">ceil_E</span>
                 <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;E_v&#39;</span><span class="p">,</span> <span class="s1">&#39;E_v_dpre&#39;</span><span class="p">,</span> <span class="s1">&#39;E_v_dpost&#39;</span><span class="p">]</span>
-                <span class="n">sign</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">score_type</span> <span class="o">==</span> <span class="s1">&#39;frac_escape&#39;</span><span class="p">:</span>
+                <span class="n">floor</span> <span class="o">=</span> <span class="n">floor_E</span>
+                <span class="n">ceil</span> <span class="o">=</span> <span class="n">ceil_E</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;E_v&#39;</span><span class="p">,</span> <span class="s1">&#39;E_v_dpre&#39;</span><span class="p">,</span> <span class="s1">&#39;E_v_dpost&#39;</span><span class="p">]</span>
+                <span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">x</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `score_type` </span><span class="si">{score_type}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
                 <span class="n">_df_scores</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">col</span><span class="p">],</span> <span class="n">floor</span><span class="p">,</span> <span class="n">ceil</span><span class="p">)</span>
-            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="o">/</span>
-                                   <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
-            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
-                                        <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
-            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">sign</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
-                                         <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logbase</span><span class="p">))</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpre&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpost&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="n">cols</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
             <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_var&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                     <span class="p">(</span><span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score_dpre&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span>
                     <span class="n">_df_scores</span><span class="p">[</span><span class="s1">&#39;n_v_pre&#39;</span><span class="p">]</span> <span class="o">+</span>
@@ -953,7 +962,7 @@
             <span class="k">return</span> <span class="n">_df_scores</span>
 
         <span class="n">df_scores</span> <span class="o">=</span> <span class="n">_compute_escape_scores</span><span class="p">()</span>
-        <span class="k">assert</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="n">df_scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">()</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">df_scores</span>
 
         <span class="c1"># get columns to keep</span>
         <span class="n">col_order</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;pre_sample&#39;</span><span class="p">,</span> <span class="s1">&#39;post_sample&#39;</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span>
@@ -3105,6 +3114,153 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;codon seqs != translated amino-acid seqs&#39;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">df</span></div></div>
+
+
+<div class="viewcode-block" id="filter_by_subs_observed"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.filter_by_subs_observed">[docs]</a><span class="k">def</span> <span class="nf">filter_by_subs_observed</span><span class="p">(</span><span class="n">df</span><span class="p">,</span>
+                            <span class="n">min_single_counts</span><span class="p">,</span>
+                            <span class="n">min_any_counts</span><span class="p">,</span>
+                            <span class="o">*</span><span class="p">,</span>
+                            <span class="n">and_vs_or</span><span class="o">=</span><span class="s1">&#39;and&#39;</span><span class="p">,</span>
+                            <span class="n">subs_col</span><span class="o">=</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span>
+                            <span class="n">n_subs_col</span><span class="o">=</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">,</span>
+                            <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter for variants by observations substitutions in entire data frame.</span>
+
+<span class="sd">    Filter data frames of the type returned by :class:`CodonVariantTable` to</span>
+<span class="sd">    get just variants that have substitutions that are observed in some other</span>
+<span class="sd">    number of variants.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Data frame containing variants as rows.</span>
+<span class="sd">    min_single_counts : int</span>
+<span class="sd">        Only keep variants with substitutions that are observed as single-</span>
+<span class="sd">        substitution variants in at least this many variants.</span>
+<span class="sd">    min_any_counts : int</span>
+<span class="sd">        Only keep variants with substitutions that are observed in at</span>
+<span class="sd">        least this many variants with any number of substitutions.</span>
+<span class="sd">    and_vs_or : {&#39;and&#39;, &#39;or&#39;}</span>
+<span class="sd">        Require variants to pass the `min_single_counts` **and** the</span>
+<span class="sd">        &#39;min_any_counts&#39; filters, or just require to pass one **or** the</span>
+<span class="sd">        other.</span>
+<span class="sd">    subs_col : &#39;aa_substitutions&#39;</span>
+<span class="sd">        Column in `df` with the substitutions as space-delimited strings.</span>
+<span class="sd">    n_subs_col : &#39;n_aa_substitutions&#39;</span>
+<span class="sd">        Column in `df` with the number of substitutions per variant.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+<span class="sd">        A copy of `df` that only contains the variants that pass the filters.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Create a data frame of variants to filter:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame.from_records([</span>
+<span class="sd">    ...          (&#39;var1&#39;, &#39;&#39;, 0),</span>
+<span class="sd">    ...          (&#39;var2&#39;, &#39;M1A&#39;, 1),</span>
+<span class="sd">    ...          (&#39;var3&#39;, &#39;M1A G2A&#39;, 2),</span>
+<span class="sd">    ...          (&#39;var4&#39;, &#39;M1A G2C&#39;, 2),</span>
+<span class="sd">    ...          (&#39;var5&#39;, &#39;G2A&#39;, 1),</span>
+<span class="sd">    ...          (&#39;var6&#39;, &#39;M1A&#39;, 1),</span>
+<span class="sd">    ...          (&#39;var7&#39;, &#39;M1C&#39;, 1),</span>
+<span class="sd">    ...          ],</span>
+<span class="sd">    ...          columns=[&#39;barcode&#39;, &#39;aa_substitutions&#39;, &#39;n_aa_substitutions&#39;])</span>
+
+<span class="sd">    Calling with `min_single_counts=1` and `min_any_counts=1` gets only</span>
+<span class="sd">    variants with substitutions that are observed in single-substitution</span>
+<span class="sd">    variants:</span>
+
+<span class="sd">    &gt;&gt;&gt; filter_by_subs_observed(df, 1, 1)</span>
+<span class="sd">      barcode aa_substitutions  n_aa_substitutions</span>
+<span class="sd">    0    var1                                    0</span>
+<span class="sd">    1    var2              M1A                   1</span>
+<span class="sd">    2    var3          M1A G2A                   2</span>
+<span class="sd">    3    var5              G2A                   1</span>
+<span class="sd">    4    var6              M1A                   1</span>
+<span class="sd">    5    var7              M1C                   1</span>
+
+<span class="sd">    We can also require substitutions to be seen multiple times as</span>
+<span class="sd">    single variants:</span>
+
+<span class="sd">    &gt;&gt;&gt; filter_by_subs_observed(df, 2, 1)</span>
+<span class="sd">      barcode aa_substitutions  n_aa_substitutions</span>
+<span class="sd">    0    var1                                    0</span>
+<span class="sd">    1    var2              M1A                   1</span>
+<span class="sd">    2    var6              M1A                   1</span>
+
+<span class="sd">    Or that substitutions be seen a specified number of times</span>
+<span class="sd">    in both single- and multi-substitution contexts:</span>
+
+<span class="sd">    &gt;&gt;&gt; filter_by_subs_observed(df, 1, 2)</span>
+<span class="sd">      barcode aa_substitutions  n_aa_substitutions</span>
+<span class="sd">    0    var1                                    0</span>
+<span class="sd">    1    var2              M1A                   1</span>
+<span class="sd">    2    var3          M1A G2A                   2</span>
+<span class="sd">    3    var5              G2A                   1</span>
+<span class="sd">    4    var6              M1A                   1</span>
+
+<span class="sd">    We can also make the requirement **or** rather than **and**:</span>
+
+<span class="sd">    &gt;&gt;&gt; filter_by_subs_observed(df, 1, 2, and_vs_or=&#39;or&#39;)</span>
+<span class="sd">      barcode aa_substitutions  n_aa_substitutions</span>
+<span class="sd">    0    var1                                    0</span>
+<span class="sd">    1    var2              M1A                   1</span>
+<span class="sd">    2    var3          M1A G2A                   2</span>
+<span class="sd">    3    var5              G2A                   1</span>
+<span class="sd">    4    var6              M1A                   1</span>
+<span class="sd">    5    var7              M1C                   1</span>
+
+<span class="sd">    Do not filter any variants:</span>
+
+<span class="sd">    &gt;&gt;&gt; filter_by_subs_observed(df, 0, 0)</span>
+<span class="sd">      barcode aa_substitutions  n_aa_substitutions</span>
+<span class="sd">    0    var1                                    0</span>
+<span class="sd">    1    var2              M1A                   1</span>
+<span class="sd">    2    var3          M1A G2A                   2</span>
+<span class="sd">    3    var4          M1A G2C                   2</span>
+<span class="sd">    4    var5              G2A                   1</span>
+<span class="sd">    5    var6              M1A                   1</span>
+<span class="sd">    6    var7              M1C                   1</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="p">[</span><span class="n">subs_col</span><span class="p">,</span> <span class="n">n_subs_col</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` lacks column </span><span class="si">{col}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">and_vs_or</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;and&#39;</span><span class="p">,</span> <span class="s1">&#39;or&#39;</span><span class="p">}:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `and_vs_or` of </span><span class="si">{and_vs_or}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">var_type</span><span class="p">,</span> <span class="n">min_counts</span><span class="p">,</span> <span class="n">df_to_count</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="p">(</span><span class="s1">&#39;any&#39;</span><span class="p">,</span> <span class="n">min_any_counts</span><span class="p">,</span> <span class="n">df</span><span class="p">),</span>
+            <span class="p">(</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="n">min_single_counts</span><span class="p">,</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{n_subs_col}</span><span class="s2"> == 1&quot;</span><span class="p">)),</span>
+            <span class="p">]:</span>
+        <span class="n">filter_col</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;_pass_</span><span class="si">{var_type}</span><span class="s2">_filter&quot;</span>
+        <span class="k">if</span> <span class="n">filter_col</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` cannot have column </span><span class="si">{filter_col}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_counts</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">filter_col</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">continue</span>
+        <span class="n">subs_counts</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span>
+                    <span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">df_to_count</span>
+                                                  <span class="p">[</span><span class="n">subs_col</span><span class="p">]</span>
+                                                  <span class="o">.</span><span class="n">str</span>
+                                                  <span class="o">.</span><span class="n">split</span><span class="p">()</span>
+                                                  <span class="p">))</span>
+        <span class="n">subs_valid</span> <span class="o">=</span> <span class="p">{</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">subs_counts</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="n">min_counts</span><span class="p">}</span>
+        <span class="n">df</span><span class="p">[</span><span class="n">filter_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">subs_col</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">split</span><span class="p">())</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
+                                                                <span class="n">subs_valid</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">df</span>
+            <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s1">&#39;(_pass_any_filter == True) &#39;</span> <span class="o">+</span> <span class="n">and_vs_or</span> <span class="o">+</span>
+                   <span class="s1">&#39;(_pass_single_filter == True)&#39;</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;_pass_any_filter&#39;</span><span class="p">,</span> <span class="s1">&#39;_pass_single_filter&#39;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="p">)</span></div>
 
 
 <span class="k">class</span> <span class="nc">_dict_missing_is_key</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>

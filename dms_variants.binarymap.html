@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>binarymap &#8212; dms_variants 0.8.0 documentation</title>
+    <title>binarymap &#8212; dms_variants 0.8.2 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -334,16 +334,17 @@ the <cite>cols_optional</cite> flag:</p>
 </pre></div>
 </div>
 <p>Now assign values to <cite>n_pre</cite> and <cite>n_post</cite> attributes:</p>
-<p>True
-&gt;&gt;&gt; func_scores_df_counts = (
-…         func_scores_df.assign(pre_count=[10, 20, 15, 5, 6, 8],
-…                               post_count=[0, 3, 12, 11, 9, 8])
-…         )
-&gt;&gt;&gt; binmap_counts = BinaryMap(func_scores_df_counts, alphabet=alphabet)
-&gt;&gt;&gt; binmap_counts.n_pre
-array([10, 20, 15,  5,  6,  8])
-&gt;&gt;&gt; binmap_counts.n_post
-array([ 0,  3, 12, 11,  9,  8])</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_scores_df_counts</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>        <span class="n">func_scores_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">pre_count</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+<span class="gp">... </span>                              <span class="n">post_count</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_counts</span> <span class="o">=</span> <span class="n">BinaryMap</span><span class="p">(</span><span class="n">func_scores_df_counts</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">alphabet</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_counts</span><span class="o">.</span><span class="n">n_pre</span>
+<span class="go">array([10, 20, 15,  5,  6,  8])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_counts</span><span class="o">.</span><span class="n">n_post</span>
+<span class="go">array([ 0,  3, 12, 11,  9,  8])</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="dms_variants.binarymap.BinaryMap.all_subs">
 <em class="property">property </em><code class="sig-name descname">all_subs</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.all_subs" title="Permalink to this definition">¶</a></dt>
