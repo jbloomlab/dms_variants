@@ -3178,6 +3178,18 @@ def filter_by_subs_observed(df,
     4    var6              M1A                   1
     5    var7              M1C                   1
 
+    Do not filter any variants:
+
+    >>> filter_by_subs_observed(df, 0, 0)
+      barcode aa_substitutions  n_aa_substitutions
+    0    var1                                    0
+    1    var2              M1A                   1
+    2    var3          M1A G2A                   2
+    3    var4          M1A G2C                   2
+    4    var5              G2A                   1
+    5    var6              M1A                   1
+    6    var7              M1C                   1
+
     """
     df = df.copy()
 
@@ -3192,6 +3204,12 @@ def filter_by_subs_observed(df,
             ('any', min_any_counts, df),
             ('single', min_single_counts, df.query(f"{n_subs_col} == 1")),
             ]:
+        filter_col = f"_pass_{var_type}_filter"
+        if filter_col in df.columns:
+            raise ValueError(f"`df` cannot have column {filter_col}")
+        if min_counts == 0:
+            df[filter_col] = True
+            continue
         subs_counts = collections.Counter(
                     itertools.chain.from_iterable(df_to_count
                                                   [subs_col]
@@ -3199,9 +3217,6 @@ def filter_by_subs_observed(df,
                                                   .split()
                                                   ))
         subs_valid = {s for s, n in subs_counts.items() if n >= min_counts}
-        filter_col = f"_pass_{var_type}_filter"
-        if filter_col in df.columns:
-            raise ValueError(f"`df` cannot have column {filter_col}")
         df[filter_col] = df[subs_col].map(lambda s: set(s.split()).issubset(
                                                                 subs_valid))
 
