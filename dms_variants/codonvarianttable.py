@@ -644,12 +644,18 @@ class CodonVariantTable:
         binding has :math:`B_v = 0` and :math:`E_v = 1`; a variant that is
         completely bound has :math:`B_v = 1` and :math:`E_v = 0`.
 
-        We define the escape score in one of two ways (depending on value of
-        `score_type` parameter). The first way is as the log of the escape
-        fraction, so :math:`s_v = \log_b E_v` where :math:`b` is the
-        logarithm base. The second way is as minus the log of the binding
-        fraction, so :math:`s_v = -\log_b B_v`. In either case, larger
-        values of :math:`s_v` indicate more escape from binding.
+        We define the escape score :math:`s_v` in one of three ways depending
+        on the value of `score_type` parameter:
+
+          1. As the escape fraction, so :math:`s_v = E_v`.
+
+          2. As the log of the escape fraction, so
+             :math:`s_v = \log_b E_v` where :math:`b` is the logarithm base.
+
+          3. As minus the log of the binding fraction, so
+             :math:`s_v = -\log_b B_v`.
+
+        In all cases, larger values of :math:`s_v` indicate more escape.
 
         We calculate :math:`E_v` as follows. Let :math:`f_v^{\rm{pre}}` be
         the frequency of :math:`v` prior  to selection for binding (so
@@ -690,7 +696,7 @@ class CodonVariantTable:
            F \times \frac{n_v^{\rm{post}} N^{\rm{pre}}}
                          {n_v^{\rm{pre}} N^{\rm{post}}}
 
-        A complication is that :math:`s_v` is undefined for certain values
+        A complication is that :math:`s_v` can be undefined for certain values
         of :math:`E_v` or :math:`B_v`. Specifically, when using the log escape
         fraction definition (:math:`s_v = \log_b E_v`) then :math:`s_v` is
         undefined if :math:`E_v = 0`, so we put a floor on :math:`E_v` by
@@ -734,9 +740,10 @@ class CodonVariantTable:
             these columns: 'pre_sample' (pre-selection sample), 'post_sample'
             (post-selection sample), 'library', 'name' (name for output),
             'frac_escape' (the overall fraction escaping :math:`F`).
-        score_type : {'log_escape', 'minus_log_bind'}
-            How to define escape score: :math:`\log_b E_v` if 'log_escape';
-            :math:`-\log_b B_v` if 'minus_log_bind'.
+        score_type : {'frac_escape', 'log_escape', 'minus_log_bind'}
+            How to define escape score: :math:`E_v` if 'frac_escape';
+            :math:`\log_b E_v` if 'log_escape'; :math:`-\log_b B_v` if
+            'minus_log_bind'.
         pseudocount : float
             Pseudocount added to each count.
         by : {'barcode', 'aa_substitutions', 'codon_substitutions'}
@@ -750,7 +757,7 @@ class CodonVariantTable:
             if `score_type` is 'minus_log_bind'.
         floor_E : float
             Floor assigned to :math:`E_v`, :math:`E_{\rm{floor}}`
-            if `score_type` is 'log_escape'.
+            if `score_type` is 'frac_escape' or 'log_escape'.
         ceil_B : float or None
             Ceiling assigned to :math:`B_v`, or `None` if no ceiling.
         ceil_E : float or None
@@ -844,7 +851,7 @@ class CodonVariantTable:
                              '`pseudocount` > 0')
         if floor_B <= 0:
             raise ValueError('`floor_B` must be > 0')
-        if floor_E <= 0:
+        if floor_E <= 0 and score_type != 'frac_escape':
             raise ValueError('`floor_E` must be > 0')
         if (ceil_B is not None) and (ceil_B <= floor_B):
             raise ValueError('`ceil_B` must be > `floor_B`')
@@ -894,22 +901,24 @@ class CodonVariantTable:
                 floor = floor_B
                 ceil = ceil_B
                 cols = ['B_v', 'B_v_dpre', 'B_v_dpost']
-                sign = -1
+                def func(x): return -numpy.log(x) / numpy.log(logbase)
             elif score_type == 'log_escape':
                 floor = floor_E
                 ceil = ceil_E
                 cols = ['E_v', 'E_v_dpre', 'E_v_dpost']
-                sign = 1
+                def func(x): return numpy.log(x) / numpy.log(logbase)
+            elif score_type == 'frac_escape':
+                floor = floor_E
+                ceil = ceil_E
+                cols = ['E_v', 'E_v_dpre', 'E_v_dpost']
+                def func(x): return x
             else:
                 raise ValueError(f"invalid `score_type` {score_type}")
             for col in cols:
                 _df_scores[col] = numpy.clip(_df_scores[col], floor, ceil)
-            _df_scores['score'] = (sign * numpy.log(_df_scores[cols[0]]) /
-                                   numpy.log(logbase))
-            _df_scores['score_dpre'] = (sign * numpy.log(_df_scores[cols[1]])
-                                        / numpy.log(logbase))
-            _df_scores['score_dpost'] = (sign * numpy.log(_df_scores[cols[2]])
-                                         / numpy.log(logbase))
+            _df_scores['score'] = func(_df_scores[cols[0]])
+            _df_scores['score_dpre'] = func(_df_scores[cols[1]])
+            _df_scores['score_dpost'] = func(_df_scores[cols[2]])
             _df_scores['score_var'] = (
                     (_df_scores['score_dpre'] - _df_scores['score'])**2 *
                     _df_scores['n_v_pre'] +
@@ -918,7 +927,7 @@ class CodonVariantTable:
             return _df_scores
 
         df_scores = _compute_escape_scores()
-        assert df_scores['score'].notnull().all()
+        assert df_scores['score'].notnull().all(), df_scores
 
         # get columns to keep
         col_order = ['name', 'library', 'pre_sample', 'post_sample', by,
