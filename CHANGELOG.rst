@@ -13,6 +13,8 @@ Added
 +++++
 - ``CodonVariantTable.escape_scores`` now computes score type ``frac_escape``.
 
+- Added ``filter_by_subs_observed``.
+
 0.8.0
 -----
 
