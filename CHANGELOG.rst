@@ -11,7 +11,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 Fixed
 +++++
-- Unpin ``plotnine`` now that `this bug <https://github.com/has2k1/plotnine/issues/403>`_ fixed.
+- Un-pin ``plotnine`` now that `this bug <https://github.com/has2k1/plotnine/issues/403>`_ fixed.
 
 0.8.2
 ------
