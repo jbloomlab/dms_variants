@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.8.3
+-----
+
+Fixed
++++++
+- Unpin ``plotnine`` now that `this bug <https://github.com/has2k1/plotnine/issues/403>`_ fixed.
+
 0.8.2
 ------
 
