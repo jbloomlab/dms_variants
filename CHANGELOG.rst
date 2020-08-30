@@ -13,6 +13,10 @@ Fixed
 +++++
 - Unpin ``plotnine`` now that `this bug <https://github.com/has2k1/plotnine/issues/403>`_ fixed.
 
+Changed
++++++++
+- Only test on Python 3.7.
+
 0.8.2
 ------
 
