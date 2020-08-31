@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.8.2 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.8.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -360,7 +360,7 @@ The createFontList function was deprecated in Matplotlib 3.2 and will be removed
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{</span><span class="n">genelength</span><span class="si">}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{</span><span class="n">geneseq</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -663,7 +663,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First few barcodes for library </span><span class="si">{lib}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First few barcodes for library </span><span class="si">{</span><span class="n">lib</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="n">lib</span><span class="p">))[</span> <span class="p">:</span> <span class="mi">3</span><span class="p">])</span>
 </pre></div>
 </div>
@@ -2514,12 +2514,12 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
             <span class="p">(</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">,</span>
              <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">NoEpistasisGaussianLikelihood</span><span class="p">),</span>
             <span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting </span><span class="si">{modeltype}</span><span class="s2"> model to </span><span class="si">{sample}</span><span class="s2">, </span><span class="si">{lib}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting </span><span class="si">{</span><span class="n">modeltype</span><span class="si">}</span><span class="s2"> model to </span><span class="si">{</span><span class="n">sample</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">lib</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
 
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">EpistasisModel</span><span class="p">(</span><span class="n">bmap</span><span class="p">)</span>
         <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took {time.time() - start:.1f} sec.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> sec.&quot;</span><span class="p">)</span>
         <span class="n">models</span><span class="p">[(</span><span class="n">modeltype</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model</span>
 </pre></div>
 </div>
@@ -4393,7 +4393,7 @@ details. This is necessary since the preferences are normalized per site. If you
             <span class="n">x_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
             <span class="n">letter_col</span><span class="o">=</span><span class="s1">&#39;mutant&#39;</span><span class="p">,</span>
             <span class="n">letter_height_col</span><span class="o">=</span><span class="s1">&#39;preference&#39;</span><span class="p">,</span>
-            <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;exponent base 100, stringency param </span><span class="si">{stringency_param}</span><span class="s2">&quot;</span>
+            <span class="n">title</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;exponent base 100, stringency param </span><span class="si">{</span><span class="n">stringency_param</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
 </pre></div>
 </div>

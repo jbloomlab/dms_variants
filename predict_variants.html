@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Predict unseen variants using global epistasis models &#8212; dms_variants 0.8.2 documentation</title>
+    <title>Predict unseen variants using global epistasis models &#8212; dms_variants 0.8.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -344,7 +344,7 @@ mutation rates (average number of codon substitutions per variant):</p>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{genelength}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{geneseq}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{</span><span class="n">genelength</span><span class="si">}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{</span><span class="n">geneseq</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -366,7 +366,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
                 <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
                 <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
-                <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;&lt;m&gt; = </span><span class="si">{avgmuts:.1f}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
+                <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span><span class="sa">f</span><span class="s2">&quot;&lt;m&gt; = </span><span class="si">{</span><span class="n">avgmuts</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span>
                                                          <span class="s1">&#39;nvariants&#39;</span><span class="p">:</span> <span class="n">variants_per_lib</span><span class="p">}</span>
                                <span class="k">for</span> <span class="n">avgmuts</span> <span class="ow">in</span> <span class="n">avgmuts_list</span><span class="p">},</span>
                 <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
@@ -627,35 +627,6 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 </pre></div>
 </div>
 </div>
-<p>Plot the distributions of scores, coloring by the variant class. As expected, the multiple amino-acid mutant variants tend to have lower scores for the libraries with higher mutation rates, since in those libraries the multiple mutants tend to have more mutations (which are generally deleterious):</p>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">ggplot</span><span class="p">(</span><span class="n">func_scores</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;variant_class&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">))</span> <span class="o">+</span>
-    <span class="n">geom_violin</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s1">&#39;variant_class&#39;</span><span class="p">))</span> <span class="o">+</span>
-    <span class="n">ylab</span><span class="p">(</span><span class="s1">&#39;functional score&#39;</span><span class="p">)</span> <span class="o">+</span>
-    <span class="n">xlab</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span>
-    <span class="n">facet_wrap</span><span class="p">(</span><span class="s1">&#39;~ library&#39;</span><span class="p">,</span> <span class="n">nrow</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
-    <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mf">2.25</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span>
-          <span class="n">axis_text_x</span><span class="o">=</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
-          <span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">(),</span>  <span class="c1"># no vertical grid lines</span>
-          <span class="p">)</span> <span class="o">+</span>
-    <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span> <span class="p">:],</span> <span class="n">guide</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area docutils container">
-<img alt="_images/predict_variants_41_0.png" src="_images/predict_variants_41_0.png" />
-</div>
-</div>
 </div>
 <div class="section" id="Fit-global-epistasis-models">
 <h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
@@ -667,7 +638,7 @@ assume mutations contribute additively to the functional scores.</p>
 <p>See the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/codonvariant_sim_data.html">globalepistasis module documentation</a> for more details on all these models.</p>
 <p>Below we fit each model and save it in a <code class="docutils literal notranslate"><span class="pre">dict</span></code> to use later:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -685,12 +656,12 @@ assume mutations contribute additively to the functional scores.</p>
             <span class="p">(</span><span class="s1">&#39;no epistasis&#39;</span><span class="p">,</span>
              <span class="n">dms_variants</span><span class="o">.</span><span class="n">globalepistasis</span><span class="o">.</span><span class="n">NoEpistasisGaussianLikelihood</span><span class="p">),</span>
             <span class="p">]:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting </span><span class="si">{epistasis_func}</span><span class="s2"> model to library </span><span class="si">{library}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fitting </span><span class="si">{</span><span class="n">epistasis_func</span><span class="si">}</span><span class="s2"> model to library </span><span class="si">{</span><span class="n">library</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
 
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">bmap</span><span class="p">)</span>
         <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took {time.time() - start:.1f} sec.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> sec.&quot;</span><span class="p">)</span>
         <span class="n">models</span><span class="p">[(</span><span class="n">epistasis_func</span><span class="p">,</span> <span class="n">library</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model</span>
 </pre></div>
 </div>
@@ -700,22 +671,22 @@ assume mutations contribute additively to the functional scores.</p>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Fitting global epistasis model to library &lt;m&gt; = 1.0... fitting took 48.9 sec.
-Fitting no epistasis model to library &lt;m&gt; = 1.0... fitting took 1.5 sec.
-Fitting global epistasis model to library &lt;m&gt; = 2.0... fitting took 26.6 sec.
-Fitting no epistasis model to library &lt;m&gt; = 2.0... fitting took 1.1 sec.
-Fitting global epistasis model to library &lt;m&gt; = 3.0... fitting took 29.3 sec.
-Fitting no epistasis model to library &lt;m&gt; = 3.0... fitting took 0.8 sec.
-Fitting global epistasis model to library &lt;m&gt; = 4.0... fitting took 68.5 sec.
-Fitting no epistasis model to library &lt;m&gt; = 4.0... fitting took 0.7 sec.
-Fitting global epistasis model to library &lt;m&gt; = 5.0... fitting took 40.3 sec.
-Fitting no epistasis model to library &lt;m&gt; = 5.0... fitting took 0.7 sec.
+Fitting global epistasis model to library &lt;m&gt; = 1.0... fitting took 48.1 sec.
+Fitting no epistasis model to library &lt;m&gt; = 1.0... fitting took 2.5 sec.
+Fitting global epistasis model to library &lt;m&gt; = 2.0... fitting took 172.1 sec.
+Fitting no epistasis model to library &lt;m&gt; = 2.0... fitting took 2.6 sec.
+Fitting global epistasis model to library &lt;m&gt; = 3.0... fitting took 119.2 sec.
+Fitting no epistasis model to library &lt;m&gt; = 3.0... fitting took 1.8 sec.
+Fitting global epistasis model to library &lt;m&gt; = 4.0... fitting took 207.5 sec.
+Fitting no epistasis model to library &lt;m&gt; = 4.0... fitting took 2.3 sec.
+Fitting global epistasis model to library &lt;m&gt; = 5.0... fitting took 160.2 sec.
+Fitting no epistasis model to library &lt;m&gt; = 5.0... fitting took 1.7 sec.
 </pre></div></div>
 </div>
 <p>We first simply want to confirm that for all libraries, the global epistasis model outperforms the no-epistasis model. To do this, we get the log likelihood along with the number of model parameters, and also the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better. We compute the <span class="math notranslate nohighlight">\(\Delta\)</span>AIC between the global epistasis model and no-epistasis model: positive <span class="math notranslate nohighlight">\(\Delta\)</span>AIC values indicate that the global epistasis model is better.</p>
 <p>Below we see that in all cases, the global epistasis model is better than the no-epistasis model:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -740,7 +711,7 @@ Fitting no epistasis model to library &lt;m&gt; = 5.0... fitting took 0.7 sec.
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -776,33 +747,33 @@ Fitting no epistasis model to library &lt;m&gt; = 5.0... fitting took 0.7 sec.
   <tbody>
     <tr>
       <th>&lt;m&gt; = 1.0</th>
-      <td>207092.9</td>
-      <td>245366.7</td>
-      <td>38273.8</td>
+      <td>207985.5</td>
+      <td>245359.7</td>
+      <td>37374.2</td>
     </tr>
     <tr>
       <th>&lt;m&gt; = 2.0</th>
-      <td>239582.6</td>
-      <td>345575.9</td>
-      <td>105993.3</td>
+      <td>238972.3</td>
+      <td>345572.5</td>
+      <td>106600.2</td>
     </tr>
     <tr>
       <th>&lt;m&gt; = 3.0</th>
-      <td>308663.0</td>
+      <td>253977.8</td>
       <td>405756.7</td>
-      <td>97093.7</td>
+      <td>151778.9</td>
     </tr>
     <tr>
       <th>&lt;m&gt; = 4.0</th>
-      <td>260042.6</td>
+      <td>259609.4</td>
       <td>423470.7</td>
-      <td>163428.1</td>
+      <td>163861.3</td>
     </tr>
     <tr>
       <th>&lt;m&gt; = 5.0</th>
-      <td>250181.9</td>
+      <td>250423.0</td>
       <td>417547.5</td>
-      <td>167365.6</td>
+      <td>167124.5</td>
     </tr>
   </tbody>
 </table>
@@ -811,7 +782,7 @@ Fitting no epistasis model to library &lt;m&gt; = 5.0... fitting took 0.7 sec.
 <p>Next examine the epistasis model fit on the variants used to fit the model. We use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.phenotypes_df">AbstractEpistasis.phenotypes_df</a> to get a data frame of all the variants used to fit each global epistasis model along with their functional scores and the latent and observed phenotypes predicted by the model. We then plot the relationship between latent and observed
 phenotype. We only do this for the global epistasis model (not the no-epistasis model) as the relationship is trivial for the no-epistasis model:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -834,7 +805,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/predict_variants_48_0.png" src="_images/predict_variants_48_0.png" />
+<img alt="_images/predict_variants_46_0.png" src="_images/predict_variants_46_0.png" />
 </div>
 </div>
 </div>
@@ -843,7 +814,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
 <p>In order to accurately predict the observed phenotypes of unseen variants, it will be important to accurately have inferred the latent effects of mutations.</p>
 <p>Here we get the predicted latent effect of each mutation for each library / epistasis function using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.latent_effects_df">AbstractEpistasis.latent_effects_df</a>:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -862,7 +833,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
 </div>
 <p>Because we simulated the experiments using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, we can also get the <strong>true</strong> latent effect of each mutation. (Obviously in real non-simulated experiments the true latent phenotypes are unknown.) Below we get these true latent effects:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -877,7 +848,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
 </div>
 <p>Now we calculate the correlations between the true and model-predicted latent effects:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -901,7 +872,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -935,7 +906,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
   <tbody>
     <tr>
       <th>&lt;m&gt; = 1.0</th>
-      <td>0.95</td>
+      <td>0.97</td>
       <td>0.95</td>
     </tr>
     <tr>
@@ -945,17 +916,17 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
     </tr>
     <tr>
       <th>&lt;m&gt; = 3.0</th>
-      <td>0.96</td>
+      <td>0.99</td>
       <td>0.90</td>
     </tr>
     <tr>
       <th>&lt;m&gt; = 4.0</th>
-      <td>0.86</td>
+      <td>0.88</td>
       <td>0.85</td>
     </tr>
     <tr>
       <th>&lt;m&gt; = 5.0</th>
-      <td>0.95</td>
+      <td>0.94</td>
       <td>0.80</td>
     </tr>
   </tbody>
@@ -965,7 +936,7 @@ phenotype. We only do this for the global epistasis model (not the no-epistasis 
 <p>The correlations above show that the global epistasis models do a better job of inferring the latent effects than the no-epistasis model, and that the best inferences are made when the average number of mutations per variant is between 3 and 4. However, the correlation coefficients don’t really do justice to the data, since these correlations are dominate by the very low and very high values. Below we plot the correlations between the model-predicted and true values. Those plots make clear that
 the global epistasis models do a much better job than the no-epistasis models, particularly for the mutation rates of 3 or 4. When looking at the plots, keep in mind the most critical region is the moderately deleterious to beneficial mutations, since highly deleterious mutations don’t really need to have their latent effects inferred accurately other than correctly inferring that they are highly deleterious:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -986,7 +957,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/predict_variants_56_0.png" src="_images/predict_variants_56_0.png" />
+<img alt="_images/predict_variants_54_0.png" src="_images/predict_variants_54_0.png" />
 </div>
 </div>
 </div>
@@ -996,7 +967,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 <p>We will test the predictions in terms of the <em>enrichment</em> of the variants after selection (recall this is the exponential of the observed phenotype), since this enrichment is the number that best quantifies how well the unseen variants actually would perform in an experiment.</p>
 <p>Below we generate a set of new variants with a modest number of mutations relative to wildtype, and then calculate their <em>true</em> enrichment under the simulator used to simulate the experiments above:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1020,7 +991,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 </div>
 <p>Now we calculate the predicted enrichments from the model for these variants. Note that when calling <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.add_phenotypes_to_df">AbstractEpistasis.add_phenotypes_to_df</a>, we set the phenotypes of unknown variants to <code class="docutils literal notranslate"><span class="pre">nan</span></code> (unknown variants are ones that contain a mutation that was not observed at all in the set of variants used to fit the modle). We then drop such variants.</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1045,7 +1016,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 </div>
 <p>Now look at the correlation between the predicted and true phenotypes for the unseen variants. We also tally how many variants there are (after dropping the ones with unknown phenotypes) that can be predicted by each model:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1074,7 +1045,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1111,7 +1082,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
     <tr>
       <th>&lt;m&gt; = 1.0</th>
       <th>49919</th>
-      <td>0.88</td>
+      <td>0.89</td>
       <td>0.84</td>
     </tr>
     <tr>
@@ -1123,7 +1094,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
     <tr>
       <th>&lt;m&gt; = 3.0</th>
       <th>50000</th>
-      <td>0.49</td>
+      <td>0.98</td>
       <td>0.77</td>
     </tr>
     <tr>
@@ -1144,7 +1115,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 </div>
 <p>The correlation coefficients above shows that the predictions are best using the global epistasis model with between 3 and 4 mutations per variant. This point becomes even more clear if we look at the actual correlation scatter plots, which are shown below. (Note that for the plotting we clip predicted enrichments &gt; 2 to 2 to avoid outliers distorting the plot scales):</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1167,12 +1138,12 @@ the global epistasis models do a much better job than the no-epistasis models, p
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/predict_variants_64_0.png" src="_images/predict_variants_64_0.png" />
+<img alt="_images/predict_variants_62_0.png" src="_images/predict_variants_62_0.png" />
 </div>
 </div>
 <p>Perhaps even more salient is to look at the predictions only on the variants that are at least somewhat functional. This is because much of the correlations in the plot above come from the low end of variants with very low enrichments–but those variants are dead so we don’t care so much about predicting them. So below we repeat the analysis after first filtering for variants with at least a modestly high enrichment:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1203,7 +1174,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -1252,7 +1223,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
     <tr>
       <th>&lt;m&gt; = 3.0</th>
       <th>2343</th>
-      <td>0.38</td>
+      <td>0.96</td>
       <td>0.59</td>
     </tr>
     <tr>
@@ -1272,7 +1243,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 </div></div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -1295,7 +1266,7 @@ the global epistasis models do a much better job than the no-epistasis models, p
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/predict_variants_67_0.png" src="_images/predict_variants_67_0.png" />
+<img alt="_images/predict_variants_65_0.png" src="_images/predict_variants_65_0.png" />
 </div>
 </div>
 <p>The table and plot above shows that the superiority of the global epistasis models using libraries with mutation rates between 3 and 4 is even more obvious if we look at the variants filtered for at least some functionality.</p>

@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Parse barcodes &#8212; dms_variants 0.8.2 documentation</title>
+    <title>Parse barcodes &#8212; dms_variants 0.8.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -408,7 +408,7 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">upstream</span> <span class="o">=</span> <span class="n">rand_seq</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">upstream_rc</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">upstream</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`upstream` sequence is </span><span class="si">{upstream}</span><span class="s2">; reverse complement is </span><span class="si">{upstream_rc}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`upstream` sequence is </span><span class="si">{</span><span class="n">upstream</span><span class="si">}</span><span class="s2">; reverse complement is </span><span class="si">{</span><span class="n">upstream_rc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -566,10 +566,10 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">fastq_text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
-    <span class="sa">f</span><span class="s2">&quot;@read{i + 1}</span><span class="se">\n</span><span class="si">{seq}</span><span class="se">\n</span><span class="s2">+</span><span class="se">\n</span><span class="si">{q}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">barcode_seqs</span><span class="p">)</span>
+    <span class="sa">f</span><span class="s2">&quot;@read</span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">seq</span><span class="si">}</span><span class="se">\n</span><span class="s2">+</span><span class="se">\n</span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">barcode_seqs</span><span class="p">)</span>
     <span class="p">])</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Here is the simulated FASTQ file:</span><span class="se">\n</span><span class="s2">-------------</span><span class="se">\n</span><span class="si">{fastq_text}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Here is the simulated FASTQ file:</span><span class="se">\n</span><span class="s2">-------------</span><span class="se">\n</span><span class="si">{</span><span class="n">fastq_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>

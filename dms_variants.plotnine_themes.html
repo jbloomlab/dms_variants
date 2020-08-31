@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>plotnine_themes &#8212; dms_variants 0.8.2 documentation</title>
+    <title>&lt;no title&gt; &#8212; dms_variants 0.8.3 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="simulate" href="dms_variants.simulate.html" />
+    <link rel="next" title="&lt;no title&gt;" href="dms_variants.simulate.html" />
     <link rel="prev" title="ispline" href="dms_variants.ispline.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -34,56 +34,7 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="module-dms_variants.plotnine_themes"></span><div class="section" id="plotnine-themes">
-<h1>plotnine_themes<a class="headerlink" href="#plotnine-themes" title="Permalink to this headline">¶</a></h1>
-<p>Defines <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> themes.</p>
-<p>See here for details on how to use the themes for plotting:
-<a class="reference external" href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html">https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html</a></p>
-<dl class="class">
-<dt id="dms_variants.plotnine_themes.theme_graygrid">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.plotnine_themes.</code><code class="sig-name descname">theme_graygrid</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/plotnine_themes.html#theme_graygrid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.plotnine_themes.theme_graygrid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">plotnine.themes.theme_matplotlib.theme_matplotlib</span></code></p>
-<p>Plot theme with a light gray grid and axes.</p>
-<p class="rubric">Example</p>
-<p>You can set this theme using the <cite>plotnine.theme_set</cite> command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dms_variants.plotnine_themes</span> <span class="kn">import</span> <span class="n">theme_graygrid</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">16</span><span class="p">]})</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">theme_set</span><span class="p">(</span><span class="n">theme_graygrid</span><span class="p">())</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">ggplot</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">))</span> <span class="o">+</span>
-<span class="gp">... </span>     <span class="n">geom_point</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;orange&#39;</span><span class="p">)</span> <span class="o">+</span>
-<span class="gp">... </span>     <span class="n">theme</span><span class="p">(</span><span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
-<span class="gp">... </span>     <span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Get rid of the vertical grid lines:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p_novertgrid</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">p_novertgrid</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Get rid of the axes border:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p_noborder</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_border</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">_</span> <span class="o">=</span> <span class="n">p_noborder</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
-</pre></div>
-</div>
-<div class="figure align-default" id="id1">
-<img alt="_images/dms_variants-plotnine_themes-1_00.png" src="_images/dms_variants-plotnine_themes-1_00.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-plotnine_themes-1_00.png">png</a>, <a class="reference external" href=".//dms_variants-plotnine_themes-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-plotnine_themes-1_00.pdf">pdf</a>)</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-default" id="id2">
-<img alt="_images/dms_variants-plotnine_themes-1_01.png" src="_images/dms_variants-plotnine_themes-1_01.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-plotnine_themes-1_01.png">png</a>, <a class="reference external" href=".//dms_variants-plotnine_themes-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-plotnine_themes-1_01.pdf">pdf</a>)</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
-</div>
-<div class="figure align-default" id="id3">
-<img alt="_images/dms_variants-plotnine_themes-1_02.png" src="_images/dms_variants-plotnine_themes-1_02.png" />
-<p class="caption"><span class="caption-text">(<a class="reference external" href=".//dms_variants-plotnine_themes-1_02.png">png</a>, <a class="reference external" href=".//dms_variants-plotnine_themes-1_02.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-plotnine_themes-1_02.pdf">pdf</a>)</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
-</div>
-</dd></dl>
-
-</div>
-
+  
 
           </div>
           
@@ -132,14 +83,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
 </ul>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="dms_variants.html">dms_variants package</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="dms_variants.html#dms-variants">dms_variants</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="dms_variants.html#submodules">Submodules</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
 </ul>
@@ -150,7 +97,7 @@
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="dms_variants.html">dms_variants package</a><ul>
       <li>Previous: <a href="dms_variants.ispline.html" title="previous chapter">ispline</a></li>
-      <li>Next: <a href="dms_variants.simulate.html" title="next chapter">simulate</a></li>
+      <li>Next: <a href="dms_variants.simulate.html" title="next chapter">&lt;no title&gt;</a></li>
   </ul></li>
   </ul></li>
 </ul>
