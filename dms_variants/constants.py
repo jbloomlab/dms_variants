@@ -54,3 +54,12 @@ AA_TO_CODONS = {_aa: [_c for _c in CODONS if CODON_TO_AA[_c] == _aa]
 
 CODONS_NOSTOP = tuple(_c for _c in CODONS if CODON_TO_AA[_c] != '*')
 """tuple: DNA codons except for stop codons, alphabetized."""
+
+SINGLE_NT_AA_MUTS = {_c: {CODON_TO_AA[_c[: _i] + _nt + _c[_i + 1:]]
+                          for _i in range(3) for _nt in NTS
+                          if (CODON_TO_AA[_c[: _i] + _nt + _c[_i + 1:]] !=
+                              CODON_TO_AA[_c])
+                          }
+                     for _c in CODONS
+                     }
+"""dict: Maps codons to all amino-acids accessible single-nucleotide change."""

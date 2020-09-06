@@ -18,6 +18,7 @@ import dms_variants._cutils
 from dms_variants.constants import (AAS_NOSTOP,
                                     CODON_TO_AA,
                                     NT_COMPLEMENT,
+                                    SINGLE_NT_AA_MUTS,
                                     )
 
 
@@ -721,6 +722,55 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     assert not df.isnull().any().any(), df
 
     return df
+
+
+def single_nt_accessible(codon, aa, codon_encode_aa='raise'):
+    """Is amino acid accessible from codon by single-nucleotide change?
+
+    Parameters
+    ----------
+    codon : str
+        The codon.
+    aa : str
+        The amino acid.
+    codon_encode_aa : {'raise', 'true', 'false'}
+        If `codon` encodes `aa`, raise an error, return `True`,
+        or return `False`.
+
+    Returns
+    -------
+    bool
+
+    Example
+    -------
+    >>> single_nt_accessible('GGG', 'E')
+    True
+    >>> single_nt_accessible('GGC', 'E')
+    False
+    >>> single_nt_accessible('GGG', 'G')
+    Traceback (most recent call last):
+      ...
+    ValueError: `codon` GGG already encodes `aa` G (see `codon_encode_aa`)
+    >>> single_nt_accessible('GGG', 'G', codon_encode_aa='true')
+    True
+    >>> single_nt_accessible('TTT', 'L')
+    True
+
+    """
+    if CODON_TO_AA[codon] == aa:
+        if codon_encode_aa == 'raise':
+            raise ValueError(f"`codon` {codon} already encodes `aa` {aa} "
+                             '(see `codon_encode_aa`)')
+        elif codon_encode_aa == 'false':
+            return False
+        elif codon_encode_aa == 'true':
+            return True
+        else:
+            raise ValueError(f"invalid `codon_encode_aa` {codon_encode_aa}")
+    elif aa in SINGLE_NT_AA_MUTS[codon]:
+        return True
+    else:
+        return False
 
 
 if __name__ == '__main__':

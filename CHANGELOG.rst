@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.8.4
+-----
+
+Added
++++++
+- Classify amino-acid mutations as single-nucleotide accessible: added ``constants.SINGLE_NT_AA_MUTS`` and ``utils.single_nt_accessible``.
+
+
 0.8.3
 -----
 
