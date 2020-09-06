@@ -10,6 +10,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    dms_variants.barcodes
    dms_variants.binarymap

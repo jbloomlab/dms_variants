@@ -1,23 +1,25 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>&lt;no title&gt; &#8212; dms_variants 0.8.3 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>binarymap &#8212; dms_variants 0.8.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="bottlenecks" href="dms_variants.bottlenecks.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="dms_variants.barcodes.html" />
+    <link rel="prev" title="barcodes" href="dms_variants.barcodes.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -34,7 +36,422 @@
 
           <div class="body" role="main">
             
-  
+  <span class="target" id="module-dms_variants.binarymap"></span><div class="section" id="binarymap">
+<h1>binarymap<a class="headerlink" href="#binarymap" title="Permalink to this headline">¶</a></h1>
+<p>Defines <a class="reference internal" href="#dms_variants.binarymap.BinaryMap" title="dms_variants.binarymap.BinaryMap"><code class="xref py py-class docutils literal notranslate"><span class="pre">BinaryMap</span></code></a> objects for handling binary representations
+of variants and their functional scores.</p>
+<dl class="py class">
+<dt id="dms_variants.binarymap.BinaryMap">
+<em class="property">class </em><code class="sig-prename descclassname">dms_variants.binarymap.</code><code class="sig-name descname">BinaryMap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func_scores_df</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">substitutions_col</span><span class="o">=</span><span class="default_value">'aa_substitutions'</span></em>, <em class="sig-param"><span class="n">func_score_col</span><span class="o">=</span><span class="default_value">'func_score'</span></em>, <em class="sig-param"><span class="n">func_score_var_col</span><span class="o">=</span><span class="default_value">'func_score_var'</span></em>, <em class="sig-param"><span class="n">n_pre_col</span><span class="o">=</span><span class="default_value">'pre_count'</span></em>, <em class="sig-param"><span class="n">n_post_col</span><span class="o">=</span><span class="default_value">'post_count'</span></em>, <em class="sig-param"><span class="n">cols_optional</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">alphabet</span><span class="o">=</span><span class="default_value">'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '*'</span></em>, <em class="sig-param"><span class="n">expand</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">wtseq</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/binarymap.html#BinaryMap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.binarymap.BinaryMap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Binary representations of variants and their functional scores.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These maps represent variants as arrays of 0 and 1 integers indicating
+whether a particular variant has a substitution. The wildtype is all 0.
+Such representations are useful for fitting estimates of the effect of
+each substitution.</p>
+<p>Unless you are using the <cite>expand</cite> option, the binary maps only cover
+substitutions relative to wildtype that are present in at least one
+of the variants used to create the map.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func_scores_df</strong> (<em>pandas.DataFrame</em>) – Data frame of variants and their functional scores. Each row is
+a different variant, defined by space-delimited list of substitutions.
+Data frames of this type are returned by
+<a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores" title="dms_variants.codonvarianttable.CodonVariantTable.func_scores"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable.func_scores()</span></code></a>.</p></li>
+<li><p><strong>substitutions_col</strong> (<em>str</em>) – Column in <cite>func_scores_df</cite> giving substitutions for each variant.</p></li>
+<li><p><strong>func_score_col</strong> (<em>str</em><em> or </em><em>None</em>) – Column in <cite>func_scores_df</cite> giving functional score for each variant,
+or <cite>None</cite> if no functional scores available.</p></li>
+<li><p><strong>func_score_var_col</strong> (<em>str</em><em> or </em><em>None</em>) – Column in <cite>func_scores_df</cite> giving variance on functional score
+estimate, or <cite>None</cite> if no variance available.</p></li>
+<li><p><strong>n_pre_col</strong> (<em>str</em><em> or </em><em>None</em>) – Column in <cite>func_scores_df</cite> giving pre-selection counts for each
+variant, or <cite>None</cite> if counts not available.</p></li>
+<li><p><strong>n_post_col</strong> (<em>str</em><em> or </em><em>None</em>) – Column in <cite>func_scores_df</cite> giving post-selection counts for each
+variant, or <cite>None</cite> if counts not available.</p></li>
+<li><p><strong>cols_optional</strong> (<em>True</em>) – All of the <cite>*_col</cite> parameters are optional except <cite>substitutions_col</cite>.
+If <cite>cols_optional</cite> is <cite>True</cite>, the absence of any of these columns
+is taken the same as setting that column’s parameter to zero: the
+corresponding attribute is set to <cite>None</cite>.</p></li>
+<li><p><strong>alphabet</strong> (<em>list</em><em> or </em><em>tuple</em>) – Allowed characters (e.g., amino acids or codons).</p></li>
+<li><p><strong>expand</strong> (<em>bool</em>) – If <cite>False</cite> (the default) the encoding only covers substitutions
+relative to wildtype that are observed in the set of variants. If
+<cite>True</cite> then the encoding covers all allowed characters at each
+site regardless of whether they are wildtype or observed. In this
+latter case, each binary representation is of length (alphabet size)
+<span class="math notranslate nohighlight">\(\times\)</span> (sequence length), and sums to the sequence length.</p></li>
+<li><p><strong>wtseq</strong> (<em>None</em><em> or </em><em>str</em>) – Only set this option if <cite>expand</cite> is <cite>True</cite>. In that case, it
+should be the wildtype sequence.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.binarylength">
+<code class="sig-name descname">binarylength</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.binarylength" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of the binary representation of each variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.nvariants">
+<code class="sig-name descname">nvariants</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.nvariants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of variants.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.binary_variants">
+<code class="sig-name descname">binary_variants</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.binary_variants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sparse matrix of shape <cite>nvariants</cite> by <cite>binarylength</cite>. Row
+<cite>binary_variants[ivariant]</cite> gives the binary representation of
+variant <cite>ivariant</cite>, and <cite>binary_variants[ivariant, i]</cite> is 1
+if the variant has the substitution <a class="reference internal" href="#dms_variants.binarymap.BinaryMap.i_to_sub" title="dms_variants.binarymap.BinaryMap.i_to_sub"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BinaryMap.i_to_sub()</span></code></a>
+and 0 otherwise. To convert to dense <cite>numpy.ndarray</cite>, use
+<cite>toarray</cite> method of the sparse matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>scipy.sparse.csr.csr_matrix of dtype int8</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.substitution_variants">
+<code class="sig-name descname">substitution_variants</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.substitution_variants" title="Permalink to this definition">¶</a></dt>
+<dd><p>All variants as substitution strings as provided in <cite>substitutions_col</cite>
+of <cite>func_scores_df</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.func_scores">
+<code class="sig-name descname">func_scores</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.func_scores" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 1D array of length <cite>nvariants</cite> giving score for each variant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.func_scores_var">
+<code class="sig-name descname">func_scores_var</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.func_scores_var" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 1D array of length <cite>nvariants</cite> giving variance on score for each
+variant, or <cite>None</cite> if no variance estimates provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.ndarray of floats, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.n_pre">
+<code class="sig-name descname">n_pre</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.n_pre" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 1D array of length <cite>nvariants</cite> giving pre-selection counts for each
+variant, or <cite>None</cite> if counts not provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.dnarray of integers, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.n_post">
+<code class="sig-name descname">n_post</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.n_post" title="Permalink to this definition">¶</a></dt>
+<dd><p>A 1D array of length <cite>nvariants</cite> giving post-selection counts for each
+variant, or <cite>None</cite> if counts not provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>numpy.dnarray of integers, or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.alphabet">
+<code class="sig-name descname">alphabet</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.alphabet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allowed characters (e.g., amino acids or codons).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dms_variants.binarymap.BinaryMap.substitutions_col">
+<code class="sig-name descname">substitutions_col</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.substitutions_col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Value set when initializing object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Example</p>
+<p>Create a binary map:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_scores_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">[(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;M1A&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;M1C K3A&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;A2C K3A&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">(</span><span class="s1">&#39;A2*&#39;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.2</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">),</span>
+<span class="gp">... </span>         <span class="p">],</span>
+<span class="gp">... </span>        <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aa_substitutions&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score&#39;</span><span class="p">,</span> <span class="s1">&#39;func_score_var&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span> <span class="o">=</span> <span class="n">BinaryMap</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The length of the binary representation equals the number of unique
+substitutions:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">binarylength</span>
+<span class="go">5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">all_subs</span>
+<span class="go">[&#39;M1A&#39;, &#39;M1C&#39;, &#39;A2*&#39;, &#39;A2C&#39;, &#39;K3A&#39;]</span>
+</pre></div>
+</div>
+<p>Scores, score variances, binary and string representations:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">nvariants</span>
+<span class="go">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">func_scores</span>
+<span class="go">array([ 0.  , -0.2 , -0.4 ,  0.01, -0.05, -1.2 ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">func_scores_var</span>
+<span class="go">array([0.2 , 0.1 , 0.3 , 0.15, 0.1 , 0.4 ])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">type</span><span class="p">(</span><span class="n">binmap</span><span class="o">.</span><span class="n">binary_variants</span><span class="p">)</span>
+<span class="go">&lt;class &#39;scipy.sparse.csr.csr_matrix&#39;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">binary_variants</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+<span class="go">array([[0, 0, 0, 0, 0],</span>
+<span class="go">       [1, 0, 0, 0, 0],</span>
+<span class="go">       [0, 1, 0, 0, 1],</span>
+<span class="go">       [0, 0, 0, 0, 0],</span>
+<span class="go">       [0, 0, 0, 1, 1],</span>
+<span class="go">       [0, 0, 1, 0, 0]], dtype=int8)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">substitution_variants</span>
+<span class="go">[&#39;&#39;, &#39;M1A&#39;, &#39;M1C K3A&#39;, &#39;&#39;, &#39;A2C K3A&#39;, &#39;A2*&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">substitutions_col</span>
+<span class="go">&#39;aa_substitutions&#39;</span>
+</pre></div>
+</div>
+<p>Validate binary map interconverts binary representations and substitutions:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ivar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">binmap</span><span class="o">.</span><span class="n">nvariants</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">binvar</span> <span class="o">=</span> <span class="n">binmap</span><span class="o">.</span><span class="n">binary_variants</span><span class="o">.</span><span class="n">toarray</span><span class="p">()[</span><span class="n">ivar</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">subs_from_df</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ivar</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">subs_from_df</span> <span class="o">==</span> <span class="n">binmap</span><span class="o">.</span><span class="n">binary_to_sub_str</span><span class="p">(</span><span class="n">binvar</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">binvar</span> <span class="o">==</span> <span class="n">binmap</span><span class="o">.</span><span class="n">sub_str_to_binary</span><span class="p">(</span><span class="n">subs_from_df</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Demonstrate <a class="reference internal" href="#dms_variants.binarymap.BinaryMap.sub_str_to_indices" title="dms_variants.binarymap.BinaryMap.sub_str_to_indices"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BinaryMap.sub_str_to_indices()</span></code></a>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">sub</span> <span class="ow">in</span> <span class="n">binmap</span><span class="o">.</span><span class="n">substitution_variants</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">binmap</span><span class="o">.</span><span class="n">sub_str_to_indices</span><span class="p">(</span><span class="n">sub</span><span class="p">))</span>
+<span class="go">[]</span>
+<span class="go">[0]</span>
+<span class="go">[1, 4]</span>
+<span class="go">[]</span>
+<span class="go">[3, 4]</span>
+<span class="go">[2]</span>
+</pre></div>
+</div>
+<p>Now do similar operation but using <cite>expand</cite> to include full alphabet
+(although to keep size manageable, we use an alphabet smaller than
+all amino acids):</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">wtseq</span> <span class="o">=</span> <span class="s1">&#39;MAKG&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">alphabet</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;K&#39;</span><span class="p">,</span> <span class="s1">&#39;M&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_expand</span> <span class="o">=</span> <span class="n">BinaryMap</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">alphabet</span><span class="o">=</span><span class="n">alphabet</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="n">wtseq</span><span class="o">=</span><span class="n">wtseq</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">binarylength</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">wtseq</span><span class="p">)</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">alphabet</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">all_subs</span>
+<span class="gp">... </span>
+<span class="go">[&#39;M1A&#39;, &#39;M1C&#39;, &#39;M1G&#39;, &#39;M1K&#39;, &#39;M1*&#39;,</span>
+<span class="go"> &#39;A2C&#39;, &#39;A2G&#39;, &#39;A2K&#39;, &#39;A2M&#39;, &#39;A2*&#39;,</span>
+<span class="go"> &#39;K3A&#39;, &#39;K3C&#39;, &#39;K3G&#39;, &#39;K3M&#39;, &#39;K3*&#39;,</span>
+<span class="go"> &#39;G4A&#39;, &#39;G4C&#39;, &#39;G4K&#39;, &#39;G4M&#39;, &#39;G4*&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">binary_variants</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
+<span class="gp">... </span>
+<span class="go">array([[0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,</span>
+<span class="go">        0, 0],</span>
+<span class="go">       [1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,</span>
+<span class="go">        0, 0],</span>
+<span class="go">       [0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,</span>
+<span class="go">        0, 0],</span>
+<span class="go">       [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,</span>
+<span class="go">        0, 0],</span>
+<span class="go">       [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,</span>
+<span class="go">        0, 0],</span>
+<span class="go">       [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,</span>
+<span class="go">        0, 0]], dtype=int8)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">all</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">binary_variants</span><span class="o">.</span><span class="n">toarray</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span>
+<span class="gp">... </span>    <span class="n">numpy</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">nvariants</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">wtseq</span><span class="p">)))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">substitution_variants</span>
+<span class="go">[&#39;&#39;, &#39;M1A&#39;, &#39;M1C K3A&#39;, &#39;&#39;, &#39;A2C K3A&#39;, &#39;A2*&#39;]</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ivar</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">binmap_expand</span><span class="o">.</span><span class="n">nvariants</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">binvar</span> <span class="o">=</span> <span class="n">binmap_expand</span><span class="o">.</span><span class="n">binary_variants</span><span class="o">.</span><span class="n">toarray</span><span class="p">()[</span><span class="n">ivar</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="n">subs_from_df</span> <span class="o">=</span> <span class="n">func_scores_df</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">ivar</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="n">subs_from_df</span> <span class="o">==</span> <span class="n">binmap_expand</span><span class="o">.</span><span class="n">binary_to_sub_str</span><span class="p">(</span><span class="n">binvar</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">binvar</span> <span class="o">==</span> <span class="n">binmap_expand</span><span class="o">.</span><span class="n">sub_str_to_binary</span><span class="p">(</span><span class="n">subs_from_df</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Note that <cite>binamp</cite> does not have <cite>n_pre</cite> and <cite>n_post</cite> attributes set:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">binmap</span><span class="o">.</span><span class="n">n_pre</span> <span class="o">==</span> <span class="n">binmap</span><span class="o">.</span><span class="n">n_post</span> <span class="o">==</span> <span class="kc">None</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<p>We would not have been able to initialize <cite>binmap</cite> if we weren’t using
+the <cite>cols_optional</cite> flag:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">func_scores_df</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">alphabet</span><span class="p">,</span> <span class="n">cols_optional</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+  <span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">`func_scores_df` lacks column pre_count</span>
+</pre></div>
+</div>
+<p>Now assign values to <cite>n_pre</cite> and <cite>n_post</cite> attributes:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">func_scores_df_counts</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>        <span class="n">func_scores_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">pre_count</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
+<span class="gp">... </span>                              <span class="n">post_count</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+<span class="gp">... </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_counts</span> <span class="o">=</span> <span class="n">BinaryMap</span><span class="p">(</span><span class="n">func_scores_df_counts</span><span class="p">,</span> <span class="n">alphabet</span><span class="o">=</span><span class="n">alphabet</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_counts</span><span class="o">.</span><span class="n">n_pre</span>
+<span class="go">array([10, 20, 15,  5,  6,  8])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">binmap_counts</span><span class="o">.</span><span class="n">n_post</span>
+<span class="go">array([ 0,  3, 12, 11,  9,  8])</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dms_variants.binarymap.BinaryMap.all_subs">
+<em class="property">property </em><code class="sig-name descname">all_subs</code><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.all_subs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substitutions in order encoded in binary map.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dms_variants.binarymap.BinaryMap.binary_to_sub_str">
+<code class="sig-name descname">binary_to_sub_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">binary</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/binarymap.html#BinaryMap.binary_to_sub_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.binary_to_sub_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert binary representation to space-delimited substitutions.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method is the inverse of <a class="reference internal" href="#dms_variants.binarymap.BinaryMap.sub_str_to_binary" title="dms_variants.binarymap.BinaryMap.sub_str_to_binary"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BinaryMap.sub_str_to_binary()</span></code></a>.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>binary</strong> (<em>numpy.ndarray</em>) – Binary representation.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Space-delimited substitutions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dms_variants.binarymap.BinaryMap.i_to_sub">
+<code class="sig-name descname">i_to_sub</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/binarymap.html#BinaryMap.i_to_sub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.i_to_sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>Substitution corresponding to index in binary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>i</strong> (<em>int</em>) – Index in binary representation, 0 &lt;= <cite>i</cite> &lt; <cite>binarylength</cite>.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The substitution corresponding to that index.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dms_variants.binarymap.BinaryMap.sub_str_to_binary">
+<code class="sig-name descname">sub_str_to_binary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sub_str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/binarymap.html#BinaryMap.sub_str_to_binary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.sub_str_to_binary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert space-delimited substitutions to binary representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sub_str</strong> (<em>str</em>) – Space-delimited substitutions.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Binary representation.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray of dtype <cite>int8</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dms_variants.binarymap.BinaryMap.sub_str_to_indices">
+<code class="sig-name descname">sub_str_to_indices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sub_str</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/binarymap.html#BinaryMap.sub_str_to_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.sub_str_to_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert space-delimited substitutions to list of non-zero indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sub_str</strong> (<em>str</em>) – Space-delimited substitutions.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Contains binary representation index for each mutation, so wildtype
+is an empty list.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dms_variants.binarymap.BinaryMap.sub_to_i">
+<code class="sig-name descname">sub_to_i</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sub</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/binarymap.html#BinaryMap.sub_to_i"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.binarymap.BinaryMap.sub_to_i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Index in binary representation corresponding to substitution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sub</strong> (<em>str</em>) – The substitution.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Index in binary representation, will be &gt;= 0 and &lt; <cite>binarylength</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
 
           </div>
           
@@ -83,10 +500,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
 </ul>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dms_variants.html">dms_variants package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.html#dms-variants">dms_variants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dms_variants.html#submodules">Submodules</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
 </ul>
@@ -96,7 +517,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="dms_variants.html">dms_variants package</a><ul>
-      <li>Previous: <a href="dms_variants.barcodes.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Previous: <a href="dms_variants.barcodes.html" title="previous chapter">barcodes</a></li>
       <li>Next: <a href="dms_variants.bottlenecks.html" title="next chapter">bottlenecks</a></li>
   </ul></li>
   </ul></li>
@@ -111,7 +532,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -128,7 +549,7 @@
       &copy;2019--2020.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

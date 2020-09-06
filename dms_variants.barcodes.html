@@ -1,22 +1,24 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>&lt;no title&gt; &#8212; dms_variants 0.8.3 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>barcodes &#8212; dms_variants 0.8.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="dms_variants.binarymap.html" />
+    <link rel="next" title="binarymap" href="dms_variants.binarymap.html" />
     <link rel="prev" title="dms_variants package" href="dms_variants.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -34,7 +36,73 @@
 
           <div class="body" role="main">
             
-  
+  <span class="target" id="module-dms_variants.barcodes"></span><div class="section" id="barcodes">
+<h1>barcodes<a class="headerlink" href="#barcodes" title="Permalink to this headline">¶</a></h1>
+<p>Utility functions to process and analyze barcodes.</p>
+<dl class="py function">
+<dt id="dms_variants.barcodes.rarefyBarcodes">
+<code class="sig-prename descclassname">dms_variants.barcodes.</code><code class="sig-name descname">rarefyBarcodes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">barcodecounts</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">barcodecol</span><span class="o">=</span><span class="default_value">'barcode'</span></em>, <em class="sig-param"><span class="n">countcol</span><span class="o">=</span><span class="default_value">'count'</span></em>, <em class="sig-param"><span class="n">maxpoints</span><span class="o">=</span><span class="default_value">100000.0</span></em>, <em class="sig-param"><span class="n">logspace</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/barcodes.html#rarefyBarcodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.barcodes.rarefyBarcodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rarefaction curve of barcode observations.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Uses analytical formula for rarefaction defined here:
+<a class="reference external" href="https://en.wikipedia.org/wiki/Rarefaction_(ecology">https://en.wikipedia.org/wiki/Rarefaction_(ecology</a>)#Derivation</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>barcodecounts</strong> (<em>pandas.DataFrame</em>) – Data frame with counts to rarefy.</p></li>
+<li><p><strong>barcodecol</strong> (<em>str</em>) – Column in <cite>barcodecounts</cite> listing all unique barcodes.</p></li>
+<li><p><strong>countcol</strong> (<em>str</em>) – Column in <cite>barcodecounts</cite> with observed counts of each barcode.</p></li>
+<li><p><strong>maxpoints</strong> (<em>int</em>) – Only calculate rarefaction curve at this many points. Benefit
+is that it is costly to calculate the curve for many points.</p></li>
+<li><p><strong>logspace</strong> (<em>bool</em>) – Logarithmically space the points. If <cite>False</cite>, space linearly.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A data frame with columns ‘ncounts’ and ‘nbarcodes’ giving number
+of unique barcodes observed for each total number of observed counts.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">barcodecounts</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;barcode&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;G&#39;</span><span class="p">,</span> <span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">],</span>
+<span class="gp">... </span>                              <span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rarefaction_curve</span> <span class="o">=</span> <span class="n">rarefyBarcodes</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rarefaction_curve</span>
+<span class="go">   ncounts  nbarcodes</span>
+<span class="go">0        1   1.000000</span>
+<span class="go">1        2   1.666667</span>
+<span class="go">2        3   2.114286</span>
+<span class="go">3        4   2.428571</span>
+<span class="go">4        5   2.666667</span>
+<span class="go">5        6   2.857143</span>
+<span class="go">6        7   3.000000</span>
+</pre></div>
+</div>
+<p>Verify this result matches what is obtained by random sampling:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">barcodelist</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">barcodecounts</span><span class="o">.</span><span class="n">itertuples</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">barcodelist</span> <span class="o">+=</span> <span class="p">[</span><span class="n">tup</span><span class="o">.</span><span class="n">barcode</span><span class="p">]</span> <span class="o">*</span> <span class="n">tup</span><span class="o">.</span><span class="n">count</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nrand</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ncounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">barcodecounts</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nbarcodes</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ncount</span> <span class="ow">in</span> <span class="n">ncounts</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">nbarcodes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">barcodelist</span><span class="p">,</span> <span class="n">ncount</span><span class="p">)))</span>
+<span class="gp">... </span>                     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nrand</span><span class="p">))</span> <span class="o">/</span> <span class="n">nrand</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sim_rarefaction_curve</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;ncounts&#39;</span><span class="p">:</span> <span class="n">ncounts</span><span class="p">,</span>
+<span class="gp">... </span>                                      <span class="s1">&#39;nbarcodes&#39;</span><span class="p">:</span> <span class="n">nbarcodes</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">rarefaction_curve</span><span class="p">,</span> <span class="n">sim_rarefaction_curve</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
 
           </div>
           
@@ -83,10 +151,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
 </ul>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dms_variants.html">dms_variants package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.html#dms-variants">dms_variants</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dms_variants.html#submodules">Submodules</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
 <li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
 </ul>
@@ -97,7 +169,7 @@
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="dms_variants.html">dms_variants package</a><ul>
       <li>Previous: <a href="dms_variants.html" title="previous chapter">dms_variants package</a></li>
-      <li>Next: <a href="dms_variants.binarymap.html" title="next chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="dms_variants.binarymap.html" title="next chapter">binarymap</a></li>
   </ul></li>
   </ul></li>
 </ul>
@@ -111,7 +183,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -128,7 +200,7 @@
       &copy;2019--2020.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

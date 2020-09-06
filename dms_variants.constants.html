@@ -1,23 +1,25 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
-    <title>constants &#8212; dms_variants 0.8.3 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>constants &#8212; dms_variants 0.8.4 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
-    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="fastq" href="dms_variants.fastq.html" />
-    <link rel="prev" title="&lt;no title&gt;" href="dms_variants.codonvarianttable.html" />
+    <link rel="prev" title="codonvarianttable" href="dms_variants.codonvarianttable.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -37,7 +39,7 @@
   <span class="target" id="module-dms_variants.constants"></span><div class="section" id="constants">
 <h1>constants<a class="headerlink" href="#constants" title="Permalink to this headline">¶</a></h1>
 <p>Defines constants used by package.</p>
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.AAS_NOSTOP">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">AAS_NOSTOP</code><em class="property"> = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')</em><a class="headerlink" href="#dms_variants.constants.AAS_NOSTOP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Amino-acid one-letter codes alphabetized, doesn’t include stop.</p>
@@ -48,7 +50,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.AAS_WITHSTOP">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">AAS_WITHSTOP</code><em class="property"> = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', '*')</em><a class="headerlink" href="#dms_variants.constants.AAS_WITHSTOP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Amino-acid one-letter codes alphabetized plus stop as <code class="docutils literal notranslate"><span class="pre">*</span></code>.</p>
@@ -59,7 +61,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.AA_TO_CODONS">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">AA_TO_CODONS</code><em class="property"> = {'*': ['TAA', 'TAG', 'TGA'], 'A': ['GCA', 'GCC', 'GCG', 'GCT'], 'C': ['TGC', 'TGT'], 'D': ['GAC', 'GAT'], 'E': ['GAA', 'GAG'], 'F': ['TTC', 'TTT'], 'G': ['GGA', 'GGC', 'GGG', 'GGT'], 'H': ['CAC', 'CAT'], 'I': ['ATA', 'ATC', 'ATT'], 'K': ['AAA', 'AAG'], 'L': ['CTA', 'CTC', 'CTG', 'CTT', 'TTA', 'TTG'], 'M': ['ATG'], 'N': ['AAC', 'AAT'], 'P': ['CCA', 'CCC', 'CCG', 'CCT'], 'Q': ['CAA', 'CAG'], 'R': ['AGA', 'AGG', 'CGA', 'CGC', 'CGG', 'CGT'], 'S': ['AGC', 'AGT', 'TCA', 'TCC', 'TCG', 'TCT'], 'T': ['ACA', 'ACC', 'ACG', 'ACT'], 'V': ['GTA', 'GTC', 'GTG', 'GTT'], 'W': ['TGG'], 'Y': ['TAC', 'TAT']}</em><a class="headerlink" href="#dms_variants.constants.AA_TO_CODONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverse translate amino acid to list of encoding codons.</p>
@@ -70,7 +72,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.CBPALETTE">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">CBPALETTE</code><em class="property"> = ('#999999', '#E69F00', '#56B4E9', '#009E73', '#F0E442', '#0072B2', '#D55E00', '#CC79A7')</em><a class="headerlink" href="#dms_variants.constants.CBPALETTE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Color-blind safe palette.</p>
@@ -82,7 +84,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.CODONS">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">CODONS</code><em class="property"> = ('AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAA', 'TAC', 'TAG', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGA', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT')</em><a class="headerlink" href="#dms_variants.constants.CODONS" title="Permalink to this definition">¶</a></dt>
 <dd><p>DNA codons, alphabetized.</p>
@@ -93,7 +95,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.CODONS_NOSTOP">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">CODONS_NOSTOP</code><em class="property"> = ('AAA', 'AAC', 'AAG', 'AAT', 'ACA', 'ACC', 'ACG', 'ACT', 'AGA', 'AGC', 'AGG', 'AGT', 'ATA', 'ATC', 'ATG', 'ATT', 'CAA', 'CAC', 'CAG', 'CAT', 'CCA', 'CCC', 'CCG', 'CCT', 'CGA', 'CGC', 'CGG', 'CGT', 'CTA', 'CTC', 'CTG', 'CTT', 'GAA', 'GAC', 'GAG', 'GAT', 'GCA', 'GCC', 'GCG', 'GCT', 'GGA', 'GGC', 'GGG', 'GGT', 'GTA', 'GTC', 'GTG', 'GTT', 'TAC', 'TAT', 'TCA', 'TCC', 'TCG', 'TCT', 'TGC', 'TGG', 'TGT', 'TTA', 'TTC', 'TTG', 'TTT')</em><a class="headerlink" href="#dms_variants.constants.CODONS_NOSTOP" title="Permalink to this definition">¶</a></dt>
 <dd><p>DNA codons except for stop codons, alphabetized.</p>
@@ -104,7 +106,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.CODON_TO_AA">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">CODON_TO_AA</code><em class="property"> = {'AAA': 'K', 'AAC': 'N', 'AAG': 'K', 'AAT': 'N', 'ACA': 'T', 'ACC': 'T', 'ACG': 'T', 'ACT': 'T', 'AGA': 'R', 'AGC': 'S', 'AGG': 'R', 'AGT': 'S', 'ATA': 'I', 'ATC': 'I', 'ATG': 'M', 'ATT': 'I', 'CAA': 'Q', 'CAC': 'H', 'CAG': 'Q', 'CAT': 'H', 'CCA': 'P', 'CCC': 'P', 'CCG': 'P', 'CCT': 'P', 'CGA': 'R', 'CGC': 'R', 'CGG': 'R', 'CGT': 'R', 'CTA': 'L', 'CTC': 'L', 'CTG': 'L', 'CTT': 'L', 'GAA': 'E', 'GAC': 'D', 'GAG': 'E', 'GAT': 'D', 'GCA': 'A', 'GCC': 'A', 'GCG': 'A', 'GCT': 'A', 'GGA': 'G', 'GGC': 'G', 'GGG': 'G', 'GGT': 'G', 'GTA': 'V', 'GTC': 'V', 'GTG': 'V', 'GTT': 'V', 'TAA': '*', 'TAC': 'Y', 'TAG': '*', 'TAT': 'Y', 'TCA': 'S', 'TCC': 'S', 'TCG': 'S', 'TCT': 'S', 'TGA': '*', 'TGC': 'C', 'TGG': 'W', 'TGT': 'C', 'TTA': 'L', 'TTC': 'F', 'TTG': 'L', 'TTT': 'F'}</em><a class="headerlink" href="#dms_variants.constants.CODON_TO_AA" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps codons to amino acids.</p>
@@ -115,7 +117,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.NTS">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">NTS</code><em class="property"> = ('A', 'C', 'G', 'T')</em><a class="headerlink" href="#dms_variants.constants.NTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>DNA nucleotide one-letter codes.</p>
@@ -126,7 +128,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.NTS_AMBIGUOUS">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">NTS_AMBIGUOUS</code><em class="property"> = ('A', 'B', 'C', 'D', 'G', 'H', 'K', 'M', 'N', 'R', 'S', 'T', 'V', 'W', 'Y')</em><a class="headerlink" href="#dms_variants.constants.NTS_AMBIGUOUS" title="Permalink to this definition">¶</a></dt>
 <dd><p>DNA nucleotide one-letter codes including ambiguous ones.</p>
@@ -137,7 +139,7 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.NT_COMPLEMENT">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">NT_COMPLEMENT</code><em class="property"> = {'A': 'T', 'B': 'V', 'C': 'G', 'D': 'H', 'G': 'C', 'H': 'D', 'K': 'M', 'M': 'K', 'N': 'N', 'R': 'Y', 'S': 'S', 'T': 'A', 'V': 'B', 'W': 'W', 'Y': 'R'}</em><a class="headerlink" href="#dms_variants.constants.NT_COMPLEMENT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps each nucleotide to its complement, including ambiguous ones.</p>
@@ -148,10 +150,21 @@
 </dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="dms_variants.constants.NT_TO_REGEXP">
 <code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">NT_TO_REGEXP</code><em class="property"> = {'A': 'A', 'B': '[CGT]', 'C': 'C', 'D': '[AGT]', 'G': 'G', 'H': '[ACT]', 'K': '[GT]', 'M': '[AC]', 'N': '[GATC]', 'R': '[AG]', 'S': '[CG]', 'T': 'T', 'V': '[ACG]', 'W': '[AT]', 'X': '[GATC]', 'Y': '[CT]'}</em><a class="headerlink" href="#dms_variants.constants.NT_TO_REGEXP" title="Permalink to this definition">¶</a></dt>
 <dd><p>Maps nucleotide code to regular expression expansion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="dms_variants.constants.SINGLE_NT_AA_MUTS">
+<code class="sig-prename descclassname">dms_variants.constants.</code><code class="sig-name descname">SINGLE_NT_AA_MUTS</code><em class="property"> = {'AAA': {'*', 'E', 'I', 'N', 'Q', 'R', 'T'}, 'AAC': {'D', 'H', 'I', 'K', 'S', 'T', 'Y'}, 'AAG': {'*', 'E', 'M', 'N', 'Q', 'R', 'T'}, 'AAT': {'D', 'H', 'I', 'K', 'S', 'T', 'Y'}, 'ACA': {'A', 'I', 'K', 'P', 'R', 'S'}, 'ACC': {'A', 'I', 'N', 'P', 'S'}, 'ACG': {'A', 'K', 'M', 'P', 'R', 'S'}, 'ACT': {'A', 'I', 'N', 'P', 'S'}, 'AGA': {'*', 'G', 'I', 'K', 'S', 'T'}, 'AGC': {'C', 'G', 'I', 'N', 'R', 'T'}, 'AGG': {'G', 'K', 'M', 'S', 'T', 'W'}, 'AGT': {'C', 'G', 'I', 'N', 'R', 'T'}, 'ATA': {'K', 'L', 'M', 'R', 'T', 'V'}, 'ATC': {'F', 'L', 'M', 'N', 'S', 'T', 'V'}, 'ATG': {'I', 'K', 'L', 'R', 'T', 'V'}, 'ATT': {'F', 'L', 'M', 'N', 'S', 'T', 'V'}, 'CAA': {'*', 'E', 'H', 'K', 'L', 'P', 'R'}, 'CAC': {'D', 'L', 'N', 'P', 'Q', 'R', 'Y'}, 'CAG': {'*', 'E', 'H', 'K', 'L', 'P', 'R'}, 'CAT': {'D', 'L', 'N', 'P', 'Q', 'R', 'Y'}, 'CCA': {'A', 'L', 'Q', 'R', 'S', 'T'}, 'CCC': {'A', 'H', 'L', 'R', 'S', 'T'}, 'CCG': {'A', 'L', 'Q', 'R', 'S', 'T'}, 'CCT': {'A', 'H', 'L', 'R', 'S', 'T'}, 'CGA': {'*', 'G', 'L', 'P', 'Q'}, 'CGC': {'C', 'G', 'H', 'L', 'P', 'S'}, 'CGG': {'G', 'L', 'P', 'Q', 'W'}, 'CGT': {'C', 'G', 'H', 'L', 'P', 'S'}, 'CTA': {'I', 'P', 'Q', 'R', 'V'}, 'CTC': {'F', 'H', 'I', 'P', 'R', 'V'}, 'CTG': {'M', 'P', 'Q', 'R', 'V'}, 'CTT': {'F', 'H', 'I', 'P', 'R', 'V'}, 'GAA': {'*', 'A', 'D', 'G', 'K', 'Q', 'V'}, 'GAC': {'A', 'E', 'G', 'H', 'N', 'V', 'Y'}, 'GAG': {'*', 'A', 'D', 'G', 'K', 'Q', 'V'}, 'GAT': {'A', 'E', 'G', 'H', 'N', 'V', 'Y'}, 'GCA': {'E', 'G', 'P', 'S', 'T', 'V'}, 'GCC': {'D', 'G', 'P', 'S', 'T', 'V'}, 'GCG': {'E', 'G', 'P', 'S', 'T', 'V'}, 'GCT': {'D', 'G', 'P', 'S', 'T', 'V'}, 'GGA': {'*', 'A', 'E', 'R', 'V'}, 'GGC': {'A', 'C', 'D', 'R', 'S', 'V'}, 'GGG': {'A', 'E', 'R', 'V', 'W'}, 'GGT': {'A', 'C', 'D', 'R', 'S', 'V'}, 'GTA': {'A', 'E', 'G', 'I', 'L'}, 'GTC': {'A', 'D', 'F', 'G', 'I', 'L'}, 'GTG': {'A', 'E', 'G', 'L', 'M'}, 'GTT': {'A', 'D', 'F', 'G', 'I', 'L'}, 'TAA': {'E', 'K', 'L', 'Q', 'S', 'Y'}, 'TAC': {'*', 'C', 'D', 'F', 'H', 'N', 'S'}, 'TAG': {'E', 'K', 'L', 'Q', 'S', 'W', 'Y'}, 'TAT': {'*', 'C', 'D', 'F', 'H', 'N', 'S'}, 'TCA': {'*', 'A', 'L', 'P', 'T'}, 'TCC': {'A', 'C', 'F', 'P', 'T', 'Y'}, 'TCG': {'*', 'A', 'L', 'P', 'T', 'W'}, 'TCT': {'A', 'C', 'F', 'P', 'T', 'Y'}, 'TGA': {'C', 'G', 'L', 'R', 'S', 'W'}, 'TGC': {'*', 'F', 'G', 'R', 'S', 'W', 'Y'}, 'TGG': {'*', 'C', 'G', 'L', 'R', 'S'}, 'TGT': {'*', 'F', 'G', 'R', 'S', 'W', 'Y'}, 'TTA': {'*', 'F', 'I', 'S', 'V'}, 'TTC': {'C', 'I', 'L', 'S', 'V', 'Y'}, 'TTG': {'*', 'F', 'M', 'S', 'V', 'W'}, 'TTT': {'C', 'I', 'L', 'S', 'V', 'Y'}}</em><a class="headerlink" href="#dms_variants.constants.SINGLE_NT_AA_MUTS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maps codons to all amino-acids accessible single-nucleotide change.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dict</p>
@@ -226,7 +239,7 @@
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="dms_variants.html">dms_variants package</a><ul>
-      <li>Previous: <a href="dms_variants.codonvarianttable.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Previous: <a href="dms_variants.codonvarianttable.html" title="previous chapter">codonvarianttable</a></li>
       <li>Next: <a href="dms_variants.fastq.html" title="next chapter">fastq</a></li>
   </ul></li>
   </ul></li>
@@ -241,7 +254,7 @@
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -258,7 +271,7 @@
       &copy;2019--2020.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
