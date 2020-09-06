@@ -8,6 +8,7 @@ Defines constants used by package.
 """
 
 
+import Bio.Data.IUPACData
 import Bio.Seq
 
 
@@ -38,7 +39,7 @@ NT_COMPLEMENT = {_nt: str(Bio.Seq.Seq(_nt).reverse_complement()) for
 
 NT_TO_REGEXP = dict(map(lambda tup: ((tup[0], tup[1]) if len(tup[1]) == 1 else
                                      (tup[0], '[' + ''.join(tup[1]) + ']')),
-                        Bio.Seq.IUPAC.IUPACData.ambiguous_dna_values.items()
+                        Bio.Data.IUPACData.ambiguous_dna_values.items()
                         ))
 """dict: Maps nucleotide code to regular expression expansion."""
 
