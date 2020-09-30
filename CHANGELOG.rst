@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.8.5
+------
+
+Added
++++++
+- ``pdb_utils`` module with ``reassign_b_factor`` function.
+
 0.8.4
 -----
 

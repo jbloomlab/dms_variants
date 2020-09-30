@@ -49,6 +49,7 @@ setup(
             'pandas>=0.25.1',
             'plotnine!=0.7.0',  # https://github.com/has2k1/plotnine/issues/403
             'regex>=2.4.153',
+            'requests',
             'scipy>=1.1.0',
             ],
     platforms='Linux and Mac OS X.',
