@@ -21,6 +21,7 @@ Submodules
    dms_variants.globalepistasis
    dms_variants.illuminabarcodeparser
    dms_variants.ispline
+   dms_variants.pdb_utils
    dms_variants.plotnine_themes
    dms_variants.simulate
    dms_variants.utils

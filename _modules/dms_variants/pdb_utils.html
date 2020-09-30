@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dms_variants.pdb_utils &#8212; dms_variants 0.8.5 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dms_variants.pdb_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">===========</span>
+<span class="sd">pdb_utils</span>
+<span class="sd">===========</span>
+
+<span class="sd">Functions to manipulate `PDB &lt;https://www.rcsb.org/&gt;`_ files.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">collections</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span> <span class="nn">os</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">Bio.PDB</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>  <span class="c1"># noqa: F401</span>
+
+<span class="kn">import</span> <span class="nn">requests</span>  <span class="c1"># noqa: F401</span>
+
+
+<div class="viewcode-block" id="reassign_b_factor"><a class="viewcode-back" href="../../dms_variants.pdb_utils.html#dms_variants.pdb_utils.reassign_b_factor">[docs]</a><span class="k">def</span> <span class="nf">reassign_b_factor</span><span class="p">(</span><span class="n">input_pdbfile</span><span class="p">,</span>
+                      <span class="n">output_pdbfile</span><span class="p">,</span>
+                      <span class="n">df</span><span class="p">,</span>
+                      <span class="n">metric_col</span><span class="p">,</span>
+                      <span class="o">*</span><span class="p">,</span>
+                      <span class="n">site_col</span><span class="o">=</span><span class="s1">&#39;site&#39;</span><span class="p">,</span>
+                      <span class="n">chain_col</span><span class="o">=</span><span class="s1">&#39;chain&#39;</span><span class="p">,</span>
+                      <span class="n">missing_metric</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                      <span class="n">model_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                      <span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Reassign B factors in PDB file to some other metric.</span>
+
+<span class="sd">    B-factor re-assignment is useful because PDB images can be colored</span>
+<span class="sd">    by B factor using programs such as ``pymol`` using commands like::</span>
+
+<span class="sd">        show surface, RBD; spectrum b, white red, RBD, minimum=0, maximum=1</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_pdbfile : str</span>
+<span class="sd">        Path to input PDB file.</span>
+<span class="sd">    output_pdbfile: str</span>
+<span class="sd">        Name of created output PDB file with re-assigned B factors.</span>
+<span class="sd">    df : pandas.DataFrame</span>
+<span class="sd">        Data frame with metric used to re-assign B factor.</span>
+<span class="sd">    metric_col : str</span>
+<span class="sd">        Name of column in `df` that has the numerical metric that the B</span>
+<span class="sd">        factor is re-assigned to.</span>
+<span class="sd">    site_col : str</span>
+<span class="sd">        Name of column in `df` with site numbers, which should map numbers</span>
+<span class="sd">        used in PDB.</span>
+<span class="sd">    chain_col : str</span>
+<span class="sd">        Name of column in `df` with chain labels.</span>
+<span class="sd">    missing_metric : float or dict</span>
+<span class="sd">        How do we handl sites that are missing in `df`? If a float, reassign</span>
+<span class="sd">        B factors for all missing sites to this value. If a dict, should be</span>
+<span class="sd">        keyed by chain and assign all missing sites in each chain to</span>
+<span class="sd">        indicated value.</span>
+<span class="sd">    model_index : int</span>
+<span class="sd">        Which model in the PDB to use. If a X-ray structure, there is</span>
+<span class="sd">        probably just one model so you can use default of 0.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    Create data frame `df` that assigns metric to two sites in chain E:</span>
+
+<span class="sd">    &gt;&gt;&gt; df = pd.DataFrame({&#39;chain&#39;: [&#39;E&#39;, &#39;E&#39;],</span>
+<span class="sd">    ...                    &#39;site&#39;: [333, 334],</span>
+<span class="sd">    ...                    &#39;metric&#39;: [0.5, 1.2]})</span>
+
+<span class="sd">    Create dict `missing_metric` that assigns -1 to sites with missing</span>
+<span class="sd">    metrics in chain E, and 0 to sites in other chains:</span>
+
+<span class="sd">    &gt;&gt;&gt; missing_metric = collections.defaultdict(lambda: 0)</span>
+<span class="sd">    &gt;&gt;&gt; missing_metric[&#39;E&#39;] = -1</span>
+
+<span class="sd">    Download PDB, do the re-assignment of B factors, read the lines</span>
+<span class="sd">    from the resulting re-assigned PDB:</span>
+
+<span class="sd">    &gt;&gt;&gt; pdb_url = &#39;https://files.rcsb.org/download/6M0J.pdb&#39;</span>
+<span class="sd">    &gt;&gt;&gt; r = requests.get(pdb_url)</span>
+<span class="sd">    &gt;&gt;&gt; with tempfile.TemporaryDirectory() as tmpdir:</span>
+<span class="sd">    ...    original_pdbfile = os.path.join(tmpdir, &#39;original.pdb&#39;)</span>
+<span class="sd">    ...    with open(original_pdbfile, &#39;wb&#39;) as f:</span>
+<span class="sd">    ...        _ = f.write(r.content)</span>
+<span class="sd">    ...    reassigned_pdbfile = os.path.join(tmpdir, &#39;reassigned.pdb&#39;)</span>
+<span class="sd">    ...    reassign_b_factor(input_pdbfile=original_pdbfile,</span>
+<span class="sd">    ...                      output_pdbfile=reassigned_pdbfile,</span>
+<span class="sd">    ...                      df=df,</span>
+<span class="sd">    ...                      metric_col=&#39;metric&#39;,</span>
+<span class="sd">    ...                      missing_metric=missing_metric)</span>
+<span class="sd">    ...    pdb_text = open(reassigned_pdbfile).readlines()</span>
+
+<span class="sd">    Now spot check some key lines in the output PDB.</span>
+<span class="sd">    Chain A has all sites with B factors (last entry) re-assigned to 0:</span>
+
+<span class="sd">    &gt;&gt;&gt; print(pdb_text[0].strip())</span>
+<span class="sd">    ATOM      1  N   SER A  19     -31.455  49.474   2.505  1.00  0.00           N</span>
+
+<span class="sd">    Chain E has sites 333 and 334 with B-factors assigned to values in `df`, and</span>
+<span class="sd">    other sites (such as 335) assigned to -1:</span>
+
+<span class="sd">    &gt;&gt;&gt; print(&#39;\n&#39;.join(line.strip() for line in pdb_text[5010: 5025]))</span>
+<span class="sd">    ATOM   5010  O   THR E 333     -34.954  13.568  46.370  1.00  0.50           O</span>
+<span class="sd">    ATOM   5011  CB  THR E 333     -33.695  14.409  48.627  1.00  0.50           C</span>
+<span class="sd">    ATOM   5012  OG1 THR E 333     -34.797  14.149  49.507  1.00  0.50           O</span>
+<span class="sd">    ATOM   5013  CG2 THR E 333     -32.495  14.879  49.438  1.00  0.50           C</span>
+<span class="sd">    ATOM   5014  N   ASN E 334     -35.532  15.604  45.605  1.00  1.20           N</span>
+<span class="sd">    ATOM   5015  CA  ASN E 334     -36.287  15.087  44.474  1.00  1.20           C</span>
+<span class="sd">    ATOM   5016  C   ASN E 334     -35.475  15.204  43.182  1.00  1.20           C</span>
+<span class="sd">    ATOM   5017  O   ASN E 334     -34.533  15.994  43.076  1.00  1.20           O</span>
+<span class="sd">    ATOM   5018  CB  ASN E 334     -37.622  15.823  44.337  1.00  1.20           C</span>
+<span class="sd">    ATOM   5019  CG  ASN E 334     -38.660  15.006  43.586  1.00  1.20           C</span>
+<span class="sd">    ATOM   5020  OD1 ASN E 334     -38.568  13.776  43.514  1.00  1.20           O</span>
+<span class="sd">    ATOM   5021  ND2 ASN E 334     -39.649  15.686  43.016  1.00  1.20           N</span>
+<span class="sd">    ATOM   5022  N   LEU E 335     -35.849  14.391  42.194  1.00 -1.00           N</span>
+<span class="sd">    ATOM   5023  CA  LEU E 335     -35.084  14.305  40.955  1.00 -1.00           C</span>
+<span class="sd">    ATOM   5024  C   LEU E 335     -35.466  15.426  39.992  1.00 -1.00           C</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># noqa: E501</span>
+    <span class="c1"># subset `df` to needed columns and error check it</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">metric_col</span><span class="p">,</span> <span class="n">site_col</span><span class="p">,</span> <span class="n">chain_col</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` lacks column </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cols</span><span class="p">]</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">site_col</span><span class="p">,</span> <span class="n">chain_col</span><span class="p">])):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;non-unique metric for a site in a chain&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">site_col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;function currently requires `site_col` to be int&#39;</span><span class="p">)</span>
+
+    <span class="c1"># read PDB, catch warnings about discontinuous chains</span>
+    <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span>
+                <span class="s1">&#39;ignore&#39;</span><span class="p">,</span>
+                <span class="n">category</span><span class="o">=</span><span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">PDBExceptions</span><span class="o">.</span><span class="n">PDBConstructionWarning</span><span class="p">)</span>
+        <span class="n">pdb</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">PDBParser</span><span class="p">()</span><span class="o">.</span><span class="n">get_structure</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="n">input_pdbfile</span><span class="p">)</span>
+
+    <span class="c1"># get the model out of the PDB</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">pdb</span><span class="o">.</span><span class="n">get_models</span><span class="p">())[</span><span class="n">model_index</span><span class="p">]</span>
+
+    <span class="c1"># make sure all chains in PDB</span>
+    <span class="n">missing_chains</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">chain_col</span><span class="p">])</span> <span class="o">-</span> <span class="p">{</span><span class="n">chain</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">chain</span>
+                                           <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_chains</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="n">missing_chains</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`df` has chains not in PDB: </span><span class="si">{</span><span class="n">missing_chains</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># make missing_metric a dict if it isn&#39;t already</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">missing_metric</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">missing_metric</span> <span class="o">=</span> <span class="p">{</span><span class="n">chain</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">missing_metric</span> <span class="k">for</span> <span class="n">chain</span>
+                          <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_chains</span><span class="p">()}</span>
+
+    <span class="c1"># loop over all chains and do coloring</span>
+    <span class="k">for</span> <span class="n">chain</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">get_chains</span><span class="p">():</span>
+        <span class="n">chain_id</span> <span class="o">=</span> <span class="n">chain</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">site_to_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span>
+                       <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">chain_col</span><span class="si">}</span><span class="s2"> == @chain_id&quot;</span><span class="p">)</span>
+                       <span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="n">site_col</span><span class="p">)</span>
+                       <span class="p">[</span><span class="n">metric_col</span><span class="p">]</span>
+                       <span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+                       <span class="p">)</span>
+        <span class="k">for</span> <span class="n">residue</span> <span class="ow">in</span> <span class="n">chain</span><span class="p">:</span>
+            <span class="n">site</span> <span class="o">=</span> <span class="n">residue</span><span class="o">.</span><span class="n">get_id</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">metric_val</span> <span class="o">=</span> <span class="n">site_to_val</span><span class="p">[</span><span class="n">site</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">metric_val</span> <span class="o">=</span> <span class="n">missing_metric</span><span class="p">[</span><span class="n">chain_id</span><span class="p">]</span>
+            <span class="c1"># for disordered residues, get list of them</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">residuelist</span> <span class="o">=</span> <span class="n">residue</span><span class="o">.</span><span class="n">disordered_get_list</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">residuelist</span> <span class="o">=</span> <span class="p">[</span><span class="n">residue</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">residuelist</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">r</span><span class="p">:</span>
+                    <span class="c1"># for disordered atoms, get list of them</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">atomlist</span> <span class="o">=</span> <span class="n">atom</span><span class="o">.</span><span class="n">disordered_get_list</span><span class="p">()</span>
+                    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                        <span class="n">atomlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">atom</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">atomlist</span><span class="p">:</span>
+                        <span class="n">a</span><span class="o">.</span><span class="n">bfactor</span> <span class="o">=</span> <span class="n">metric_val</span>
+
+    <span class="c1"># write PDB</span>
+    <span class="n">io</span> <span class="o">=</span> <span class="n">Bio</span><span class="o">.</span><span class="n">PDB</span><span class="o">.</span><span class="n">PDBIO</span><span class="p">()</span>
+    <span class="n">io</span><span class="o">.</span><span class="n">set_structure</span><span class="p">(</span><span class="n">pdb</span><span class="p">)</span>
+    <span class="n">io</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">output_pdbfile</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
+    <img
+        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2020.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
