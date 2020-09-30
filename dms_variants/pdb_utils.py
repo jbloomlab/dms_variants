@@ -17,6 +17,8 @@ import Bio.PDB
 
 import pandas as pd  # noqa: F401
 
+import requests  # noqa: F401
+
 
 def reassign_b_factor(input_pdbfile,
                       output_pdbfile,
@@ -81,20 +83,19 @@ def reassign_b_factor(input_pdbfile,
     Download PDB, do the re-assignment of B factors, read the lines
     from the resulting re-assigned PDB:
 
-    >>> pdb_id = '6m0j'
+    >>> pdb_url = 'https://files.rcsb.org/download/6M0J.pdb'
+    >>> r = requests.get(pdb_url)
     >>> with tempfile.TemporaryDirectory() as tmpdir:
-    ...    _ = Bio.PDB.PDBList().retrieve_pdb_file(pdb_code=pdb_id,
-    ...                                            file_format='pdb',
-    ...                                            pdir=tmpdir)
-    ...    pdbfile = os.path.join(tmpdir, f"pdb{pdb_id}.ent")
+    ...    original_pdbfile = os.path.join(tmpdir, 'original.pdb')
+    ...    with open(original_pdbfile, 'wb') as f:
+    ...        _ = f.write(r.content)
     ...    reassigned_pdbfile = os.path.join(tmpdir, 'reassigned.pdb')
-    ...    reassign_b_factor(input_pdbfile=pdbfile,
+    ...    reassign_b_factor(input_pdbfile=original_pdbfile,
     ...                      output_pdbfile=reassigned_pdbfile,
     ...                      df=df,
     ...                      metric_col='metric',
     ...                      missing_metric=missing_metric)
     ...    pdb_text = open(reassigned_pdbfile).readlines()
-    Downloading PDB structure '6m0j'...
 
     Now spot check some key lines in the output PDB.
     Chain A has all sites with B factors (last entry) re-assigned to 0:
