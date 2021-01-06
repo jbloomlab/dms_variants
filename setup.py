@@ -58,8 +58,8 @@ setup(
     ext_modules=[
         Extension(
             'dms_variants._cutils',
-            ['dms_variants/_cutils.c'],
-            extra_compile_args=["-Wno-error=declaration-after-statement"]
+            ['dms_variants/_cutils.c']#,
+            #extra_compile_args=["-Wno-error=declaration-after-statement"]
             ),
         ],
     )

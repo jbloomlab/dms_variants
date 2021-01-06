@@ -1,4 +1,12 @@
 ===============================
+setup
+===============================
+pip install dms_variants #failed on Windows 10; fix: git clone repo and comment out "-Wno-error=declaration-after-statement" in "setup.py"
+python setup.py install
+pip install dmslogo scipy plotnine pandas warnings time tempfile random itertools collections #reqs for following test script
+python test.py  #output Wildtype gene of 30 codons: GCTAACCAAATCGTAGGCTGCACCCGCAACATCCTGAACATAGCTGACATCGATTATAAATATGGGCCAAGCTTCCCAACCACCTCCGCA
+
+===============================
 dms_variants
 ===============================
 
