@@ -12,6 +12,8 @@ Fixed
 +++++
 - Updated compilation arguments for Windows.
 
+- Pass Travis tests.
+
 0.8.5
 ------
 
