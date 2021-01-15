@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.8.6
+-----
+Fixed
++++++
+- Updated compilation arguments for Windows.
+
 0.8.5
 ------
 
