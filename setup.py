@@ -1,6 +1,7 @@
 """Setup script for ``dms_variants``."""
 
 
+import platform
 import re
 import sys
 
@@ -31,6 +32,10 @@ for dataname in ['version', 'author', 'email', 'url']:
 with open('README.rst') as f:
     readme = f.read()
 
+extra_compile_args = []
+if platform.system() != 'Windows':
+    extra_compile_args.append('-Wno-error=declaration-after-statement')
+
 # main setup command
 setup(
     name='dms_variants',
@@ -59,7 +64,7 @@ setup(
         Extension(
             'dms_variants._cutils',
             ['dms_variants/_cutils.c'],
-            extra_compile_args=["-Wno-error=declaration-after-statement"]
+            extra_compile_args=extra_compile_args,
             ),
         ],
     )

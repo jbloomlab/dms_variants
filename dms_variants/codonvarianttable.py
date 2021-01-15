@@ -829,7 +829,7 @@ class CodonVariantTable:
         df_scores = []
         for tup in sample_df.itertuples():
             name_dfs = []
-            lib = getattr(tup, 'library')  # noqa: F841
+            lib = tup.library  # noqa: F841
             for stype in ('pre_sample', 'post_sample'):
                 s_name = getattr(tup, stype)  # noqa: F841
                 name_dfs.append(
