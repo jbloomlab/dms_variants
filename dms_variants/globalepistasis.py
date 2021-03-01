@@ -113,6 +113,10 @@ and the latent phenotype of the wildtype is set to zero.
 
 Multiple latent phenotypes
 +++++++++++++++++++++++++++
+Although this package allows multiple latent phenotypes, we do **not**
+recommend using them as the models generally do not seem to converge
+in fitting in a useful way with multiple latent phenotypes.
+
 Equations :eq:`latent_phenotype` and :eq:`observed_phenotype` can be
 generalized to the case where multiple latent phenotypes contribute
 to the observed phenotype. Specifically, let there be
