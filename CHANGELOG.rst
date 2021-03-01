@@ -8,8 +8,13 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
 0.9.0
 ------
+Added
++++++
+- Notebook and code for simulating selection from polyclonal antibodies.
+
 Changed
 +++++++
+- Require Python >= 3.7 (that's lowest we are testing).
 - Discourage and stop testing multiple latent phenotypes.
 - Remove from docs and stop testing ``predict_variants.ipynb`` as this doesn't seem to be a common use case.
 
