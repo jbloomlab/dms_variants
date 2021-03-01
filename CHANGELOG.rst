@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.9.0
+------
+Changed
++++++++
+- Discourage and stop testing multiple latent phenotypes.
+- Remove from docs and stop testing ``predict_variants.ipynb`` as this doesn't seem to be a common use case.
+
 0.8.6
 -----
 Fixed
