@@ -11,6 +11,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 Added
 +++++
 - Notebook and code for simulating selection from polyclonal antibodies. this includes the ``polyclonal`` module.
+- ``BinaryMap`` can store functional scores for multiple conditions.
 
 Changed
 +++++++

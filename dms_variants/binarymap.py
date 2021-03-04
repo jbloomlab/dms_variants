@@ -50,9 +50,12 @@ class BinaryMap:
     func_score_var_col : str or None
         Column in `func_scores_df` giving variance on functional score
         estimate, or `None` if no variance available.
-    conditions_col : str or None
+    condition_col : str or None
         Column in `func_scores_df` giving the condition under which the
-        functional score was computed, or `None` if just one condition.
+        functional score was computed, or `None` if just one condition. If
+        there are multiple conditions, then the variants (as defined in
+        `substitutions_col`) must be listed in the same order for each
+        condition.
     n_pre_col : str or None
         Column in `func_scores_df` giving pre-selection counts for each
         variant, or `None` if counts not available.
@@ -93,17 +96,23 @@ class BinaryMap:
     substitution_variants : tuple
         All variants as substitution strings as provided in `substitutions_col`
         of `func_scores_df`.
+    n_conditions : int
+        Number of different conditions for which we have functional scores.
+    conditions : tuple
+        All conditions, or None of `condition_col` is `None`.
     func_scores : numpy.ndarray of floats
-        A 1D array of length `nvariants` giving score for each variant.
+        If `n_conditions` is one, a 1D array of length `nvariants`; if
+        `n_conditions` > 1 then array of shape `(nconditions, nvariants)` with
+        `func_scores[i]` giving the scores for condition `conditions[i]`.
     func_scores_var : numpy.ndarray of floats, or None
-        A 1D array of length `nvariants` giving variance on score for each
-        variant, or `None` if no variance estimates provided.
+        An array of the same shape as `func_scores` giving the variance on
+        these scores, or `None` if no variance estimates provided.
     n_pre : numpy.dnarray of integers, or None
-        A 1D array of length `nvariants` giving pre-selection counts for each
-        variant, or `None` if counts not provided.
+        An array of of same shape as `func_scores` giving pre-selection counts
+        for each variant, or `None` if counts not provided.
     n_post : numpy.dnarray of integers, or None
-        A 1D array of length `nvariants` giving post-selection counts for each
-        variant, or `None` if counts not provided.
+        An array of of same shape as `func_scores` giving post-selection counts
+        for each variant, or `None` if counts not provided.
     alphabet : tuple
         Allowed characters (e.g., amino acids or codons).
     substitutions_col : str
@@ -229,10 +238,89 @@ class BinaryMap:
     We would not have been able to initialize `binmap` if we weren't using
     the `cols_optional` flag:
 
-    >>> BinaryMap(func_scores_df, alphabet=alphabet, cols_optional=False)
+    >>> BinaryMap(func_scores_df, cols_optional=False)
     Traceback (most recent call last):
       ...
-    ValueError: `func_scores_df` lacks column pre_count
+    ValueError: `func_scores_df` lacks column condition
+
+    Above we have not initialized with any conditions
+
+    >>> binmap.conditions is None
+    True
+    >>> binmap.n_conditions
+    1
+
+    Now add a condition column, so we are initializing with a single
+    named condition:
+
+    >>> func_scores_df_1cond = func_scores_df.assign(condition=1)
+    >>> binmap_1cond = BinaryMap(func_scores_df_1cond)
+    >>> binmap_1cond.conditions
+    (1,)
+    >>> binmap_1cond.n_conditions
+    1
+    >>> binmap_1cond.func_scores
+    array([ 0.  , -0.2 , -0.4 ,  0.01, -0.05, -1.2 ])
+    >>> binmap_1cond.func_scores_var
+    array([0.2 , 0.1 , 0.3 , 0.15, 0.1 , 0.4 ])
+    >>> binmap_1cond.binary_variants.toarray()
+    array([[0, 0, 0, 0, 0],
+           [1, 0, 0, 0, 0],
+           [0, 1, 0, 0, 1],
+           [0, 0, 0, 0, 0],
+           [0, 0, 0, 1, 1],
+           [0, 0, 1, 0, 0]], dtype=int8)
+    >>> binmap_1cond.substitution_variants
+    ('', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*')
+
+    Now multiple conditions:
+
+    >>> func_scores_df_2cond = pd.concat([
+    ...         func_scores_df.assign(condition=1),
+    ...         func_scores_df.assign(
+    ...                 condition=2,
+    ...                 func_score=lambda x: x['func_score'] * 2,
+    ...                 func_score_var=lambda x: x['func_score_var'] * 2)
+    ...         ])
+    >>> binmap_2cond = BinaryMap(func_scores_df_2cond)
+    >>> binmap_2cond.conditions
+    (1, 2)
+    >>> binmap_2cond.n_conditions
+    2
+    >>> binmap_2cond.substitution_variants
+    ('', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*')
+    >>> binmap_2cond.binary_variants.toarray()
+    array([[0, 0, 0, 0, 0],
+           [1, 0, 0, 0, 0],
+           [0, 1, 0, 0, 1],
+           [0, 0, 0, 0, 0],
+           [0, 0, 0, 1, 1],
+           [0, 0, 1, 0, 0]], dtype=int8)
+    >>> binmap_2cond.func_scores
+    array([[ 0.  , -0.2 , -0.4 ,  0.01, -0.05, -1.2 ],
+           [ 0.  , -0.4 , -0.8 ,  0.02, -0.1 , -2.4 ]])
+    >>> binmap_2cond.func_scores_var
+    array([[0.2 , 0.1 , 0.3 , 0.15, 0.1 , 0.4 ],
+           [0.4 , 0.2 , 0.6 , 0.3 , 0.2 , 0.8 ]])
+
+    We can have the multiple conditions arranged however we want as long
+    as the variants for each condition are in the same order. So this is OK:
+
+    >>> bmap_valid = BinaryMap(func_scores_df_2cond
+    ...                        .sort_values(['aa_substitutions', 'condition']))
+    >>> bmap_valid.n_conditions
+    2
+
+    But this is not, because it puts variants in different order for the
+    two conditions:
+
+    >>> bmap_invalid = BinaryMap(pd.concat([
+    ...     func_scores_df.assign(condition=1),
+    ...     func_scores_df.assign(condition=2).sort_values('aa_substitutions'),
+    ...     ]))
+    Traceback (most recent call last):
+      ...
+    ValueError: variants not same order for all conditions
 
     Now assign values to `n_pre` and `n_post` attributes:
 
@@ -240,7 +328,7 @@ class BinaryMap:
     ...         func_scores_df.assign(pre_count=[10, 20, 15, 5, 6, 8],
     ...                               post_count=[0, 3, 12, 11, 9, 8])
     ...         )
-    >>> binmap_counts = BinaryMap(func_scores_df_counts, alphabet=alphabet)
+    >>> binmap_counts = BinaryMap(func_scores_df_counts)
     >>> binmap_counts.n_pre
     array([10, 20, 15,  5,  6,  8])
     >>> binmap_counts.n_post
@@ -295,6 +383,7 @@ class BinaryMap:
                  substitutions_col='aa_substitutions',
                  func_score_col='func_score',
                  func_score_var_col='func_score_var',
+                 condition_col='condition',
                  n_pre_col='pre_count',
                  n_post_col='post_count',
                  cols_optional=True,
@@ -303,16 +392,73 @@ class BinaryMap:
                  wtseq=None,
                  ):
         """Initialize object; see main class docstring."""
-        self.nvariants = len(func_scores_df)
         self.alphabet = tuple(alphabet)
 
+        # determine what conditions we have
+        if condition_col is None:
+            self.conditions = None
+        elif condition_col not in func_scores_df.columns:
+            if cols_optional:
+                self.conditions = None
+            else:
+                raise ValueError('`func_scores_df` lacks column ' +
+                                 str(condition_col))
+        else:
+            self.conditions = tuple(func_scores_df[condition_col].unique())
+            if any(pd.isnull(c) for c in self.conditions):
+                raise ValueError(f"some conditions in {condition_col} null")
+        if self.conditions is None:
+            self.n_conditions = 1
+        else:
+            self.n_conditions = len(self.conditions)
+        if self.n_conditions < 1:
+            raise ValueError('no conditions defined in `condition_col`')
+
+        # get variants, ensure in same order for each condition
+        if substitutions_col not in func_scores_df.columns:
+            raise ValueError('`func_scores_df` lacks `substitutions_col` ' +
+                             substitutions_col)
+        if self.n_conditions == 1:
+            self.substitution_variants = tuple(func_scores_df
+                                               [substitutions_col])
+        else:
+            for _, df in func_scores_df.groupby(condition_col):
+                subs = df[substitutions_col].values
+                if hasattr(self, 'substitution_variants'):
+                    if len(subs) != len(self.substitution_variants):
+                        raise ValueError('number of variants not the same '
+                                         'for all conditions')
+                    if (subs != self.substitution_variants).any():
+                        raise ValueError('variants not same order for '
+                                         'all conditions')
+                else:
+                    self.substitution_variants = subs
+            self.substitution_variants = tuple(self.substitution_variants)
+        if not all(isinstance(s, str) for s in self.substitution_variants):
+            raise ValueError('values in `substitutions_col` not all str')
+        self.nvariants = len(self.substitution_variants)
+        self.substitutions_col = substitutions_col
+
+        # set all attributes other than condition from those columns
+        if self.n_conditions > 1:
+            # sort by condition
+            assert set(self.conditions) == set(func_scores_df[condition_col])
+            func_scores_df = (
+                func_scores_df
+                .sort_values(condition_col,
+                             key=lambda x: x.map({c: i for i, c in
+                                                  enumerate(self.conditions)})
+                             )
+                )
         for col, attr, dtype, lim_min, lim_max in [
                 (func_score_col, 'func_scores', float, None, None),
                 (func_score_var_col, 'func_scores_var', float, 0, None),
                 (n_pre_col, 'n_pre', int, 0, None),
                 (n_post_col, 'n_post', int, 0, None),
                 ]:
-            if col not in func_scores_df.columns:
+            if col is None:
+                setattr(self, attr, None)
+            elif col not in func_scores_df.columns:
                 if cols_optional:
                     setattr(self, attr, None)
                 else:
@@ -321,24 +467,16 @@ class BinaryMap:
                 vals = func_scores_df[col].values.astype(dtype)
                 if not all(vals == func_scores_df[col].values):
                     raise ValueError(f"{col} not of type {dtype}")
-                assert vals.shape == (self.nvariants,)
+                assert len(vals) == self.nvariants * self.n_conditions
                 if any(numpy.isnan(vals)):
                     raise ValueError(f"some entries in {col} are NaN")
                 if (lim_min is not None) and any(vals < lim_min):
                     raise ValueError(f"some entries in {col} < {lim_min}")
                 if (lim_max is not None) and any(vals > lim_max):
                     raise ValueError(f"some entries in {col} < {lim_min}")
+                if self.n_conditions > 1:
+                    vals = vals.reshape(self.n_conditions, self.nvariants)
                 setattr(self, attr, vals)
-
-        # get list of substitution strings for each variant
-        if substitutions_col not in func_scores_df.columns:
-            raise ValueError('`func_scores_df` lacks `substitutions_col` ' +
-                             substitutions_col)
-        substitutions = tuple(func_scores_df[substitutions_col].tolist())
-        if not all(isinstance(s, str) for s in substitutions):
-            raise ValueError('values in `substitutions_col` not all str')
-        self.substitution_variants = substitutions
-        self.substitutions_col = substitutions_col
 
         # regex that matches substitution
         chars = []
@@ -357,7 +495,7 @@ class BinaryMap:
         # build mapping from substitution to binary map index
         wts = {}
         muts = collections.defaultdict(set)
-        for subs in substitutions:
+        for subs in self.substitution_variants:
             for sub in subs.split():
                 m = re.fullmatch(self._sub_regex, sub)
                 if not m:
@@ -411,7 +549,7 @@ class BinaryMap:
         # build binary_variants
         row_ind = []  # row indices of elements that are one
         col_ind = []  # column indices of elements that are one
-        for ivariant, subs in enumerate(substitutions):
+        for ivariant, subs in enumerate(self.substitution_variants):
             for isub in self.sub_str_to_indices(subs):
                 row_ind.append(ivariant)
                 col_ind.append(isub)
