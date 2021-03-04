@@ -50,6 +50,9 @@ class BinaryMap:
     func_score_var_col : str or None
         Column in `func_scores_df` giving variance on functional score
         estimate, or `None` if no variance available.
+    conditions_col : str or None
+        Column in `func_scores_df` giving the condition under which the
+        functional score was computed, or `None` if just one condition.
     n_pre_col : str or None
         Column in `func_scores_df` giving pre-selection counts for each
         variant, or `None` if counts not available.
@@ -87,7 +90,7 @@ class BinaryMap:
         if the variant has the substitution :meth:`BinaryMap.i_to_sub`
         and 0 otherwise. To convert to dense `numpy.ndarray`, use
         `toarray` method of the sparse matrix.
-    substitution_variants : list
+    substitution_variants : tuple
         All variants as substitution strings as provided in `substitutions_col`
         of `func_scores_df`.
     func_scores : numpy.ndarray of floats
@@ -147,7 +150,7 @@ class BinaryMap:
            [0, 0, 0, 1, 1],
            [0, 0, 1, 0, 0]], dtype=int8)
     >>> binmap.substitution_variants
-    ['', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*']
+    ('', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*')
     >>> binmap.substitutions_col
     'aa_substitutions'
 
@@ -210,7 +213,7 @@ class BinaryMap:
     True
 
     >>> binmap_expand.substitution_variants
-    ['', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*']
+    ('', 'M1A', 'M1C K3A', '', 'A2C K3A', 'A2*')
 
     >>> for ivar in range(binmap_expand.nvariants):
     ...     binvar = binmap_expand.binary_variants.toarray()[ivar]
@@ -331,7 +334,7 @@ class BinaryMap:
         if substitutions_col not in func_scores_df.columns:
             raise ValueError('`func_scores_df` lacks `substitutions_col` ' +
                              substitutions_col)
-        substitutions = func_scores_df[substitutions_col].tolist()
+        substitutions = tuple(func_scores_df[substitutions_col].tolist())
         if not all(isinstance(s, str) for s in substitutions):
             raise ValueError('values in `substitutions_col` not all str')
         self.substitution_variants = substitutions
