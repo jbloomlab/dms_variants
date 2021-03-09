@@ -90,7 +90,7 @@ class BinaryMap:
         Sparse matrix of shape `nvariants` by `binarylength`. Row
         `binary_variants[ivariant]` gives the binary representation of
         variant `ivariant`, and `binary_variants[ivariant, i]` is 1
-        if the variant has the substitution :meth:`BinaryMap.i_to_sub`
+        if the variant has the substitution :meth:`BinaryMap.i_to_sub(i)`
         and 0 otherwise. To convert to dense `numpy.ndarray`, use
         `toarray` method of the sparse matrix.
     substitution_variants : tuple
