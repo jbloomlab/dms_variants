@@ -10,7 +10,11 @@ Defines :class:`Polyclonal` objects for handling antibody mixtures.
 
 import re
 
+import numpy
+
 import pandas as pd
+
+import dms_variants.binarymap
 
 
 class Polyclonal:
@@ -120,6 +124,37 @@ class Polyclonal:
       ...
     ValueError: not all expected mutations for e2
 
+    Now make a data frame with some variants:
+
+    >>> variants_df = pd.DataFrame.from_records(
+    ...         [('AA', 'A2K'),
+    ...          ('AC', 'M1A A2K'),
+    ...          ('AG', 'M1A'),
+    ...          ('AT', ''),
+    ...          ('CA', 'A2K')],
+    ...         columns=['barcode', 'aa_substitutions'])
+
+    Get the escape probabilities:
+
+    >>> polyclonal.prob_escape(variants_df=variants_df,
+    ...                        concentrations=[1, 2, 4]).round(3)
+       barcode aa_substitutions  concentration  prob_escape
+    0       AA              A2K            1.0        0.097
+    1       AC          M1A A2K            1.0        0.598
+    2       AG              M1A            1.0        0.197
+    3       AT                             1.0        0.032
+    4       CA              A2K            1.0        0.097
+    5       AA              A2K            2.0        0.044
+    6       AC          M1A A2K            2.0        0.398
+    7       AG              M1A            2.0        0.090
+    8       AT                             2.0        0.010
+    9       CA              A2K            2.0        0.044
+    10      AA              A2K            4.0        0.017
+    11      AC          M1A A2K            4.0        0.214
+    12      AG              M1A            4.0        0.034
+    13      AT                             4.0        0.003
+    14      CA              A2K            4.0        0.017
+
     """
 
     def __init__(self,
@@ -137,6 +172,7 @@ class Polyclonal:
         self._activity_wt = (activity_wt_df
                              .set_index('epitope')
                              ['activity']
+                             .astype(float)
                              .to_dict()
                              )
 
@@ -154,10 +190,110 @@ class Polyclonal:
             self._mut_escape[epitope] = (df
                                          .set_index('mutation')
                                          ['escape']
+                                         .astype(float)
                                          .to_dict()
                                          )
         assert set(self.epitopes) == set(self._activity_wt)
         assert set(self.epitopes) == set(self._mut_escape)
+
+        # below are set to non-null values in `_set_binarymap` when
+        # specific variants provided
+        self._binarymap = None
+        self._beta = None  # M by E matrix of betas
+        self._a = None  # length E vector of activities
+
+    def prob_escape(self,
+                    *,
+                    variants_df,
+                    concentrations,
+                    substitutions_col='aa_substitutions',
+                    concentration_col='concentration',
+                    prob_escape_col='prob_escape',
+                    ):
+        r"""Compute probability of escape :math:`p_v\left(c\right)`.
+
+        Arguments
+        ---------
+        variants_df : pandas.DataFrame
+            Input data frame defining variants and concentrations.
+        concentrations : array-like
+            Concentrations at which we compute probability of escape.
+        substitutions_col : str
+            Column in `variants_df` defining variants as space-delimited
+            strings of substitutions (e.g., 'M1A K3T').
+        concentration_col : str
+            Column in returned data frame with concentrations.
+        prob_escape_col : str
+            Column in returned data frame with :math:`p_v\left(c\right)`.
+
+        Returns
+        -------
+        pandas.DataFrame
+            A copy of `variants_df` with `concentration_col` and
+            `prob_escape_col` added, giving the probability of escape
+            (:math:`_v\left(c\right)`) values.
+
+        """
+        for col in [concentration_col, prob_escape_col]:
+            if col in variants_df.columns:
+                raise ValueError(f"`variants_df` already has column {col}")
+        self._set_binarymap(variants_df, substitutions_col)
+        cs = numpy.array(concentrations, dtype='float')
+        if not (cs > 0).all():
+            raise ValueError('concentrations must be > 0')
+        if cs.ndim != 1:
+            raise ValueError('concentrations must be 1-dimensional')
+        p_v_c = self._compute_pv(cs)
+        assert p_v_c.shape == (self._binarymap.nvariants, len(cs))
+        return (pd.concat([variants_df.assign(**{concentration_col: c})
+                           for c in cs],
+                          ignore_index=True)
+                .assign(**{prob_escape_col: p_v_c.ravel(order='F')})
+                )
+
+    def _compute_pv(self, cs):
+        r"""Compute :math:`p_v\left(c\right)`. Call `_set_binarymap` first."""
+        if self._binarymap is None or self._a is None or self._beta is None:
+            raise ValueError('call `_set_binarymap` first')
+        assert (cs > 0).all()
+        assert cs.ndim == 1
+        phi_e_v = self._binarymap.binary_variants.dot(self._beta) - self._a
+        assert phi_e_v.shape == (self._binarymap.nvariants, len(self.epitopes))
+        exp_minus_phi_e_v = numpy.exp(-phi_e_v)
+        U_e_v_c = 1.0 / (1.0 + numpy.multiply.outer(exp_minus_phi_e_v, cs))
+        assert U_e_v_c.shape == (self._binarymap.nvariants,
+                                 len(self.epitopes),
+                                 len(cs))
+        p_v_c = U_e_v_c.prod(axis=1)
+        assert p_v_c.shape == (self._binarymap.nvariants, len(cs))
+        return p_v_c
+
+    def _set_binarymap(self,
+                       variants_df,
+                       substitutions_col,
+                       ):
+        """Set `_binarymap`, `_beta`, `_a` attributes."""
+        self._binarymap = dms_variants.binarymap.BinaryMap(
+                variants_df,
+                substitutions_col=substitutions_col,
+                )
+        extra_muts = set(self._binarymap.all_subs) - set(self.mutations)
+        if extra_muts:
+            raise ValueError('variants contain mutations for which no '
+                             'escape value initialized:\n'
+                             '\n'.join(extra_muts))
+
+        self._a = numpy.array([self._activity_wt[e] for e in self.epitopes],
+                              dtype='float')
+        assert self._a.shape == (len(self.epitopes),)
+
+        self._beta = numpy.array(
+                        [[self._mut_escape[e][m] for e in self.epitopes]
+                         for m in self._binarymap.all_subs],
+                        dtype='float')
+        assert self._beta.shape == (self._binarymap.binarylength,
+                                    len(self.epitopes))
+        assert self._beta.shape[0] == self._binarymap.binary_variants.shape[1]
 
 
 if __name__ == '__main__':
