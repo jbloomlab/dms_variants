@@ -66,11 +66,11 @@ class Polyclonal:
     ----------
     activity_wt_df : pandas.DataFrame
         Should have columns named 'epitope' and 'activity', giving the names
-        of the epitopes and the activity of against epitope in the wildtype
+        of the epitopes and the activity against epitope in the wildtype
         protein, :math:`a_{\rm{wt}, e}`.
     mut_escape_df : pandas.DataFrame
         Should have columns named 'mutation', 'epitope', and 'escape' that
-        give the :math:`\beta_{m,e}` values.
+        give the :math:`\beta_{m,e}` values (in the 'escape' column).
 
     Attributes
     ----------
@@ -78,6 +78,47 @@ class Polyclonal:
         Names of all epitopes.
     mutations : tuple
         All mutations.
+
+    Example
+    --------
+    A simple example with two epitopes (`e1` and `e2`) and a small
+    number of mutations:
+
+    >>> activity_wt_df = pd.DataFrame({'epitope':  ['e1', 'e2'],
+    ...                                'activity': [ 2.0,  1.0]})
+    >>> activity_wt_df
+      epitope  activity
+    0      e1       2.0
+    1      e2       1.0
+
+    >>> mut_escape_df = pd.DataFrame({
+    ...      'mutation': ['M1A', 'M1A', 'M1C', 'M1C', 'A2K', 'A2K'],
+    ...      'epitope':  [ 'e1',  'e2',  'e1',  'e2',  'e1',  'e2'],
+    ...      'escape':   [  3.0,   0.0,   2.0,  0.0,   0.0,   2.5]})
+    >>> mut_escape_df
+      mutation epitope  escape
+    0      M1A      e1     3.0
+    1      M1A      e2     0.0
+    2      M1C      e1     2.0
+    3      M1C      e2     0.0
+    4      A2K      e1     0.0
+    5      A2K      e2     2.5
+
+    >>> polyclonal = Polyclonal(activity_wt_df=activity_wt_df,
+    ...                         mut_escape_df=mut_escape_df)
+    >>> polyclonal.epitopes
+    ('e1', 'e2')
+    >>> polyclonal.mutations
+    ('M1A', 'M1C', 'A2K')
+
+    Note that we can **not** initialize a :class:`Polyclonal` object if we are
+    missing escape estimates for any mutations for any epitopes:
+
+    >>> Polyclonal(activity_wt_df=activity_wt_df,
+    ...            mut_escape_df=mut_escape_df.head(n=5))
+    Traceback (most recent call last):
+      ...
+    ValueError: not all expected mutations for e2
 
     """
 
@@ -90,7 +131,7 @@ class Polyclonal:
         if pd.isnull(activity_wt_df['epitope']).any():
             raise ValueError('epitope name cannot be null')
         self.epitopes = tuple(activity_wt_df['epitope'].unique())
-        if len(self.epitopes) != len(self.activity_wt_df):
+        if len(self.epitopes) != len(activity_wt_df):
             raise ValueError('duplicate epitopes in `activity_wt_df`:\n' +
                              str(activity_wt_df))
         self._activity_wt = (activity_wt_df
