@@ -8,6 +8,7 @@ Defines :class:`Polyclonal` objects for handling antibody mixtures.
 """
 
 
+import collections
 import re
 
 import numpy
@@ -15,6 +16,7 @@ import numpy
 import pandas as pd
 
 import dms_variants.binarymap
+import dms_variants.constants
 
 
 class Polyclonal:
@@ -75,13 +77,20 @@ class Polyclonal:
     mut_escape_df : pandas.DataFrame
         Should have columns named 'mutation', 'epitope', and 'escape' that
         give the :math:`\beta_{m,e}` values (in the 'escape' column).
+    alphabet : array-like
+        Allowed characters in mutation strings.
 
     Attributes
     ----------
     epitopes : tuple
-        Names of all epitopes.
+        Names of all epitopes, in order provided in `activity_wt_df`.
     mutations : tuple
-        All mutations.
+        All mutations, sorted by site and then in the order of the alphabet
+        provided in `alphabet`.
+    sites : tuple
+        List of all sites.
+    wts : dict
+        Keyed by site, value is wildtype at that site.
 
     Example
     --------
@@ -96,14 +105,14 @@ class Polyclonal:
     1      e2       1.0
 
     >>> mut_escape_df = pd.DataFrame({
-    ...      'mutation': ['M1A', 'M1A', 'M1C', 'M1C', 'A2K', 'A2K'],
+    ...      'mutation': ['M1C', 'M1A', 'M1A', 'M1C', 'A2K', 'A2K'],
     ...      'epitope':  [ 'e1',  'e2',  'e1',  'e2',  'e1',  'e2'],
-    ...      'escape':   [  3.0,   0.0,   2.0,  0.0,   0.0,   2.5]})
+    ...      'escape':   [  2.0,   0.0,   3.0,  0.0,   0.0,   2.5]})
     >>> mut_escape_df
       mutation epitope  escape
-    0      M1A      e1     3.0
+    0      M1C      e1     2.0
     1      M1A      e2     0.0
-    2      M1C      e1     2.0
+    2      M1A      e1     3.0
     3      M1C      e2     0.0
     4      A2K      e1     0.0
     5      A2K      e2     2.5
@@ -114,6 +123,10 @@ class Polyclonal:
     ('e1', 'e2')
     >>> polyclonal.mutations
     ('M1A', 'M1C', 'A2K')
+    >>> polyclonal.sites
+    (1, 2)
+    >>> polyclonal.wts
+    {1: 'M', 2: 'A'}
 
     Note that we can **not** initialize a :class:`Polyclonal` object if we are
     missing escape estimates for any mutations for any epitopes:
@@ -161,8 +174,25 @@ class Polyclonal:
                  *,
                  activity_wt_df,
                  mut_escape_df,
+                 alphabet=dms_variants.constants.AAS_NOSTOP,
                  ):
         """See main class docstring."""
+        if len(set(alphabet)) != len(alphabet):
+            raise ValueError('duplicate letters in `alphabet`')
+        self._alphabet = tuple(alphabet)
+        chars = []
+        for char in self._alphabet:
+            if char.isalpha():
+                chars.append(char)
+            elif char == '*':
+                chars.append(r'\*')
+            else:
+                raise ValueError(f"invalid alphabet character: {char}")
+        chars = '|'.join(chars)
+        self._mutation_regex = re.compile(rf"(?P<wt>{chars})"
+                                          rf"(?P<site>\d+)"
+                                          rf"(?P<mut>{chars})")
+
         if pd.isnull(activity_wt_df['epitope']).any():
             raise ValueError('epitope name cannot be null')
         self.epitopes = tuple(activity_wt_df['epitope'].unique())
@@ -176,13 +206,28 @@ class Polyclonal:
                              .to_dict()
                              )
 
+        # get sites, wts, mutations
+        self.wts = {}
+        mutations = collections.defaultdict(list)
+        for mutation in mut_escape_df['mutation'].unique():
+            wt, site, mut = self._parse_mutation(mutation)
+            if site not in self.wts:
+                self.wts[site] = wt
+            elif self.wts[site] != wt:
+                raise ValueError(f"inconsistent wildtype for site {site}")
+            mutations[site].append(mutation)
+        self.sites = tuple(sorted(self.wts.keys()))
+        self.wts = dict(sorted(self.wts.items()))
+        assert set(mutations.keys()) == set(self.sites) == set(self.wts)
+        char_order = {c: i for i, c in enumerate(self._alphabet)}
+        self.mutations = tuple(mut for site in self.sites for mut in
+                               sorted(mutations[site],
+                                      key=lambda m: char_order[m[-1]]))
+
+        # get mutation escape values
         if set(mut_escape_df['epitope']) != set(self.epitopes):
             raise ValueError('`mut_escape_df` does not have same epitopes as '
                              '`activity_wt_df`')
-        self.mutations = tuple(mut_escape_df['mutation'].unique())
-        for mut in self.mutations:
-            if not (isinstance(mut, str) and not re.search(r'\s', mut)):
-                raise ValueError(f"invalid mutation: {mut}")
         self._mut_escape = {}
         for epitope, df in mut_escape_df.groupby('epitope'):
             if set(df['mutation']) != set(self.mutations):
@@ -294,6 +339,14 @@ class Polyclonal:
         assert self._beta.shape == (self._binarymap.binarylength,
                                     len(self.epitopes))
         assert self._beta.shape[0] == self._binarymap.binary_variants.shape[1]
+
+    def _parse_mutation(self, mutation):
+        """Returns `(wt, site, mut)`."""
+        m = self._mutation_regex.fullmatch(mutation)
+        if not m:
+            raise ValueError(f"invalid mutation {mutation}")
+        else:
+            return (m.group('wt'), int(m.group('site')), m.group('mut'))
 
 
 if __name__ == '__main__':
