@@ -99,24 +99,10 @@ class Polyclonal:
 
     >>> activity_wt_df = pd.DataFrame({'epitope':  ['e1', 'e2'],
     ...                                'activity': [ 2.0,  1.0]})
-    >>> activity_wt_df
-      epitope  activity
-    0      e1       2.0
-    1      e2       1.0
-
     >>> mut_escape_df = pd.DataFrame({
     ...      'mutation': ['M1C', 'M1A', 'M1A', 'M1C', 'A2K', 'A2K'],
     ...      'epitope':  [ 'e1',  'e2',  'e1',  'e2',  'e1',  'e2'],
     ...      'escape':   [  2.0,   0.0,   3.0,  0.0,   0.0,   2.5]})
-    >>> mut_escape_df
-      mutation epitope  escape
-    0      M1C      e1     2.0
-    1      M1A      e2     0.0
-    2      M1A      e1     3.0
-    3      M1C      e2     0.0
-    4      A2K      e1     0.0
-    5      A2K      e2     2.5
-
     >>> polyclonal = Polyclonal(activity_wt_df=activity_wt_df,
     ...                         mut_escape_df=mut_escape_df)
     >>> polyclonal.epitopes
@@ -127,6 +113,18 @@ class Polyclonal:
     (1, 2)
     >>> polyclonal.wts
     {1: 'M', 2: 'A'}
+    >>> polyclonal.activity_wt_df
+      epitope  activity
+    0      e1       2.0
+    1      e2       1.0
+    >>> polyclonal.mut_escape_df
+      epitope  site wildtype mutant mutation  escape
+    0      e1     1        M      A      M1A     3.0
+    1      e1     1        M      C      M1C     2.0
+    2      e1     2        A      K      A2K     0.0
+    3      e2     1        M      A      M1A     0.0
+    4      e2     1        M      C      M1C     0.0
+    5      e2     2        A      K      A2K     2.5
 
     Note that we can **not** initialize a :class:`Polyclonal` object if we are
     missing escape estimates for any mutations for any epitopes:
@@ -246,6 +244,35 @@ class Polyclonal:
         self._binarymap = None
         self._beta = None  # M by E matrix of betas
         self._a = None  # length E vector of activities
+
+    @property
+    def activity_wt_df(self):
+        r"""pandas.DataFrame: activities :math:`a_{\rm{wt,e}}` for epitopes."""
+        return pd.DataFrame({'epitope': self.epitopes,
+                             'activity': [self._activity_wt[e]
+                                          for e in self.epitopes],
+                             })
+
+    @property
+    def mut_escape_df(self):
+        r"""pandas.DataFrame: escape :math:`\beta_{m,e}` for each mutation."""
+        return (pd.concat([pd.DataFrame({'mutation': self.mutations,
+                                         'escape': [self._mut_escape[e][m]
+                                                    for m in self.mutations],
+                                         })
+                           .assign(epitope=e)
+                           for e in self.epitopes],
+                          ignore_index=True)
+                .assign(
+                    site=lambda x: x['mutation'].map(
+                                        lambda m: self._parse_mutation(m)[1]),
+                    mutant=lambda x: x['mutation'].map(
+                                        lambda m: self._parse_mutation(m)[2]),
+                    wildtype=lambda x: x['site'].map(self.wts),
+                    )
+                [['epitope', 'site', 'wildtype', 'mutant',
+                  'mutation', 'escape']]
+                )
 
     def prob_escape(self,
                     *,
