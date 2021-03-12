@@ -87,6 +87,8 @@ class Polyclonal:
     mutations : tuple
         All mutations, sorted by site and then in the order of the alphabet
         provided in `alphabet`.
+    alphabet : tuple
+        Allowed characters in mutation strings.
     sites : tuple
         List of all sites.
     wts : dict
@@ -177,9 +179,9 @@ class Polyclonal:
         """See main class docstring."""
         if len(set(alphabet)) != len(alphabet):
             raise ValueError('duplicate letters in `alphabet`')
-        self._alphabet = tuple(alphabet)
+        self.alphabet = tuple(alphabet)
         chars = []
-        for char in self._alphabet:
+        for char in self.alphabet:
             if char.isalpha():
                 chars.append(char)
             elif char == '*':
@@ -217,7 +219,7 @@ class Polyclonal:
         self.sites = tuple(sorted(self.wts.keys()))
         self.wts = dict(sorted(self.wts.items()))
         assert set(mutations.keys()) == set(self.sites) == set(self.wts)
-        char_order = {c: i for i, c in enumerate(self._alphabet)}
+        char_order = {c: i for i, c in enumerate(self.alphabet)}
         self.mutations = tuple(mut for site in self.sites for mut in
                                sorted(mutations[site],
                                       key=lambda m: char_order[m[-1]]))
