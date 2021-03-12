@@ -10,6 +10,7 @@ Miscellaneous utility functions.
 
 import re
 
+import matplotlib.colors
 import matplotlib.ticker
 
 import pandas as pd  # noqa: F401
@@ -771,6 +772,36 @@ def single_nt_accessible(codon, aa, codon_encode_aa='raise'):
         return True
     else:
         return False
+
+
+def color_gradient_hex(start, end, n):
+    """Get a list of colors linearly spanning a range.
+
+    Parameters
+    -----------
+    start : str
+        Starting color.
+    end : str
+        Ending color.
+    n : int
+        Number of colors in list.
+
+    Returns
+    -------
+    list
+        List of hex codes for colors spanning `start` to `end`.
+
+    Example
+    -------
+    >>> color_gradient_hex('white', 'red', n=5)
+    ['#ffffff', '#ffbfbf', '#ff8080', '#ff4040', '#ff0000']
+
+    """
+    cmap = matplotlib.colors.LinearSegmentedColormap.from_list(
+                    name='_',
+                    colors=[start, end],
+                    N=n)
+    return [matplotlib.colors.rgb2hex(tup) for tup in cmap(list(range(0, n)))]
 
 
 if __name__ == '__main__':

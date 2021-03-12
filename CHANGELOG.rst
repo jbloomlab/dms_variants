@@ -13,6 +13,7 @@ Added
 - Notebook and code for simulating selection from polyclonal antibodies. this includes the ``polyclonal`` module.
 - ``BinaryMap`` can store functional scores for multiple conditions.
 - Make `altair <https://altair-viz.github.io/>`_ a dependency.
+- ``utils.color_gradient_hex`` function.
 
 Changed
 +++++++
