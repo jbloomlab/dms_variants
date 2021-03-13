@@ -9,7 +9,12 @@ Defines :class:`Polyclonal` objects for handling antibody mixtures.
 
 
 import collections
+import itertools
 import re
+
+import altair as alt
+
+import matplotlib.colors
 
 import numpy
 
@@ -17,6 +22,9 @@ import pandas as pd
 
 import dms_variants.binarymap
 import dms_variants.constants
+import dms_variants.utils
+
+alt.data_transformers.disable_max_rows()
 
 
 class Polyclonal:
@@ -79,6 +87,10 @@ class Polyclonal:
         give the :math:`\beta_{m,e}` values (in the 'escape' column).
     alphabet : array-like
         Allowed characters in mutation strings.
+    epitope_colors : array-like or dict
+        Maps each epitope to the color used for plotting. Either a dict keyed
+        by each epitope, or an array of colors that are sequentially assigned
+        to the epitopes.
 
     Attributes
     ----------
@@ -93,6 +105,8 @@ class Polyclonal:
         List of all sites.
     wts : dict
         Keyed by site, value is wildtype at that site.
+    epitope_colors : dict
+        Maps each epitope to its color.
 
     Example
     --------
@@ -175,6 +189,9 @@ class Polyclonal:
                  activity_wt_df,
                  mut_escape_df,
                  alphabet=dms_variants.constants.AAS_NOSTOP,
+                 epitope_colors=tuple(c for c in
+                                      matplotlib.colors.TABLEAU_COLORS.values()
+                                      if c != '#7f7f7f'),
                  ):
         """See main class docstring."""
         if len(set(alphabet)) != len(alphabet):
@@ -205,6 +222,12 @@ class Polyclonal:
                              .astype(float)
                              .to_dict()
                              )
+        if isinstance(epitope_colors, dict):
+            self.epitope_colors = {epitope_colors[e] for e in self.epitopes}
+        elif len(epitope_colors) < len(self.epitopes):
+            raise ValueError('not enough `epitope_colors`')
+        else:
+            self.epitope_colors = dict(zip(self.epitopes, epitope_colors))
 
         # get sites, wts, mutations
         self.wts = {}
@@ -323,6 +346,195 @@ class Polyclonal:
                            for c in cs],
                           ignore_index=True)
                 .assign(**{prob_escape_col: p_v_c.ravel(order='F')})
+                )
+
+    def mut_escape_heatmap(self,
+                           *,
+                           epitopes=None,
+                           alphabet=None,
+                           all_sites=True,
+                           all_alphabet=True,
+                           floor_color_at_zero=True,
+                           share_heatmap_lims=True,
+                           cell_size=13,
+                           ):
+        r"""Heatmaps of the mutation escape values, :math:`\beta_{m,e}`.
+
+        Parameters
+        ----------
+        epitopes : array-like or None
+            Make plots for these epitopes. If `None`, use all epitopes.
+        alphabet : array-like or None
+            Order to plot alphabet letters (e.g., amino acids). If `None`, same
+            order as `alphabet` used to initialize this `Polyclonal` object.
+        all_sites : bool
+            Plot all sites in range from first to last site even if some
+            have no data.
+        all_alphabet : bool
+            Plot all letters in the alphabet (e.g., amino acids) even if some
+            have no data.
+        floor_color_at_zero : bool
+            Set lower limit to color scale as zero, even if there are negative
+            values or if minimum is >0.
+        share_heatmap_lims : bool
+            If `True`, let all epitopes share the same limits in color scale.
+            If `False`, scale each epitopes colors to the min and max escape
+            values for that epitope.
+        cell_size : float
+            Size of cells in heatmap.
+
+        Returns
+        -------
+        altair.Chart
+            Interactive heat maps.
+
+        """
+        if epitopes is None:
+            epitopes = self.epitopes
+        elif not set(epitopes).issubset(set(self.epitopes)):
+            raise ValueError('invalid entries in `epitopes`')
+        df = self.mut_escape_df.query('epitope in @epitopes')
+
+        # get alphabet and sites, expanding to all if needed
+        if alphabet is None:
+            alphabet = self.alphabet
+        elif set(alphabet) != set(self.alphabet):
+            raise ValueError('`alphabet` and `Polyclonal.alphabet` do not '
+                             'have same characters')
+        if not all_alphabet:
+            alphabet = [c for c in alphabet if c in set(df['mutant']) +
+                        set(df['wildtype'])]
+        if all_sites:
+            sites = list(range(min(self.sites), max(self.sites) + 1))
+        else:
+            sites = self.sites
+            assert set(sites) == set(df['site'])
+        df = (df
+              [['epitope', 'site', 'mutant', 'escape']]
+              .sort_values('epitope')
+              .pivot_table(index=['site', 'mutant'],
+                           values='escape',
+                           columns='epitope')
+              .reset_index()
+              .merge(pd.DataFrame(itertools.product(sites, alphabet),
+                                  columns=['site', 'mutant']),
+                     how='right')
+              .assign(wildtype=lambda x: x['site'].map(self.wts),
+                      mutation=lambda x: (x['wildtype'].fillna('') +
+                                          x['site'].astype(str) + x['mutant']),
+                      mutant=lambda x: pd.Categorical(x['mutant'], alphabet,
+                                                      ordered=True),
+                      # mark wildtype cells with a `x`
+                      wildtype_char=lambda x: (x['mutant'] == x['wildtype']
+                                               ).map({True: 'x', False: ''}),
+                      )
+              .sort_values(['site', 'mutant'])
+              )
+        # wildtype has escape of 0 by definition
+        for epitope in epitopes:
+            df[epitope] = df[epitope].where(df['mutant'] != df['wildtype'], 0)
+
+        # zoom bar to put at top
+        zoom_brush = alt.selection_interval(encodings=['x'],
+                                            mark=alt.BrushConfig(
+                                                        stroke='black',
+                                                        strokeWidth=2)
+                                            )
+        zoom_bar = (alt.Chart(df)
+                    .mark_rect(color='gray')
+                    .encode(x='site:O')
+                    .add_selection(zoom_brush)
+                    .properties(width=800, height=15, title='site zoom bar')
+                    )
+
+        # select cells
+        cell_selector = alt.selection_single(on='mouseover',
+                                             empty='none')
+
+        # make list of heatmaps for each epitope
+        charts = [zoom_bar]
+        for epitope in epitopes:
+            # base chart
+            base = (alt.Chart(df)
+                    .encode(x=alt.X('site:O'),
+                            y=alt.Y('mutant:O',
+                                    sort=alt.EncodingSortField(
+                                                'y',
+                                                order='ascending')
+                                    ),
+                            )
+                    )
+            # heatmap for cells with data
+            if share_heatmap_lims:
+                vals = df[list(epitopes)].values
+            else:
+                vals = df[epitope].values
+            escape_max = numpy.nanmax(vals)
+            if floor_color_at_zero:
+                escape_min = 0
+            else:
+                escape_min = numpy.nanmin(vals)
+            if not (escape_min < escape_max):
+                raise ValueError('escape min / max do not span a valid range')
+            heatmap = (base
+                       .mark_rect()
+                       .encode(
+                           color=alt.Color(
+                                epitope,
+                                type='quantitative',
+                                scale=alt.Scale(
+                                   range=dms_variants.utils.color_gradient_hex(
+                                    'white', self.epitope_colors[epitope], 10),
+                                   type='linear',
+                                   domain=(escape_min, escape_max),
+                                   clamp=True,
+                                   ),
+                                legend=alt.Legend(orient='left',
+                                                  title='gray is n.d.',
+                                                  titleFontWeight='normal',
+                                                  gradientLength=100,
+                                                  gradientStrokeColor='black',
+                                                  gradientStrokeWidth=0.5)
+                                ),
+                           stroke=alt.value('black'),
+                           strokeWidth=alt.condition(cell_selector,
+                                                     alt.value(2.5),
+                                                     alt.value(0.2)),
+                           tooltip=[alt.Tooltip('mutation:N')] +
+                                   [alt.Tooltip(f"{epitope}:Q", format='.3g')
+                                    for epitope in epitopes],
+                           )
+                       )
+            # nulls for cells with missing data
+            nulls = (base
+                     .mark_rect()
+                     .transform_filter(f"!isValid(datum['{epitope}'])")
+                     .mark_rect(opacity=0.25)
+                     .encode(alt.Color('escape:N',
+                                       scale=alt.Scale(scheme='greys'),
+                                       legend=None),
+                             )
+                     )
+            # mark wildtype cells
+            wildtype = (base
+                        .mark_text(color='black')
+                        .encode(text=alt.Text('wildtype_char:N'))
+                        )
+            # combine the elements
+            charts.append((heatmap + nulls + wildtype)
+                          .interactive()
+                          .add_selection(cell_selector)
+                          .transform_filter(zoom_brush)
+                          .properties(
+                                title=f"{epitope} epitope mutation escape",
+                                width={'step': cell_size},
+                                height={'step': cell_size})
+                          )
+
+        return (alt.vconcat(*charts,
+                            spacing=0,
+                            )
+                .configure_title(anchor='start', fontSize=18)
                 )
 
     def _compute_pv(self, cs):
