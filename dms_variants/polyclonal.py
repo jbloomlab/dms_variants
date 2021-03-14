@@ -10,6 +10,7 @@ Defines :class:`Polyclonal` objects for handling antibody mixtures.
 
 import collections
 import itertools
+import os
 import re
 
 import altair as alt
@@ -22,6 +23,7 @@ import pandas as pd
 
 import dms_variants.binarymap
 import dms_variants.constants
+import dms_variants.pdb_utils
 import dms_variants.utils
 
 alt.data_transformers.disable_max_rows()
@@ -141,6 +143,15 @@ class Polyclonal:
     3      e2     1        M      A      M1A     0.0
     4      e2     1        M      C      M1C     0.0
     5      e2     2        A      K      A2K     2.5
+
+    We can also summarize the mutation-level escape at the site level:
+
+    >>> polyclonal.mut_escape_site_summary_df
+      epitope  site wildtype  mean  total positive  max  min  total negative
+    0      e1     1        M   2.5             5.0  3.0  2.0             0.0
+    1      e1     2        A   0.0             0.0  0.0  0.0             0.0
+    2      e2     1        M   0.0             0.0  0.0  0.0             0.0
+    3      e2     2        A   2.5             2.5  2.5  2.5             0.0
 
     Note that we can **not** initialize a :class:`Polyclonal` object if we are
     missing escape estimates for any mutations for any epitopes:
@@ -272,7 +283,7 @@ class Polyclonal:
 
     @property
     def activity_wt_df(self):
-        r"""pandas.DataFrame: activities :math:`a_{\rm{wt,e}}` for epitopes."""
+        r"""pandas.DataFrame: Activities :math:`a_{\rm{wt,e}}` for epitopes."""
         return pd.DataFrame({'epitope': self.epitopes,
                              'activity': [self._activity_wt[e]
                                           for e in self.epitopes],
@@ -280,7 +291,7 @@ class Polyclonal:
 
     @property
     def mut_escape_df(self):
-        r"""pandas.DataFrame: escape :math:`\beta_{m,e}` for each mutation."""
+        r"""pandas.DataFrame: Escape :math:`\beta_{m,e}` for each mutation."""
         return (pd.concat([pd.DataFrame({'mutation': self.mutations,
                                          'escape': [self._mut_escape[e][m]
                                                     for m in self.mutations],
@@ -298,6 +309,25 @@ class Polyclonal:
                 [['epitope', 'site', 'wildtype', 'mutant',
                   'mutation', 'escape']]
                 )
+
+    @property
+    def mut_escape_site_summary_df(self):
+        r"""pandas.DataFrame: Site-level summaries of mutation escape."""
+        escape_metrics = {
+                'mean': pd.NamedAgg('escape', 'mean'),
+                'total positive': pd.NamedAgg('escape_gt_0', 'sum'),
+                'max': pd.NamedAgg('escape', 'max'),
+                'min': pd.NamedAgg('escape', 'min'),
+                'total negative': pd.NamedAgg('escape_lt_0', 'sum'),
+                }
+        return (
+            self.mut_escape_df
+            .assign(escape_gt_0=lambda x: x['escape'].clip(lower=0),
+                    escape_lt_0=lambda x: x['escape'].clip(upper=0),
+                    )
+            .groupby(['epitope', 'site', 'wildtype'], as_index=False)
+            .aggregate(**escape_metrics)
+            )
 
     def prob_escape(self,
                     *,
@@ -406,6 +436,71 @@ class Polyclonal:
 
         return barplot
 
+    def mut_escape_pdb_b_factor(self,
+                                *,
+                                input_pdbfile,
+                                chains,
+                                metric,
+                                outdir,
+                                outfile='{metric}-{epitope}.pdb',
+                                missing_metric=0,
+                                ):
+        r"""Create PDB files with B factors from a site's mutation escape.
+
+        Parameters
+        ----------
+        input_pdbfile : str
+            Path to input PDB file.
+        chains : str or array-like
+            Single chain or list of them to re-color.
+        metric : str
+            Which site-level summary metric to use. Can be any metric in
+            :attr:`Polyclonal.mut_escape_site_summary_df`.
+        outdir : str
+            Output directory for created PDB files.
+        outfile : str
+            Output file name, with formatting used to replace metric and
+            epitope in curly brackets.
+        missing_metric : float or dict
+            How do we handle sites in PDB that are missing in escape metric?
+            If a float, reassign B factors for all missing sites to this value.
+            If a dict, should be keyed by chain and assign all missing sites in
+            each chain to indicated value.
+
+        Returns
+        -------
+        pandas.DataFrame
+            Gives name of created B-factor re-colored PDB for each epitope.
+
+        """
+        df = self.mut_escape_site_summary_df
+        if (metric in df.columns) and (metric not in
+                                       {'epitope', 'site', 'wildtype'}):
+            metric_col = metric
+        if isinstance(chains, str) and len(chains) == 1:
+            chains = [chains]
+        df = pd.concat([df.assign(chain=chain) for chain in chains],
+                       ignore_index=True)
+        result_files = []
+        for epitope in self.epitopes:
+            if outdir:
+                output_pdbfile = os.path.join(outdir, outfile)
+            else:
+                output_pdbfile = outfile
+            output_pdbfile = output_pdbfile.format(epitope=epitope,
+                                                   metric=metric
+                                                   ).replace(' ', '_')
+            os.makedirs(os.path.dirname(output_pdbfile), exist_ok=True)
+            result_files.append((epitope, output_pdbfile))
+            dms_variants.pdb_utils.reassign_b_factor(
+                        input_pdbfile,
+                        output_pdbfile,
+                        df.query('epitope == @epitope'),
+                        metric_col,
+                        missing_metric=missing_metric,
+                        )
+        return pd.DataFrame(result_files, columns=['epitope', 'PDB file'])
+
     def mut_escape_lineplot(self,
                             *,
                             epitopes=None,
@@ -413,6 +508,7 @@ class Polyclonal:
                             share_ylims=True,
                             height=100,
                             width=900,
+                            init_metric='mean',
                             ):
         r"""Line plots of mutation escape :math:`\beta_{m,e}` at each site.
 
@@ -429,6 +525,9 @@ class Polyclonal:
             Height per facet.
         width : float
             Width of plot.
+        init_metric : str
+            Metric to show initially (others can be selected by dropdown).
+            One of metrics in :attr:`Polyclonal.site_summary_df`.
 
         Returns
         -------
@@ -440,7 +539,10 @@ class Polyclonal:
             epitopes = self.epitopes
         elif not set(epitopes).issubset(set(self.epitopes)):
             raise ValueError('invalid entries in `epitopes`')
-        df = self.mut_escape_df.query('epitope in @epitopes')
+
+        df = self.mut_escape_site_summary_df.query('epitope in @epitopes')
+        escape_metrics = [m for m in df.columns
+                          if m not in {'epitope', 'site', 'wildtype'}]
 
         if all_sites:
             sites = list(range(min(self.sites), max(self.sites) + 1))
@@ -448,41 +550,27 @@ class Polyclonal:
             sites = self.sites
             assert set(sites) == set(df['site'])
 
-        escape_metrics = {
-                'mean': pd.NamedAgg('escape', 'mean'),
-                'total positive': pd.NamedAgg('escape_gt_0', 'sum'),
-                'max': pd.NamedAgg('escape', 'max'),
-                'min': pd.NamedAgg('escape', 'min'),
-                'total negative': pd.NamedAgg('escape_lt_0', 'sum'),
-                }
         df = (df
-              [['epitope', 'site', 'escape']]
-              .assign(escape_gt_0=lambda x: x['escape'].clip(lower=0),
-                      escape_lt_0=lambda x: x['escape'].clip(upper=0),
-                      )
-              .groupby(['epitope', 'site'], as_index=False)
-              .aggregate(**escape_metrics)
               .merge(pd.DataFrame(itertools.product(sites, epitopes),
                                   columns=['site', 'epitope']),
                      on=['site', 'epitope'], how='right')
-              .sort_values(['epitope', 'site'])
-              .melt(id_vars=['epitope', 'site'],
+              .sort_values('site')
+              .melt(id_vars=['epitope', 'site', 'wildtype'],
                     var_name='metric',
                     value_name='escape'
                     )
-              .pivot_table(index=['site', 'metric'],
+              .pivot_table(index=['site', 'wildtype', 'metric'],
                            values='escape',
                            columns='epitope',
                            dropna=False)
               .reset_index()
-              .assign(wildtype=lambda x: x['site'].map(self.wts))
               )
 
-        y_axis_dropdown = alt.binding_select(options=list(escape_metrics))
+        y_axis_dropdown = alt.binding_select(options=escape_metrics)
         y_axis_selection = alt.selection_single(fields=['metric'],
                                                 bind=y_axis_dropdown,
                                                 name='escape',
-                                                init={'metric': 'mean'})
+                                                init={'metric': init_metric})
 
         zoom_brush = alt.selection_interval(encodings=['x'],
                                             mark=alt.BrushConfig(

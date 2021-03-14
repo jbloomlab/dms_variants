@@ -54,7 +54,7 @@ def reassign_b_factor(input_pdbfile,
     chain_col : str
         Name of column in `df` with chain labels.
     missing_metric : float or dict
-        How do we handl sites that are missing in `df`? If a float, reassign
+        How do we handle sites that are missing in `df`? If a float, reassign
         B factors for all missing sites to this value. If a dict, should be
         keyed by chain and assign all missing sites in each chain to
         indicated value.
