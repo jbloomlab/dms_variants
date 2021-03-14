@@ -14,6 +14,7 @@ Added
 - ``BinaryMap`` can store functional scores for multiple conditions.
 - Make `altair <https://altair-viz.github.io/>`_ a dependency.
 - ``utils.color_gradient_hex`` function.
+- added ``allowed_aa_muts`` to ``simulate_CodonVariantTable``
 
 Changed
 +++++++
