@@ -348,6 +348,64 @@ class Polyclonal:
                 .assign(**{prob_escape_col: p_v_c.ravel(order='F')})
                 )
 
+    def activity_wt_barplot(self,
+                            *,
+                            epitopes=None,
+                            width=110,
+                            height_per_bar=25,
+                            ):
+        r"""Bar plot of activity against each epitope, :math:`a_{\rm{wt},e}`.
+
+        Parameters
+        ----------
+        epitopes : array-like or None
+            Include these epitopes in this order. If `None`, use all epitopes.
+        width : float
+            Width of plot.
+        height_per_bar : float
+            Height of plot for each bar (epitope).
+
+        Returns
+        -------
+        altair.Chart
+            Interactive plot.
+
+        """
+        if epitopes is None:
+            epitopes = self.epitopes
+        elif not set(epitopes).issubset(set(self.epitopes)):
+            raise ValueError('invalid entries in `epitopes`')
+        df = (self.activity_wt_df
+              .query('epitope in @epitopes')
+              .assign(epitope=lambda x: pd.Categorical(x['epitope'],
+                                                       epitopes,
+                                                       ordered=True)
+                      )
+              .sort_values('epitope')
+              )
+
+        barplot = (
+            alt.Chart(df)
+            .encode(x='activity:Q',
+                    y='epitope:N',
+                    color=alt.Color(
+                       'epitope:N',
+                       scale=alt.Scale(domain=epitopes,
+                                       range=[self.epitope_colors[e]
+                                              for e in epitopes]),
+                       legend=None,
+                       ),
+                    tooltip=[alt.Tooltip('epitope:N'),
+                             alt.Tooltip('activity:Q', format='.3g')],
+                    )
+            .mark_bar(size=0.75 * height_per_bar)
+            .properties(width=width,
+                        height={'step': height_per_bar})
+            .configure_axis(grid=False)
+            )
+
+        return barplot
+
     def mut_escape_lineplot(self,
                             *,
                             epitopes=None,
