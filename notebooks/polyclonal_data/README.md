@@ -11,4 +11,6 @@ The file [mutation_escape_fractions.csv](mutation_escape_fractions.csv) contains
   - *LY-CoV555*: [Starr et al (2021), bioRxiv](https://www.biorxiv.org/content/10.1101/2021.02.17.431683v1)
   - *CR3022*: [Greaney et al (2021), Cell Host & Microbe](https://www.sciencedirect.com/science/article/pii/S1931312820306247), but re-analyzed with the same expression and ACE2-binding cutoffs in [Starr et al (2021), Science](https://science.sciencemag.org/content/371/6531/850).
 
+The file [RBD_seq.fasta](RBD_seq.fasta) is the coding sequence of the RBD used in the Bloom lab deep mutational scanning (optimized for yeast display).
+
 The directory also contains [6M0J.pdb](6M0J.pdb), which is just a downloaded version of [PDB 6m0j](https://www.rcsb.org/structure/6M0J), which has the RBD in complex with ACE2.
