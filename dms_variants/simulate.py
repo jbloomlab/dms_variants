@@ -14,6 +14,8 @@ import random
 import re
 import tempfile
 
+import numpy
+
 import pandas as pd
 
 import plotnine as p9
@@ -218,14 +220,15 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
     >>> variants =  simulate_CodonVariantTable(geneseq=geneseq,
     ...                                        bclen=bclen,
     ...                                        library_specs=library_specs,
-    ...                                        allowed_aa_muts=allowed_aa_muts)
+    ...                                        allowed_aa_muts=allowed_aa_muts,
+    ...                                        seed=2)
     >>> variants.barcode_variant_df[['barcode', 'aa_substitutions']]
       barcode aa_substitutions
-    0    ATTC              G2A
-    1    CTGA              M1L
-    2    GATG      M1A G2A S3C
-    3    GCGT      M1L G2A S3C
-    4    TAAT              M1A
+    0    AAAA          M1L G2A
+    1    CAAC          M1A G2A
+    2    GTTG              M1A
+    3    TTAA              G2A
+    4    TTCA          M1L G2A
 
     """
     if seed is not None:
@@ -271,6 +274,18 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
                               allowed_codons_at_site.items() if codons}
     allowed_sites = list(allowed_codons_at_site)
 
+    # probability to draw each site, proportional to number of mutated codons
+    ps = numpy.array([len(cs) for cs in allowed_codons_at_site.values()])
+    ps = ps / ps.sum()
+
+    # for backward compatibility, we have to define the random_sample function
+    # to be random.sample if all amino acids allowed at site
+    def random_sample(sites, n, p):
+        if allowed_aa_muts is None:
+            return random.sample(sites, n)
+        else:
+            return scipy.random.choice(sites, n, replace=False, p=p)
+
     barcode_variant_dict = collections.defaultdict(list)
     for lib, specs_dict in sorted(library_specs.items()):
 
@@ -292,7 +307,7 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
             # get mutations
             substitutions = []
             nmuts = min(len(allowed_sites), scipy.random.poisson(avgmuts))
-            for icodon in random.sample(allowed_sites, nmuts):
+            for icodon in random_sample(allowed_sites, nmuts, ps):
                 wtcodon = geneseq[3 * (icodon - 1): 3 * icodon]
                 mutcodon = random.choice(allowed_codons_at_site[icodon])
                 assert mutcodon != wtcodon, f"{mutcodon} vs {wtcodon}"
