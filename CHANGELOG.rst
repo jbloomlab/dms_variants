@@ -15,6 +15,7 @@ Added
 - Make `altair <https://altair-viz.github.io/>`_ a dependency.
 - ``utils.color_gradient_hex`` function.
 - added ``allowed_aa_muts`` to ``simulate_CodonVariantTable``
+- added ``utils.shift_mut_str``
 
 Changed
 +++++++
