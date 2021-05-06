@@ -20,7 +20,7 @@ import scipy.special
 
 def rarefyBarcodes(barcodecounts, *,
                    barcodecol='barcode', countcol='count',
-                   maxpoints=1e5, logspace=True):
+                   maxpoints=100000, logspace=True):
     """Rarefaction curve of barcode observations.
 
     Note
