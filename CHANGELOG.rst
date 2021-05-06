@@ -6,14 +6,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
-0.9.1
+0.8.7
 -----
 Fixed
 +++++
 - Fixed datatype for ``maxpoints`` default in ``barcodes.rarefyBarcodes`` 
 
-0.9.0
-------
 Changed
 +++++++
 - Discourage and stop testing multiple latent phenotypes.
