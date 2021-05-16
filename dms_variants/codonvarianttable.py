@@ -131,7 +131,8 @@ class CodonVariantTable:
 
     @classmethod
     def from_variant_count_df(cls, *, variant_count_df_file, geneseq,
-                              drop_all_libs=True, primary_target=None):
+                              drop_all_libs=True, primary_target=None,
+                              extra_cols=None):
         """:class:`CodonVariantTable` from CSV of `variant_count_df`.
 
         Note
@@ -152,6 +153,8 @@ class CodonVariantTable:
             added by :meth:`CodonVariantTable.addMergedLibraries` and
             duplicates information for the individual libraries.
         primary_target : None or str
+            Meaning described in main :class:`CodonVariantTable` doc string.
+        extra_cols : list
             Meaning described in main :class:`CodonVariantTable` doc string.
 
         Returns
@@ -195,6 +198,7 @@ class CodonVariantTable:
                       substitutions_are_codon=True,
                       substitutions_col='codon_substitutions',
                       primary_target=primary_target,
+                      extra_cols=extra_cols,
                       )
 
         cvt.add_sample_counts_df(df[['library', 'sample', 'barcode', 'count']])
