@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.8.5 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 0.8.8 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -168,7 +168,8 @@
 
 <div class="viewcode-block" id="CodonVariantTable.from_variant_count_df"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_variant_count_df</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">variant_count_df_file</span><span class="p">,</span> <span class="n">geneseq</span><span class="p">,</span>
-                              <span class="n">drop_all_libs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">primary_target</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                              <span class="n">drop_all_libs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">primary_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                              <span class="n">extra_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;:class:`CodonVariantTable` from CSV of `variant_count_df`.</span>
 
 <span class="sd">        Note</span>
@@ -189,6 +190,8 @@
 <span class="sd">            added by :meth:`CodonVariantTable.addMergedLibraries` and</span>
 <span class="sd">            duplicates information for the individual libraries.</span>
 <span class="sd">        primary_target : None or str</span>
+<span class="sd">            Meaning described in main :class:`CodonVariantTable` doc string.</span>
+<span class="sd">        extra_cols : list</span>
 <span class="sd">            Meaning described in main :class:`CodonVariantTable` doc string.</span>
 
 <span class="sd">        Returns</span>
@@ -232,6 +235,7 @@
                       <span class="n">substitutions_are_codon</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                       <span class="n">substitutions_col</span><span class="o">=</span><span class="s1">&#39;codon_substitutions&#39;</span><span class="p">,</span>
                       <span class="n">primary_target</span><span class="o">=</span><span class="n">primary_target</span><span class="p">,</span>
+                      <span class="n">extra_cols</span><span class="o">=</span><span class="n">extra_cols</span><span class="p">,</span>
                       <span class="p">)</span>
 
         <span class="n">cvt</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">]])</span>
@@ -866,7 +870,7 @@
         <span class="n">df_scores</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">sample_df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
             <span class="n">name_dfs</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">lib</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tup</span><span class="p">,</span> <span class="s1">&#39;library&#39;</span><span class="p">)</span>  <span class="c1"># noqa: F841</span>
+            <span class="n">lib</span> <span class="o">=</span> <span class="n">tup</span><span class="o">.</span><span class="n">library</span>  <span class="c1"># noqa: F841</span>
             <span class="k">for</span> <span class="n">stype</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;pre_sample&#39;</span><span class="p">,</span> <span class="s1">&#39;post_sample&#39;</span><span class="p">):</span>
                 <span class="n">s_name</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">tup</span><span class="p">,</span> <span class="n">stype</span><span class="p">)</span>  <span class="c1"># noqa: F841</span>
                 <span class="n">name_dfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -3370,7 +3374,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2020.
+      &copy;2019--2021.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

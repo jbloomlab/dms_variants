@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>codonvarianttable &#8212; dms_variants 0.8.5 documentation</title>
+    <title>codonvarianttable &#8212; dms_variants 0.8.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -596,7 +596,7 @@ makes sense to retain given value of <cite>by</cite>.</p></li>
 
 <dl class="py method">
 <dt id="dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df">
-<em class="property">classmethod </em><code class="sig-name descname">from_variant_count_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">variant_count_df_file</span></em>, <em class="sig-param"><span class="n">geneseq</span></em>, <em class="sig-param"><span class="n">drop_all_libs</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">primary_target</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.from_variant_count_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="sig-name descname">from_variant_count_df</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">variant_count_df_file</span></em>, <em class="sig-param"><span class="n">geneseq</span></em>, <em class="sig-param"><span class="n">drop_all_libs</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">primary_target</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">extra_cols</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.from_variant_count_df"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df" title="Permalink to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> from CSV of <cite>variant_count_df</cite>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -614,6 +614,7 @@ following columns: “barcode”, “library”, “variant_call_support”,
 added by <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries" title="dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.addMergedLibraries()</span></code></a> and
 duplicates information for the individual libraries.</p></li>
 <li><p><strong>primary_target</strong> (<em>None</em><em> or </em><em>str</em>) – Meaning described in main <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> doc string.</p></li>
+<li><p><strong>extra_cols</strong> (<em>list</em>) – Meaning described in main <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> doc string.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1286,7 +1287,7 @@ in both single- and multi-substitution contexts:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2020.
+      &copy;2019--2021.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

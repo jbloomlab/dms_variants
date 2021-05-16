@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>globalepistasis &#8212; dms_variants 0.8.5 documentation</title>
+    <title>globalepistasis &#8212; dms_variants 0.8.8 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -144,6 +144,9 @@ and the latent phenotype of the wildtype is set to zero.</p>
 </div>
 <div class="section" id="multiple-latent-phenotypes">
 <span id="multi-latent"></span><h3><a class="toc-backref" href="#id15">Multiple latent phenotypes</a><a class="headerlink" href="#multiple-latent-phenotypes" title="Permalink to this headline">¶</a></h3>
+<p>Although this package allows multiple latent phenotypes, we do <strong>not</strong>
+recommend using them as the models generally do not seem to converge
+in fitting in a useful way with multiple latent phenotypes.</p>
 <p>Equations <a class="reference internal" href="#equation-latent-phenotype">(1)</a> and <a class="reference internal" href="#equation-observed-phenotype">(2)</a> can be
 generalized to the case where multiple latent phenotypes contribute
 to the observed phenotype. Specifically, let there be
@@ -1417,7 +1420,7 @@ fit models. Columns are:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2020.
+      &copy;2019--2021.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

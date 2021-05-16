@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.globalepistasis &#8212; dms_variants 0.8.5 documentation</title>
+    <title>dms_variants.globalepistasis &#8212; dms_variants 0.8.8 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -150,6 +150,10 @@
 
 <span class="sd">Multiple latent phenotypes</span>
 <span class="sd">+++++++++++++++++++++++++++</span>
+<span class="sd">Although this package allows multiple latent phenotypes, we do **not**</span>
+<span class="sd">recommend using them as the models generally do not seem to converge</span>
+<span class="sd">in fitting in a useful way with multiple latent phenotypes.</span>
+
 <span class="sd">Equations :eq:`latent_phenotype` and :eq:`observed_phenotype` can be</span>
 <span class="sd">generalized to the case where multiple latent phenotypes contribute</span>
 <span class="sd">to the observed phenotype. Specifically, let there be</span>
@@ -3274,7 +3278,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2020.
+      &copy;2019--2021.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
