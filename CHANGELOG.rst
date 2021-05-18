@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+0.8.9
+------
+Fixed
+++++++
+- Fixed bug in ``extra_cols`` to ``CodonVariantTable.from_variant_count_df`` implementation.
+
 0.8.8
 ------
 Added

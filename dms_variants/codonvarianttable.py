@@ -178,8 +178,14 @@ class CodonVariantTable:
         if not set(req_cols).issubset((df.columns)):
             raise ValueError(f"{variant_count_df_file} lacks required "
                              f"columns {req_cols}. It has: {set(df.columns)}")
+        if extra_cols and not set(extra_cols).issubset((df.columns)):
+            raise ValueError(f"{variant_count_df_file} lacks `extra_cols` "
+                             f"columns {extra_cols}. Has: {set(df.columns)}")
         else:
-            df = df[req_cols]
+            if extra_cols:
+                df = df[req_cols + extra_cols]
+            else:
+                df = df[req_cols]
 
         if drop_all_libs:
             dropcol = 'all libraries'
