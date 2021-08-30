@@ -201,7 +201,8 @@ def cumul_rows_by_count(df, *, count_col='count', n_col='n_rows',
 
          # get number of rows with each count
          .assign(**{n_col: 1})
-         .groupby(group_cols + [count_col])
+         .groupby(group_cols + [count_col],
+                  observed=True)
          .aggregate({n_col: 'count'})
          .reset_index()
          .sort_values(group_cols + [count_col],
