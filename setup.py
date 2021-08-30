@@ -8,9 +8,9 @@ import sys
 from setuptools import Extension, setup
 
 
-if not (sys.version_info[0] == 3 and sys.version_info[1] >= 6):
+if not (sys.version_info[0] == 3 and sys.version_info[1] >= 7):
     raise RuntimeError(
-                'dms_variants requires Python >=3.6.\n'
+                'dms_variants requires Python >=3.7.\n'
                 f"You are using {sys.version_info[0]}.{sys.version_info[1]}.")
 
 # get metadata from package `__init__.py` file as here:
@@ -51,7 +51,7 @@ setup(
     install_requires=[
             'biopython>=1.73',
             'matplotlib>=3.1',
-            'pandas>=0.25.1',
+            'pandas>=1.2',
             'plotnine!=0.7.0',  # https://github.com/has2k1/plotnine/issues/403
             'regex>=2.4.153',
             'requests',

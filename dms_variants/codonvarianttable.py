@@ -312,7 +312,8 @@ class CodonVariantTable:
                 # sort to ensure consistent order
                 .assign(library=lambda x: pd.Categorical(x['library'],
                                                          self.libraries,
-                                                         ordered=True)
+                                                         ordered=True,
+                                                         )
                         )
                 .sort_values(sort_cols)
                 .reset_index(drop=True)
@@ -1424,10 +1425,12 @@ class CodonVariantTable:
               [['library', 'sample', 'mutation', 'site', 'count']]
               .merge(n_variants, on=['library', 'sample'])
               .assign(frequency=lambda x: x['count'] / x['nseqs'],
-                      mut_char=lambda x: pd.Categorical(x['mutation'].str
-                                                        .extract(pattern).mut,
-                                                        order,
-                                                        ordered=True)
+                      mut_char=lambda x: pd.Categorical(
+                                                x['mutation'].str
+                                                .extract(pattern).mut,
+                                                order,
+                                                ordered=True,
+                                                ).remove_unused_categories()
                       )
               )
         assert 'target' not in set(df.columns)
@@ -2683,7 +2686,8 @@ class CodonVariantTable:
             class_df[variant_class_col] = pd.Categorical(
                                             class_df[variant_class_col],
                                             cats,
-                                            ordered=True)
+                                            ordered=True,
+                                            ).remove_unused_categories()
         return (df
                 .drop(columns=variant_class_col, errors='ignore')
                 .merge(class_df,
@@ -2812,11 +2816,13 @@ class CodonVariantTable:
               .assign(
                 library=lambda x: pd.Categorical(x['library'],
                                                  x['library'].unique(),
-                                                 ordered=True),
+                                                 ordered=True
+                                                 ).remove_unused_categories(),
                 sample=lambda x: pd.Categorical(
                                 x['sample'].map(sample_rename_dict),
                                 x['sample'].map(sample_rename_dict).unique(),
-                                ordered=True),
+                                ordered=True
+                                ).remove_unused_categories(),
                 )
               )
 
