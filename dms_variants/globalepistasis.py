@@ -24,7 +24,7 @@ with element :math:`b\left(v\right)_m` equal to 1 if the variant has mutation
 :math:`m` and 0 otherwise, and :math:`m` ranging over all :math:`M` mutations
 observed in the overall set of variants (so :math:`\mathbf{b}\left(v\right)`
 is of length :math:`M`). Variants can be converted into this binary form
-using :class:`dms_variants.binarymap.BinaryMap`.
+using `binarymap <https://github.com/jbloomlab/binarymap>`_.
 
 We define a *latent effect* for each mutation :math:`m`, which we denote as
 :math:`\beta_m`. The latent effects of mutations contribute additively to the
@@ -640,7 +640,7 @@ class AbstractEpistasis(abc.ABC):
 
     Parameters
     ----------
-    binarymap : :class:`dms_variants.binarymap.BinaryMap`
+    binarymap : `BinaryMap <https://github.com/jbloomlab/binarymap>`_
         Contains the variants, their functional scores, and score variances.
     n_latent_phenotypes : int
         Number of distinct latent phenotypes. See :ref:`multi_latent`.
@@ -810,7 +810,7 @@ class AbstractEpistasis(abc.ABC):
     # ------------------------------------------------------------------------
     @property
     def binarymap(self):
-        """:class:`dms_variants.binarymap.BinaryMap`: Variants to model.
+        """`BinaryMap <https://github.com/jbloomlab/binarymap>`_
 
         The binary map is set during initialization of the model.
 
@@ -951,7 +951,7 @@ class AbstractEpistasis(abc.ABC):
         ----------
         binary_variants : scipy.sparse.csr.csr_matrix or numpy.ndarray
             Binary variants in form used by
-            :class:`dms_variants.binarymap.BinaryMap`.
+            `BinaryMap <https://github.com/jbloomlab/binarymap>`_.
         phenotype : {'latent', 'observed'}
             Calculate the latent or observed phenotype.
         wt_col : bool
@@ -2107,8 +2107,7 @@ class BottleneckLikelihood(AbstractEpistasis):
     Note
     ----
     The :attr:`AbstractEpistasis.binarymap` must have non-`None`
-    counts in :attr:`dms_variants.binarymap.BinaryMap.n_pre` and
-    :attr:`dms_variants.binarymap.BinaryMap.n_post`, since
+    counts in its `n_pre` and `n_post` attributes, since
     as described in :ref:`bottleneck_likelihood`, the model is
     actually fit to the :attr:`BottleneckLikelihood.f_pre` and
     :attr:`BottleneckLikelihood.f_post` values calculated from
@@ -3054,7 +3053,7 @@ def fit_models(binarymap,
 
     Parameters
     ----------
-    binarymap : :class:`dms_variants.binarymap.BinaryMap`
+    binarymap : `BinaryMap <https://github.com/jbloomlab/binarymap>`_
         Contains the variants, their functional scores, and score variances.
         The models are fit to these data.
     likelihood : {'Gaussian', 'Cauchy', 'Bottleneck'}

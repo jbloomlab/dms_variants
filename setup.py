@@ -49,6 +49,7 @@ setup(
     long_description=readme,
     license='GPLv3',
     install_requires=[
+            'binarymap>=0.1',
             'biopython>=1.73',
             'matplotlib>=3.1',
             'pandas>=1.2',

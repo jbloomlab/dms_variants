@@ -12,7 +12,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 Changed
 +++++++
 - Require Python >= 3.8
-
+- Moved `BinaryMap` to its own package at https://github.com/jbloomlab/binarymap
 
 0.8.10
 ------
