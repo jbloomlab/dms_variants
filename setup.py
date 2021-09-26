@@ -8,9 +8,9 @@ import sys
 from setuptools import Extension, setup
 
 
-if not (sys.version_info[0] == 3 and sys.version_info[1] >= 7):
+if not (sys.version_info[0] == 3 and sys.version_info[1] >= 8):
     raise RuntimeError(
-                'dms_variants requires Python >=3.7.\n'
+                'dms_variants requires Python >=3.8.\n'
                 f"You are using {sys.version_info[0]}.{sys.version_info[1]}.")
 
 # get metadata from package `__init__.py` file as here:

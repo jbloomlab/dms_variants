@@ -1,7 +1,7 @@
 Installation
 --------------
 
-``dms_variants`` requires Python 3.7 or higher.
+``dms_variants`` requires Python 3.8 or higher.
 
 The easiest way to install ``dms_variants`` is from `PyPI <https://pypi.org/>`_ using `pip <https://pip.pypa.io>`_ with::
 
