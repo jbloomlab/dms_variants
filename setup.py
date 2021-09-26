@@ -52,7 +52,7 @@ setup(
             'biopython>=1.73',
             'matplotlib>=3.1',
             'pandas>=1.2',
-            'plotnine!=0.7.0',  # https://github.com/has2k1/plotnine/issues/403
+            'plotnine>0.7.0',
             'regex>=2.4.153',
             'requests',
             'scipy>=1.1.0',
