@@ -5,17 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>illuminabarcodeparser &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <title>illuminabarcodeparser &#8212; dms_variants 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="ispline" href="dms_variants.ispline.html" />
@@ -40,8 +37,8 @@
 <h1>illuminabarcodeparser<a class="headerlink" href="#illuminabarcodeparser" title="Permalink to this headline">¶</a></h1>
 <p>Defines <a class="reference internal" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser" title="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser"><code class="xref py py-class docutils literal notranslate"><span class="pre">IlluminaBarcodeParser</span></code></a> to parse barcodes from Illumina reads.</p>
 <dl class="py class">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.illuminabarcodeparser.</code><code class="sig-name descname">IlluminaBarcodeParser</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">bclen</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">upstream</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">downstream</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">upstream_mismatch</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">downstream_mismatch</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">valid_barcodes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">bc_orientation</span><span class="o">=</span><span class="default_value">'R1'</span></em>, <em class="sig-param"><span class="n">minq</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">chastity_filter</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">list_all_valid_barcodes</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/illuminabarcodeparser.html#IlluminaBarcodeParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.illuminabarcodeparser.</span></span><span class="sig-name descname"><span class="pre">IlluminaBarcodeParser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bclen</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upstream</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downstream</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upstream_mismatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downstream_mismatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">valid_barcodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bc_orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'R1'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chastity_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">list_all_valid_barcodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/illuminabarcodeparser.html#IlluminaBarcodeParser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Parser for Illumina barcodes.</p>
 <div class="admonition note">
@@ -78,8 +75,8 @@ even if no counts.</p></li>
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bclen">
-<code class="sig-name descname">bclen</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bclen" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bclen">
+<span class="sig-name descname"><span class="pre">bclen</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bclen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Length of barcodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -89,8 +86,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream">
-<code class="sig-name descname">upstream</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream">
+<span class="sig-name descname"><span class="pre">upstream</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sequence upstream of barcode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -100,8 +97,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream">
-<code class="sig-name descname">downstream</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream">
+<span class="sig-name descname"><span class="pre">downstream</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sequence downstream of barcode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -111,8 +108,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream_mismatch">
-<code class="sig-name descname">upstream_mismatch</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream_mismatch" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream_mismatch">
+<span class="sig-name descname"><span class="pre">upstream_mismatch</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream_mismatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Max number of mismatches allowed in <cite>upstream</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -122,8 +119,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream_mismatch">
-<code class="sig-name descname">downstream_mismatch</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream_mismatch" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream_mismatch">
+<span class="sig-name descname"><span class="pre">downstream_mismatch</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream_mismatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Max number of mismatches allowed in <cite>downstream</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -133,8 +130,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes">
-<code class="sig-name descname">valid_barcodes</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes">
+<span class="sig-name descname"><span class="pre">valid_barcodes</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>If not <cite>None</cite>, set of barcodes to retain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -144,8 +141,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bc_orientation">
-<code class="sig-name descname">bc_orientation</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bc_orientation" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bc_orientation">
+<span class="sig-name descname"><span class="pre">bc_orientation</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bc_orientation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is the barcode defined in the orientation read by R1 or R2?</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -155,8 +152,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.minq">
-<code class="sig-name descname">minq</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.minq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.minq">
+<span class="sig-name descname"><span class="pre">minq</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.minq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Require &gt;= this Q score for all bases in barcode for at least one read.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -166,8 +163,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.chastity_filter">
-<code class="sig-name descname">chastity_filter</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.chastity_filter" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.chastity_filter">
+<span class="sig-name descname"><span class="pre">chastity_filter</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.chastity_filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Drop any reads that fail Illumina chastity filter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -177,8 +174,8 @@ even if no counts.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.list_all_valid_barcodes">
-<code class="sig-name descname">list_all_valid_barcodes</code><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.list_all_valid_barcodes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.list_all_valid_barcodes">
+<span class="sig-name descname"><span class="pre">list_all_valid_barcodes</span></span><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.list_all_valid_barcodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>If using <cite>valid_barcodes</cite>, barcode sets returned by
 <a class="reference internal" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse" title="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse"><code class="xref py py-meth docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.parse()</span></code></a> include all valid barcodes
 even if no counts.</p>
@@ -190,8 +187,8 @@ even if no counts.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.VALID_NTS">
-<code class="sig-name descname">VALID_NTS</code><em class="property"> = 'ACGTN'</em><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.VALID_NTS" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.VALID_NTS">
+<span class="sig-name descname"><span class="pre">VALID_NTS</span></span><em class="property"> <span class="pre">=</span> <span class="pre">'ACGTN'</span></em><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.VALID_NTS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Valid nucleotide characters in FASTQ files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -201,8 +198,8 @@ even if no counts.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse">
-<code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">r1files</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">r2files</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">add_cols</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/illuminabarcodeparser.html#IlluminaBarcodeParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse">
+<span class="sig-name descname"><span class="pre">parse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r1files</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r2files</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/illuminabarcodeparser.html#IlluminaBarcodeParser.parse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Parse barcodes from files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -275,18 +272,6 @@ each fate (columns “fate” and “count”). Possible fates:
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
@@ -318,7 +303,7 @@ each fate (columns “fate” and “count”). Possible fates:
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -340,7 +325,7 @@ each fate (columns “fate” and “count”). Possible fates:
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

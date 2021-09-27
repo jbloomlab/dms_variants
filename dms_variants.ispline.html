@@ -5,16 +5,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ispline &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <title>ispline &#8212; dms_variants 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -45,8 +44,8 @@ for the weighted sum of a <a class="reference internal" href="#dms_variants.ispl
 corrections in the <a class="reference external" href="http://www.fon.hum.uva.nl/praat/manual/spline.html">Praat manual</a> to the errors in the I-spline formula
 by <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>.</p>
 <dl class="py class">
-<dt id="dms_variants.ispline.Isplines">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.ispline.</code><code class="sig-name descname">Isplines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order</span></em>, <em class="sig-param"><span class="n">mesh</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.ispline.</span></span><span class="sig-name descname"><span class="pre">Isplines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Implements I-splines (see <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>).</p>
 <dl class="field-list simple">
@@ -59,8 +58,8 @@ by <a class="reference external" href="https://www.jstor.org/stable/2245395">Ram
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines.order">
-<code class="sig-name descname">order</code><a class="headerlink" href="#dms_variants.ispline.Isplines.order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.order">
+<span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order of spline, <span class="math notranslate nohighlight">\(k\)</span> in notation of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>. Note that
 the degree of the I-spline is equal to <span class="math notranslate nohighlight">\(k\)</span>, while the
 associated M-spline has order <span class="math notranslate nohighlight">\(k\)</span> but degree <span class="math notranslate nohighlight">\(k - 1\)</span>.</p>
@@ -72,8 +71,8 @@ associated M-spline has order <span class="math notranslate nohighlight">\(k\)</
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines.mesh">
-<code class="sig-name descname">mesh</code><a class="headerlink" href="#dms_variants.ispline.Isplines.mesh" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.mesh">
+<span class="sig-name descname"><span class="pre">mesh</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mesh sequence, <span class="math notranslate nohighlight">\(\xi_1 &lt; \ldots &lt; \xi_q\)</span> in the notation
 of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>. This class implements <strong>fixed</strong> mesh sequences.</p>
 <dl class="field-list simple">
@@ -84,8 +83,8 @@ of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ram
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines.n">
-<code class="sig-name descname">n</code><a class="headerlink" href="#dms_variants.ispline.Isplines.n" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of members in spline, denoted as <span class="math notranslate nohighlight">\(n\)</span> in <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>.
 Related to number of points <span class="math notranslate nohighlight">\(q\)</span> in the mesh and the order
 <span class="math notranslate nohighlight">\(k\)</span> by <span class="math notranslate nohighlight">\(n = q - 2 + k\)</span>.</p>
@@ -97,8 +96,8 @@ Related to number of points <span class="math notranslate nohighlight">\(q\)</sp
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines.lower">
-<code class="sig-name descname">lower</code><a class="headerlink" href="#dms_variants.ispline.Isplines.lower" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.lower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lower end of interval spanned by the splines (first point in mesh).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -108,8 +107,8 @@ Related to number of points <span class="math notranslate nohighlight">\(q\)</sp
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines.upper">
-<code class="sig-name descname">upper</code><a class="headerlink" href="#dms_variants.ispline.Isplines.upper" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.upper">
+<span class="sig-name descname"><span class="pre">upper</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.upper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Upper end of interval spanned by the splines (last point in mesh).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -188,8 +187,8 @@ values, as this will lead to invalid caching.</p>
 <img alt="_images/dms_variants-ispline-1.png" src="_images/dms_variants-ispline-1.png" />
 </div>
 <dl class="py method">
-<dt id="dms_variants.ispline.Isplines.I">
-<code class="sig-name descname">I</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines.I"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines.I" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.I">
+<span class="sig-name descname"><span class="pre">I</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines.I"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines.I" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate spline <span class="math notranslate nohighlight">\(I_i\)</span> at point(s) <a class="reference internal" href="#dms_variants.ispline.Isplines.x" title="dms_variants.ispline.Isplines.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.x</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -226,8 +225,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.ispline.Isplines.dI_dx">
-<code class="sig-name descname">dI_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines.dI_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines.dI_dx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.dI_dx">
+<span class="sig-name descname"><span class="pre">dI_dx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines.dI_dx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines.dI_dx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivative of <a class="reference internal" href="#dms_variants.ispline.Isplines.I" title="dms_variants.ispline.Isplines.I"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Isplines.I()</span></code></a> by <a class="reference internal" href="#dms_variants.ispline.Isplines.x" title="dms_variants.ispline.Isplines.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.x</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -256,9 +255,9 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </div>
 </dd></dl>
 
-<dl class="py method">
-<dt id="dms_variants.ispline.Isplines.j">
-<em class="property">property </em><code class="sig-name descname">j</code><a class="headerlink" href="#dms_variants.ispline.Isplines.j" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.j">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">j</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.j" title="Permalink to this definition">¶</a></dt>
 <dd><p><span class="math notranslate nohighlight">\(j\)</span> as defined in <a class="reference internal" href="#dms_variants.ispline.Isplines.I" title="dms_variants.ispline.Isplines.I"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Isplines.I()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -267,9 +266,9 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="dms_variants.ispline.Isplines.x">
-<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#dms_variants.ispline.Isplines.x" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines.x">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines.x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Points at which spline is evaluated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -281,8 +280,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd></dl>
 
 <dl class="py class">
-<dt id="dms_variants.ispline.Isplines_total">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.ispline.</code><code class="sig-name descname">Isplines_total</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order</span></em>, <em class="sig-param"><span class="n">mesh</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.ispline.</span></span><span class="sig-name descname"><span class="pre">Isplines_total</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Evaluate the weighted sum of an I-spline family (see <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>).</p>
 <dl class="field-list simple">
@@ -295,8 +294,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines_total.order">
-<code class="sig-name descname">order</code><a class="headerlink" href="#dms_variants.ispline.Isplines_total.order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.order">
+<span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines_total.order" title="Permalink to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#dms_variants.ispline.Isplines.order" title="dms_variants.ispline.Isplines.order"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.order</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -306,8 +305,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines_total.mesh">
-<code class="sig-name descname">mesh</code><a class="headerlink" href="#dms_variants.ispline.Isplines_total.mesh" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.mesh">
+<span class="sig-name descname"><span class="pre">mesh</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines_total.mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#dms_variants.ispline.Isplines.mesh" title="dms_variants.ispline.Isplines.mesh"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.mesh</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -317,8 +316,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines_total.n">
-<code class="sig-name descname">n</code><a class="headerlink" href="#dms_variants.ispline.Isplines_total.n" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines_total.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#dms_variants.ispline.Isplines.n" title="dms_variants.ispline.Isplines.n"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.n</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -328,8 +327,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines_total.lower">
-<code class="sig-name descname">lower</code><a class="headerlink" href="#dms_variants.ispline.Isplines_total.lower" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines_total.lower" title="Permalink to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#dms_variants.ispline.Isplines.lower" title="dms_variants.ispline.Isplines.lower"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.lower</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -339,8 +338,8 @@ M-spline of order <span class="math notranslate nohighlight">\(k + 1\)</span>) a
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Isplines_total.upper">
-<code class="sig-name descname">upper</code><a class="headerlink" href="#dms_variants.ispline.Isplines_total.upper" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.upper">
+<span class="sig-name descname"><span class="pre">upper</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines_total.upper" title="Permalink to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#dms_variants.ispline.Isplines.upper" title="dms_variants.ispline.Isplines.upper"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines.upper</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -466,8 +465,8 @@ mesh range:</p>
 <img alt="_images/dms_variants-ispline-2.png" src="_images/dms_variants-ispline-2.png" />
 </div>
 <dl class="py method">
-<dt id="dms_variants.ispline.Isplines_total.Itotal">
-<code class="sig-name descname">Itotal</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weights</span></em>, <em class="sig-param"><span class="n">w_lower</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.Itotal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.Itotal" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.Itotal">
+<span class="sig-name descname"><span class="pre">Itotal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lower</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.Itotal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.Itotal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Weighted sum of spline family at points <a class="reference internal" href="#dms_variants.ispline.Isplines_total.x" title="dms_variants.ispline.Isplines_total.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines_total.x</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -488,8 +487,8 @@ family, should be of length equal to <a class="reference internal" href="#dms_va
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.ispline.Isplines_total.dItotal_dw_lower">
-<code class="sig-name descname">dItotal_dw_lower</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.dItotal_dw_lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.dItotal_dw_lower" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.dItotal_dw_lower">
+<span class="sig-name descname"><span class="pre">dItotal_dw_lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.dItotal_dw_lower"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.dItotal_dw_lower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deriv of <a class="reference internal" href="#dms_variants.ispline.Isplines_total.Itotal" title="dms_variants.ispline.Isplines_total.Itotal"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Isplines_total.Itotal()</span></code></a> by <span class="math notranslate nohighlight">\(w_{\rm{lower}}\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -503,8 +502,8 @@ which is just one for all <a class="reference internal" href="#dms_variants.ispl
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.ispline.Isplines_total.dItotal_dweights">
-<code class="sig-name descname">dItotal_dweights</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weights</span></em>, <em class="sig-param"><span class="n">w_lower</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.dItotal_dweights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.dItotal_dweights" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.dItotal_dweights">
+<span class="sig-name descname"><span class="pre">dItotal_dweights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w_lower</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.dItotal_dweights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.dItotal_dweights" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivative of <a class="reference internal" href="#dms_variants.ispline.Isplines_total.Itotal" title="dms_variants.ispline.Isplines_total.Itotal"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Isplines_total.Itotal()</span></code></a> by <span class="math notranslate nohighlight">\(w_i\)</span>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -546,8 +545,8 @@ I_i\left(U\right) &amp;=&amp; 1.\end{split}\]</div>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.ispline.Isplines_total.dItotal_dx">
-<code class="sig-name descname">dItotal_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weights</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.dItotal_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.dItotal_dx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.dItotal_dx">
+<span class="sig-name descname"><span class="pre">dItotal_dx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">weights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Isplines_total.dItotal_dx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Isplines_total.dItotal_dx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Deriv <a class="reference internal" href="#dms_variants.ispline.Isplines_total.Itotal" title="dms_variants.ispline.Isplines_total.Itotal"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Isplines_total.Itotal()</span></code></a> by <a class="reference internal" href="#dms_variants.ispline.Isplines_total.x" title="dms_variants.ispline.Isplines_total.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Isplines_total.x</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -593,9 +592,9 @@ for each point in <a class="reference internal" href="#dms_variants.ispline.Ispl
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt id="dms_variants.ispline.Isplines_total.x">
-<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#dms_variants.ispline.Isplines_total.x" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="dms_variants.ispline.Isplines_total.x">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#dms_variants.ispline.Isplines_total.x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Points at which spline is evaluated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -607,8 +606,8 @@ for each point in <a class="reference internal" href="#dms_variants.ispline.Ispl
 </dd></dl>
 
 <dl class="py class">
-<dt id="dms_variants.ispline.Msplines">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.ispline.</code><code class="sig-name descname">Msplines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order</span></em>, <em class="sig-param"><span class="n">mesh</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Msplines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Msplines" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.ispline.</span></span><span class="sig-name descname"><span class="pre">Msplines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Msplines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Msplines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Implements M-splines (see <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>).</p>
 <dl class="field-list simple">
@@ -621,8 +620,8 @@ for each point in <a class="reference internal" href="#dms_variants.ispline.Ispl
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Msplines.order">
-<code class="sig-name descname">order</code><a class="headerlink" href="#dms_variants.ispline.Msplines.order" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.order">
+<span class="sig-name descname"><span class="pre">order</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Order of spline, <span class="math notranslate nohighlight">\(k\)</span> in notation of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>.
 Polynomials are of degree <span class="math notranslate nohighlight">\(k - 1\)</span>.</p>
 <dl class="field-list simple">
@@ -633,8 +632,8 @@ Polynomials are of degree <span class="math notranslate nohighlight">\(k - 1\)</
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Msplines.mesh">
-<code class="sig-name descname">mesh</code><a class="headerlink" href="#dms_variants.ispline.Msplines.mesh" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.mesh">
+<span class="sig-name descname"><span class="pre">mesh</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mesh sequence, <span class="math notranslate nohighlight">\(\xi_1 &lt; \ldots &lt; \xi_q\)</span> in the notation
 of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>. This class implements <strong>fixed</strong> mesh sequences.</p>
 <dl class="field-list simple">
@@ -645,8 +644,8 @@ of <a class="reference external" href="https://www.jstor.org/stable/2245395">Ram
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Msplines.n">
-<code class="sig-name descname">n</code><a class="headerlink" href="#dms_variants.ispline.Msplines.n" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.n">
+<span class="sig-name descname"><span class="pre">n</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.n" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of members in spline, denoted as <span class="math notranslate nohighlight">\(n\)</span> in <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>.
 Related to number of points <span class="math notranslate nohighlight">\(q\)</span> in the mesh and the order
 <span class="math notranslate nohighlight">\(k\)</span> by <span class="math notranslate nohighlight">\(n = q - 2 + k\)</span>.</p>
@@ -658,8 +657,8 @@ Related to number of points <span class="math notranslate nohighlight">\(q\)</sp
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Msplines.knots">
-<code class="sig-name descname">knots</code><a class="headerlink" href="#dms_variants.ispline.Msplines.knots" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.knots">
+<span class="sig-name descname"><span class="pre">knots</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.knots" title="Permalink to this definition">¶</a></dt>
 <dd><p>The knot sequence, <span class="math notranslate nohighlight">\(t_1, \ldots, t_{n + k}\)</span> in the notation of
 <a class="reference external" href="https://www.jstor.org/stable/2245395">Ramsay (1988)</a>.</p>
 <dl class="field-list simple">
@@ -670,8 +669,8 @@ Related to number of points <span class="math notranslate nohighlight">\(q\)</sp
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Msplines.lower">
-<code class="sig-name descname">lower</code><a class="headerlink" href="#dms_variants.ispline.Msplines.lower" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.lower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Lower end of interval spanned by the splines (first point in mesh).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -681,8 +680,8 @@ Related to number of points <span class="math notranslate nohighlight">\(q\)</sp
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.ispline.Msplines.upper">
-<code class="sig-name descname">upper</code><a class="headerlink" href="#dms_variants.ispline.Msplines.upper" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.upper">
+<span class="sig-name descname"><span class="pre">upper</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.upper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Upper end of interval spanned by the splines (last point in mesh).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -764,8 +763,8 @@ values as this will lead to invalid caching.</p>
 <img alt="_images/dms_variants-ispline-3.png" src="_images/dms_variants-ispline-3.png" />
 </div>
 <dl class="py method">
-<dt id="dms_variants.ispline.Msplines.M">
-<code class="sig-name descname">M</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">invalid_i</span><span class="o">=</span><span class="default_value">'raise'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Msplines.M"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Msplines.M" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.M">
+<span class="sig-name descname"><span class="pre">M</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invalid_i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Msplines.M"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Msplines.M" title="Permalink to this definition">¶</a></dt>
 <dd><p>Evaluate spline <span class="math notranslate nohighlight">\(M_i\)</span> at point(s) <a class="reference internal" href="#dms_variants.ispline.Msplines.x" title="dms_variants.ispline.Msplines.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Msplines.x</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -807,8 +806,8 @@ M_i\left(x \mid k &gt; 1\right) &amp;=&amp;
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.ispline.Msplines.dM_dx">
-<code class="sig-name descname">dM_dx</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">i</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">invalid_i</span><span class="o">=</span><span class="default_value">'raise'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Msplines.dM_dx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.ispline.Msplines.dM_dx" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.dM_dx">
+<span class="sig-name descname"><span class="pre">dM_dx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invalid_i</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/ispline.html#Msplines.dM_dx"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.ispline.Msplines.dM_dx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derivative of <a class="reference internal" href="#dms_variants.ispline.Msplines.M" title="dms_variants.ispline.Msplines.M"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Msplines.M()</span></code></a> by to <a class="reference internal" href="#dms_variants.ispline.Msplines.x" title="dms_variants.ispline.Msplines.x"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Msplines.x</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -852,9 +851,9 @@ M_i\left(x \mid k &gt; 1\right) &amp;=&amp;
 </div>
 </dd></dl>
 
-<dl class="py method">
-<dt id="dms_variants.ispline.Msplines.x">
-<em class="property">property </em><code class="sig-name descname">x</code><a class="headerlink" href="#dms_variants.ispline.Msplines.x" title="Permalink to this definition">¶</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="dms_variants.ispline.Msplines.x">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#dms_variants.ispline.Msplines.x" title="Permalink to this definition">¶</a></dt>
 <dd><p>Points at which spline is evaluated.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -899,18 +898,6 @@ M_i\left(x \mid k &gt; 1\right) &amp;=&amp;
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
@@ -942,7 +929,7 @@ M_i\left(x \mid k &gt; 1\right) &amp;=&amp;
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -964,7 +951,7 @@ M_i\left(x \mid k &gt; 1\right) &amp;=&amp;
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

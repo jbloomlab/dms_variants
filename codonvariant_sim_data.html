@@ -5,16 +5,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -280,7 +279,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Setup-for-analysis">
 <h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
 <p>Import Python modules / packages:</p>
-<div class="nbinput docutils container">
+<div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -300,9 +299,10 @@ div.rendered_html tbody tr:hover {
 
 <span class="kn">import</span> <span class="nn">scipy</span>
 
+<span class="kn">import</span> <span class="nn">binarymap</span>
+
 <span class="kn">import</span> <span class="nn">dmslogo</span>  <span class="c1"># used for preference logo plots</span>
 
-<span class="kn">import</span> <span class="nn">dms_variants.binarymap</span>
 <span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
 <span class="kn">import</span> <span class="nn">dms_variants.globalepistasis</span>
 <span class="kn">import</span> <span class="nn">dms_variants.plotnine_themes</span>
@@ -310,16 +310,6 @@ div.rendered_html tbody tr:hover {
 <span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="kn">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
 </pre></div>
 </div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt empty docutils container">
-</div>
-<div class="output_area stderr docutils container">
-<div class="highlight"><pre>
-/fh/fast/bloom_j/software/conda_v2/envs/BloomLab/lib/python3.6/site-packages/dmslogo/logo.py:40: MatplotlibDeprecationWarning:
-The createFontList function was deprecated in Matplotlib 3.2 and will be removed two minor releases later. Use FontManager.addfont instead.
-  matplotlib.font_manager.findSystemFonts(_FONT_PATH)))
-</pre></div></div>
 </div>
 <p>Set parameters that define the simulated data. Except for that fact that we use a short gene to reduce the computational run-time of this notebook, these simulation parameters are designed to reflect what we might observe in a real Bloom lab deep mutational scanning experiment:</p>
 <div class="nbinput nblast docutils container">
@@ -1612,16 +1602,16 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 <p>First, we get the <strong>average</strong> number of counts per variant:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[87]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">()</span>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">()</span><span class="o">.</span><span class="n">convert_dtypes</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[87]:
 </pre></div>
 </div>
 <div class="output_area rendered_html docutils container">
@@ -2528,7 +2518,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <p>The primary model of interest is <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood">MonotonicSplineEpistasisGaussianLikelihood</a>, which assumes that the observed phenotype is a monotonic non-linear function of an underlying additive latent phenotype. As a control, we also fit a
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">NoEpistasisGaussianLikelihood</a> model, which assumes that mutations simply contribute additively to the observed phenotype. Note that for both models we are using the Gaussian-likelihood calculation method to determine model fit (see <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a> for details)–as
 described in a later example, you might want to use a Bottleneck- or Cauchy-likelihood if there is a lot of experimental noise.</p>
-<p>For the fitting, we first convert the set of functional scores into a binary representation using a <a class="reference external" href="(https://jbloomlab.github.io/dms_variants/dms_variants.binarymap.html#dms_variants.binarymap.BinaryMap)">BinaryMap</a>. Then we create the model, fit it, and store it:</p>
+<p>For the fitting, we first convert the set of functional scores into a binary representation using a <a class="reference external" href="https://github.com/jbloomlab/binarymap">BinaryMap</a>. Then we create the model, fit it, and store it:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
 </pre></div>
@@ -2541,7 +2531,7 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
 <span class="k">for</span> <span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">),</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">func_scores</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;post_sample&#39;</span><span class="p">,</span>
                                                   <span class="s1">&#39;library&#39;</span><span class="p">]):</span>
 
-    <span class="n">bmap</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">binarymap</span><span class="o">.</span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+    <span class="n">bmap</span> <span class="o">=</span> <span class="n">binarymap</span><span class="o">.</span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">modeltype</span><span class="p">,</span> <span class="n">EpistasisModel</span> <span class="ow">in</span> <span class="p">[</span>
             <span class="p">(</span><span class="s1">&#39;global epistasis&#39;</span><span class="p">,</span>
@@ -2564,14 +2554,14 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Fitting global epistasis model to loose_bottle, lib_1... fitting took 29.6 sec.
-Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.2 sec.
-Fitting global epistasis model to loose_bottle, lib_2... fitting took 29.0 sec.
-Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.2 sec.
-Fitting global epistasis model to tight_bottle, lib_1... fitting took 8.0 sec.
-Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.2 sec.
-Fitting global epistasis model to tight_bottle, lib_2... fitting took 14.6 sec.
-Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.2 sec.
+Fitting global epistasis model to loose_bottle, lib_1... fitting took 108.3 sec.
+Fitting no epistasis model to loose_bottle, lib_1... fitting took 0.5 sec.
+Fitting global epistasis model to loose_bottle, lib_2... fitting took 113.4 sec.
+Fitting no epistasis model to loose_bottle, lib_2... fitting took 0.5 sec.
+Fitting global epistasis model to tight_bottle, lib_1... fitting took 30.1 sec.
+Fitting no epistasis model to tight_bottle, lib_1... fitting took 0.7 sec.
+Fitting global epistasis model to tight_bottle, lib_2... fitting took 52.8 sec.
+Fitting no epistasis model to tight_bottle, lib_2... fitting took 0.4 sec.
 </pre></div></div>
 </div>
 <p>Now we want to see which model fits the data better. To do this, we get the log likelihood of each model along with the number of model parameters, as well as the <a class="reference external" href="https://en.wikipedia.org/wiki/Akaike_information_criterion">AIC</a>. Models with lower AIC are better, and below we see that the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> global epistasis model always fits the data
@@ -4476,18 +4466,6 @@ details. This is necessary since the preferences are normalized per site. If you
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
@@ -4522,7 +4500,7 @@ details. This is necessary since the preferences are normalized per site. If you
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -4544,7 +4522,7 @@ details. This is necessary since the preferences are normalized per site. If you
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

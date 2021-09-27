@@ -5,21 +5,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bottlenecks &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <title>bottlenecks &#8212; dms_variants 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="codonvarianttable" href="dms_variants.codonvarianttable.html" />
-    <link rel="prev" title="binarymap" href="dms_variants.binarymap.html" />
+    <link rel="prev" title="barcodes" href="dms_variants.barcodes.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -40,8 +39,8 @@
 <h1>bottlenecks<a class="headerlink" href="#bottlenecks" title="Permalink to this headline">¶</a></h1>
 <p>Estimation of bottlenecks during experiments.</p>
 <dl class="py function">
-<dt id="dms_variants.bottlenecks.estimateBottleneck">
-<code class="sig-prename descclassname">dms_variants.bottlenecks.</code><code class="sig-name descname">estimateBottleneck</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">df</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">n_pre_col</span><span class="o">=</span><span class="default_value">'n_pre'</span></em>, <em class="sig-param"><span class="n">n_post_col</span><span class="o">=</span><span class="default_value">'n_post'</span></em>, <em class="sig-param"><span class="n">pseudocount</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">min_variants</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/bottlenecks.html#estimateBottleneck"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.bottlenecks.estimateBottleneck" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.bottlenecks.estimateBottleneck">
+<span class="sig-prename descclassname"><span class="pre">dms_variants.bottlenecks.</span></span><span class="sig-name descname"><span class="pre">estimateBottleneck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pre_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_pre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_post_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_post'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_variants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/bottlenecks.html#estimateBottleneck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.bottlenecks.estimateBottleneck" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate <strong>neutral</strong> bottleneck from pre- and post-selection counts.</p>
 <p>This function estimates a bottleneck between a pre- and post-selection
 condition based on changes in frequencies of variants that are all
@@ -228,18 +227,6 @@ value:</p>
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
@@ -261,7 +248,7 @@ value:</p>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
   <li><a href="dms_variants.html">dms_variants package</a><ul>
-      <li>Previous: <a href="dms_variants.binarymap.html" title="previous chapter">binarymap</a></li>
+      <li>Previous: <a href="dms_variants.barcodes.html" title="previous chapter">barcodes</a></li>
       <li>Next: <a href="dms_variants.codonvarianttable.html" title="next chapter">codonvarianttable</a></li>
   </ul></li>
   </ul></li>
@@ -271,7 +258,7 @@ value:</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -293,7 +280,7 @@ value:</p>
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -5,16 +5,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>simulate &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <title>simulate &#8212; dms_variants 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -40,8 +39,8 @@
 <h1>simulate<a class="headerlink" href="#simulate" title="Permalink to this headline">¶</a></h1>
 <p>Simulate data.</p>
 <dl class="py class">
-<dt id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">MultiLatentSigmoidPhenotypeSimulator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sigmoid_phenotype_simulators</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">MultiLatentSigmoidPhenotypeSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmoid_phenotype_simulators</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simulate phenotype that derives from several latent phenotypes.</p>
 <div class="admonition note">
@@ -65,8 +64,8 @@ observed phenotype.</p>
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes">
-<code class="sig-name descname">n_latent_phenotypes</code><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes">
+<span class="sig-name descname"><span class="pre">n_latent_phenotypes</span></span><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>The number of latent phenotypes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -76,8 +75,8 @@ observed phenotype.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.latentPhenotype">
-<code class="sig-name descname">latentPhenotype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subs</span></em>, <em class="sig-param"><span class="n">k</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.latentPhenotype">
+<span class="sig-name descname"><span class="pre">latentPhenotype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latent phenotype <span class="math notranslate nohighlight">\(k\)</span> of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -97,8 +96,8 @@ observed phenotype.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedEnrichment">
-<code class="sig-name descname">observedEnrichment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.observedEnrichment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedEnrichment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedEnrichment">
+<span class="sig-name descname"><span class="pre">observedEnrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.observedEnrichment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedEnrichment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Observed enrichment of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -114,8 +113,8 @@ observed phenotype.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedPhenotype">
-<code class="sig-name descname">observedPhenotype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedPhenotype">
+<span class="sig-name descname"><span class="pre">observedPhenotype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Observed phenotype of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -131,8 +130,8 @@ observed phenotype.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram">
-<code class="sig-name descname">plotMutsHistogram</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">k</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mutant_order</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bins</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">wt_vline</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram">
+<span class="sig-name descname"><span class="pre">plotMutsHistogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutant_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wt_vline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot distribution of phenotype for all mutants of a given order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -159,8 +158,8 @@ to plot.</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator">
-<em class="property">class </em><code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">SigmoidPhenotypeSimulator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geneseq</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">wt_latent</span><span class="o">=</span><span class="default_value">5</span></em>, <em class="sig-param"><span class="n">norm_weights</span><span class="o">=</span><span class="default_value">0.4, - 0.7, 1.5, 0.6, - 7, 3.5</span></em>, <em class="sig-param"><span class="n">stop_effect</span><span class="o">=</span><span class="default_value">- 15</span></em>, <em class="sig-param"><span class="n">min_observed_enrichment</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">SigmoidPhenotypeSimulator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wt_latent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">((0.4,</span> <span class="pre">-</span> <span class="pre">0.7,</span> <span class="pre">1.5),</span> <span class="pre">(0.6,</span> <span class="pre">-</span> <span class="pre">7,</span> <span class="pre">3.5))</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop_effect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_observed_enrichment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simulate phenotypes under sigmoid global epistasis model.</p>
 <div class="admonition note">
@@ -202,8 +201,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd>
 </dl>
 <dl class="py attribute">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent">
-<code class="sig-name descname">wt_latent</code><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent">
+<span class="sig-name descname"><span class="pre">wt_latent</span></span><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wildtype latent phenotype.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -213,8 +212,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd></dl>
 
 <dl class="py attribute">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects">
-<code class="sig-name descname">muteffects</code><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects">
+<span class="sig-name descname"><span class="pre">muteffects</span></span><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Effect on latent phenotype of each amino-acid mutation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -224,8 +223,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype">
-<code class="sig-name descname">latentPhenotype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype">
+<span class="sig-name descname"><span class="pre">latentPhenotype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentPhenotype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Latent phenotype of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -241,8 +240,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved">
-<code class="sig-name descname">latentToObserved</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">latent</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentToObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved">
+<span class="sig-name descname"><span class="pre">latentToObserved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">latent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.latentToObserved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Observed enrichment or observed phenotype from latent phenotype.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -261,8 +260,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment">
-<code class="sig-name descname">observedEnrichment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedEnrichment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment">
+<span class="sig-name descname"><span class="pre">observedEnrichment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedEnrichment"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment" title="Permalink to this definition">¶</a></dt>
 <dd><p>Observed enrichment of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -278,8 +277,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype">
-<code class="sig-name descname">observedPhenotype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">subs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype">
+<span class="sig-name descname"><span class="pre">observedPhenotype</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.observedPhenotype"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype" title="Permalink to this definition">¶</a></dt>
 <dd><p>Observed phenotype of a variant.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -295,8 +294,8 @@ latent phenotype as <cite>(weight, mean, sd)</cite> for each Gaussian.</p></li>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved">
-<code class="sig-name descname">plotLatentVsObserved</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">latent_min</span><span class="o">=</span><span class="default_value">- 15</span></em>, <em class="sig-param"><span class="n">latent_max</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">npoints</span><span class="o">=</span><span class="default_value">200</span></em>, <em class="sig-param"><span class="n">wt_vline</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotLatentVsObserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved">
+<span class="sig-name descname"><span class="pre">plotLatentVsObserved</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">latent_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wt_vline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotLatentVsObserved"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot observed enrichment/phenotype as function of latent phenotype.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -319,8 +318,8 @@ phenotype.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram">
-<code class="sig-name descname">plotMutsHistogram</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">mutant_order</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bins</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">wt_vline</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram">
+<span class="sig-name descname"><span class="pre">plotMutsHistogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutant_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wt_vline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#SigmoidPhenotypeSimulator.plotMutsHistogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot distribution of phenotype for all mutants of a given order.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -344,8 +343,8 @@ phenotype.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="dms_variants.simulate.codon_muts">
-<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">codon_muts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">codonseq</span></em>, <em class="sig-param"><span class="n">nmuts</span></em>, <em class="sig-param"><span class="n">nvariants</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#codon_muts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.codon_muts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.codon_muts">
+<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">codon_muts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codonseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmuts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nvariants</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#codon_muts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.codon_muts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get random codon mutations to sequence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -376,8 +375,8 @@ in the form ‘ATG1TAC GGC3GGG’ where the number refers to the
 </dd></dl>
 
 <dl class="py function">
-<dt id="dms_variants.simulate.mutate_seq">
-<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">mutate_seq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seq</span></em>, <em class="sig-param"><span class="n">nmuts</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#mutate_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.mutate_seq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.mutate_seq">
+<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">mutate_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmuts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#mutate_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.mutate_seq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mutate a nucleotide sequence.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -403,8 +402,8 @@ in the form ‘ATG1TAC GGC3GGG’ where the number refers to the
 </dd></dl>
 
 <dl class="py function">
-<dt id="dms_variants.simulate.rand_seq">
-<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">rand_seq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seqlen</span></em>, <em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">exclude</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nseqs</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#rand_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.rand_seq" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.rand_seq">
+<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">rand_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seqlen</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nseqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#rand_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.rand_seq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Random nucleotide sequence(s).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -442,8 +441,8 @@ If multiple sequences, they are all unique.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="dms_variants.simulate.simulateSampleCounts">
-<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">simulateSampleCounts</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">variants</span></em>, <em class="sig-param"><span class="n">phenotype_func</span></em>, <em class="sig-param"><span class="n">variant_error_rate</span></em>, <em class="sig-param"><span class="n">pre_sample</span></em>, <em class="sig-param"><span class="n">post_samples</span></em>, <em class="sig-param"><span class="n">secondary_target_phenotypes</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pre_sample_name</span><span class="o">=</span><span class="default_value">'pre-selection'</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulateSampleCounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.simulateSampleCounts" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.simulateSampleCounts">
+<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">simulateSampleCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variants</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phenotype_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_error_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">post_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">secondary_target_phenotypes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pre_sample_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pre-selection'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulateSampleCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.simulateSampleCounts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate pre- and post-selection variant counts.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -503,8 +502,8 @@ as values.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="dms_variants.simulate.simulate_CodonVariantTable">
-<code class="sig-prename descclassname">dms_variants.simulate.</code><code class="sig-name descname">simulate_CodonVariantTable</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">geneseq</span></em>, <em class="sig-param"><span class="n">bclen</span></em>, <em class="sig-param"><span class="n">library_specs</span></em>, <em class="sig-param"><span class="n">seed</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">variant_call_support</span><span class="o">=</span><span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulate_CodonVariantTable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dms_variants.simulate.simulate_CodonVariantTable" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="dms_variants.simulate.simulate_CodonVariantTable">
+<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">simulate_CodonVariantTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bclen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_call_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulate_CodonVariantTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.simulate_CodonVariantTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate <a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -567,18 +566,6 @@ with this mean.</p></li>
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
@@ -610,7 +597,7 @@ with this mean.</p></li>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -632,7 +619,7 @@ with this mean.</p></li>
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

@@ -5,17 +5,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.globalepistasis &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <title>dms_variants.globalepistasis &#8212; dms_variants 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -61,7 +58,7 @@
 <span class="sd">:math:`m` and 0 otherwise, and :math:`m` ranging over all :math:`M` mutations</span>
 <span class="sd">observed in the overall set of variants (so :math:`\mathbf{b}\left(v\right)`</span>
 <span class="sd">is of length :math:`M`). Variants can be converted into this binary form</span>
-<span class="sd">using :class:`dms_variants.binarymap.BinaryMap`.</span>
+<span class="sd">using `binarymap &lt;https://github.com/jbloomlab/binarymap&gt;`_.</span>
 
 <span class="sd">We define a *latent effect* for each mutation :math:`m`, which we denote as</span>
 <span class="sd">:math:`\beta_m`. The latent effects of mutations contribute additively to the</span>
@@ -677,7 +674,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    binarymap : :class:`dms_variants.binarymap.BinaryMap`</span>
+<span class="sd">    binarymap : `BinaryMap &lt;https://github.com/jbloomlab/binarymap&gt;`_</span>
 <span class="sd">        Contains the variants, their functional scores, and score variances.</span>
 <span class="sd">    n_latent_phenotypes : int</span>
 <span class="sd">        Number of distinct latent phenotypes. See :ref:`multi_latent`.</span>
@@ -847,7 +844,7 @@
     <span class="c1"># ------------------------------------------------------------------------</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">binarymap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;:class:`dms_variants.binarymap.BinaryMap`: Variants to model.</span>
+        <span class="sd">&quot;&quot;&quot;`BinaryMap &lt;https://github.com/jbloomlab/binarymap&gt;`_</span>
 
 <span class="sd">        The binary map is set during initialization of the model.</span>
 
@@ -988,7 +985,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        binary_variants : scipy.sparse.csr.csr_matrix or numpy.ndarray</span>
 <span class="sd">            Binary variants in form used by</span>
-<span class="sd">            :class:`dms_variants.binarymap.BinaryMap`.</span>
+<span class="sd">            `BinaryMap &lt;https://github.com/jbloomlab/binarymap&gt;`_.</span>
 <span class="sd">        phenotype : {&#39;latent&#39;, &#39;observed&#39;}</span>
 <span class="sd">            Calculate the latent or observed phenotype.</span>
 <span class="sd">        wt_col : bool</span>
@@ -2144,8 +2141,7 @@
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
 <span class="sd">    The :attr:`AbstractEpistasis.binarymap` must have non-`None`</span>
-<span class="sd">    counts in :attr:`dms_variants.binarymap.BinaryMap.n_pre` and</span>
-<span class="sd">    :attr:`dms_variants.binarymap.BinaryMap.n_post`, since</span>
+<span class="sd">    counts in its `n_pre` and `n_post` attributes, since</span>
 <span class="sd">    as described in :ref:`bottleneck_likelihood`, the model is</span>
 <span class="sd">    actually fit to the :attr:`BottleneckLikelihood.f_pre` and</span>
 <span class="sd">    :attr:`BottleneckLikelihood.f_post` values calculated from</span>
@@ -3091,7 +3087,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    binarymap : :class:`dms_variants.binarymap.BinaryMap`</span>
+<span class="sd">    binarymap : `BinaryMap &lt;https://github.com/jbloomlab/binarymap&gt;`_</span>
 <span class="sd">        Contains the variants, their functional scores, and score variances.</span>
 <span class="sd">        The models are fit to these data.</span>
 <span class="sd">    likelihood : {&#39;Gaussian&#39;, &#39;Cauchy&#39;, &#39;Bottleneck&#39;}</span>
@@ -3222,18 +3218,6 @@
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
@@ -3259,7 +3243,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -3281,7 +3265,7 @@
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
