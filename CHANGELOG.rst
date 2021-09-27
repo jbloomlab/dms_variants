@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.0.0
+------
+
+Changed
++++++++
+- Require Python >= 3.8
+- Moved `BinaryMap` to its own package at https://github.com/jbloomlab/binarymap
+
 0.8.10
 ------
 Fixed

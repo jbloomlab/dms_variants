@@ -131,7 +131,7 @@ html_theme_options = {
         'github_user': 'jbloomlab',
         'github_repo': 'dms_variants',
         'github_banner': 'true',
-        'travis_button': 'true',
+        'travis_button': 'false',
         'sidebar_width': '250px',
         }
 
