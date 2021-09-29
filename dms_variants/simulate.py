@@ -14,6 +14,8 @@ import random
 import re
 import tempfile
 
+import numpy
+
 import pandas as pd
 
 import plotnine as p9
@@ -164,7 +166,8 @@ def codon_muts(codonseq, nmuts, nvariants):
 
 
 def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
-                               seed=1, variant_call_support=0.5):
+                               seed=1, variant_call_support=0.5,
+                               allowed_aa_muts=None):
     """Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.
 
     Note
@@ -187,10 +190,45 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
     variant_call_support : int > 0
         Support is floor of 1 plus draw from exponential distribution
         with this mean.
+    allowed_aa_muts : None or array-like
+        If we only allow some amino-acid substitutions, provide them.
+        Specify mutations like 'E1E' if you want to allow synonymous
+        codon mutations.
 
     Returns
     -------
     :class:`dms_variants.codonvarianttable.CodonVariantTable`
+
+    Example
+    -------
+
+    >>> geneseq = 'ATGGGCAGC'
+    >>> bclen = 4
+    >>> library_specs = {'lib1': {'avgmuts': 3, 'nvariants': 5}}
+    >>> variants =  simulate_CodonVariantTable(geneseq=geneseq,
+    ...                                        bclen=bclen,
+    ...                                        library_specs=library_specs)
+    >>> variants.barcode_variant_df[['barcode', 'aa_substitutions']]
+      barcode aa_substitutions
+    0    AGTC      M1L G2Y S3F
+    1    ATTC              S3R
+    2    CAAA      M1C G2S S3A
+    3    CGAT              M1N
+    4    TAAT              M1V
+
+    >>> allowed_aa_muts = ['M1M', 'M1L', 'M1A', 'G2A', 'G2K', 'S3C', 'S3S']
+    >>> variants =  simulate_CodonVariantTable(geneseq=geneseq,
+    ...                                        bclen=bclen,
+    ...                                        library_specs=library_specs,
+    ...                                        allowed_aa_muts=allowed_aa_muts,
+    ...                                        seed=2)
+    >>> variants.barcode_variant_df[['barcode', 'aa_substitutions']]
+      barcode aa_substitutions
+    0    AAAA          M1L G2A
+    1    CAAC          M1A G2A
+    2    GTTG              M1A
+    3    TTAA              G2A
+    4    TTCA          M1L G2A
 
     """
     if seed is not None:
@@ -206,6 +244,47 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
     if len(geneseq) % 3 != 0:
         raise ValueError('length of `geneseq` not multiple of 3')
     genelength = len(geneseq) // 3
+
+    if allowed_aa_muts is None:
+        allowed_aa_muts_at_site = {site: AAS_WITHSTOP
+                                   for site in range(1, genelength + 1)}
+    else:
+        wt_aas = [CODON_TO_AA[geneseq[3 * i: 3 * i + 3]]
+                  for i in range(genelength)]
+        allowed_aa_muts_at_site = collections.defaultdict(list)
+        for mut_str in allowed_aa_muts:
+            m = re.fullmatch(r'(?P<wt>\S)(?P<site>\d+)(?P<mut>\S)', mut_str)
+            if not m:
+                raise ValueError(f"Cannot match {mut_str} in allowed_aa_muts")
+            wt = m.group('wt')
+            site = int(m.group('site'))
+            mut = m.group('mut')
+            if site < 1 or site > genelength:
+                raise ValueError(f"bad site in {mut_str} in allowed_aa_muts")
+            if wt != wt_aas[site - 1]:
+                raise ValueError(f"bad wt in {mut_str} in allowed_aa_muts")
+            if mut not in AAS_WITHSTOP:
+                raise ValueError(f"bad mut in {mut_str} in allowed_aa_muts")
+            allowed_aa_muts_at_site[site].append(mut)
+    allowed_codons_at_site = {site: [c for c in CODONS if CODON_TO_AA[c] in
+                                     allowed_aa_muts_at_site[site] and
+                                     c != geneseq[site * 3 - 3: site * 3]]
+                              for site in allowed_aa_muts_at_site}
+    allowed_codons_at_site = {site: codons for site, codons in
+                              allowed_codons_at_site.items() if codons}
+    allowed_sites = list(allowed_codons_at_site)
+
+    # probability to draw each site, proportional to number of mutated codons
+    ps = numpy.array([len(cs) for cs in allowed_codons_at_site.values()])
+    ps = ps / ps.sum()
+
+    # for backward compatibility, we have to define the random_sample function
+    # to be random.sample if all amino acids allowed at site
+    def random_sample(sites, n, p):
+        if allowed_aa_muts is None:
+            return random.sample(sites, n)
+        else:
+            return scipy.random.choice(sites, n, replace=False, p=p)
 
     barcode_variant_dict = collections.defaultdict(list)
     for lib, specs_dict in sorted(library_specs.items()):
@@ -227,10 +306,11 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
 
             # get mutations
             substitutions = []
-            nmuts = scipy.random.poisson(avgmuts)
-            for icodon in random.sample(range(1, genelength + 1), nmuts):
+            nmuts = min(len(allowed_sites), scipy.random.poisson(avgmuts))
+            for icodon in random_sample(allowed_sites, nmuts, ps):
                 wtcodon = geneseq[3 * (icodon - 1): 3 * icodon]
-                mutcodon = random.choice([c for c in CODONS if c != wtcodon])
+                mutcodon = random.choice(allowed_codons_at_site[icodon])
+                assert mutcodon != wtcodon, f"{mutcodon} vs {wtcodon}"
                 for i_nt, (wt_nt, mut_nt) in enumerate(zip(wtcodon, mutcodon)):
                     if wt_nt != mut_nt:
                         igene = 3 * (icodon - 1) + i_nt + 1
