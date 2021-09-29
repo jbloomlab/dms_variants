@@ -5,16 +5,17 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>simulate &#8212; dms_variants 1.0.0 documentation</title>
+    <title>simulate &#8212; dms_variants 1.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="utils" href="dms_variants.utils.html" />
@@ -503,7 +504,7 @@ as values.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dms_variants.simulate.simulate_CodonVariantTable">
-<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">simulate_CodonVariantTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bclen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_call_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulate_CodonVariantTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.simulate_CodonVariantTable" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dms_variants.simulate.</span></span><span class="sig-name descname"><span class="pre">simulate_CodonVariantTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bclen</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">library_specs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_call_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowed_aa_muts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/simulate.html#simulate_CodonVariantTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.simulate.simulate_CodonVariantTable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate <a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -521,6 +522,9 @@ and ‘nvariants’. Mutations per variant are Poisson distributed.</p></li>
 <li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – Random number seed or <cite>None</cite> to set no seed.</p></li>
 <li><p><strong>variant_call_support</strong> (<em>int &gt; 0</em>) – Support is floor of 1 plus draw from exponential distribution
 with this mean.</p></li>
+<li><p><strong>allowed_aa_muts</strong> (<em>None</em><em> or </em><em>array-like</em>) – If we only allow some amino-acid substitutions, provide them.
+Specify mutations like ‘E1E’ if you want to allow synonymous
+codon mutations.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -530,6 +534,37 @@ with this mean.</p></li>
 <dd class="field-odd"><p><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">dms_variants.codonvarianttable.CodonVariantTable</span></code></a></p>
 </dd>
 </dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">geneseq</span> <span class="o">=</span> <span class="s1">&#39;ATGGGCAGC&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">bclen</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">library_specs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lib1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;avgmuts&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;nvariants&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span> <span class="o">=</span>  <span class="n">simulate_CodonVariantTable</span><span class="p">(</span><span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+<span class="gp">... </span>                                       <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+<span class="gp">... </span>                                       <span class="n">library_specs</span><span class="o">=</span><span class="n">library_specs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">[[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]]</span>
+<span class="go">  barcode aa_substitutions</span>
+<span class="go">0    AGTC      M1L G2Y S3F</span>
+<span class="go">1    ATTC              S3R</span>
+<span class="go">2    CAAA      M1C G2S S3A</span>
+<span class="go">3    CGAT              M1N</span>
+<span class="go">4    TAAT              M1V</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">allowed_aa_muts</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;M1M&#39;</span><span class="p">,</span> <span class="s1">&#39;M1L&#39;</span><span class="p">,</span> <span class="s1">&#39;M1A&#39;</span><span class="p">,</span> <span class="s1">&#39;G2A&#39;</span><span class="p">,</span> <span class="s1">&#39;G2K&#39;</span><span class="p">,</span> <span class="s1">&#39;S3C&#39;</span><span class="p">,</span> <span class="s1">&#39;S3S&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span> <span class="o">=</span>  <span class="n">simulate_CodonVariantTable</span><span class="p">(</span><span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+<span class="gp">... </span>                                       <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+<span class="gp">... </span>                                       <span class="n">library_specs</span><span class="o">=</span><span class="n">library_specs</span><span class="p">,</span>
+<span class="gp">... </span>                                       <span class="n">allowed_aa_muts</span><span class="o">=</span><span class="n">allowed_aa_muts</span><span class="p">,</span>
+<span class="gp">... </span>                                       <span class="n">seed</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">[[</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;aa_substitutions&#39;</span><span class="p">]]</span>
+<span class="go">  barcode aa_substitutions</span>
+<span class="go">0    AAAA          M1L G2A</span>
+<span class="go">1    CAAC          M1A G2A</span>
+<span class="go">2    GTTG              M1A</span>
+<span class="go">3    TTAA              G2A</span>
+<span class="go">4    TTCA          M1L G2A</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </div>
