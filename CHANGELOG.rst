@@ -6,6 +6,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.2.0
+------
+Added
++++++
+- Added ``inverse_simpson_index``
+
 1.1.0
 ------
 Added
