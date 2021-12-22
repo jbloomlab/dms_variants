@@ -18,6 +18,76 @@ import pandas as pd
 import scipy.special
 
 
+def inverse_simpson_index(barcodecounts,
+                          *,
+                          barcodecol='barcode',
+                          countcol='count',
+                          groupcols='library',
+                          ):
+    """Inverse Simpson index (reciprocal probability two barcodes are same).
+
+    Parameters
+    ----------
+    barcodecounts: pandas.DataFrame
+        Data frame with barcode counts
+    barcodecol : str
+        Column in ``barcodecounts`` listing all unique barcodes.
+    countcol : str
+        Column in ``barcodecounts`` with counts of each barcode.
+    groupcols : str, list, or None
+        Columns in ``barcodecounts`` by which we group for calculations.
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    Example
+    -------
+    >>> barcodecounts = pd.DataFrame.from_records(
+    ...        [('lib1', 'AA', 10),
+    ...         ('lib1', 'AT', 20),
+    ...         ('lib1', 'AC', 30),
+    ...         ('lib2', 'AA', 5)],
+    ...        columns=['library', 'barcode', 'count'])
+    >>> inverse_simpson_index(barcodecounts)
+      library  inverse_simpson_index
+    0    lib1               2.571429
+    1    lib2               1.000000
+
+    """
+    # based on here: https://gist.github.com/martinjc/f227b447791df8c90568
+    reserved_cols = ['dummy', 'p2', 'simpson_index', 'inverse_simpson_index']
+    for col in reserved_cols:
+        if col in barcodecounts.columns:
+            raise ValueError(f"`barcodecounts` cannot have column {col}")
+
+    if groupcols:
+        if isinstance(groupcols, str):
+            groupcols = [groupcols]
+    else:
+        groupcols = ['dummy']
+        barcodecounts['dummy'] = 'dummy'
+    req_cols = [barcodecol, countcol, *groupcols]
+    if not set(barcodecounts.columns).issuperset(req_cols):
+        raise ValueError(f"`barcodecounts` lacks columns {req_cols}")
+    if len(barcodecounts) != len(barcodecounts.groupby(req_cols)):
+        raise ValueError('`barcodecol` and `groupcols` not unique rows')
+
+    df = (barcodecounts
+          .assign(p2=lambda x: (x[countcol] / (x.groupby(groupcols)
+                                               [countcol].transform('sum')
+                                               )
+                                )**2
+                  )
+          .groupby(groupcols, as_index=False)
+          .aggregate(simpson_index=pd.NamedAgg('p2', 'sum'))
+          .assign(inverse_simpson_index=lambda x: 1 / x['simpson_index'])
+          )
+    if groupcols == ['dummy']:
+        groupcols = []
+    return df[[*groupcols, 'inverse_simpson_index']]
+
+
 def rarefyBarcodes(barcodecounts, *,
                    barcodecol='barcode', countcol='count',
                    maxpoints=100000, logspace=True):
@@ -30,7 +100,7 @@ def rarefyBarcodes(barcodecounts, *,
 
     Parameters
     ----------
-    barcodecounts :pandas.DataFrame
+    barcodecounts : pandas.DataFrame
         Data frame with counts to rarefy.
     barcodecol : str
         Column in `barcodecounts` listing all unique barcodes.
