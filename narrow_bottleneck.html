@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fitting gobal epistasis models with experimental “noise” &#8212; dms_variants 1.1.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Fitting gobal epistasis models with experimental “noise” &#8212; dms_variants 1.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
@@ -284,7 +285,7 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Fitting-gobal-epistasis-models-with-experimental-“noise”">
+<section id="Fitting-gobal-epistasis-models-with-experimental-“noise”">
 <h1>Fitting gobal epistasis models with experimental “noise”<a class="headerlink" href="#Fitting-gobal-epistasis-models-with-experimental-“noise”" title="Permalink to this headline">¶</a></h1>
 <p>The global epistasis models described by <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a> fits experimentally measured functional scores for the variants using a Gaussian-likelihood function that assumes that deviations from the models are normally distributed (see the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">globalepistasis module documentation</a> for more details). Those models also accommodate estimates of the noise for each
 functional score measurement, which are easy to make if the noise is due to statistical processes that are simple to model (such as finite sequencing depth leading to sampling statistics in the deep sequencing counts).</p>
@@ -296,7 +297,7 @@ this last case, the noise occurs when the bottleneck randomly influences which p
 <li><p>The Cauchy likelihood, which is like the Gaussian likelihood but has a “fatter tail” and so is less affected by outliers.</p></li>
 </ol>
 <p>Below, we demonstrate these different likelihood calculation methods on simulated data.</p>
-<div class="section" id="Setup-for-analysis">
+<section id="Setup-for-analysis">
 <h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
 <p>Import Python modules / packages:</p>
 <div class="nbinput nblast docutils container">
@@ -395,8 +396,8 @@ bottlenecking. - A <em>mid bottleneck</em>: there is a moderate bottleneck in tr
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="Simulate-library-of-variants">
+</section>
+<section id="Simulate-library-of-variants">
 <h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Permalink to this headline">¶</a></h2>
 <p>Simulate a library of codon variants of the gene.</p>
 <p>Simulate wildtype gene sequence:</p>
@@ -502,8 +503,8 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <img alt="_images/narrow_bottleneck_22_1.png" src="_images/narrow_bottleneck_22_1.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Simulate-counts-for-samples">
+</section>
+<section id="Simulate-counts-for-samples">
 <h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Permalink to this headline">¶</a></h2>
 <p>Now we simulate the counts of each variant after selection.</p>
 <p>First, we define a “phenotype” function using a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, which follow the “global epistasis” concepts of <a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and <a class="reference external" href="https://doi.org/10.1534/genetics.116.195214">Sailer and Harms</a> to define the phenotype in two steps: an underlying latent phenotype that mutations affect additively, and then an
@@ -666,8 +667,8 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <img alt="_images/narrow_bottleneck_38_0.png" src="_images/narrow_bottleneck_38_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Functional-scores-for-variants">
+</section>
+<section id="Functional-scores-for-variants">
 <h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Permalink to this headline">¶</a></h2>
 <p>Use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">CodonVariantTable.func_scores</a> to calculates a functional score for each variant based on its change in frequency from pre- to post-selection:</p>
 <div class="nbinput nblast docutils container">
@@ -733,8 +734,8 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <img alt="_images/narrow_bottleneck_46_0.png" src="_images/narrow_bottleneck_46_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Estimate-bottleneck-sizes">
+</section>
+<section id="Estimate-bottleneck-sizes">
 <h2>Estimate bottleneck sizes<a class="headerlink" href="#Estimate-bottleneck-sizes" title="Permalink to this headline">¶</a></h2>
 <p>In order to use the bottleneck-based likelihood, we need to know the size of the bottleneck going from the pre- to post-selection conditions. In this simulation, we know the true simulated bottleneck for each sample–but in a real experiment, we may not know the bottleneck. Therefore, we need to estimate it from the data.</p>
 <p>We can do that if we examine just the fluctuations in frequency of the wildtype variants. The basic idea is that if there is no bottleneck, then the relative frequencies of the different wildtype variants should remain unchanged–but if there is a bottleneck then some wildtype variants will randomly go up and down in frequency compared to others. The actual calculation is implemented in the
@@ -832,8 +833,8 @@ Estimated and actual bottleneck per variant:
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="Fit-global-epistasis-models">
+</section>
+<section id="Fit-global-epistasis-models">
 <h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
 <p>Now we fit global epistasis models using the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.fit_models">fit_models</a> function.</p>
 <p>The two types of models are: - <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> models, which model global epistasis in the way described in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. - <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis">NoEpistasis</a> models, which assume mutations
@@ -1122,8 +1123,8 @@ that is less sensitive to measurements that have large deviations from the model
 <img alt="_images/narrow_bottleneck_62_0.png" src="_images/narrow_bottleneck_62_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Model-vs-truth-for-amino-acid-variants">
+</section>
+<section id="Model-vs-truth-for-amino-acid-variants">
 <h2>Model vs truth for amino-acid variants<a class="headerlink" href="#Model-vs-truth-for-amino-acid-variants" title="Permalink to this headline">¶</a></h2>
 <p>Because we simulated the variants, we can also use the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a> to get the <strong>true</strong> phenotype of each variant. (Obviously in real non-simulated experiments the true phenotypes are unknown.)</p>
 <p>We want to see if the model outperforms the experiments if look at the level of <strong>amino-acid</strong> variants (meaning we pool the counts for all variants with the same amino-acid substitutions together before calculating the functional scores). Recall that above we already got such functional scores into the variable <code class="docutils literal notranslate"><span class="pre">aa_func_scores</span></code>:</p>
@@ -1328,8 +1329,8 @@ that is less sensitive to measurements that have large deviations from the model
 <img alt="_images/narrow_bottleneck_72_0.png" src="_images/narrow_bottleneck_72_0.png" />
 </div>
 </div>
-</div>
-<div class="section" id="Model-vs-truth-for-single-mutants">
+</section>
+<section id="Model-vs-truth-for-single-mutants">
 <h2>Model vs truth for single mutants<a class="headerlink" href="#Model-vs-truth-for-single-mutants" title="Permalink to this headline">¶</a></h2>
 <p>Now we repeat the above analysis for just <strong>single</strong> amino-acid mutants.</p>
 <p>First, get the single amino-acid mutant variants:</p>
@@ -1489,8 +1490,8 @@ that is less sensitive to measurements that have large deviations from the model
 <img alt="_images/narrow_bottleneck_78_0.png" src="_images/narrow_bottleneck_78_0.png" />
 </div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>

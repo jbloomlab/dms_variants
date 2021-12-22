@@ -4,8 +4,9 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Parse barcodes &#8212; dms_variants 1.1.0 documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Parse barcodes &#8212; dms_variants 1.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
@@ -284,11 +285,11 @@ div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
 </style>
-<div class="section" id="Parse-barcodes">
+<section id="Parse-barcodes">
 <h1>Parse barcodes<a class="headerlink" href="#Parse-barcodes" title="Permalink to this headline">¶</a></h1>
 <p>Simulate some Illumina reads giving barcode counts of variants, parse them from the simulated FASTQ files, and add them to a variant table. Primarily designed to illustrate how to use an <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a> to parse barcode counts and add them to a
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>.</p>
-<div class="section" id="Setup-for-analysis">
+<section id="Setup-for-analysis">
 <h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
 <p>Import Python modules / packages. We use <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> for ggplot2-like plotting:</p>
 <div class="nbinput nblast docutils container">
@@ -345,8 +346,8 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="Create-small-variant-table">
+</section>
+<section id="Create-small-variant-table">
 <h2>Create small variant table<a class="headerlink" href="#Create-small-variant-table" title="Permalink to this headline">¶</a></h2>
 <p>We simulate a small <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> for one libraries with three variants, with short 8-nucleotide barcodes. We simulate the table using using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">simulate_CodonVariantTable</a>:</p>
 <div class="nbinput nblast docutils container">
@@ -442,8 +443,8 @@ div.rendered_html tbody tr:hover {
 </table>
 </div></div>
 </div>
-</div>
-<div class="section" id="Simulate-barcode-reads">
+</section>
+<section id="Simulate-barcode-reads">
 <h2>Simulate barcode reads<a class="headerlink" href="#Simulate-barcode-reads" title="Permalink to this headline">¶</a></h2>
 <p>We are now going to simulate barcode reads that we will then parse with the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a>. This parser is designed to parse reads that have this structure:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>5&#39;-[R2_start]-upstream-barcode-downstream-[R1_start]-3&#39;
@@ -676,8 +677,8 @@ ATTCCCGTTCGTATCATG
 455555555555555555
 </pre></div></div>
 </div>
-</div>
-<div class="section" id="Parse-barcode-reads">
+</section>
+<section id="Parse-barcode-reads">
 <h2>Parse barcode reads<a class="headerlink" href="#Parse-barcode-reads" title="Permalink to this headline">¶</a></h2>
 <p>Now we initialize a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a> to parse the barcodes, allowing one mismatch in the upstream sequence (note if we had a <em>downstream</em> sequence we could specify it too). We specify the set of valid barcodes, which we get using the
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes">CodonVariantTable.valid_barcodes</a> method of our variant table. Note that if we had multiple libraries, we’d need a different parser for each one as each would have it’s own set of valid barcodes:</p>
@@ -855,8 +856,8 @@ ATTCCCGTTCGTATCATG
 </table>
 </div></div>
 </div>
-</div>
-<div class="section" id="Add-barcodes-to-variant-table">
+</section>
+<section id="Add-barcodes-to-variant-table">
 <h2>Add barcodes to variant table<a class="headerlink" href="#Add-barcodes-to-variant-table" title="Permalink to this headline">¶</a></h2>
 <p>We add the barcodes <code class="docutils literal notranslate"><span class="pre">count</span></code> data frame to the variant table using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df">CodonVariantTable.add_sample_counts_df</a>:</p>
 <div class="nbinput docutils container">
@@ -968,8 +969,8 @@ Here are the counts added to the variant table:
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="Look-at-the-barcode-read-fates">
+</section>
+<section id="Look-at-the-barcode-read-fates">
 <h2>Look at the barcode-read fates<a class="headerlink" href="#Look-at-the-barcode-read-fates" title="Permalink to this headline">¶</a></h2>
 <p>Now we look in more detail at the barcode-read <code class="docutils literal notranslate"><span class="pre">fates</span></code> data frame that tells what happened to the barcode reads. First, we make sure the correct number of reads fall in each category based on the simulation parameters:</p>
 <div class="nbinput nblast docutils container">
@@ -1032,8 +1033,8 @@ Here are the counts added to the variant table:
 <img alt="_images/parsebarcodes_sim_data_47_0.png" src="_images/parsebarcodes_sim_data_47_0.png" />
 </div>
 </div>
-</div>
-</div>
+</section>
+</section>
 
 
           </div>

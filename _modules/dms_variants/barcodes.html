@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.barcodes &#8212; dms_variants 1.1.0 documentation</title>
+    <title>dms_variants.barcodes &#8212; dms_variants 1.2.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
@@ -53,6 +53,76 @@
 <span class="kn">import</span> <span class="nn">scipy.special</span>
 
 
+<div class="viewcode-block" id="inverse_simpson_index"><a class="viewcode-back" href="../../dms_variants.barcodes.html#dms_variants.barcodes.inverse_simpson_index">[docs]</a><span class="k">def</span> <span class="nf">inverse_simpson_index</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">,</span>
+                          <span class="o">*</span><span class="p">,</span>
+                          <span class="n">barcodecol</span><span class="o">=</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span>
+                          <span class="n">countcol</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
+                          <span class="n">groupcols</span><span class="o">=</span><span class="s1">&#39;library&#39;</span><span class="p">,</span>
+                          <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Inverse Simpson index (reciprocal probability two barcodes are same).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    barcodecounts: pandas.DataFrame</span>
+<span class="sd">        Data frame with barcode counts</span>
+<span class="sd">    barcodecol : str</span>
+<span class="sd">        Column in ``barcodecounts`` listing all unique barcodes.</span>
+<span class="sd">    countcol : str</span>
+<span class="sd">        Column in ``barcodecounts`` with counts of each barcode.</span>
+<span class="sd">    groupcols : str, list, or None</span>
+<span class="sd">        Columns in ``barcodecounts`` by which we group for calculations.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pandas.DataFrame</span>
+
+<span class="sd">    Example</span>
+<span class="sd">    -------</span>
+<span class="sd">    &gt;&gt;&gt; barcodecounts = pd.DataFrame.from_records(</span>
+<span class="sd">    ...        [(&#39;lib1&#39;, &#39;AA&#39;, 10),</span>
+<span class="sd">    ...         (&#39;lib1&#39;, &#39;AT&#39;, 20),</span>
+<span class="sd">    ...         (&#39;lib1&#39;, &#39;AC&#39;, 30),</span>
+<span class="sd">    ...         (&#39;lib2&#39;, &#39;AA&#39;, 5)],</span>
+<span class="sd">    ...        columns=[&#39;library&#39;, &#39;barcode&#39;, &#39;count&#39;])</span>
+<span class="sd">    &gt;&gt;&gt; inverse_simpson_index(barcodecounts)</span>
+<span class="sd">      library  inverse_simpson_index</span>
+<span class="sd">    0    lib1               2.571429</span>
+<span class="sd">    1    lib2               1.000000</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># based on here: https://gist.github.com/martinjc/f227b447791df8c90568</span>
+    <span class="n">reserved_cols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dummy&#39;</span><span class="p">,</span> <span class="s1">&#39;p2&#39;</span><span class="p">,</span> <span class="s1">&#39;simpson_index&#39;</span><span class="p">,</span> <span class="s1">&#39;inverse_simpson_index&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">reserved_cols</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">barcodecounts</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`barcodecounts` cannot have column </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">groupcols</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">groupcols</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">groupcols</span> <span class="o">=</span> <span class="p">[</span><span class="n">groupcols</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">groupcols</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;dummy&#39;</span><span class="p">]</span>
+        <span class="n">barcodecounts</span><span class="p">[</span><span class="s1">&#39;dummy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;dummy&#39;</span>
+    <span class="n">req_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">barcodecol</span><span class="p">,</span> <span class="n">countcol</span><span class="p">,</span> <span class="o">*</span><span class="n">groupcols</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">barcodecounts</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">issuperset</span><span class="p">(</span><span class="n">req_cols</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`barcodecounts` lacks columns </span><span class="si">{</span><span class="n">req_cols</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">barcodecounts</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`barcodecol` and `groupcols` not unique rows&#39;</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="p">(</span><span class="n">barcodecounts</span>
+          <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">p2</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">countcol</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">groupcols</span><span class="p">)</span>
+                                               <span class="p">[</span><span class="n">countcol</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s1">&#39;sum&#39;</span><span class="p">)</span>
+                                               <span class="p">)</span>
+                                <span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+                  <span class="p">)</span>
+          <span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">groupcols</span><span class="p">,</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+          <span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">simpson_index</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">NamedAgg</span><span class="p">(</span><span class="s1">&#39;p2&#39;</span><span class="p">,</span> <span class="s1">&#39;sum&#39;</span><span class="p">))</span>
+          <span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">inverse_simpson_index</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;simpson_index&#39;</span><span class="p">])</span>
+          <span class="p">)</span>
+    <span class="k">if</span> <span class="n">groupcols</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;dummy&#39;</span><span class="p">]:</span>
+        <span class="n">groupcols</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">[[</span><span class="o">*</span><span class="n">groupcols</span><span class="p">,</span> <span class="s1">&#39;inverse_simpson_index&#39;</span><span class="p">]]</span></div>
+
+
 <div class="viewcode-block" id="rarefyBarcodes"><a class="viewcode-back" href="../../dms_variants.barcodes.html#dms_variants.barcodes.rarefyBarcodes">[docs]</a><span class="k">def</span> <span class="nf">rarefyBarcodes</span><span class="p">(</span><span class="n">barcodecounts</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span>
                    <span class="n">barcodecol</span><span class="o">=</span><span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="n">countcol</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">,</span>
                    <span class="n">maxpoints</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">logspace</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
@@ -65,7 +135,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    barcodecounts :pandas.DataFrame</span>
+<span class="sd">    barcodecounts : pandas.DataFrame</span>
 <span class="sd">        Data frame with counts to rarefy.</span>
 <span class="sd">    barcodecol : str</span>
 <span class="sd">        Column in `barcodecounts` listing all unique barcodes.</span>
