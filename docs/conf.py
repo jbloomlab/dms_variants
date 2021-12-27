@@ -133,6 +133,8 @@ html_theme_options = {
         'github_banner': 'true',
         'travis_button': 'false',
         'sidebar_width': '250px',
+        'page_width': '1300px',
+        'body_max_width': '1050px',
         }
 
 # Add any paths that contain custom static files (such as style sheets) here,
