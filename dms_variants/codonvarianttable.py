@@ -23,13 +23,17 @@ import pandas as pd
 import plotnine as p9
 
 import dms_variants.utils
-from dms_variants.constants import (AAS_NOSTOP,
-                                    AAS_WITHSTOP,
+from dms_variants.constants import (AAS_WITHSTOP,
+                                    AAS_WITHSTOP_WITHGAP,
                                     AA_TO_CODONS,
+                                    AA_TO_CODONS_WITHGAP,
                                     CBPALETTE,
                                     CODONS,
+                                    CODONS_WITHGAP,
                                     CODON_TO_AA,
+                                    CODON_TO_AA_WITHGAP,
                                     NTS,
+                                    NTS_WITHGAP,
                                     )
 
 
@@ -50,6 +54,8 @@ class CodonVariantTable:
         If `True`, then "substitutions" column in `barcode_variant_file` gives
         substitutions as codon rather than nucleotide mutations (e.g.,
         "ATG1ATA GTA5CCC" for substitutions at codons 1 and 5.
+    allowgaps : bool
+        Allow in-frame codon-length gaps (``---``) as valid codon substitution.
     extra_cols : list
         Additional columns in `barcode_variant_file` to retain when creating
         `barcode_variant_df` and `variant_count_df` attributes.
@@ -95,21 +101,31 @@ class CodonVariantTable:
 
     """
 
-    _CODON_SUB_RE = re.compile(f"^(?P<wt>{'|'.join(CODONS)})"
-                               r'(?P<r>\d+)'
-                               f"(?P<mut>{'|'.join(CODONS)})$")
-    """re Pattern : Match codon substitution; groups 'wt', 'r', 'mut'."""
+    def _set_alphabets(self, allowgaps):
+        """Set class variables representing alphabets."""
+        self._CODONS = CODONS_WITHGAP if allowgaps else CODONS
+        self._NTS = NTS_WITHGAP if allowgaps else NTS
+        self._AAS = AAS_WITHSTOP_WITHGAP if allowgaps else AAS_WITHSTOP
+        self._AA_TO_CODONS = (AA_TO_CODONS_WITHGAP if allowgaps
+                              else AA_TO_CODONS)
+        self._CODON_TO_AA = CODON_TO_AA_WITHGAP if allowgaps else CODON_TO_AA
 
-    _AA_SUB_RE = re.compile((f"^(?P<wt>{'|'.join(AAS_WITHSTOP)})"
-                             r'(?P<r>\d+)'
-                             f"(?P<mut>{'|'.join(AAS_WITHSTOP)})$"
-                             ).replace('*', r'\*'))
-    """re Pattern : Match amino-acid substitution; groups 'wt', 'r', 'mut'."""
-
-    _NT_SUB_RE = re.compile(f"^(?P<wt>{'|'.join(NTS)})"
-                            r'(?P<r>\d+)'
-                            f"(?P<mut>{'|'.join(NTS)})$")
-    """re Pattern : Match nucleotide substitution; groups 'wt', 'r', 'mut'."""
+        # don't allow gaps in wildtype for regexes
+        self._CODON_SUB_RE = re.compile(
+            (f"^(?P<wt>{'|'.join(CODONS)})"  # don't allow gaps in wildtype
+             r'(?P<r>\d+)'
+             f"(?P<mut>{'|'.join(self._CODONS)})"
+             ).replace('-', r'\-'))
+        self._AA_SUB_RE = re.compile(
+            (f"^(?P<wt>{'|'.join(AAS_WITHSTOP)})"
+             r'(?P<r>\d+)'
+             rf"(?P<mut>{'|'.join(self._AAS)})"
+             ).replace('*', r'\*').replace('-', r'\-'))
+        self._NT_SUB_RE = re.compile(
+            (f"^(?P<wt>{'|'.join(NTS)})"
+             r'(?P<r>\d+)'
+             rf"(?P<mut>{'|'.join(self._NTS)})"
+             ).replace('-', r'\-'))
 
     def __eq__(self, other):
         """Test if equal to object `other`."""
@@ -131,8 +147,8 @@ class CodonVariantTable:
 
     @classmethod
     def from_variant_count_df(cls, *, variant_count_df_file, geneseq,
-                              drop_all_libs=True, primary_target=None,
-                              extra_cols=None):
+                              drop_all_libs=True, allowgaps=False,
+                              primary_target=None, extra_cols=None):
         """:class:`CodonVariantTable` from CSV of `variant_count_df`.
 
         Note
@@ -152,6 +168,8 @@ class CodonVariantTable:
             If there is a library named "all libraries", drop it as it probably
             added by :meth:`CodonVariantTable.addMergedLibraries` and
             duplicates information for the individual libraries.
+        allowgaps : bool
+            Meaning described in main :class:`CodonVariantTable` doc string.
         primary_target : None or str
             Meaning described in main :class:`CodonVariantTable` doc string.
         extra_cols : list
@@ -202,6 +220,7 @@ class CodonVariantTable:
             cvt = cls(barcode_variant_file=f.name,
                       geneseq=geneseq,
                       substitutions_are_codon=True,
+                      allowgaps=allowgaps,
                       substitutions_col='codon_substitutions',
                       primary_target=primary_target,
                       extra_cols=extra_cols,
@@ -211,13 +230,14 @@ class CodonVariantTable:
 
         return cvt
 
-    def __init__(self, *, barcode_variant_file, geneseq,
+    def __init__(self, *, barcode_variant_file, geneseq, allowgaps=False,
                  substitutions_are_codon=False, extra_cols=None,
                  substitutions_col='substitutions',
                  primary_target=None):
         """See main class doc string."""
+        self._set_alphabets(allowgaps)
         self.geneseq = geneseq.upper()
-        if not re.match(f"^[{''.join(NTS)}]+$", self.geneseq):
+        if not re.fullmatch(f"[{''.join(NTS)}]+", self.geneseq):
             raise ValueError(f"invalid nucleotides in {self.geneseq}")
         if ((len(geneseq) % 3) != 0) or len(geneseq) == 0:
             raise ValueError(f"`geneseq` invalid length {len(self.geneseq)}")
@@ -337,7 +357,7 @@ class CodonVariantTable:
         for codonmut in itertools.chain.from_iterable(
                         self.barcode_variant_df
                         .codon_substitutions.str.split()):
-            m = self._CODON_SUB_RE.match(codonmut)
+            m = self._CODON_SUB_RE.fullmatch(codonmut)
             if m is None:
                 raise ValueError(f"invalid mutation {codonmut}")
             wt = m.group('wt')
@@ -355,7 +375,8 @@ class CodonVariantTable:
         self._mutation_type_colors = {
                 'nonsynonymous': CBPALETTE[1],
                 'synonymous': CBPALETTE[2],
-                'stop': CBPALETTE[3]
+                'stop': CBPALETTE[3],
+                'deletion': CBPALETTE[4],
                 }
 
         # for "safety" make the substitutions column for non-primary targets
@@ -1273,12 +1294,13 @@ class CodonVariantTable:
 
         if mut_type == 'codon':
             wts = self.codons
-            chars = CODONS
-            mutation_types = ['nonsynonymous', 'synonymous', 'stop']
+            chars = self._CODONS
+            mutation_types = list(self._mutation_type_colors)
         elif mut_type == 'aa':
             wts = self.aas
-            chars = AAS_WITHSTOP
-            mutation_types = ['nonsynonymous', 'stop']
+            chars = self._AAS
+            mutation_types = [mtype for mtype in self._mutation_type_colors
+                              if mtype != 'synonymous']
         else:
             raise ValueError(f"invalid mut_type {mut_type}")
 
@@ -1305,27 +1327,29 @@ class CodonVariantTable:
 
         def _classify_mutation(mut_str):
             if mut_type == 'aa':
-                m = self._AA_SUB_RE.match(mut_str)
+                m = self._AA_SUB_RE.fullmatch(mut_str)
                 assert m is not None, f"cannot match aa mut: {mut_str}"
                 wt_aa = m.group('wt')
                 mut_aa = m.group('mut')
             else:
-                m = self._CODON_SUB_RE.match(mut_str)
+                m = self._CODON_SUB_RE.fullmatch(mut_str)
                 assert m is not None, f"cannot match codon mut: {mut_str}"
                 wt_aa = CODON_TO_AA[m.group('wt')]
-                mut_aa = CODON_TO_AA[m.group('mut')]
+                mut_aa = self._CODON_TO_AA[m.group('mut')]
             if wt_aa == mut_aa:
                 return 'synonymous'
             elif mut_aa == '*':
                 return 'stop'
+            elif mut_aa == '-':
+                return 'deletion'
             else:
                 return 'nonsynonymous'
 
         def _get_site(mut_str):
             if mut_type == 'aa':
-                m = self._AA_SUB_RE.match(mut_str)
+                m = self._AA_SUB_RE.fullmatch(mut_str)
             else:
-                m = self._CODON_SUB_RE.match(mut_str)
+                m = self._CODON_SUB_RE.fullmatch(mut_str)
             site = int(m.group('r'))
             assert site in self.sites
             return site
@@ -1405,13 +1429,14 @@ class CodonVariantTable:
         # order amino acids by Kyte-Doolittle hydrophobicity,
         aa_order = [tup[0] for tup in sorted(
                     Bio.SeqUtils.ProtParamData.kd.items(),
-                    key=lambda tup: tup[1])] + ['*']
+                    key=lambda tup: tup[1])]
+        aa_order = aa_order + [aa for aa in self._AAS if aa not in aa_order]
         if mut_type == 'codon':
             height_per = 5.5
             mut_desc = 'codon'
             # order codons by the amino acid they encode
             order = list(itertools.chain.from_iterable(
-                         [AA_TO_CODONS[aa] for aa in aa_order]))
+                         [self._AA_TO_CODONS[aa] for aa in aa_order]))
             pattern = self._CODON_SUB_RE.pattern
         elif mut_type == 'aa':
             height_per = 1.7
@@ -1966,15 +1991,23 @@ class CodonVariantTable:
         elif variant_type != 'all':
             raise ValueError(f"invalid variant_type {variant_type}")
 
-        codon_mut_types = ['nonsynonymous', 'synonymous', 'stop']
+        codon_mut_types = list(self._mutation_type_colors)
 
-        # mutations from stop to another amino-acid counted as nonsyn
+        # mutations from stop to another amino-acid counted as nonsynonymous
+        aa_re_nostop = ''.join([a.replace('-', r'\-')
+                                for a in self._AAS if a != '*'])
+        aa_re_nodel = ''.join([a.replace('*', r'\*')
+                               for a in self._AAS if a != '-'])
         df = (df
               .assign(
                 synonymous=lambda x: (x.n_codon_substitutions -
                                       x.n_aa_substitutions),
                 stop=lambda x: (x.aa_substitutions.str
-                                .findall(rf"[{AAS_NOSTOP}]\d+\*").apply(len)),
+                                .findall(rf"[{aa_re_nostop}]\d+\*")
+                                .apply(len)),
+                deletion=lambda x: (x.aa_substitutions.str
+                                    .findall(rf"[{aa_re_nodel}]\d+\-")
+                                    .apply(len)),
                 nonsynonymous=lambda x: (x.n_codon_substitutions -
                                          x.synonymous - x.stop),
                 )
@@ -2424,7 +2457,7 @@ class CodonVariantTable:
 
         """
         def _parseCodonMut(mutstr):
-            m = self._CODON_SUB_RE.match(mutstr)
+            m = self._CODON_SUB_RE.fullmatch(mutstr)
             return (m.group('wt'), int(m.group('r')), m.group('mut'))
 
         if self.variant_count_df is None:
@@ -2471,7 +2504,8 @@ class CodonVariantTable:
             liblist.append(lib)
             samplelist.append(sample)
 
-            codoncounts = {codon: [0] * len(self.sites) for codon in CODONS}
+            codoncounts = {codon: [0] * len(self.sites)
+                           for codon in self._CODONS}
 
             if single_or_all == 'single':
                 n_wt = (i_df
@@ -2507,10 +2541,10 @@ class CodonVariantTable:
                 raise ValueError(f"invalid `single_or_all` {single_or_all}")
 
             counts_df = pd.DataFrame(collections.OrderedDict(
-                         [('site', self.sites),
-                          ('wildtype', [self.codons[r] for r in self.sites])] +
-                         [(codon, codoncounts[codon]) for codon in CODONS]
-                         ))
+                        [('site', self.sites),
+                         ('wildtype', [self.codons[r] for r in self.sites])] +
+                        [(codon, codoncounts[codon]) for codon in self._CODONS]
+                        ))
             counts_df.to_csv(countfile, index=False)
 
         assert all(map(os.path.isfile, countfiles))
@@ -2645,7 +2679,7 @@ class CodonVariantTable:
 
         cats = ['wildtype', 'synonymous',
                 *[f"{n} nonsynonymous" for n in range(1, max_aa)],
-                f">{max_aa - 1} nonsynonymous", 'stop']
+                f">{max_aa - 1} nonsynonymous", 'stop', 'deletion']
         if syn_as_wt:
             cats.remove('synonymous')
         if 'target' in set(df.columns):
@@ -2672,6 +2706,8 @@ class CodonVariantTable:
                     return 'synonymous'
             elif '*' in row['aa_substitutions']:
                 return 'stop'
+            elif '-' in row['aa_substitutions']:
+                return 'deletion'
             elif row['n_aa_substitutions'] < max_aa:
                 return f"{row['n_aa_substitutions']} nonsynonymous"
             else:
@@ -2838,7 +2874,6 @@ class CodonVariantTable:
 
         return (df, nlibraries, nsamples)
 
-    @classmethod
     def codonToAAMuts(self, codon_mut_str):
         """Convert string of codon mutations to amino-acid mutations.
 
@@ -2860,7 +2895,7 @@ class CodonVariantTable:
         """
         aa_muts = {}
         for mut in codon_mut_str.upper().split():
-            m = self._CODON_SUB_RE.match(mut)
+            m = self._CODON_SUB_RE.fullmatch(mut)
             if not m:
                 raise ValueError(f"invalid mutation {mut} in {codon_mut_str}")
             r = int(m.group('r'))
@@ -2871,7 +2906,7 @@ class CodonVariantTable:
             if wt_codon == mut_codon:
                 raise ValueError(f"invalid mutation {mut}")
             wt_aa = CODON_TO_AA[wt_codon]
-            mut_aa = CODON_TO_AA[mut_codon]
+            mut_aa = self._CODON_TO_AA[mut_codon]
             if wt_aa != mut_aa:
                 aa_muts[r] = f"{wt_aa}{r}{mut_aa}"
 
@@ -2897,7 +2932,7 @@ class CodonVariantTable:
         """
         muts = {}
         for mut in mut_str.upper().split():
-            m = self._CODON_SUB_RE.match(mut)
+            m = self._CODON_SUB_RE.fullmatch(mut)
             if not m:
                 raise ValueError(f"invalid codon mutation {mut}")
             wt_codon = m.group('wt')
@@ -2950,7 +2985,7 @@ class CodonVariantTable:
         """
         mut_codons = collections.defaultdict(set)
         for mut in nt_mut_str.upper().split():
-            m = self._NT_SUB_RE.match(mut)
+            m = self._NT_SUB_RE.fullmatch(mut)
             if not m:
                 raise ValueError(f"invalid mutation {mut}")
             wt_nt = m.group('wt')
@@ -2977,7 +3012,12 @@ class CodonVariantTable:
             mut_codon = list(wt_codon)
             for i, mut_nt in r_muts:
                 mut_codon[i] = mut_nt
-            codon_mut_list.append(f"{wt_codon}{r}{''.join(mut_codon)}")
+            mut_codon = ''.join(mut_codon)
+            mut_str = f"{wt_codon}{r}{mut_codon}"
+            if mut_codon not in self._CODONS:
+                raise ValueError(f"{mut_str=} has {mut_codon=} "
+                                 f"not in {self._CODONS=}")
+            codon_mut_list.append(mut_str)
 
         return ' '.join(codon_mut_list)
 
@@ -3025,7 +3065,7 @@ class CodonVariantTable:
 
         mutated_sites = set()
         for sub in subs.split():
-            m = submatcher.match(sub)
+            m = submatcher.fullmatch(sub)
             if not m:
                 raise ValueError(f"Invalid substitution {sub}")
             r = int(m.group('r'))

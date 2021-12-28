@@ -24,9 +24,12 @@ import scipy
 
 import dms_variants.codonvarianttable
 from dms_variants.constants import (AAS_WITHSTOP,
+                                    AAS_WITHSTOP_WITHGAP,
                                     CBPALETTE,
                                     CODONS,
+                                    CODONS_WITHGAP,
                                     CODON_TO_AA,
+                                    CODON_TO_AA_WITHGAP,
                                     NTS,
                                     )
 
@@ -167,7 +170,7 @@ def codon_muts(codonseq, nmuts, nvariants):
 
 def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
                                seed=1, variant_call_support=0.5,
-                               allowed_aa_muts=None):
+                               allowed_aa_muts=None, allowgaps=False):
     """Simulate :class:`dms_variants.codonvarianttable.CodonVariantTable`.
 
     Note
@@ -194,6 +197,8 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
         If we only allow some amino-acid substitutions, provide them.
         Specify mutations like 'E1E' if you want to allow synonymous
         codon mutations.
+    allowgaps : bool
+        Allow gaps as a codon character.
 
     Returns
     -------
@@ -245,8 +250,17 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
         raise ValueError('length of `geneseq` not multiple of 3')
     genelength = len(geneseq) // 3
 
+    if allowgaps:
+        aas = AAS_WITHSTOP_WITHGAP
+        codons = CODONS_WITHGAP
+        codon_to_aa = CODON_TO_AA_WITHGAP
+    else:
+        aas = AAS_WITHSTOP
+        codons = CODONS
+        codon_to_aa = CODON_TO_AA
+
     if allowed_aa_muts is None:
-        allowed_aa_muts_at_site = {site: AAS_WITHSTOP
+        allowed_aa_muts_at_site = {site: aas
                                    for site in range(1, genelength + 1)}
     else:
         wt_aas = [CODON_TO_AA[geneseq[3 * i: 3 * i + 3]]
@@ -263,10 +277,10 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
                 raise ValueError(f"bad site in {mut_str} in allowed_aa_muts")
             if wt != wt_aas[site - 1]:
                 raise ValueError(f"bad wt in {mut_str} in allowed_aa_muts")
-            if mut not in AAS_WITHSTOP:
+            if mut not in aas:
                 raise ValueError(f"bad mut in {mut_str} in allowed_aa_muts")
             allowed_aa_muts_at_site[site].append(mut)
-    allowed_codons_at_site = {site: [c for c in CODONS if CODON_TO_AA[c] in
+    allowed_codons_at_site = {site: [c for c in codons if codon_to_aa[c] in
                                      allowed_aa_muts_at_site[site] and
                                      c != geneseq[site * 3 - 3: site * 3]]
                               for site in allowed_aa_muts_at_site}
@@ -329,7 +343,7 @@ def simulate_CodonVariantTable(*, geneseq, bclen, library_specs,
         f.flush()
         cvt = dms_variants.codonvarianttable.CodonVariantTable(
                         barcode_variant_file=f.name,
-                        geneseq=geneseq)
+                        geneseq=geneseq, allowgaps=allowgaps)
 
     return cvt
 

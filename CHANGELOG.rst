@@ -14,6 +14,10 @@ Added
 
 Changed
 +++++++
+- ``codonToAAMuts`` changed to regular rather than class method. This breaks backward compatibility in principle but unlikely to do so in practice.
+
+Changed
++++++++
 - Increased width of docs
 
 1.2.0
