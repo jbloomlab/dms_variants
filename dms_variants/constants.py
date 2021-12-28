@@ -26,8 +26,14 @@ AAS_NOSTOP = ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
 AAS_WITHSTOP = tuple(list(AAS_NOSTOP) + ['*'])
 """tuple: Amino-acid one-letter codes alphabetized plus stop as ``*``."""
 
+AAS_WITHSTOP_WITHGAP = tuple(list(AAS_WITHSTOP) + ['-'])
+"""tuple: Amino-acid codes alphabetized plus stop as ``*`` and gap as ``-``."""
+
 NTS = ('A', 'C', 'G', 'T')
 """tuple: DNA nucleotide one-letter codes."""
+
+NTS_WITHGAP = ('A', 'C', 'G', 'T', '-')
+"""tuple: DNA nucleotide one-letter codes and gap as ``-``."""
 
 NTS_AMBIGUOUS = ('A', 'B', 'C', 'D', 'G', 'H', 'K', 'M', 'N',
                  'R', 'S', 'T', 'V', 'W', 'Y')
@@ -63,4 +69,13 @@ SINGLE_NT_AA_MUTS = {_c: {CODON_TO_AA[_c[: _i] + _nt + _c[_i + 1:]]
                           }
                      for _c in CODONS
                      }
-"""dict: Maps codons to all amino-acids accessible single-nucleotide change."""
+"""dict: Maps codon to amino-acids accessible by single-nucleotide change."""
+
+CODONS_WITHGAP = tuple(list(CODONS) + ['---'])
+"""tuple: DNA codons alphabetized plus ``---`` for gap."""
+
+CODON_TO_AA_WITHGAP = {**CODON_TO_AA, **{'---': '-'}}
+"""dict: Maps codons to amino acids including a gap codon (``---``)."""
+
+AA_TO_CODONS_WITHGAP = {**AA_TO_CODONS, **{'-': ['---']}}
+"""dict: Reverse translate amino acid to codon list including gap (``-``)."""

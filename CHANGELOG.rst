@@ -6,6 +6,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.3.0
+-----
+Added
++++++
+- Gaps (``-``) are now valid characters
+
+Changed
++++++++
+- ``codonToAAMuts`` changed to regular rather than class method. This breaks backward compatibility in principle but unlikely to do so in practice.
+
+Changed
++++++++
+- Increased width of docs
+
 1.2.0
 ------
 Added
