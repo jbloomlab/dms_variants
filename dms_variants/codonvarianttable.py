@@ -101,6 +101,18 @@ class CodonVariantTable:
 
     """
 
+    _CODON_SUB_RE_NOGAP = re.compile(
+        f"^(?P<wt>{'|'.join(CODONS)})"
+        r'(?P<r>\d+)'
+        f"(?P<mut>{'|'.join(CODONS)})"
+        )
+
+    _CODON_SUB_RE_WITHGAP = re.compile(
+        (f"^(?P<wt>{'|'.join(CODONS)})"  # don't allow gaps in wildtype
+         r'(?P<r>\d+)'
+         f"(?P<mut>{'|'.join(CODONS_WITHGAP)})"
+         ).replace('-', r'\-'))
+
     def _set_alphabets(self, allowgaps):
         """Set class variables representing alphabets."""
         self._CODONS = CODONS_WITHGAP if allowgaps else CODONS
@@ -111,11 +123,8 @@ class CodonVariantTable:
         self._CODON_TO_AA = CODON_TO_AA_WITHGAP if allowgaps else CODON_TO_AA
 
         # don't allow gaps in wildtype for regexes
-        self._CODON_SUB_RE = re.compile(
-            (f"^(?P<wt>{'|'.join(CODONS)})"  # don't allow gaps in wildtype
-             r'(?P<r>\d+)'
-             f"(?P<mut>{'|'.join(self._CODONS)})"
-             ).replace('-', r'\-'))
+        self._CODON_SUB_RE = (self._CODON_SUB_RE_WITHGAP if allowgaps
+                              else self._CODON_SUB_RE_NOGAP)
         self._AA_SUB_RE = re.compile(
             (f"^(?P<wt>{'|'.join(AAS_WITHSTOP)})"
              r'(?P<r>\d+)'
@@ -319,7 +328,8 @@ class CodonVariantTable:
                 .assign(codon_substitutions=lambda x: (x['substitutions']
                                                        .apply(codonSubsFunc)),
                         aa_substitutions=lambda x: (x.codon_substitutions
-                                                    .apply(self.codonToAAMuts)
+                                                    .apply(self.codonToAAMuts,
+                                                           allowgaps=allowgaps)
                                                     ),
                         n_codon_substitutions=lambda x: (x.codon_substitutions
                                                          .str.split()
@@ -376,8 +386,9 @@ class CodonVariantTable:
                 'nonsynonymous': CBPALETTE[1],
                 'synonymous': CBPALETTE[2],
                 'stop': CBPALETTE[3],
-                'deletion': CBPALETTE[4],
                 }
+        if allowgaps:
+            self._mutation_type_colors['deletion'] = CBPALETTE[4]
 
         # for "safety" make the substitutions column for non-primary targets
         # just the target name
@@ -2874,13 +2885,16 @@ class CodonVariantTable:
 
         return (df, nlibraries, nsamples)
 
-    def codonToAAMuts(self, codon_mut_str):
+    @classmethod
+    def codonToAAMuts(cls, codon_mut_str, allowgaps=False):
         """Convert string of codon mutations to amino-acid mutations.
 
         Parameters
         ----------
         codon_mut_str : str
             Codon mutations, delimited by a space and in 1, ... numbering.
+        allowgaps : bool
+            Allow gap codon (``---``) translated to gap amino acid (``--``).
 
         Returns
         -------
@@ -2894,8 +2908,10 @@ class CodonVariantTable:
 
         """
         aa_muts = {}
+        regex = (cls._CODON_SUB_RE_WITHGAP if allowgaps
+                 else cls._CODON_SUB_RE_NOGAP)
         for mut in codon_mut_str.upper().split():
-            m = self._CODON_SUB_RE.fullmatch(mut)
+            m = regex.fullmatch(mut)
             if not m:
                 raise ValueError(f"invalid mutation {mut} in {codon_mut_str}")
             r = int(m.group('r'))
@@ -2906,7 +2922,7 @@ class CodonVariantTable:
             if wt_codon == mut_codon:
                 raise ValueError(f"invalid mutation {mut}")
             wt_aa = CODON_TO_AA[wt_codon]
-            mut_aa = self._CODON_TO_AA[mut_codon]
+            mut_aa = CODON_TO_AA_WITHGAP[mut_codon]
             if wt_aa != mut_aa:
                 aa_muts[r] = f"{wt_aa}{r}{mut_aa}"
 
