@@ -1750,7 +1750,7 @@ class AbstractEpistasis(abc.ABC):
         if key not in self._cache:
             self._cache[
                 key
-            ] = self._binary_variants.transpose().multiply(  # convert from V by M to M by V
+            ] = self._binary_variants.transpose().multiply(  # from V by M to M by V
                 self._depistasis_func_dlatent(self._latent_phenotypes(k), k=k)
             )
             assert self._cache[key].shape == (
