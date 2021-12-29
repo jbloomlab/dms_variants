@@ -180,7 +180,7 @@ class Isplines_total:
             raise ValueError(f"`order` not int >= 1: {order}")
         self.order = order
 
-        self.mesh = numpy.array(mesh, dtype='float')
+        self.mesh = numpy.array(mesh, dtype="float")
         if self.mesh.ndim != 1:
             raise ValueError(f"`mesh` not array-like of dimension 1: {mesh}")
         if len(self.mesh) < 2:
@@ -197,24 +197,23 @@ class Isplines_total:
         self._x.flags.writeable = False
 
         # indices of `x` in, above, or below I-spline range
-        self._index = {'lower': numpy.flatnonzero(self.x < self.lower),
-                       'upper': numpy.flatnonzero(self.x > self.upper),
-                       'in': numpy.flatnonzero((self.x >= self.lower) &
-                                               (self.x <= self.upper))
-                       }
+        self._index = {
+            "lower": numpy.flatnonzero(self.x < self.lower),
+            "upper": numpy.flatnonzero(self.x > self.upper),
+            "in": numpy.flatnonzero((self.x >= self.lower) & (self.x <= self.upper)),
+        }
 
         # values of x in each range
-        self._x_byrange = {rangename: self.x[index] for rangename, index
-                           in self._index.items()}
+        self._x_byrange = {
+            rangename: self.x[index] for rangename, index in self._index.items()
+        }
 
         # Isplines for each range: for lower and upper it is value at bound
-        self._isplines = {'in': Isplines(self.order, self.mesh,
-                                         self._x_byrange['in']),
-                          'lower': Isplines(self.order, self.mesh,
-                                            numpy.array([self.lower])),
-                          'upper': Isplines(self.order, self.mesh,
-                                            numpy.array([self.upper])),
-                          }
+        self._isplines = {
+            "in": Isplines(self.order, self.mesh, self._x_byrange["in"]),
+            "lower": Isplines(self.order, self.mesh, numpy.array([self.lower])),
+            "upper": Isplines(self.order, self.mesh, numpy.array([self.upper])),
+        }
 
         # for caching values
         self._cache = {}
@@ -243,7 +242,7 @@ class Isplines_total:
             :math:`I_{\rm{total}}` for each point in :attr:`Isplines_total.x`.
 
         """
-        args = (tuple(weights), w_lower, 'Itotal')
+        args = (tuple(weights), w_lower, "Itotal")
         if args not in self._cache:
             if len(self._cache) > self._max_cache_size:
                 self._cache = {}
@@ -272,58 +271,70 @@ class Isplines_total:
         # compute return values for each category of indices
         returnvals = {}
 
-        if quantity == 'Itotal':
+        if quantity == "Itotal":
             returnshape = len(self.x)
-            if len(self._index['in']):
-                returnvals['in'] = numpy.sum([self._isplines['in'].I(i) *
-                                              weights[i - 1]
-                                              for i in range(1, self.n + 1)],
-                                             axis=0) + w_lower
+            if len(self._index["in"]):
+                returnvals["in"] = (
+                    numpy.sum(
+                        [
+                            self._isplines["in"].I(i) * weights[i - 1]
+                            for i in range(1, self.n + 1)
+                        ],
+                        axis=0,
+                    )
+                    + w_lower
+                )
             # values of Itotal at limits
-            Itotal_limits = {'lower': w_lower,
-                             'upper': w_lower + sum(weights)}
-            for name, limit in [('lower', self.lower), ('upper', self.upper)]:
+            Itotal_limits = {"lower": w_lower, "upper": w_lower + sum(weights)}
+            for name, limit in [("lower", self.lower), ("upper", self.upper)]:
                 if not len(self._index[name]):
                     continue
-                returnvals[name] = (Itotal_limits[name] +
-                                    (self._x_byrange[name] - limit) *
-                                    sum(self._isplines[name].dI_dx(i) *
-                                        weights[i - 1]
-                                        for i in range(1, self.n + 1))
-                                    )
+                returnvals[name] = Itotal_limits[name] + (
+                    self._x_byrange[name] - limit
+                ) * sum(
+                    self._isplines[name].dI_dx(i) * weights[i - 1]
+                    for i in range(1, self.n + 1)
+                )
 
-        elif quantity == 'dItotal_dx':
+        elif quantity == "dItotal_dx":
             returnshape = len(self.x)
-            if len(self._index['in']):
-                returnvals['in'] = numpy.sum([self._isplines['in'].dI_dx(i) *
-                                              weights[i - 1]
-                                              for i in range(1, self.n + 1)],
-                                             axis=0)
-            for name in ['lower', 'upper']:
+            if len(self._index["in"]):
+                returnvals["in"] = numpy.sum(
+                    [
+                        self._isplines["in"].dI_dx(i) * weights[i - 1]
+                        for i in range(1, self.n + 1)
+                    ],
+                    axis=0,
+                )
+            for name in ["lower", "upper"]:
                 if not len(self._index[name]):
                     continue
-                returnvals[name] = sum(self._isplines[name].dI_dx(i) *
-                                       weights[i - 1]
-                                       for i in range(1, self.n + 1))
+                returnvals[name] = sum(
+                    self._isplines[name].dI_dx(i) * weights[i - 1]
+                    for i in range(1, self.n + 1)
+                )
 
-        elif quantity == 'dItotal_dweights':
+        elif quantity == "dItotal_dweights":
             returnshape = (len(self.x), len(weights))
-            if len(self._index['in']):
-                returnvals['in'] = (numpy.vstack([self._isplines['in'].I(i) for
-                                                  i in range(1, self.n + 1)])
-                                    ).transpose()
+            if len(self._index["in"]):
+                returnvals["in"] = (
+                    numpy.vstack(
+                        [self._isplines["in"].I(i) for i in range(1, self.n + 1)]
+                    )
+                ).transpose()
             # values of I at limits
-            I_limits = {'lower': 0.0, 'upper': 1.0}
-            for name, limit in [('lower', self.lower), ('upper', self.upper)]:
+            I_limits = {"lower": 0.0, "upper": 1.0}
+            for name, limit in [("lower", self.lower), ("upper", self.upper)]:
                 if not len(self._index[name]):
                     continue
                 returnvals[name] = numpy.vstack(
-                                    [I_limits[name] +
-                                     (self._x_byrange[name] - limit) *
-                                     self._isplines[name].dI_dx(i)
-                                     for i in range(1, self.n + 1)
-                                     ]
-                                    ).transpose()
+                    [
+                        I_limits[name]
+                        + (self._x_byrange[name] - limit)
+                        * self._isplines[name].dI_dx(i)
+                        for i in range(1, self.n + 1)
+                    ]
+                ).transpose()
 
         else:
             raise ValueError(f"invalid `quantity` {quantity}")
@@ -387,7 +398,7 @@ class Isplines_total:
             for each point in :attr:`Isplines_total.x`.
 
         """
-        args = (tuple(weights), None, 'dItotal_dx')
+        args = (tuple(weights), None, "dItotal_dx")
         if args not in self._cache:
             if len(self._cache) > self._max_cache_size:
                 self._cache = {}
@@ -438,8 +449,9 @@ class Isplines_total:
            I_i\left(U\right) &=& 1.
 
         """
-        return self._calculate_Itotal_or_dItotal(tuple(weights), w_lower,
-                                                 'dItotal_dweights')
+        return self._calculate_Itotal_or_dItotal(
+            tuple(weights), w_lower, "dItotal_dweights"
+        )
 
     def dItotal_dw_lower(self):
         r"""Deriv of :meth:`Isplines_total.Itotal` by :math:`w_{\rm{lower}}`.
@@ -451,7 +463,7 @@ class Isplines_total:
             which is just one for all :attr:`Isplines_total.x`.
 
         """
-        res = numpy.ones(self.x.shape, dtype='float')
+        res = numpy.ones(self.x.shape, dtype="float")
         res.flags.writeable = False
         return res
 
@@ -564,7 +576,7 @@ class Isplines:
             raise ValueError(f"`order` not int >= 1: {order}")
         self.order = order
 
-        self.mesh = numpy.array(mesh, dtype='float')
+        self.mesh = numpy.array(mesh, dtype="float")
         if self.mesh.ndim != 1:
             raise ValueError(f"`mesh` not array-like of dimension 1: {mesh}")
         if len(self.mesh) < 2:
@@ -578,7 +590,7 @@ class Isplines:
         self.n = len(self.mesh) - 2 + self.order
 
         if not (isinstance(x, numpy.ndarray) and x.ndim == 1):
-            raise ValueError('`x` is not numpy.ndarray of dimension 1')
+            raise ValueError("`x` is not numpy.ndarray of dimension 1")
         if (x < self.lower).any() or (x > self.upper).any():
             raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
         self._x = x.copy()
@@ -636,7 +648,7 @@ class Isplines:
         .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html
 
         """
-        args = (i, 'I')
+        args = (i, "I")
         if args not in self._cache:
             if len(self._cache) > self._max_cache_size:
                 self._cache = {}
@@ -646,10 +658,9 @@ class Isplines:
     @property
     def j(self):
         """numpy.ndarray: :math:`j` as defined in :meth:`Isplines.I`."""
-        if not hasattr(self, '_j'):
-            self._j = numpy.searchsorted(self._msplines.knots, self.x, 'right')
-            assert ((1 <= self._j).all() and
-                    (self._j <= len(self._msplines.knots)).all())
+        if not hasattr(self, "_j"):
+            self._j = numpy.searchsorted(self._msplines.knots, self.x, "right")
+            assert (1 <= self._j).all() and (self._j <= len(self._msplines.knots)).all()
             assert self.x.shape == self._j.shape
         return self._j
 
@@ -660,14 +671,17 @@ class Isplines:
         Row `m - 1` has summation term for `m`.
 
         """
-        if not hasattr(self, '_sum_terms_I_val'):
+        if not hasattr(self, "_sum_terms_I_val"):
             k = self.order
             self._sum_terms_I_val = numpy.vstack(
-                [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
-                 self._msplines.M(m, k + 1) / (k + 1)
-                 for m in range(1, self._msplines.n + 1)])
-            assert self._sum_terms_I_val.shape == (self._msplines.n,
-                                                   len(self.x))
+                [
+                    (self._msplines.knots[m + k] - self._msplines.knots[m - 1])
+                    * self._msplines.M(m, k + 1)
+                    / (k + 1)
+                    for m in range(1, self._msplines.n + 1)
+                ]
+            )
+            assert self._sum_terms_I_val.shape == (self._msplines.n, len(self.x))
         return self._sum_terms_I_val
 
     @property
@@ -677,14 +691,17 @@ class Isplines:
         Row `m - 1` has summation term for `m`.
 
         """
-        if not hasattr(self, '_sum_terms_dI_dx_val'):
+        if not hasattr(self, "_sum_terms_dI_dx_val"):
             k = self.order
             self._sum_terms_dI_dx_val = numpy.vstack(
-                [(self._msplines.knots[m + k] - self._msplines.knots[m - 1]) *
-                 self._msplines.dM_dx(m, k + 1) / (k + 1)
-                 for m in range(1, self._msplines.n + 1)])
-            assert self._sum_terms_dI_dx_val.shape == (self._msplines.n,
-                                                       len(self.x))
+                [
+                    (self._msplines.knots[m + k] - self._msplines.knots[m - 1])
+                    * self._msplines.dM_dx(m, k + 1)
+                    / (k + 1)
+                    for m in range(1, self._msplines.n + 1)
+                ]
+            )
+            assert self._sum_terms_dI_dx_val.shape == (self._msplines.n, len(self.x))
         return self._sum_terms_dI_dx_val
 
     def _calculate_I_or_dI(self, i, quantity):
@@ -708,10 +725,10 @@ class Isplines:
         are the same, so this method implements both.
 
         """
-        if quantity == 'I':
+        if quantity == "I":
             sum_terms = self._sum_terms_I
             i_lt_jminusk = 1.0
-        elif quantity == 'dI':
+        elif quantity == "dI":
             sum_terms = self._sum_terms_dI_dx
             i_lt_jminusk = 0.0
         else:
@@ -725,9 +742,11 @@ class Isplines:
         # create `binary_terms` where entry (m - 1, x) is 1 if and only if
         # the corresponding `sum_terms` entry is part of the sum.
         binary_terms = numpy.vstack(
-               [numpy.zeros(len(self.x)) if m < i + 1
-                else (m <= self.j).astype(int)
-                for m in range(1, self._msplines.n + 1)])
+            [
+                numpy.zeros(len(self.x)) if m < i + 1 else (m <= self.j).astype(int)
+                for m in range(1, self._msplines.n + 1)
+            ]
+        )
         assert binary_terms.shape == sum_terms.shape
 
         # compute sums from `sum_terms` and `binary_terms`
@@ -735,9 +754,9 @@ class Isplines:
         assert sums.shape == self.x.shape
 
         # return value with sums, 0, or 1
-        res = numpy.where(i > self.j, 0.0,
-                          numpy.where(i < self.j - k, i_lt_jminusk,
-                                      sums))
+        res = numpy.where(
+            i > self.j, 0.0, numpy.where(i < self.j - k, i_lt_jminusk, sums)
+        )
         res.flags.writeable = False
         return res
 
@@ -771,7 +790,7 @@ class Isplines:
            \end{cases}
 
         """
-        args = (i, 'dI')
+        args = (i, "dI")
         if args not in self._cache:
             if len(self._cache) > self._max_cache_size:
                 self._cache = {}
@@ -892,7 +911,7 @@ class Msplines:
             raise ValueError(f"`order` not int >= 1: {order}")
         self.order = order
 
-        self.mesh = numpy.array(mesh, dtype='float')
+        self.mesh = numpy.array(mesh, dtype="float")
         if self.mesh.ndim != 1:
             raise ValueError(f"`mesh` not array-like of dimension 1: {mesh}")
         if len(self.mesh) < 2:
@@ -904,16 +923,17 @@ class Msplines:
         assert self.lower < self.upper
 
         self.knots = numpy.array(
-                        [self.lower] * self.order +
-                        list(self.mesh[1: -1]) +
-                        [self.upper] * self.order,
-                        dtype='float')
+            [self.lower] * self.order
+            + list(self.mesh[1:-1])
+            + [self.upper] * self.order,
+            dtype="float",
+        )
 
         self.n = len(self.knots) - self.order
         assert self.n == len(self.mesh) - 2 + self.order
 
         if not (isinstance(x, numpy.ndarray) and x.ndim == 1):
-            raise ValueError('`x` is not numpy.ndarray of dimension 1')
+            raise ValueError("`x` is not numpy.ndarray of dimension 1")
         if (x < self.lower).any() or (x > self.upper).any():
             raise ValueError(f"`x` outside {self.lower} and {self.upper}: {x}")
         self._x = x.copy()
@@ -958,7 +978,7 @@ class Msplines:
         """numpy.ndarray: Points at which spline is evaluated."""
         return self._x
 
-    def M(self, i, k=None, invalid_i='raise'):
+    def M(self, i, k=None, invalid_i="raise"):
         r"""Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.
 
         Parameters
@@ -1010,9 +1030,9 @@ class Msplines:
     def _calculate_M(self, i, k, invalid_i):
         """Calculate :meth:`Msplines.M` with result caching."""
         if not (1 <= i <= self.n):
-            if invalid_i == 'raise':
+            if invalid_i == "raise":
                 raise ValueError(f"invalid spline member `i` of {i}")
-            elif invalid_i == 'zero':
+            elif invalid_i == "zero":
                 return 0
             else:
                 raise ValueError(f"invalid `invalid_i` of {invalid_i}")
@@ -1034,16 +1054,21 @@ class Msplines:
         else:
             assert k > 1
             res = numpy.where(
-                        boolindex,
-                        (k * ((self.x - ti) * self.M(i, k - 1) +
-                         (tiplusk - self.x) * self.M(i + 1, k - 1,
-                                                     invalid_i='zero')
-                         ) / ((k - 1) * (tiplusk - ti))),
-                        0.0)
+                boolindex,
+                (
+                    k
+                    * (
+                        (self.x - ti) * self.M(i, k - 1)
+                        + (tiplusk - self.x) * self.M(i + 1, k - 1, invalid_i="zero")
+                    )
+                    / ((k - 1) * (tiplusk - ti))
+                ),
+                0.0,
+            )
             res.flags.writeable = False
             return res
 
-    def dM_dx(self, i, k=None, invalid_i='raise'):
+    def dM_dx(self, i, k=None, invalid_i="raise"):
         r"""Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.
 
         Parameters
@@ -1098,9 +1123,9 @@ class Msplines:
     def _calculate_dM_dx(self, i, k, invalid_i):
         """Calculate :meth:`Msplines.dM_dx` with results caching."""
         if not (1 <= i <= self.n):
-            if invalid_i == 'raise':
+            if invalid_i == "raise":
                 raise ValueError(f"invalid spline member `i` of {i}")
-            elif invalid_i == 'zero':
+            elif invalid_i == "zero":
                 return 0
             else:
                 raise ValueError(f"invalid `invalid_i` of {invalid_i}")
@@ -1117,19 +1142,25 @@ class Msplines:
             assert k > 1
             boolindex = self._ti_le_x_lt_tiplusk(ti, tiplusk)
             res = numpy.where(
-                        boolindex,
-                        (k * ((self.x - ti) * self.dM_dx(i, k - 1) +
-                              self.M(i, k - 1) +
-                              (tiplusk - self.x) * self.dM_dx(i + 1, k - 1,
-                                                              invalid_i='zero')
-                              - self.M(i + 1, k - 1, invalid_i='zero')
-                              ) / ((k - 1) * (tiplusk - ti))
-                         ),
-                        0.0)
+                boolindex,
+                (
+                    k
+                    * (
+                        (self.x - ti) * self.dM_dx(i, k - 1)
+                        + self.M(i, k - 1)
+                        + (tiplusk - self.x)
+                        * self.dM_dx(i + 1, k - 1, invalid_i="zero")
+                        - self.M(i + 1, k - 1, invalid_i="zero")
+                    )
+                    / ((k - 1) * (tiplusk - ti))
+                ),
+                0.0,
+            )
             res.flags.writeable = False
             return res
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

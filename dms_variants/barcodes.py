@@ -18,12 +18,13 @@ import pandas as pd
 import scipy.special
 
 
-def inverse_simpson_index(barcodecounts,
-                          *,
-                          barcodecol='barcode',
-                          countcol='count',
-                          groupcols='library',
-                          ):
+def inverse_simpson_index(
+    barcodecounts,
+    *,
+    barcodecol="barcode",
+    countcol="count",
+    groupcols="library",
+):
     """Inverse Simpson index (reciprocal probability two barcodes are same).
 
     Parameters
@@ -56,7 +57,7 @@ def inverse_simpson_index(barcodecounts,
 
     """
     # based on here: https://gist.github.com/martinjc/f227b447791df8c90568
-    reserved_cols = ['dummy', 'p2', 'simpson_index', 'inverse_simpson_index']
+    reserved_cols = ["dummy", "p2", "simpson_index", "inverse_simpson_index"]
     for col in reserved_cols:
         if col in barcodecounts.columns:
             raise ValueError(f"`barcodecounts` cannot have column {col}")
@@ -65,32 +66,38 @@ def inverse_simpson_index(barcodecounts,
         if isinstance(groupcols, str):
             groupcols = [groupcols]
     else:
-        groupcols = ['dummy']
-        barcodecounts['dummy'] = 'dummy'
+        groupcols = ["dummy"]
+        barcodecounts["dummy"] = "dummy"
     req_cols = [barcodecol, countcol, *groupcols]
     if not set(barcodecounts.columns).issuperset(req_cols):
         raise ValueError(f"`barcodecounts` lacks columns {req_cols}")
     if len(barcodecounts) != len(barcodecounts.groupby(req_cols)):
-        raise ValueError('`barcodecol` and `groupcols` not unique rows')
+        raise ValueError("`barcodecol` and `groupcols` not unique rows")
 
-    df = (barcodecounts
-          .assign(p2=lambda x: (x[countcol] / (x.groupby(groupcols)
-                                               [countcol].transform('sum')
-                                               )
-                                )**2
-                  )
-          .groupby(groupcols, as_index=False)
-          .aggregate(simpson_index=pd.NamedAgg('p2', 'sum'))
-          .assign(inverse_simpson_index=lambda x: 1 / x['simpson_index'])
-          )
-    if groupcols == ['dummy']:
+    df = (
+        barcodecounts.assign(
+            p2=lambda x: (
+                x[countcol] / (x.groupby(groupcols)[countcol].transform("sum"))
+            )
+            ** 2
+        )
+        .groupby(groupcols, as_index=False)
+        .aggregate(simpson_index=pd.NamedAgg("p2", "sum"))
+        .assign(inverse_simpson_index=lambda x: 1 / x["simpson_index"])
+    )
+    if groupcols == ["dummy"]:
         groupcols = []
-    return df[[*groupcols, 'inverse_simpson_index']]
+    return df[[*groupcols, "inverse_simpson_index"]]
 
 
-def rarefyBarcodes(barcodecounts, *,
-                   barcodecol='barcode', countcol='count',
-                   maxpoints=100000, logspace=True):
+def rarefyBarcodes(
+    barcodecounts,
+    *,
+    barcodecol="barcode",
+    countcol="count",
+    maxpoints=100000,
+    logspace=True,
+):
     """Rarefaction curve of barcode observations.
 
     Note
@@ -152,7 +159,7 @@ def rarefyBarcodes(barcodecounts, *,
 
     """
     if len(barcodecounts) != len(barcodecounts[barcodecol].unique()):
-        raise ValueError('non-unique barcodes in `barcodecounts`')
+        raise ValueError("non-unique barcodes in `barcodecounts`")
 
     # follow nomenclature at
     # https://en.wikipedia.org/wiki/Rarefaction_(ecology)#Derivation
@@ -170,26 +177,36 @@ def rarefyBarcodes(barcodecounts, *,
     nbarcodes = []
     lnFactorial_N = scipy.special.gammaln(N + 1)
     if logspace and N > maxpoints:
-        ncounts = list(numpy.unique(numpy.logspace(
-                       math.log10(1), math.log10(N),
-                       num=min(N, maxpoints)).astype('int')))
+        ncounts = list(
+            numpy.unique(
+                numpy.logspace(
+                    math.log10(1), math.log10(N), num=min(N, maxpoints)
+                ).astype("int")
+            )
+        )
     else:
-        ncounts = list(numpy.unique(numpy.linspace(
-                       1, N, num=min(N, maxpoints)).astype('int')))
+        ncounts = list(
+            numpy.unique(numpy.linspace(1, N, num=min(N, maxpoints)).astype("int"))
+        )
     for n in ncounts:
         lnFactorial_N_minus_n = scipy.special.gammaln(N - n + 1)
         i = numpy.nonzero(N - Nk - n >= 0)  # indices where this is true
         nbarcodes.append(
-                K - (num[i] * numpy.exp(
-                            scipy.special.gammaln(N - Nk[i] + 1) +
-                            lnFactorial_N_minus_n -
-                            lnFactorial_N -
-                            scipy.special.gammaln(N - Nk[i] - n + 1))
-                     ).sum()
+            K
+            - (
+                num[i]
+                * numpy.exp(
+                    scipy.special.gammaln(N - Nk[i] + 1)
+                    + lnFactorial_N_minus_n
+                    - lnFactorial_N
+                    - scipy.special.gammaln(N - Nk[i] - n + 1)
                 )
-    return pd.DataFrame({'ncounts': ncounts, 'nbarcodes': nbarcodes})
+            ).sum()
+        )
+    return pd.DataFrame({"ncounts": ncounts, "nbarcodes": nbarcodes})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

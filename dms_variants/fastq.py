@@ -38,12 +38,12 @@ def qual_str_to_array(q_str, *, offset=33):
     array([ 0, 40, 25, 15, 38])
 
     """
-    return numpy.array([ord(q) - offset for q in q_str],
-                       dtype='int')
+    return numpy.array([ord(q) - offset for q in q_str], dtype="int")
 
 
-def iterate_fastq_pair(r1filename, r2filename, *,
-                       r1trim=None, r2trim=None, qual_format='str'):
+def iterate_fastq_pair(
+    r1filename, r2filename, *, r1trim=None, r2trim=None, qual_format="str"
+):
     r"""Iterate over paired R1 and R2 FASTQ files.
 
     Parameters
@@ -136,38 +136,40 @@ def iterate_fastq_pair(r1filename, r2filename, *,
 
     """
     FastqPairEntry = collections.namedtuple(
-                            'FastqPairEntry',
-                            'id r1_seq r2_seq r1_qs r2_qs fail')
+        "FastqPairEntry", "id r1_seq r2_seq r1_qs r2_qs fail"
+    )
 
-    r1_iterator = iterate_fastq(r1filename,
-                                trim=r1trim,
-                                check_pair=1,
-                                qual_format=qual_format)
-    r2_iterator = iterate_fastq(r2filename,
-                                trim=r2trim,
-                                check_pair=2,
-                                qual_format=qual_format)
+    r1_iterator = iterate_fastq(
+        r1filename, trim=r1trim, check_pair=1, qual_format=qual_format
+    )
+    r2_iterator = iterate_fastq(
+        r2filename, trim=r2trim, check_pair=2, qual_format=qual_format
+    )
 
     for r1_entry, r2_entry in itertools.zip_longest(r1_iterator, r2_iterator):
 
         if (r1_entry is None) or (r2_entry is None):
-            raise IOError(f"{r1filename} and {r2filename} have unequal "
-                          'number of entries')
+            raise IOError(
+                f"{r1filename} and {r2filename} have unequal " "number of entries"
+            )
 
         if r1_entry[0] != r2_entry[0]:
-            raise IOError(f"{r1filename} and {r2filename} specify different "
-                          f"read IDs:\n{r1_entry[0]}\n{r2_entry[0]}")
+            raise IOError(
+                f"{r1filename} and {r2filename} specify different "
+                f"read IDs:\n{r1_entry[0]}\n{r2_entry[0]}"
+            )
 
-        yield FastqPairEntry(id=r1_entry[0],
-                             r1_seq=r1_entry[1],
-                             r2_seq=r2_entry[1],
-                             r1_qs=r1_entry[2],
-                             r2_qs=r2_entry[2],
-                             fail=(r1_entry[3] or r2_entry[3]),
-                             )
+        yield FastqPairEntry(
+            id=r1_entry[0],
+            r1_seq=r1_entry[1],
+            r2_seq=r2_entry[1],
+            r1_qs=r1_entry[2],
+            r2_qs=r2_entry[2],
+            fail=(r1_entry[3] or r2_entry[3]),
+        )
 
 
-def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
+def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format="str"):
     r"""Iterate over a FASTQ file.
 
     Parameters
@@ -246,33 +248,32 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
     >>> f.close()
 
     """
-    FastqEntry = collections.namedtuple('FastqEntry',
-                                        'id seq qs fail')
+    FastqEntry = collections.namedtuple("FastqEntry", "id seq qs fail")
 
     if check_pair is not None:
         check_pair = str(check_pair)
-        if check_pair not in {'1', '2'}:
+        if check_pair not in {"1", "2"}:
             raise ValueError(f"invalid `check_pair` of {check_pair}")
 
     if not os.path.isfile(filename):
         raise IOError(f"no FASTQ file {filename}")
 
-    if qual_format == 'array':
+    if qual_format == "array":
         qual_to_array = True
-    elif qual_format == 'str':
+    elif qual_format == "str":
         qual_to_array = False
     else:
         raise ValueError(f"invalid value for `qual_format`: {qual_format}")
 
-    if os.path.splitext(filename)[1].lower() == '.gz':
+    if os.path.splitext(filename)[1].lower() == ".gz":
         openfunc = gzip.open
     else:
         openfunc = open
 
-    with openfunc(filename, mode='rt') as f:
+    with openfunc(filename, mode="rt") as f:
         head = f.readline()
         while head:
-            if head[0] != '@':
+            if head[0] != "@":
                 raise IOError(f"id starts with {head[0]}, not @:\n{head}")
             else:
                 head = head.rstrip()
@@ -281,15 +282,17 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
             seq = f.readline().rstrip()
             plusline = f.readline().rstrip()
             qs = f.readline().rstrip()
-            if (not seq) or (len(seq) != len(qs)) or (plusline != '+'):
-                raise IOError(f"invalid entry for {read_id} in {filename}:\n"
-                              f"{head}\n{seq}\n{plusline}\n{qs}")
+            if (not seq) or (len(seq) != len(qs)) or (plusline != "+"):
+                raise IOError(
+                    f"invalid entry for {read_id} in {filename}:\n"
+                    f"{head}\n{seq}\n{plusline}\n{qs}"
+                )
 
             # trim last two characters (needed for SRA downloads)
-            if read_id[-2:] in {'.1', '.2'}:
+            if read_id[-2:] in {".1", ".2"}:
                 if check_pair and (read_id[-1] != check_pair):
                     raise ValueError(f"header not for R{check_pair}:\n{head}")
-                read_id = read_id[: -2]
+                read_id = read_id[:-2]
 
             if check_pair and len(headspl) > 1 and headspl[1][0] != check_pair:
                 raise ValueError(f"header not for R{check_pair}:\n{head}")
@@ -297,9 +300,9 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
             # parse chastity filter assuming CASAVA 1.8 header
             try:
                 chastity = headspl[1][2]
-                if chastity == 'Y':
+                if chastity == "Y":
                     fail = True
-                elif chastity == 'N':
+                elif chastity == "N":
                     fail = False
                 else:
                     raise ValueError(f"cannot parse chastity filter in {head}")
@@ -307,21 +310,23 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format='str'):
                 fail = None  # header does not specify chastity filter
 
             if trim is not None:
-                seq = seq[: trim]
-                qs = qs[: trim]
+                seq = seq[:trim]
+                qs = qs[:trim]
 
             if qual_to_array:
                 qs = qual_str_to_array(qs)
 
-            yield FastqEntry(id=read_id,
-                             seq=seq,
-                             qs=qs,
-                             fail=fail,
-                             )
+            yield FastqEntry(
+                id=read_id,
+                seq=seq,
+                qs=qs,
+                fail=fail,
+            )
 
             head = f.readline()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
