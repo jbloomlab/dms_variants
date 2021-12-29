@@ -14,7 +14,7 @@ Added
 
 Changed
 +++++++
-- ``codonToAAMuts`` changed to regular rather than class method. This breaks backward compatibility in principle but unlikely to do so in practice.
+- formatted code with ``black`` and added to Travis tests.
 
 Changed
 +++++++

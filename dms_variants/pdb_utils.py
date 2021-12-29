@@ -20,16 +20,17 @@ import pandas as pd  # noqa: F401
 import requests  # noqa: F401
 
 
-def reassign_b_factor(input_pdbfile,
-                      output_pdbfile,
-                      df,
-                      metric_col,
-                      *,
-                      site_col='site',
-                      chain_col='chain',
-                      missing_metric=0,
-                      model_index=0,
-                      ):
+def reassign_b_factor(
+    input_pdbfile,
+    output_pdbfile,
+    df,
+    metric_col,
+    *,
+    site_col="site",
+    chain_col="chain",
+    missing_metric=0,
+    model_index=0,
+):
     r"""Reassign B factors in PDB file to some other metric.
 
     B-factor re-assignment is useful because PDB images can be colored
@@ -131,41 +132,38 @@ def reassign_b_factor(input_pdbfile,
             raise ValueError(f"`df` lacks column {col}")
     df = df[cols].drop_duplicates()
     if len(df) != len(df.groupby([site_col, chain_col])):
-        raise ValueError('non-unique metric for a site in a chain')
+        raise ValueError("non-unique metric for a site in a chain")
 
     if df[site_col].dtype != int:
-        raise ValueError('function currently requires `site_col` to be int')
+        raise ValueError("function currently requires `site_col` to be int")
 
     # read PDB, catch warnings about discontinuous chains
     with warnings.catch_warnings():
         warnings.simplefilter(
-                'ignore',
-                category=Bio.PDB.PDBExceptions.PDBConstructionWarning)
-        pdb = Bio.PDB.PDBParser().get_structure('_', input_pdbfile)
+            "ignore", category=Bio.PDB.PDBExceptions.PDBConstructionWarning
+        )
+        pdb = Bio.PDB.PDBParser().get_structure("_", input_pdbfile)
 
     # get the model out of the PDB
     model = list(pdb.get_models())[model_index]
 
     # make sure all chains in PDB
-    missing_chains = set(df[chain_col]) - {chain.id for chain
-                                           in model.get_chains()}
+    missing_chains = set(df[chain_col]) - {chain.id for chain in model.get_chains()}
     if missing_chains:
         raise ValueError(f"`df` has chains not in PDB: {missing_chains}")
 
     # make missing_metric a dict if it isn't already
     if not isinstance(missing_metric, dict):
-        missing_metric = {chain.id: missing_metric for chain
-                          in model.get_chains()}
+        missing_metric = {chain.id: missing_metric for chain in model.get_chains()}
 
     # loop over all chains and do coloring
     for chain in model.get_chains():
         chain_id = chain.id
-        site_to_val = (df
-                       .query(f"{chain_col} == @chain_id")
-                       .set_index(site_col)
-                       [metric_col]
-                       .to_dict()
-                       )
+        site_to_val = (
+            df.query(f"{chain_col} == @chain_id")
+            .set_index(site_col)[metric_col]
+            .to_dict()
+        )
         for residue in chain:
             site = residue.get_id()[1]
             try:
@@ -193,6 +191,7 @@ def reassign_b_factor(input_pdbfile,
     io.save(output_pdbfile)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

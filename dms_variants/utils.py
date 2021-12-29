@@ -15,11 +15,12 @@ import matplotlib.ticker
 import pandas as pd  # noqa: F401
 
 import dms_variants._cutils
-from dms_variants.constants import (AAS_NOSTOP,
-                                    CODON_TO_AA,
-                                    NT_COMPLEMENT,
-                                    SINGLE_NT_AA_MUTS,
-                                    )
+from dms_variants.constants import (
+    AAS_NOSTOP,
+    CODON_TO_AA,
+    NT_COMPLEMENT,
+    SINGLE_NT_AA_MUTS,
+)
 
 
 def reverse_complement(s, *, use_cutils=True):
@@ -49,7 +50,7 @@ def reverse_complement(s, *, use_cutils=True):
     if use_cutils:
         return dms_variants._cutils.reverse_complement(s)
     else:
-        return ''.join(reversed([NT_COMPLEMENT[nt] for nt in s]))
+        return "".join(reversed([NT_COMPLEMENT[nt] for nt in s]))
 
 
 def translate(codonseq):
@@ -72,14 +73,14 @@ def translate(codonseq):
 
     """
     if len(codonseq) % 3 != 0:
-        raise ValueError('length of `codonseq` not multiple of 3')
+        raise ValueError("length of `codonseq` not multiple of 3")
 
     aaseq = []
     for icodon in range(len(codonseq) // 3):
-        codon = codonseq[3 * icodon: 3 * icodon + 3]
+        codon = codonseq[3 * icodon : 3 * icodon + 3]
         aaseq.append(CODON_TO_AA[codon])
 
-    return ''.join(aaseq)
+    return "".join(aaseq)
 
 
 def latex_sci_not(xs):
@@ -116,12 +117,12 @@ def latex_sci_not(xs):
     formatlist = []
     for x in xs:
         xf = f"{x:.2g}"
-        if xf[: 2] == '1e':
+        if xf[:2] == "1e":
             xf = f"$10^{{{int(xf[2 : ])}}}$"
-        elif xf[: 3] == '-1e':
+        elif xf[:3] == "-1e":
             xf = f"$-10^{{{int(xf[3 : ])}}}$"
-        elif 'e' in xf:
-            d, exp = xf.split('e')
+        elif "e" in xf:
+            d, exp = xf.split("e")
             xf = f"${d} \\times 10^{{{int(exp)}}}$"
         else:
             xf = f"${xf}$"
@@ -129,9 +130,15 @@ def latex_sci_not(xs):
     return formatlist
 
 
-def cumul_rows_by_count(df, *, count_col='count', n_col='n_rows',
-                        tot_col='total_rows', group_cols=None,
-                        group_cols_as_str=False):
+def cumul_rows_by_count(
+    df,
+    *,
+    count_col="count",
+    n_col="n_rows",
+    tot_col="total_rows",
+    group_cols=None,
+    group_cols_as_str=False,
+):
     """Cumulative number of rows with >= each count.
 
     Parameters
@@ -182,8 +189,8 @@ def cumul_rows_by_count(df, *, count_col='count', n_col='n_rows',
 
     if not group_cols:
         drop_group_cols = True
-        group_cols = ['dummy_col']
-        df[group_cols[0]] = '_'
+        group_cols = ["dummy_col"]
+        df[group_cols[0]] = "_"
     else:
         drop_group_cols = False
         if isinstance(group_cols, str):
@@ -197,41 +204,48 @@ def cumul_rows_by_count(df, *, count_col='count', n_col='n_rows',
             raise ValueError(f"`group_cols` cannot contain {col}")
 
     df = (
-         df
-
-         # get number of rows with each count
-         .assign(**{n_col: 1})
-         .groupby(group_cols + [count_col],
-                  observed=True)
-         .aggregate({n_col: 'count'})
-         .reset_index()
-         .sort_values(group_cols + [count_col],
-                      ascending=[True] * len(group_cols) + [False])
-         .reset_index(drop=True)
-
-         # get cumulative number with <= number of counts
-         .assign(**{n_col: lambda x: x.groupby(group_cols)[n_col].cumsum()})
-
-         # add new column that is total number of rows
-         .assign(**{tot_col: lambda x: (x
-                                        .groupby(group_cols, sort=False)
-                                        [n_col]
-                                        .transform('max'))})
-         )
+        df
+        # get number of rows with each count
+        .assign(**{n_col: 1})
+        .groupby(group_cols + [count_col], observed=True)
+        .aggregate({n_col: "count"})
+        .reset_index()
+        .sort_values(
+            group_cols + [count_col], ascending=[True] * len(group_cols) + [False]
+        )
+        .reset_index(drop=True)
+        # get cumulative number with <= number of counts
+        .assign(**{n_col: lambda x: x.groupby(group_cols)[n_col].cumsum()})
+        # add new column that is total number of rows
+        .assign(
+            **{
+                tot_col: lambda x: (
+                    x.groupby(group_cols, sort=False)[n_col].transform("max")
+                )
+            }
+        )
+    )
     assert df[tot_col].notnull().all()
 
     if drop_group_cols:
-        df = df.drop(group_cols, axis='columns')
+        df = df.drop(group_cols, axis="columns")
     elif group_cols_as_str:
         for col in group_cols:
-            df[col] = df[col].astype('str')
+            df[col] = df[col].astype("str")
 
     return df
 
 
-def tidy_to_corr(df, sample_col, label_col, value_col, *,
-                 group_cols=None, return_type='tidy_pairs',
-                 method='pearson'):
+def tidy_to_corr(
+    df,
+    sample_col,
+    label_col,
+    value_col,
+    *,
+    group_cols=None,
+    return_type="tidy_pairs",
+    method="pearson",
+):
     """Pairwise correlations between samples in tidy data frame.
 
     Parameters
@@ -322,57 +336,50 @@ def tidy_to_corr(df, sample_col, label_col, value_col, *,
         raise ValueError(f"`df` missing some of these columns: {cols}")
     if len(set(cols)) != len(cols):
         raise ValueError(f"duplicate column names: {cols}")
-    if 'correlation' in cols:
-        raise ValueError('cannot have column named `correlation`')
-    if sample_col + '_2' in group_cols:
+    if "correlation" in cols:
+        raise ValueError("cannot have column named `correlation`")
+    if sample_col + "_2" in group_cols:
         raise ValueError(f"cannot have column named `{sample_col}_2`")
 
     for _, g in df.groupby([sample_col] + group_cols):
         if len(g[label_col]) != g[label_col].nunique():
-            raise ValueError(f"Entries in `df` column {label_col} not unique "
-                             'after grouping by: ' +
-                             ', '.join(c for c in [sample_col] + group_cols))
+            raise ValueError(
+                f"Entries in `df` column {label_col} not unique "
+                "after grouping by: " + ", ".join(c for c in [sample_col] + group_cols)
+            )
 
-    df = (
-        df
-        .pivot_table(values=value_col,
-                     columns=sample_col,
-                     index=[label_col] + group_cols,
-                     )
-        .reset_index()
-        )
+    df = df.pivot_table(
+        values=value_col,
+        columns=sample_col,
+        index=[label_col] + group_cols,
+    ).reset_index()
 
     if group_cols:
         df = df.groupby(group_cols)
 
-    corr = (
-        df
-        .corr(method=method)
-        .dropna(how='all', axis='index')
-        .reset_index()
-        )
+    corr = df.corr(method=method).dropna(how="all", axis="index").reset_index()
 
     corr.columns.name = None  # remove name of columns index
 
-    if return_type == 'tidy_pairs':
+    if return_type == "tidy_pairs":
         corr = (
-            corr
-            .melt(id_vars=group_cols + [sample_col],
-                  var_name=sample_col + '_2',
-                  value_name='correlation'
-                  )
-            .rename(columns={sample_col: sample_col + '_1'})
+            corr.melt(
+                id_vars=group_cols + [sample_col],
+                var_name=sample_col + "_2",
+                value_name="correlation",
+            )
+            .rename(columns={sample_col: sample_col + "_1"})
             .dropna()
             .reset_index(drop=True)
-            )
+        )
 
-    elif return_type != 'matrix':
+    elif return_type != "matrix":
         raise ValueError(f"invalid `return_type` of {return_type}")
 
     return corr
 
 
-def tidy_split(df, column, sep=' ', keep=False):
+def tidy_split(df, column, sep=" ", keep=False):
     """Split values of column and expand into new rows.
 
     Note
@@ -449,15 +456,21 @@ def integer_breaks(x):
     array([ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.])
 
     """
-    return (matplotlib.ticker.MaxNLocator(integer=True)
-            .tick_values(min(x), max(x))
-            )
+    return matplotlib.ticker.MaxNLocator(integer=True).tick_values(min(x), max(x))
 
 
-def scores_to_prefs(df, mutation_col, score_col, base,
-                    wt_score=0, missing='average',
-                    alphabet=AAS_NOSTOP, exclude_chars=('*',),
-                    returnformat='wide', stringency_param=1):
+def scores_to_prefs(
+    df,
+    mutation_col,
+    score_col,
+    base,
+    wt_score=0,
+    missing="average",
+    alphabet=AAS_NOSTOP,
+    exclude_chars=("*",),
+    returnformat="wide",
+    stringency_param=1,
+):
     r"""Convert functional scores to amino-acid preferences.
 
     Preferences are calculated from functional scores as follows. Let
@@ -600,124 +613,119 @@ def scores_to_prefs(df, mutation_col, score_col, base,
 
     """
     if not isinstance(exclude_chars, (list, tuple)):
-        raise ValueError('`exclude_chars` must be list, tuple (can be empty)')
+        raise ValueError("`exclude_chars` must be list, tuple (can be empty)")
     exclude_chars = list(exclude_chars)
 
     alphabet = list(alphabet)
     if [a for a in alphabet if a in exclude_chars]:
-        raise ValueError(f"character in `exclude_chars` of {exclude_chars} "
-                         f" in `alphabet` of {alphabet}. These lists must be "
-                         'mutually exclusive')
+        raise ValueError(
+            f"character in `exclude_chars` of {exclude_chars} "
+            f" in `alphabet` of {alphabet}. These lists must be "
+            "mutually exclusive"
+        )
 
     if score_col == mutation_col:
-        raise ValueError('`score_col` and `mutation_col` must be different')
-    for colname, col in [('mutation', mutation_col), ('score', score_col)]:
+        raise ValueError("`score_col` and `mutation_col` must be different")
+    for colname, col in [("mutation", mutation_col), ("score", score_col)]:
         if col not in df.columns:
             raise ValueError(f"`df` lacks `{colname}_col` of {col}")
-        if col in {'wildtype', 'site', 'mutant'}:
+        if col in {"wildtype", "site", "mutant"}:
             raise ValueError(f"`{colname}_col` cannot be named {score_col}")
 
     if len(df[mutation_col]) != df[mutation_col].nunique():
-        raise ValueError('duplicated entries in `mutation_col` of `df`')
+        raise ValueError("duplicated entries in `mutation_col` of `df`")
 
     # extract wildtype, site, mutant from mutation
-    chars_regex = ''.join(re.escape(a) for a in alphabet + exclude_chars)
-    df = (df.join(df
-                  [mutation_col]
-                  .str
-                  .extract(rf"^(?P<wildtype>[{chars_regex}])" +
-                           r'(?P<site>\-?\d+)' +
-                           rf"(?P<mutant>[{chars_regex}])$")
-                  .assign(site=lambda x: x['site'].astype(int))
-                  )
-          [['site', 'wildtype', 'mutant', score_col, mutation_col]]
-          )
+    chars_regex = "".join(re.escape(a) for a in alphabet + exclude_chars)
+    df = df.join(
+        df[mutation_col]
+        .str.extract(
+            rf"^(?P<wildtype>[{chars_regex}])"
+            + r"(?P<site>\-?\d+)"
+            + rf"(?P<mutant>[{chars_regex}])$"
+        )
+        .assign(site=lambda x: x["site"].astype(int))
+    )[["site", "wildtype", "mutant", score_col, mutation_col]]
     if df.isnull().any().any():
-        raise ValueError('unparseable mutations given specified alphabet:\n' +
-                         ', '.join(df[mutation_col].tolist()))
-    if len(df.query('wildtype == mutant')):
-        raise ValueError('`df` contains mutations with same wildtype & mutant')
+        raise ValueError(
+            "unparseable mutations given specified alphabet:\n"
+            + ", ".join(df[mutation_col].tolist())
+        )
+    if len(df.query("wildtype == mutant")):
+        raise ValueError("`df` contains mutations with same wildtype & mutant")
 
     # remove any excluded characters
-    df = (df
-          [['site', 'wildtype', 'mutant', score_col]]
-          .query('wildtype not in @exclude_chars')
-          .query('mutant not in @exclude_chars')
-          )
+    df = (
+        df[["site", "wildtype", "mutant", score_col]]
+        .query("wildtype not in @exclude_chars")
+        .query("mutant not in @exclude_chars")
+    )
 
     # get missing values for later use
-    if missing == 'average':
+    if missing == "average":
         missing_val = df[score_col].mean()
-    elif missing == 'site_average':
-        missing_val = df.groupby('site')[score_col].mean().to_dict()
-    elif missing != 'error':
+    elif missing == "site_average":
+        missing_val = df.groupby("site")[score_col].mean().to_dict()
+    elif missing != "error":
         raise ValueError(f"invalid `missing` of {missing}")
 
     # add wildtype to data frame
-    wt_df = (df
-             [['wildtype', 'site']]
-             .drop_duplicates()
-             .assign(mutant=lambda x: x['wildtype'])
-             .assign(**{score_col: wt_score})
-             )
+    wt_df = (
+        df[["wildtype", "site"]]
+        .drop_duplicates()
+        .assign(mutant=lambda x: x["wildtype"])
+        .assign(**{score_col: wt_score})
+    )
     df = pd.concat([df, wt_df], sort=False)
 
     # add missing characters from alphabet for each site as here:
     # https://stackoverflow.com/a/47118819
-    mux = pd.MultiIndex.from_product([df['site'].unique(), alphabet],
-                                     names=['site', 'mutant'])
-    df = (mux
-          .to_frame(index=False)
-          .assign(wildtype=lambda x: x['site'].map(df
-                                                   .set_index('site')
-                                                   ['wildtype']
-                                                   .to_dict()))
-          .merge(df, on=['site', 'wildtype', 'mutant'], how='outer')
-          )
+    mux = pd.MultiIndex.from_product(
+        [df["site"].unique(), alphabet], names=["site", "mutant"]
+    )
+    df = (
+        mux.to_frame(index=False)
+        .assign(
+            wildtype=lambda x: x["site"].map(df.set_index("site")["wildtype"].to_dict())
+        )
+        .merge(df, on=["site", "wildtype", "mutant"], how="outer")
+    )
 
     # fill missing values
-    if missing == 'average':
+    if missing == "average":
         df = df.fillna(missing_val)
-    elif missing == 'site_average':
+    elif missing == "site_average":
         df_notmissing = df[df.notnull().all(axis=1)]
         df_missing = df[df.isnull().any(axis=1)]
         assert len(df) == len(df_notmissing) + len(df_missing)
-        df_missing = (df_missing
-                      .assign(**{score_col: lambda x: (x['site']
-                                                       .map(missing_val))}
-                              )
-                      )
+        df_missing = df_missing.assign(
+            **{score_col: lambda x: (x["site"].map(missing_val))}
+        )
         df = pd.concat([df_notmissing, df_missing], sort=False)
     elif df.isnull().any().any():
-        raise ValueError('missing functional scores for some mutations')
+        raise ValueError("missing functional scores for some mutations")
 
     # convert to prefs
-    df = (df
-          .assign(unscaled_prefs=lambda x: (base**x[score_col]
-                                            )**stringency_param,
-                  preference=lambda x: (x['unscaled_prefs'] /
-                                        (x.groupby('site', sort=False)
-                                         ['unscaled_prefs']
-                                         .transform('sum')
-                                         )
-                                        )
-                  )
-          )
+    df = df.assign(
+        unscaled_prefs=lambda x: (base ** x[score_col]) ** stringency_param,
+        preference=lambda x: (
+            x["unscaled_prefs"]
+            / (x.groupby("site", sort=False)["unscaled_prefs"].transform("sum"))
+        ),
+    )
 
     # pivot to wide form
-    if returnformat == 'wide':
-        df = df.pivot_table(index='site',
-                            columns='mutant',
-                            values='preference')
+    if returnformat == "wide":
+        df = df.pivot_table(index="site", columns="mutant", values="preference")
         df = df[alphabet]
         df.columns.name = None
         df = df.reset_index()
-    elif returnformat == 'tidy':
-        df = (df
-              [['wildtype', 'site', 'mutant', 'preference']]
-              .sort_values('preference')
-              .reset_index(drop=True)
-              )
+    elif returnformat == "tidy":
+        df = (
+            df[["wildtype", "site", "mutant", "preference"]]
+            .sort_values("preference")
+            .reset_index(drop=True)
+        )
     else:
         raise ValueError(f"invalid `returnformat` {returnformat}")
     assert not df.isnull().any().any(), df
@@ -725,7 +733,7 @@ def scores_to_prefs(df, mutation_col, score_col, base,
     return df
 
 
-def single_nt_accessible(codon, aa, codon_encode_aa='raise'):
+def single_nt_accessible(codon, aa, codon_encode_aa="raise"):
     """Is amino acid accessible from codon by single-nucleotide change?
 
     Parameters
@@ -759,12 +767,13 @@ def single_nt_accessible(codon, aa, codon_encode_aa='raise'):
 
     """
     if CODON_TO_AA[codon] == aa:
-        if codon_encode_aa == 'raise':
-            raise ValueError(f"`codon` {codon} already encodes `aa` {aa} "
-                             '(see `codon_encode_aa`)')
-        elif codon_encode_aa == 'false':
+        if codon_encode_aa == "raise":
+            raise ValueError(
+                f"`codon` {codon} already encodes `aa` {aa} " "(see `codon_encode_aa`)"
+            )
+        elif codon_encode_aa == "false":
             return False
-        elif codon_encode_aa == 'true':
+        elif codon_encode_aa == "true":
             return True
         else:
             raise ValueError(f"invalid `codon_encode_aa` {codon_encode_aa}")
@@ -774,6 +783,7 @@ def single_nt_accessible(codon, aa, codon_encode_aa='raise'):
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

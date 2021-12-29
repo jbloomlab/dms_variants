@@ -15,10 +15,11 @@ import regex
 
 import scipy
 
-from dms_variants.fastq import (iterate_fastq,
-                                iterate_fastq_pair,
-                                qual_str_to_array,
-                                )
+from dms_variants.fastq import (
+    iterate_fastq,
+    iterate_fastq_pair,
+    qual_str_to_array,
+)
 from dms_variants.utils import reverse_complement
 
 
@@ -92,13 +93,23 @@ class IlluminaBarcodeParser:
 
     """
 
-    VALID_NTS = 'ACGTN'
+    VALID_NTS = "ACGTN"
     """str : Valid nucleotide characters in FASTQ files."""
 
-    def __init__(self, *, bclen=None, upstream='', downstream='',
-                 upstream_mismatch=0, downstream_mismatch=0,
-                 valid_barcodes=None, bc_orientation='R1', minq=20,
-                 chastity_filter=True, list_all_valid_barcodes=True):
+    def __init__(
+        self,
+        *,
+        bclen=None,
+        upstream="",
+        downstream="",
+        upstream_mismatch=0,
+        downstream_mismatch=0,
+        valid_barcodes=None,
+        bc_orientation="R1",
+        minq=20,
+        chastity_filter=True,
+        list_all_valid_barcodes=True,
+    ):
         """See main class doc string."""
         self.bclen = bclen
         if regex.match(f"^[{self.VALID_NTS}]*$", upstream):
@@ -115,15 +126,15 @@ class IlluminaBarcodeParser:
         if self.valid_barcodes is not None:
             self.valid_barcodes = set(self.valid_barcodes)
             if len(self.valid_barcodes) < 1:
-                raise ValueError('empty list for `valid_barcodes`')
+                raise ValueError("empty list for `valid_barcodes`")
             if self.bclen is None:
                 self.bclen = len(list(self.valid_barcodes)[0])
             if any(len(bc) != self.bclen for bc in self.valid_barcodes):
-                raise ValueError('`valid_barcodes` not all valid length')
+                raise ValueError("`valid_barcodes` not all valid length")
         elif self.bclen is None:
-            raise ValueError('must specify `bclen` or `valid_barcodes`')
+            raise ValueError("must specify `bclen` or `valid_barcodes`")
         self.minq = minq
-        if bc_orientation in {'R1', 'R2'}:
+        if bc_orientation in {"R1", "R2"}:
             self.bc_orientation = bc_orientation
         else:
             raise ValueError(f"invalid `bc_orientation` {bc_orientation}")
@@ -132,12 +143,12 @@ class IlluminaBarcodeParser:
 
         # specify information about R1 / R2 matches
         self._bcend = {
-                'R1': self.bclen + len(self.downstream),
-                'R2': self.bclen + len(self.upstream)
-                }
+            "R1": self.bclen + len(self.downstream),
+            "R2": self.bclen + len(self.upstream),
+        }
         self._rcdownstream = reverse_complement(self.downstream)
         self._rcupstream = reverse_complement(self.upstream)
-        self._matches = {'R1': {}, 'R2': {}}  # match objects by read length
+        self._matches = {"R1": {}, "R2": {}}  # match objects by read length
 
     def parse(self, r1files, *, r2files=None, add_cols=None):
         """Parse barcodes from files.
@@ -177,14 +188,14 @@ class IlluminaBarcodeParser:
             r2files = [r2files]
 
         if not r2files:
-            reads = ['R1']
+            reads = ["R1"]
             r2files = None
             fileslist = [r1files]
             r1only = True
         else:
-            reads = ['R1', 'R2']
+            reads = ["R1", "R2"]
             if len(r1files) != len(r2files):
-                raise ValueError('`r1files` and `r2files` different length')
+                raise ValueError("`r1files` and `r2files` different length")
             fileslist = [r1files, r2files]
             r1only = False
 
@@ -193,14 +204,15 @@ class IlluminaBarcodeParser:
         else:
             barcodes = collections.defaultdict(int)
 
-        fates = {'failed chastity filter': 0,
-                 'unparseable barcode': 0,
-                 'low quality barcode': 0,
-                 'invalid barcode': 0,
-                 'valid barcode': 0,
-                 }
+        fates = {
+            "failed chastity filter": 0,
+            "unparseable barcode": 0,
+            "low quality barcode": 0,
+            "invalid barcode": 0,
+            "valid barcode": 0,
+        }
         if not r1only:
-            fates['R1 / R2 disagree'] = 0
+            fates["R1 / R2 disagree"] = 0
 
         # max length of interest for reads
         max_len = self.bclen + len(self.upstream) + len(self.downstream)
@@ -208,12 +220,12 @@ class IlluminaBarcodeParser:
         for filetup in zip(*fileslist):
             if r1only:
                 assert len(filetup) == 1
-                iterator = iterate_fastq(filetup[0], check_pair=1,
-                                         trim=max_len)
+                iterator = iterate_fastq(filetup[0], check_pair=1, trim=max_len)
             else:
                 assert len(filetup) == 2, f"{filetup}\n{fileslist}"
-                iterator = iterate_fastq_pair(filetup[0], filetup[1],
-                                              r1trim=max_len, r2trim=max_len)
+                iterator = iterate_fastq_pair(
+                    filetup[0], filetup[1], r1trim=max_len, r2trim=max_len
+                )
 
             for entry in iterator:
 
@@ -228,7 +240,7 @@ class IlluminaBarcodeParser:
                     fail = entry[5]
 
                 if fail and self.chastity_filter:
-                    fates['failed chastity filter'] += 1
+                    fates["failed chastity filter"] += 1
                     continue
 
                 matches = {}
@@ -242,25 +254,24 @@ class IlluminaBarcodeParser:
                     elif rlen in self._matches[read]:
                         matcher = self._matches[read][rlen]
                     else:
-                        if read == 'R1':
+                        if read == "R1":
                             match_str = (
-                                    f"^({self._rcdownstream})"
-                                    f"{{s<={self.downstream_mismatch}}}"
-                                    f"(?P<bc>[ACTG]{{{self.bclen}}})"
-                                    f"({self._rcupstream[: len_past_bc]})"
-                                    f"{{s<={self.upstream_mismatch}}}"
-                                    )
+                                f"^({self._rcdownstream})"
+                                f"{{s<={self.downstream_mismatch}}}"
+                                f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                                f"({self._rcupstream[: len_past_bc]})"
+                                f"{{s<={self.upstream_mismatch}}}"
+                            )
                         else:
-                            assert read == 'R2'
+                            assert read == "R2"
                             match_str = (
-                                    f"^({self.upstream})"
-                                    f"{{s<={self.upstream_mismatch}}}"
-                                    f"(?P<bc>[ACTG]{{{self.bclen}}})"
-                                    f"({self.downstream[: len_past_bc]})"
-                                    f"{{s<={self.downstream_mismatch}}}"
-                                    )
-                        matcher = regex.compile(match_str,
-                                                flags=regex.BESTMATCH)
+                                f"^({self.upstream})"
+                                f"{{s<={self.upstream_mismatch}}}"
+                                f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                                f"({self.downstream[: len_past_bc]})"
+                                f"{{s<={self.downstream_mismatch}}}"
+                            )
+                        matcher = regex.compile(match_str, flags=regex.BESTMATCH)
                         self._matches[read][rlen] = matcher
 
                     m = matcher.match(r)
@@ -273,72 +284,72 @@ class IlluminaBarcodeParser:
                     bc = {}
                     bc_q = {}
                     for read, q in zip(reads, qlist):
-                        bc[read] = matches[read].group('bc')
+                        bc[read] = matches[read].group("bc")
                         bc_q[read] = qual_str_to_array(
-                                        q[matches[read].start('bc'):
-                                          matches[read].end('bc')])
-                    if self.bc_orientation == 'R1':
+                            q[matches[read].start("bc") : matches[read].end("bc")]
+                        )
+                    if self.bc_orientation == "R1":
                         if not r1only:
-                            bc['R2'] = reverse_complement(bc['R2'])
-                            bc_q['R2'] = scipy.flip(bc_q['R2'], axis=0)
+                            bc["R2"] = reverse_complement(bc["R2"])
+                            bc_q["R2"] = scipy.flip(bc_q["R2"], axis=0)
                     else:
-                        assert self.bc_orientation == 'R2'
-                        bc['R1'] = reverse_complement(bc['R1'])
-                        bc_q['R1'] = scipy.flip(bc_q['R1'], axis=0)
+                        assert self.bc_orientation == "R2"
+                        bc["R1"] = reverse_complement(bc["R1"])
+                        bc_q["R1"] = scipy.flip(bc_q["R1"], axis=0)
                     if r1only:
-                        if (bc_q['R1'] >= self.minq).all():
+                        if (bc_q["R1"] >= self.minq).all():
                             if self.valid_barcodes and (
-                                    bc['R1'] not in self.valid_barcodes):
-                                fates['invalid barcode'] += 1
+                                bc["R1"] not in self.valid_barcodes
+                            ):
+                                fates["invalid barcode"] += 1
                             else:
-                                barcodes[bc['R1']] += 1
-                                fates['valid barcode'] += 1
+                                barcodes[bc["R1"]] += 1
+                                fates["valid barcode"] += 1
                         else:
-                            fates['low quality barcode'] += 1
+                            fates["low quality barcode"] += 1
                     else:
-                        if bc['R1'] == bc['R2']:
+                        if bc["R1"] == bc["R2"]:
                             if self.valid_barcodes and (
-                                    bc['R1'] not in self.valid_barcodes):
-                                fates['invalid barcode'] += 1
-                            elif (scipy.maximum(bc_q['R1'], bc_q['R2'])
-                                    >= self.minq).all():
-                                barcodes[bc['R1']] += 1
-                                fates['valid barcode'] += 1
+                                bc["R1"] not in self.valid_barcodes
+                            ):
+                                fates["invalid barcode"] += 1
+                            elif (
+                                scipy.maximum(bc_q["R1"], bc_q["R2"]) >= self.minq
+                            ).all():
+                                barcodes[bc["R1"]] += 1
+                                fates["valid barcode"] += 1
                             else:
-                                fates['low quality barcode'] += 1
+                                fates["low quality barcode"] += 1
                         else:
-                            fates['R1 / R2 disagree'] += 1
+                            fates["R1 / R2 disagree"] += 1
                 else:
                     # invalid flanking sequence or N in barcode
-                    fates['unparseable barcode'] += 1
+                    fates["unparseable barcode"] += 1
 
         if add_cols is None:
             add_cols = {}
-        existing_cols = {'barcode', 'count', 'fate'}
+        existing_cols = {"barcode", "count", "fate"}
         if set(add_cols).intersection(existing_cols):
             raise ValueError(f"`add_cols` cannot contain {existing_cols}")
 
-        barcodes = (pd.DataFrame(
-                        list(barcodes.items()),
-                        columns=['barcode', 'count'])
-                    .sort_values(['count', 'barcode'],
-                                 ascending=[False, True])
-                    .assign(**add_cols)
-                    .reset_index(drop=True)
-                    )
+        barcodes = (
+            pd.DataFrame(list(barcodes.items()), columns=["barcode", "count"])
+            .sort_values(["count", "barcode"], ascending=[False, True])
+            .assign(**add_cols)
+            .reset_index(drop=True)
+        )
 
-        fates = (pd.DataFrame(
-                    list(fates.items()),
-                    columns=['fate', 'count'])
-                 .sort_values(['count', 'fate'],
-                              ascending=[False, True])
-                 .assign(**add_cols)
-                 .reset_index(drop=True)
-                 )
+        fates = (
+            pd.DataFrame(list(fates.items()), columns=["fate", "count"])
+            .sort_values(["count", "fate"], ascending=[False, True])
+            .assign(**add_cols)
+            .reset_index(drop=True)
+        )
 
         return (barcodes, fates)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

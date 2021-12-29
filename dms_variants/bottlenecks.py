@@ -14,13 +14,14 @@ import scipy.optimize
 import scipy.stats
 
 
-def estimateBottleneck(df,
-                       *,
-                       n_pre_col='n_pre',
-                       n_post_col='n_post',
-                       pseudocount=0.5,
-                       min_variants=100,
-                       ):
+def estimateBottleneck(
+    df,
+    *,
+    n_pre_col="n_pre",
+    n_post_col="n_post",
+    pseudocount=0.5,
+    min_variants=100,
+):
     r"""Estimate **neutral** bottleneck from pre- and post-selection counts.
 
     This function estimates a bottleneck between a pre- and post-selection
@@ -161,14 +162,16 @@ def estimateBottleneck(df,
 
     """
     if len(df) < min_variants:
-        raise ValueError(f"number of variants in `df` ({len(df)}) is < "
-                         f"`min_variants` of {min_variants}")
+        raise ValueError(
+            f"number of variants in `df` ({len(df)}) is < "
+            f"`min_variants` of {min_variants}"
+        )
 
     # estimate frequencies from counts
     if pseudocount < 0:
-        raise ValueError('`pseudocount` must be >= 0')
+        raise ValueError("`pseudocount` must be >= 0")
     freqs = {}
-    for cond, col in [('pre', n_pre_col), ('post', n_post_col)]:
+    for cond, col in [("pre", n_pre_col), ("post", n_post_col)]:
         if col not in df.columns:
             raise ValueError(f"`df` lacks column {col}")
         n = df[col].values
@@ -185,24 +188,25 @@ def estimateBottleneck(df,
     # negative likelihood function to minimize
     def neglikfunc(n):
         assert n.shape == (1,)
-        var = freqs['pre'] * (1 - freqs['pre']) / n[0]
+        var = freqs["pre"] * (1 - freqs["pre"]) / n[0]
         sd = numpy.sqrt(var)
-        return -(scipy.stats.norm.logpdf(freqs['post'],
-                                         loc=freqs['pre'],
-                                         scale=sd)
-                 ).sum()
+        return -(
+            scipy.stats.norm.logpdf(freqs["post"], loc=freqs["pre"], scale=sd)
+        ).sum()
 
     # perform minimization
-    optres = scipy.optimize.minimize(neglikfunc,
-                                     numpy.array([init_n]),
-                                     method='Nelder-Mead',
-                                     )
+    optres = scipy.optimize.minimize(
+        neglikfunc,
+        numpy.array([init_n]),
+        method="Nelder-Mead",
+    )
 
     if not optres.success:
         raise ValueError(f"failed to fit bottleneck:\n{optres}")
     return optres.x[0] / len(df)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()

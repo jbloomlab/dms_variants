@@ -50,7 +50,7 @@ class theme_graygrid(p9.themes.theme_matplotlib):
         """See main class docstring."""
         p9.theme_matplotlib.__init__(self, *args, **kwargs)
 
-        gray = '#D9D9D9'  # gray used in themes.theme_matplotlib
+        gray = "#D9D9D9"  # gray used in themes.theme_matplotlib
 
         self.add_theme(
             p9.theme(
@@ -61,10 +61,12 @@ class theme_graygrid(p9.themes.theme_matplotlib):
                 panel_grid_major=p9.element_line(color=gray, size=0.7),
                 panel_grid_minor=p9.element_blank(),
                 panel_ontop=True,  # plot panel on top of grid
-                ),
-            inplace=True)
+            ),
+            inplace=True,
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
+
     doctest.testmod()
