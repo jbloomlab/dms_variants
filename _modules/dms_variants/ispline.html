@@ -5,17 +5,15 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.ispline &#8212; dms_variants 0.8.8 documentation</title>
-    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <title>dms_variants.ispline &#8212; dms_variants 1.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
     <script src="../../_static/jquery.js"></script>
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -217,7 +215,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`mesh` not array-like of dimension 1: </span><span class="si">{</span><span class="n">mesh</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
@@ -234,24 +232,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1"># indices of `x` in, above, or below I-spline range</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span>
-                       <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">),</span>
-                       <span class="s1">&#39;in&#39;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">&amp;</span>
-                                               <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">))</span>
-                       <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span>
+            <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">),</span>
+            <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)),</span>
+        <span class="p">}</span>
 
         <span class="c1"># values of x in each range</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span> <span class="o">=</span> <span class="p">{</span><span class="n">rangename</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">rangename</span><span class="p">,</span> <span class="n">index</span>
-                           <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">rangename</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">rangename</span><span class="p">,</span> <span class="n">index</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
 
         <span class="c1"># Isplines for each range: for lower and upper it is value at bound</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;in&#39;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
-                                         <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]),</span>
-                          <span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
-                                            <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">])),</span>
-                          <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
-                                            <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">])),</span>
-                          <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;in&quot;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]),</span>
+            <span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">])),</span>
+            <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="n">Isplines</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">])),</span>
+        <span class="p">}</span>
 
         <span class="c1"># for caching values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
@@ -280,7 +277,7 @@
 <span class="sd">            :math:`I_{\rm{total}}` for each point in :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span> <span class="s1">&#39;Itotal&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span> <span class="s2">&quot;Itotal&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
@@ -309,58 +306,70 @@
         <span class="c1"># compute return values for each category of indices</span>
         <span class="n">returnvals</span> <span class="o">=</span> <span class="p">{}</span>
 
-        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;Itotal&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;Itotal&quot;</span><span class="p">:</span>
             <span class="n">returnshape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]):</span>
-                <span class="n">returnvals</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
-                                              <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
-                                             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">w_lower</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]):</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="p">],</span>
+                        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="o">+</span> <span class="n">w_lower</span>
+                <span class="p">)</span>
             <span class="c1"># values of Itotal at limits</span>
-            <span class="n">Itotal_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">w_lower</span><span class="p">,</span>
-                             <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">w_lower</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)}</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)]:</span>
+            <span class="n">Itotal_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="n">w_lower</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="n">w_lower</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;upper&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)]:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
                     <span class="k">continue</span>
-                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">Itotal_limits</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span>
-                                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span> <span class="o">*</span>
-                                    <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
-                                        <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-                                    <span class="p">)</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">Itotal_limits</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">limit</span>
+                <span class="p">)</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;dItotal_dx&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;dItotal_dx&quot;</span><span class="p">:</span>
             <span class="n">returnshape</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]):</span>
-                <span class="n">returnvals</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
-                                              <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                                              <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)],</span>
-                                             <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]):</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                    <span class="p">[</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="p">],</span>
+                    <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">]:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
                     <span class="k">continue</span>
-                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span>
-                                       <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                                       <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">weights</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">)</span>
 
-        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;dItotal_dweights&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;dItotal_dweights&quot;</span><span class="p">:</span>
             <span class="n">returnshape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]):</span>
-                <span class="n">returnvals</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s1">&#39;in&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span>
-                                                  <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
-                                    <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]):</span>
+                <span class="n">returnvals</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
+                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="s2">&quot;in&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">I</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
             <span class="c1"># values of I at limits</span>
-            <span class="n">I_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">[(</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)]:</span>
+            <span class="n">I_limits</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lower&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="s2">&quot;upper&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">limit</span> <span class="ow">in</span> <span class="p">[(</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;upper&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)]:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
                     <span class="k">continue</span>
                 <span class="n">returnvals</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
-                                    <span class="p">[</span><span class="n">I_limits</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+</span>
-                                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span> <span class="o">*</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                                     <span class="p">]</span>
-                                    <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+                    <span class="p">[</span>
+                        <span class="n">I_limits</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                        <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_x_byrange</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">-</span> <span class="n">limit</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_isplines</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">dI_dx</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="p">]</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `quantity` </span><span class="si">{</span><span class="n">quantity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -424,7 +433,7 @@
 <span class="sd">            for each point in :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;dItotal_dx&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;dItotal_dx&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
@@ -475,8 +484,9 @@
 <span class="sd">           I_i\left(U\right) &amp;=&amp; 1.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span>
-                                                 <span class="s1">&#39;dItotal_dweights&#39;</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span> <span class="s2">&quot;dItotal_dweights&quot;</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="Isplines_total.dItotal_dw_lower"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dw_lower">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dw_lower</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv of :meth:`Isplines_total.Itotal` by :math:`w_{\rm{lower}}`.</span>
@@ -488,7 +498,7 @@
 <span class="sd">            which is just one for all :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
         <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">res</span></div></div>
 
@@ -601,7 +611,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`mesh` not array-like of dimension 1: </span><span class="si">{</span><span class="n">mesh</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
@@ -615,7 +625,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`x` is not numpy.ndarray of dimension 1&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`x` is not numpy.ndarray of dimension 1&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`x` outside </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -673,7 +683,7 @@
 <span class="sd">        .. _`Praat manual`: http://www.fon.hum.uva.nl/praat/manual/spline.html</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;I&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;I&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
@@ -683,10 +693,9 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">j</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;numpy.ndarray: :math:`j` as defined in :meth:`Isplines.I`.&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_j&#39;</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s1">&#39;right&#39;</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="p">((</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span>
-                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_j&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span>
 
@@ -697,14 +706,17 @@
 <span class="sd">        Row `m - 1` has summation term for `m`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_sum_terms_I_val&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_sum_terms_I_val&quot;</span><span class="p">):</span>
             <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
-                <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span>
-                 <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
-                                                   <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+                <span class="p">[</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I_val</span>
 
     <span class="nd">@property</span>
@@ -714,14 +726,17 @@
 <span class="sd">        Row `m - 1` has summation term for `m`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_sum_terms_dI_dx_val&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_sum_terms_dI_dx_val&quot;</span><span class="p">):</span>
             <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
-                <span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">*</span>
-                 <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-                 <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span><span class="p">,</span>
-                                                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+                <span class="p">[</span>
+                    <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">[</span><span class="n">m</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                    <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span>
 
     <span class="k">def</span> <span class="nf">_calculate_I_or_dI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
@@ -745,10 +760,10 @@
 <span class="sd">        are the same, so this method implements both.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;I&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;I&quot;</span><span class="p">:</span>
             <span class="n">sum_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_I</span>
             <span class="n">i_lt_jminusk</span> <span class="o">=</span> <span class="mf">1.0</span>
-        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s1">&#39;dI&#39;</span><span class="p">:</span>
+        <span class="k">elif</span> <span class="n">quantity</span> <span class="o">==</span> <span class="s2">&quot;dI&quot;</span><span class="p">:</span>
             <span class="n">sum_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx</span>
             <span class="n">i_lt_jminusk</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">else</span><span class="p">:</span>
@@ -762,9 +777,11 @@
         <span class="c1"># create `binary_terms` where entry (m - 1, x) is 1 if and only if</span>
         <span class="c1"># the corresponding `sum_terms` entry is part of the sum.</span>
         <span class="n">binary_terms</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
-               <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span> <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
-                <span class="k">else</span> <span class="p">(</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])</span>
+            <span class="p">[</span>
+                <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">))</span> <span class="k">if</span> <span class="n">m</span> <span class="o">&lt;</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">(</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
         <span class="k">assert</span> <span class="n">binary_terms</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">sum_terms</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="c1"># compute sums from `sum_terms` and `binary_terms`</span>
@@ -772,9 +789,9 @@
         <span class="k">assert</span> <span class="n">sums</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="c1"># return value with sums, 0, or 1</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span>
-                          <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">i_lt_jminusk</span><span class="p">,</span>
-                                      <span class="n">sums</span><span class="p">))</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">j</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="n">i_lt_jminusk</span><span class="p">,</span> <span class="n">sums</span><span class="p">)</span>
+        <span class="p">)</span>
         <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">res</span>
 
@@ -808,7 +825,7 @@
 <span class="sd">           \end{cases}</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s1">&#39;dI&#39;</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;dI&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">args</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
@@ -929,7 +946,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`mesh` not array-like of dimension 1: </span><span class="si">{</span><span class="n">mesh</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
@@ -941,16 +958,17 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">knots</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">+</span>
-                        <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span>
-                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
-                        <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float&#39;</span><span class="p">)</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
+            <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">knots</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">order</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="ow">and</span> <span class="n">x</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;`x` is not numpy.ndarray of dimension 1&#39;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;`x` is not numpy.ndarray of dimension 1&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`x` outside </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">lower</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">upper</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -995,7 +1013,7 @@
         <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
-<div class="viewcode-block" id="Msplines.M"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.M">[docs]</a>    <span class="k">def</span> <span class="nf">M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;raise&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Msplines.M"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.M">[docs]</a>    <span class="k">def</span> <span class="nf">M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.</span>
 
 <span class="sd">        Parameters</span>
@@ -1047,9 +1065,9 @@
     <span class="k">def</span> <span class="nf">_calculate_M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.M` with result caching.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;zero&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s2">&quot;zero&quot;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="mi">0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `invalid_i` of </span><span class="si">{</span><span class="n">invalid_i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1071,16 +1089,21 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                        <span class="n">boolindex</span><span class="p">,</span>
-                        <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ti</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
-                         <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-                                                     <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;zero&#39;</span><span class="p">)</span>
-                         <span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">))),</span>
-                        <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">boolindex</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="n">k</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ti</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="o">/</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">))</span>
+                <span class="p">),</span>
+                <span class="mf">0.0</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="n">res</span>
 
-<div class="viewcode-block" id="Msplines.dM_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.dM_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;raise&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="Msplines.dM_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.dM_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.</span>
 
 <span class="sd">        Parameters</span>
@@ -1135,9 +1158,9 @@
     <span class="k">def</span> <span class="nf">_calculate_dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.dM_dx` with results caching.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s1">&#39;zero&#39;</span><span class="p">:</span>
+            <span class="k">elif</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s2">&quot;zero&quot;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="mi">0</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `invalid_i` of </span><span class="si">{</span><span class="n">invalid_i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1154,21 +1177,27 @@
             <span class="k">assert</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">1</span>
             <span class="n">boolindex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ti_le_x_lt_tiplusk</span><span class="p">(</span><span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">)</span>
             <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
-                        <span class="n">boolindex</span><span class="p">,</span>
-                        <span class="p">(</span><span class="n">k</span> <span class="o">*</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ti</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
-                              <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span>
-                              <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span>
-                                                              <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;zero&#39;</span><span class="p">)</span>
-                              <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s1">&#39;zero&#39;</span><span class="p">)</span>
-                              <span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">))</span>
-                         <span class="p">),</span>
-                        <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">boolindex</span><span class="p">,</span>
+                <span class="p">(</span>
+                    <span class="n">k</span>
+                    <span class="o">*</span> <span class="p">(</span>
+                        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">ti</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+                        <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dM_dx</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">)</span>
+                        <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">M</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;zero&quot;</span><span class="p">)</span>
+                    <span class="p">)</span>
+                    <span class="o">/</span> <span class="p">((</span><span class="n">k</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">tiplusk</span> <span class="o">-</span> <span class="n">ti</span><span class="p">))</span>
+                <span class="p">),</span>
+                <span class="mf">0.0</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="n">res</span></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
+
     <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
 </pre></div>
 
@@ -1203,18 +1232,6 @@
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jbloomlab/dms_variants">
-    <img
-        alt="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-        src="https://secure.travis-ci.org/jbloomlab/dms_variants.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../index.html">dms_variants documentation</a></li>
@@ -1240,7 +1257,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -1262,7 +1279,7 @@
       &copy;2019--2021.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

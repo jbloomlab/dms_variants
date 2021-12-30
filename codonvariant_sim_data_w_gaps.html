@@ -1,0 +1,1344 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Variants with deletion mutations &#8212; dms_variants 1.3.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Libraries with secondary target genes" href="codonvariant_sim_data_multi_targets.html" />
+    <link rel="prev" title="Analyze simulated library of codon variants" href="codonvariant_sim_data.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<section id="Variants-with-deletion-mutations">
+<h1>Variants with deletion mutations<a class="headerlink" href="#Variants-with-deletion-mutations" title="Permalink to this headline">¶</a></h1>
+<p>In some cases, you might want to include variants with in-frame codon-length deletions. There is an option to do this using <code class="docutils literal notranslate"><span class="pre">---</span></code> as the codon gap character, and <code class="docutils literal notranslate"><span class="pre">-</span></code> as the resulting amino-acid gap character. Note that only codon-length in-frame deletions are allowed.</p>
+<p>This notebook illustrates working with such variants.</p>
+<section id="Setup-for-analysis">
+<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
+<p>Import Python modules / packages:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">dms_variants.codonvarianttable</span>
+<span class="kn">import</span> <span class="nn">dms_variants.plotnine_themes</span>
+<span class="kn">import</span> <span class="nn">dms_variants.simulate</span>
+<span class="kn">from</span> <span class="nn">dms_variants.constants</span> <span class="kn">import</span> <span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">CODONS_WITHGAP</span><span class="p">,</span> <span class="n">CODONS_NOSTOP</span>
+</pre></div>
+</div>
+</div>
+<p>Set parameters that define simulated data:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
+<span class="n">genelength</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># gene length in codons</span>
+<span class="n">libs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lib_1&quot;</span><span class="p">,</span> <span class="s2">&quot;lib_2&quot;</span><span class="p">]</span>  <span class="c1"># distinct libraries of gene</span>
+<span class="n">variants_per_lib</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">genelength</span>  <span class="c1"># variants per library</span>
+<span class="n">avgmuts</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1"># average codon mutations per variant</span>
+<span class="n">bclen</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># length of nucleotide barcode for each variant</span>
+<span class="n">variant_error_rate</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># rate at which variant sequence mis-called</span>
+</pre></div>
+</div>
+</div>
+<p>Seed random number generator for reproducible output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Set pandas display options to show large chunks of Data Frames in this example:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_columns&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.width&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Hide warnings that clutter output:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Set the gray grid <a class="reference external" href="https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html?highlight=themes">plotnine theme</a> defined in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.plotnine_themes.html">dms_variants.plotnine_themes</a> as this gives a nice appearance for the plots:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Simulate-library-of-variants">
+<h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Permalink to this headline">¶</a></h2>
+<p>Simulate wildtype gene sequence:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{</span><span class="n">genelength</span><span class="si">}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{</span><span class="n">geneseq</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Wildtype gene of 30 codons:
+AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAACATCCGGCTG
+</pre></div></div>
+</div>
+<p>Generate a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">simulate_CodonVariantTable</a> function:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
+    <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
+    <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
+    <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">lib</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;avgmuts&quot;</span><span class="p">:</span> <span class="n">avgmuts</span><span class="p">,</span> <span class="s2">&quot;nvariants&quot;</span><span class="p">:</span> <span class="n">variants_per_lib</span><span class="p">}</span> <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span>
+    <span class="p">},</span>
+    <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+    <span class="n">allowgaps</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We can get basic information about the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>, such as the sites, wildtype codons, and wildtype amino acids. Below we do this for the first few sites:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[1, 2, 3, 4, 5]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;AGA&#39;, &#39;TCC&#39;, &#39;GTG&#39;, &#39;ATT&#39;, &#39;CTG&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">aas</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;R&#39;, &#39;S&#39;, &#39;V&#39;, &#39;I&#39;, &#39;L&#39;]
+</pre></div></div>
+</div>
+<p>The different libraries in the table:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;lib_1&#39;, &#39;lib_2&#39;]
+</pre></div></div>
+</div>
+<p>Here is the data frame that contains all of the information on the barcoded variants (just looking at the first few lines)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>barcode</th>
+      <th>variant_call_support</th>
+      <th>codon_substitutions</th>
+      <th>aa_substitutions</th>
+      <th>n_codon_substitutions</th>
+      <th>n_aa_substitutions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>AAAAAACTAAAAGTCG</td>
+      <td>2</td>
+      <td>CGT15AGC ATC25GAA</td>
+      <td>R15S I25E</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>AAAAACAATGCCGCAT</td>
+      <td>1</td>
+      <td>ACC9TCG TTA18TAC</td>
+      <td>T9S L18Y</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>AAAAACAGACCTACAA</td>
+      <td>1</td>
+      <td>TCC2CCG TAC8TTC</td>
+      <td>S2P Y8F</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>AAAAACCGTGGTTCTT</td>
+      <td>1</td>
+      <td>AGA1GAC CCT24GGC</td>
+      <td>R1D P24G</td>
+      <td>2</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>AAAAACTCTATCTCAT</td>
+      <td>1</td>
+      <td>CTG5GTA GCT7TGG TCA11ACG CGG29CTG</td>
+      <td>L5V A7W S11T R29L</td>
+      <td>4</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_1</td>
+      <td>AAAAACTTGAGCATGA</td>
+      <td>6</td>
+      <td>GTG3TCT GCT7TGG TAC8AAT TGC19TGA GAC22AGG AAC2...</td>
+      <td>V3S A7W Y8N C19* D22R N27D</td>
+      <td>6</td>
+      <td>6</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+</section>
+<section id="Analyze-library-composition">
+<h2>Analyze library composition<a class="headerlink" href="#Analyze-library-composition" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> has methods for summarizing and plotting properties of the barcoded variants. These methods can be used to analyze the barcoded variants themselves, or to analyze the frequency (or counts) of variants in the library in samples that have undergone some type of selection.</p>
+<p>We have not yet added counts of the variants in any specific samples, so we just analyze the composition of the variant library itself. This is done by setting <code class="docutils literal notranslate"><span class="pre">samples=None</span></code> in the method calls below.</p>
+<p>Number of variants in each library:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>15000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>15000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>30000</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Plot distribution of variant call supports, grouping together all variants with support <span class="math notranslate nohighlight">\(\ge 8\)</span>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotVariantSupportHistogram</span><span class="p">(</span><span class="n">max_support</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_27_0.png" src="_images/codonvariant_sim_data_w_gaps_27_0.png" />
+</div>
+</div>
+<p>The set of valid barcodes for each library:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First few barcodes for library </span><span class="si">{</span><span class="n">lib</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="n">lib</span><span class="p">))[:</span><span class="mi">3</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+First few barcodes for library lib_1:
+[&#39;AAAAAACTAAAAGTCG&#39;, &#39;AAAAACAATGCCGCAT&#39;, &#39;AAAAACAGACCTACAA&#39;]
+First few barcodes for library lib_2:
+[&#39;AAAAAAACCCAGACTT&#39;, &#39;AAAAAACATCCGATCC&#39;, &#39;AAAAAACCTTCTGCCG&#39;]
+</pre></div></div>
+</div>
+<p>Plot the number of amino-acid mutations per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_31_0.png" src="_images/codonvariant_sim_data_w_gaps_31_0.png" />
+</div>
+</div>
+<p>Number of codon mutations per variant:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;codon&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_33_0.png" src="_images/codonvariant_sim_data_w_gaps_33_0.png" />
+</div>
+</div>
+<p>Average number of codon mutations per variant of each type of mutation. We make these plots for: 1. Just single-mutant and wildtype variants 2. For all variants</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">mut_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">mut_type</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_35_0.png" src="_images/codonvariant_sim_data_w_gaps_35_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_35_1.png" src="_images/codonvariant_sim_data_w_gaps_35_1.png" />
+</div>
+</div>
+<p>Here are the numerical data in the plots above:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation_type</th>
+      <th>num_muts_count</th>
+      <th>count</th>
+      <th>number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>3611</td>
+      <td>6112</td>
+      <td>0.591</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>194</td>
+      <td>6112</td>
+      <td>0.032</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>215</td>
+      <td>6112</td>
+      <td>0.035</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>deletion</td>
+      <td>56</td>
+      <td>6112</td>
+      <td>0.009</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>3746</td>
+      <td>6114</td>
+      <td>0.613</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>188</td>
+      <td>6114</td>
+      <td>0.031</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>196</td>
+      <td>6114</td>
+      <td>0.032</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>deletion</td>
+      <td>69</td>
+      <td>6114</td>
+      <td>0.011</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>7357</td>
+      <td>12226</td>
+      <td>0.602</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>382</td>
+      <td>12226</td>
+      <td>0.031</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>411</td>
+      <td>12226</td>
+      <td>0.034</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>deletion</td>
+      <td>125</td>
+      <td>12226</td>
+      <td>0.010</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation_type</th>
+      <th>num_muts_count</th>
+      <th>count</th>
+      <th>number</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>26917</td>
+      <td>15000</td>
+      <td>1.794</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>1476</td>
+      <td>15000</td>
+      <td>0.098</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>1457</td>
+      <td>15000</td>
+      <td>0.097</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>deletion</td>
+      <td>445</td>
+      <td>15000</td>
+      <td>0.030</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>26919</td>
+      <td>15000</td>
+      <td>1.795</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>1485</td>
+      <td>15000</td>
+      <td>0.099</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>1425</td>
+      <td>15000</td>
+      <td>0.095</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>lib_2</td>
+      <td>barcoded variants</td>
+      <td>deletion</td>
+      <td>458</td>
+      <td>15000</td>
+      <td>0.031</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>nonsynonymous</td>
+      <td>53836</td>
+      <td>30000</td>
+      <td>1.795</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>synonymous</td>
+      <td>2961</td>
+      <td>30000</td>
+      <td>0.099</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>stop</td>
+      <td>2882</td>
+      <td>30000</td>
+      <td>0.096</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>all libraries</td>
+      <td>barcoded variants</td>
+      <td>deletion</td>
+      <td>903</td>
+      <td>30000</td>
+      <td>0.030</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Examine how well amino-acid mutations are sampled in the library by looking at the fraction of mutations seen &lt;= some number of times. Here we do that for amino- acid mutations, making separate plots for single mutants and all mutants:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_40_0.png" src="_images/codonvariant_sim_data_w_gaps_40_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_40_1.png" src="_images/codonvariant_sim_data_w_gaps_40_1.png" />
+</div>
+</div>
+<p>We can also get the numerical information plotted above (here for single mutants only):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>library</th>
+      <th>sample</th>
+      <th>mutation</th>
+      <th>count</th>
+      <th>mutation_type</th>
+      <th>site</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>T9L</td>
+      <td>24</td>
+      <td>nonsynonymous</td>
+      <td>9</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>A7R</td>
+      <td>21</td>
+      <td>nonsynonymous</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>R1L</td>
+      <td>21</td>
+      <td>nonsynonymous</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>N10L</td>
+      <td>20</td>
+      <td>nonsynonymous</td>
+      <td>10</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>lib_1</td>
+      <td>barcoded variants</td>
+      <td>N27S</td>
+      <td>20</td>
+      <td>nonsynonymous</td>
+      <td>27</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Here are the frequencies of mutations along the gene, looking both at single mutants and all mutants:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutFreqs</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="s2">&quot;codon&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_44_0.png" src="_images/codonvariant_sim_data_w_gaps_44_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_44_1.png" src="_images/codonvariant_sim_data_w_gaps_44_1.png" />
+</div>
+</div>
+<p>We can also look at mutation frequencies in a heat-map form:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutHeatmap</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/codonvariant_sim_data_w_gaps_46_0.png" src="_images/codonvariant_sim_data_w_gaps_46_0.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dms_variants</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Analyze deep mutational scanning of barcoded variants</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jbloomlab&repo=dms_variants&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">dms_variants documentation</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="examples.html">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data.html">Analyze simulated library of codon variants</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Variants with deletion mutations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_sim_data_multi_targets.html">Libraries with secondary target genes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="narrow_bottleneck.html">Fitting gobal epistasis models with experimental “noise”</a></li>
+<li class="toctree-l2"><a class="reference internal" href="codonvariant_plot_formatting.html">Formatting <code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code> plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parsebarcodes_sim_data.html">Parse barcodes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.html">dms_variants package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="package_index.html">package index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="acknowledgments.html">Acknowledgements</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  <li><a href="examples.html">Examples</a><ul>
+      <li>Previous: <a href="codonvariant_sim_data.html" title="previous chapter">Analyze simulated library of codon variants</a></li>
+      <li>Next: <a href="codonvariant_sim_data_multi_targets.html" title="next chapter">Libraries with secondary target genes</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019--2021.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/codonvariant_sim_data_w_gaps.nblink.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jbloomlab/dms_variants" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
