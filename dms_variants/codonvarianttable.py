@@ -707,6 +707,79 @@ class CodonVariantTable:
         else:
             return self._valid_barcodes[library]
 
+    def prob_escape(
+        self,
+        *,
+        selections_df,
+        neut_standard_target="neut_standard",
+        by="barcode",
+        min_neut_standard_frac=1e-3,
+        min_neut_standard_count=1e3,
+    ):
+        r"""Compute probability of escape relative to a neutralization standard.
+
+        Assumes one of the targets is the neutralization standard and is
+        unaffected by antibody selection. Then computes escape probability
+        of each variant as
+        :math:`p_v = \left(n_v^{sel}/S^{sel}\right) / \left(n_v^0/S^0\right)`
+        where :math:`n_v^{sel}` is the counts of variant :math:`v` in the
+        selected condition, :math:`n_v^0` is the counts of variant :math:`v`
+        in the no-antibody contition, :math:`S^{sel}` is the total counts
+        of the neutralization standard in the selected condition, and
+        :math:`S^0` is the total counts of the neutralization standard in
+        the no-antibody condition.
+
+        Parameters
+        ----------
+        selections_df : pandas.DataFrame
+            How to pair samples. Should have columns 'library',
+            'antibody_sample', and 'no-antibody_sample' for each row.
+            The 'library' and 'antibody_sample' columns must be unique
+            for each row.
+        neut_standard_target : str
+            Name of target that is neutralization standard.
+        by : {'barcode', 'aa_substitutions', 'codon_substitutions'}
+            Compute for each barcode", set of amino-acid substitutions,
+            or set of codon substitutions. In the last two cases, all barcodes
+            with each set of substitutions are combined.
+        min_neut_standard_frac : float
+            Raise error if neutralization standard not at least
+            this fraction of the total counts for each library / sample.
+        min_neut_standard_count : int
+            Raise error if not at least this many counts for neutralization
+            standard for each library / sample.
+
+        Returns
+        -------
+        (prob_escape, neut_standard_fracs, neutralization)
+            This tuple consists of three pandas data frames:
+
+            - `prob_escape`: gives the escape probabilities, and has the
+              following columns:
+
+                + 'library'
+                + 'sample': the 'antibody_sample' for the comparison.
+                + as many of 'aa_substitutions', 'n_aa_substitutions',
+                  'codon_substitutions', and 'n_codon_substitutions' as
+                  makes sense to retain given value of `by`.
+                + 'prob_escape': censored to be between 0 and 1
+                + 'prob_escape_uncensored': not censoreed to be between 0 and 1
+                + 'counts_antibody': counts for variant in antibody condition
+                + 'counts_no-antibody': counts in no-antibody condition
+
+            - `neut_standard_fracs` : a version of `selections_df` that also
+              has columns `antibody_sample_frac`, `no-antibody_sample_frac`,
+              `antibody_sample_counts`, `no-antibody_sample_counts` giving
+              total counts and fraction of neutralization standard for each
+              row in `selections_df`.
+
+            - `neutralization` for each target and number of amino-acid
+              substitutions, gives the overall probability escape in a column
+              named 'prob_escape'.
+
+        """
+        raise NotImplementedError
+
     def escape_scores(
         self,
         sample_df,
