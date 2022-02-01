@@ -764,12 +764,12 @@ class CodonVariantTable:
                   makes sense to retain given value of `by`.
                 + 'prob_escape': censored to be between 0 and 1
                 + 'prob_escape_uncensored': not censoreed to be between 0 and 1
-                + 'counts_antibody': counts for variant in antibody condition
-                + 'counts_no-antibody': counts in no-antibody condition
+                + 'count_antibody': counts for variant in antibody condition
+                + 'count_no-antibody': counts in no-antibody condition
 
             - `neut_standard_fracs` : a version of `selections_df` that also
               has columns `antibody_sample_frac`, `no-antibody_sample_frac`,
-              `antibody_sample_counts`, `no-antibody_sample_counts` giving
+              `antibody_sample_count`, `no-antibody_sample_count` giving
               total counts and fraction of neutralization standard for each
               row in `selections_df`.
 
@@ -778,7 +778,73 @@ class CodonVariantTable:
               named 'prob_escape'.
 
         """
-        raise NotImplementedError
+        # check validity of `selections_df`
+        req_cols = {"library", "antibody_sample", "no-antibody_sample"}
+        if not req_cols.issubset(selections_df.columns):
+            raise ValueError(f"`selections_df` lacks columns {req_cols}")
+        if (
+            len(selections_df)
+            != len(selections_df.groupby(["library", "antibody_sample"]))
+        ):
+            raise ValueError("library/antibody_sample not unique in selection_df rows")
+        for col in ["antibody_sample", "no-antibody_sample"]:
+            invalid_samples = (
+                selections_df
+                .assign(
+                    invalid=lambda x: x.apply(
+                        lambda row: row[col] not in self.samples(row["library"]),
+                        axis=1,
+                    )
+                )
+                [["library", col, "invalid"]]
+                .query("invalid")
+            )
+            if len(invalid_samples):
+                raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
+
+        # get neut_standard fracs for each library / sample
+        fracs = (
+            self.n_variants_df(primary_target_only=False)
+            .assign(
+                n=lambda x: x.groupby(["library", "sample"])["count"].transform("sum"),
+                frac=lambda x: x["count"] / x["n"],
+            )
+            .query("target == @neut_standard_target")
+            .drop(columns=["target", "n"])
+        )
+        # merge neut_standard fracs into `selections_df`
+        neut_standard_fracs = selections_df
+        for stype in ["antibody", "no-antibody"]:
+            col_renames = {col: f"{stype}_{col}" for col in ["count", "frac"]}
+            neut_standard_fracs = (
+                neut_standard_fracs
+                .merge(
+                    fracs,
+                    left_on=["library", f"{stype}_sample"],
+                    right_on=["library", "sample"],
+                    validate="many_to_one",
+                    how="left",
+                )
+                .drop(columns="sample")
+                .rename(columns=col_renames)
+            )
+            # check we have a neut standard to compute fracs
+            if neut_standard_fracs[list(col_renames.values())].isnull().any().any():
+                raise ValueError(f"no {neut_standard_target=} for some sample")
+            # check the neut standard fracs and counts sufficiently high
+            for var, threshold in [
+                ("count", min_neut_standard_count), ("frac", min_neut_standard_frac)
+            ]:
+                too_low = (
+                    neut_standard_fracs
+                    .assign(too_low=lambda x: x[col_renames[var]] < threshold)
+                    .query("too_low")
+                )
+                if len(too_low):
+                    raise ValueError(f"neut standard {var} too low:\n{too_low}")
+
+        return None, neut_standard_fracs, None
+
 
     def escape_scores(
         self,
