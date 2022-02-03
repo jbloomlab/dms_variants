@@ -770,9 +770,9 @@ class CodonVariantTable:
                 + 'prob_escape': censored to be between 0 and 1
                 + 'prob_escape_uncensored': not censoreed to be between 0 and 1
                 + 'antibody_count': counts for variant in antibody condition
-                + 'no-antibody_count': counts in no-antibody condition
-                + 'antibody_neut_standard_count': counts for variant in antibody condition
-                + 'no-antibody_neut_standard_count': counts in no-antibody condition
+                + 'no-antibody_count': counts for variant no-antibody condition
+                + 'antibody_neut_standard_count': counts for neut standard
+                + 'no-antibody_neut_standard_count': counts for neut standard
 
             - `neut_standard_fracs` : a version of `selections_df` that also
               has columns `antibody_sample_frac`, `no-antibody_sample_frac`,
@@ -789,23 +789,17 @@ class CodonVariantTable:
         req_cols = {"library", "antibody_sample", "no-antibody_sample"}
         if not req_cols.issubset(selections_df.columns):
             raise ValueError(f"`selections_df` lacks columns {req_cols}")
-        if (
-            len(selections_df)
-            != len(selections_df.groupby(["library", "antibody_sample"]))
+        if len(selections_df) != len(
+            selections_df.groupby(["library", "antibody_sample"])
         ):
             raise ValueError("library/antibody_sample not unique in selection_df rows")
         for col in ["antibody_sample", "no-antibody_sample"]:
-            invalid_samples = (
-                selections_df
-                .assign(
-                    invalid=lambda x: x.apply(
-                        lambda row: row[col] not in self.samples(row["library"]),
-                        axis=1,
-                    )
+            invalid_samples = selections_df.assign(
+                invalid=lambda x: x.apply(
+                    lambda row: row[col] not in self.samples(row["library"]),
+                    axis=1,
                 )
-                [["library", col, "invalid"]]
-                .query("invalid")
-            )
+            )[["library", col, "invalid"]].query("invalid")
             if len(invalid_samples):
                 raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
 
@@ -824,8 +818,7 @@ class CodonVariantTable:
         for stype in ["antibody", "no-antibody"]:
             col_renames = {col: f"{stype}_{col}" for col in ["count", "frac"]}
             neut_standard_fracs = (
-                neut_standard_fracs
-                .merge(
+                neut_standard_fracs.merge(
                     fracs,
                     left_on=["library", f"{stype}_sample"],
                     right_on=["library", "sample"],
@@ -840,13 +833,12 @@ class CodonVariantTable:
                 raise ValueError(f"no {neut_standard_target=} for some sample")
             # check the neut standard fracs and counts sufficiently high
             for var, threshold in [
-                ("count", min_neut_standard_count), ("frac", min_neut_standard_frac)
+                ("count", min_neut_standard_count),
+                ("frac", min_neut_standard_frac),
             ]:
-                too_low = (
-                    neut_standard_fracs
-                    .assign(too_low=lambda x: x[col_renames[var]] < threshold)
-                    .query("too_low")
-                )
+                too_low = neut_standard_fracs.assign(
+                    too_low=lambda x: x[col_renames[var]] < threshold
+                ).query("too_low")
                 if len(too_low):
                     raise ValueError(f"neut standard {var} too low:\n{too_low}")
 
@@ -863,8 +855,7 @@ class CodonVariantTable:
         if by in {"aa_substitutions", "codon_substitutions"}:
             group_cols = group_cols[group_cols.index(by) :]
             count_df = (
-                count_df
-                .groupby(
+                count_df.groupby(
                     ["library", "sample", *group_cols], observed=True, sort=False
                 )
                 .aggregate({"count": "sum"})
@@ -877,11 +868,15 @@ class CodonVariantTable:
 
         # compute prob_escape
         prob_escape = (
-            neut_standard_fracs
-            [[
-                "library", "antibody_sample", "antibody_count",
-                "no-antibody_sample", "no-antibody_count"
-            ]]
+            neut_standard_fracs[
+                [
+                    "library",
+                    "antibody_sample",
+                    "antibody_count",
+                    "no-antibody_sample",
+                    "no-antibody_count",
+                ]
+            ]
             .rename(
                 columns={
                     "antibody_count": "antibody_neut_standard_count",
@@ -909,24 +904,53 @@ class CodonVariantTable:
                     (x["antibody_count"] / x["antibody_neut_standard_count"])
                     / (x["no-antibody_count"] / x["no-antibody_neut_standard_count"])
                 ),
-                prob_escape=lambda x: x["prob_escape_uncensored"].clip(lower=0, upper=1),
-            )
-            [[
-                "library",
-                "antibody_sample",
-                "no-antibody_sample",
-                *group_cols,
-                "prob_escape",
-                "prob_escape_uncensored",
-                "antibody_count",
-                "no-antibody_count",
-                "antibody_neut_standard_count",
-                "no-antibody_neut_standard_count",
-            ]]
+                prob_escape=lambda x: x["prob_escape_uncensored"].clip(upper=1),
+            )[
+                [
+                    "library",
+                    "antibody_sample",
+                    "no-antibody_sample",
+                    *group_cols,
+                    "prob_escape",
+                    "prob_escape_uncensored",
+                    "antibody_count",
+                    "no-antibody_count",
+                    "antibody_neut_standard_count",
+                    "no-antibody_neut_standard_count",
+                ]
+            ]
         )
 
-        return prob_escape, neut_standard_fracs, None
+        # compute neutralization data frame to return
+        neutralization = (
+            prob_escape.assign(
+                n_aa_substitutions=lambda x: (
+                    x["n_aa_substitutions"].clip(upper=ceil_n_aa_substitutions)
+                )
+            )
+            .groupby(
+                [
+                    "library",
+                    "antibody_sample",
+                    "no-antibody_sample",
+                    "target",
+                    "n_aa_substitutions",
+                    "antibody_neut_standard_count",
+                    "no-antibody_neut_standard_count",
+                ],
+                as_index=False,
+            )
+            .aggregate({"antibody_count": "sum", "no-antibody_count": "sum"})
+            .assign(
+                prob_escape_uncensored=lambda x: (
+                    (x["antibody_count"] / x["antibody_neut_standard_count"])
+                    / (x["no-antibody_count"] / x["no-antibody_neut_standard_count"])
+                ),
+                prob_escape=lambda x: x["prob_escape_uncensored"].clip(upper=1),
+            )
+        )
 
+        return prob_escape, neut_standard_fracs, neutralization
 
     def escape_scores(
         self,
