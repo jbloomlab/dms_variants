@@ -715,7 +715,7 @@ class CodonVariantTable:
         by="barcode",
         min_neut_standard_frac=1e-3,
         min_neut_standard_count=1e3,
-        ceil_n_aa_substitutions=5,
+        ceil_n_aa_substitutions=4,
     ):
         r"""Compute probability of escape relative to a neutralization standard.
 
