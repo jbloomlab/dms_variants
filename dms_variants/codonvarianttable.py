@@ -716,6 +716,7 @@ class CodonVariantTable:
         min_neut_standard_frac=1e-3,
         min_neut_standard_count=1e3,
         ceil_n_aa_substitutions=4,
+        drop_neut_standard_target=True,
     ):
         r"""Compute probability of escape relative to a neutralization standard.
 
@@ -752,6 +753,9 @@ class CodonVariantTable:
         ceil_n_aa_substitutions: int
             When computing the returned `neutralization` data frame, group variants
             with >= this many amino-acid substitutions.
+        drop_neut_standard_target : bool
+            Drop the neutralization standard variant-level results from the
+            returned data frames.
 
         Returns
         -------
@@ -949,6 +953,15 @@ class CodonVariantTable:
                 prob_escape=lambda x: x["prob_escape_uncensored"].clip(upper=1),
             )
         )
+        if drop_neut_standard_target:
+            prob_escape = prob_escape.query("target != @neut_standard_target")
+            if prob_escape["target"].nunique() < 2:
+                prob_escape = prob_escape.drop(columns="target").reset_index(drop=True)
+            neutralization = neutralization.query("target != @neut_standard_target")
+            if neutralization["target"].nunique() < 2:
+                neutralization = neutralization.drop(columns="target").reset_index(
+                    drop=True
+                )
 
         return prob_escape, neut_standard_fracs, neutralization
 
