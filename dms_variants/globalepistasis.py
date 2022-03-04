@@ -2104,7 +2104,7 @@ class CauchyLikelihood(AbstractEpistasis):
         key = "_dloglik_dobserved_phenotype"
         if key not in self._cache:
             diff = self.binarymap.func_scores - self._observed_phenotypes()
-            self._cache[key] = 2 * diff / (self._pseudo_variances + diff ** 2)
+            self._cache[key] = 2 * diff / (self._pseudo_variances + diff**2)
             self._cache[key].flags.writeable = False
         return self._cache[key]
 
@@ -2143,9 +2143,9 @@ class CauchyLikelihood(AbstractEpistasis):
         if key not in self._cache:
             scale_param = self.likelihood_calc_params_dict["scale_parameter"]
             if self.binarymap.func_scores_var is not None:
-                var = self.binarymap.func_scores_var + scale_param ** 2
+                var = self.binarymap.func_scores_var + scale_param**2
             else:
-                var = numpy.full(self.binarymap.nvariants, scale_param ** 2)
+                var = numpy.full(self.binarymap.nvariants, scale_param**2)
             if (var <= 0).any():
                 raise ValueError("variance <= 0")
             self._cache[key] = var
@@ -2497,7 +2497,7 @@ class GaussianLikelihood(AbstractEpistasis):
                 [
                     0.5
                     * (
-                        self._dloglik_dobserved_phenotype ** 2 - 1 / self._variances
+                        self._dloglik_dobserved_phenotype**2 - 1 / self._variances
                     ).sum()
                 ]
             )
