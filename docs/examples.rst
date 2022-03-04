@@ -20,8 +20,9 @@ Below are a series of examples that illustrate usage of this functionality and o
    codonvariant_sim_data
    codonvariant_sim_data_w_gaps
    codonvariant_sim_data_multi_targets
+   prob_escape
+   parsebarcodes_sim_data
    narrow_bottleneck
    codonvariant_plot_formatting
-   parsebarcodes_sim_data
 
 The above examples can be run as interactive Jupyter notebooks on `mybinder <https://mybinder.readthedocs.io>`_ by going to the `following link <https://mybinder.org/v2/gh/jbloomlab/dms_variants/master?filepath=notebooks>`_ (it may take a minute to load) and then opening the notebook you want to run.
