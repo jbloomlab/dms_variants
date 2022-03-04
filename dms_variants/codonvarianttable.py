@@ -772,7 +772,7 @@ class CodonVariantTable:
                   'codon_substitutions', and 'n_codon_substitutions' as
                   makes sense to retain given value of `by`.
                 + 'prob_escape': censored to be between 0 and 1
-                + 'prob_escape_uncensored': not censoreed to be between 0 and 1
+                + 'prob_escape_uncensored': not censored to be between 0 and 1
                 + 'antibody_count': counts for variant in antibody condition
                 + 'no-antibody_count': counts for variant no-antibody condition
                 + 'antibody_neut_standard_count': counts for neut standard
