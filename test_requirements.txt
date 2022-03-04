@@ -11,3 +11,4 @@ nbval
 black[jupyter]
 ipython
 dmslogo>=0.2.3
+altair

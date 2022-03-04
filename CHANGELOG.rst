@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.4.0
+------
+
+Added
++++++
+- Add ``CodonVariantTable.prob_escape`` to calculate escape probabilities from absolute standard, and notebook illustrating its use.
+
 1.3.0
 -----
 Added

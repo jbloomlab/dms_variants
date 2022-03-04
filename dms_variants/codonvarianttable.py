@@ -707,6 +707,264 @@ class CodonVariantTable:
         else:
             return self._valid_barcodes[library]
 
+    def prob_escape(
+        self,
+        *,
+        selections_df,
+        neut_standard_target="neut_standard",
+        by="barcode",
+        min_neut_standard_frac=1e-3,
+        min_neut_standard_count=1e3,
+        ceil_n_aa_substitutions=4,
+        drop_neut_standard_target=True,
+    ):
+        r"""Compute probability of escape relative to a neutralization standard.
+
+        Assumes one of the targets is the neutralization standard and is
+        unaffected by antibody selection. Then computes escape probability
+        of each variant as
+        :math:`p_v = \left(n_v^{sel}/S^{sel}\right) / \left(n_v^0/S^0\right)`
+        where :math:`n_v^{sel}` is the counts of variant :math:`v` in the
+        selected condition, :math:`n_v^0` is the counts of variant :math:`v`
+        in the no-antibody contition, :math:`S^{sel}` is the total counts
+        of the neutralization standard in the selected condition, and
+        :math:`S^0` is the total counts of the neutralization standard in
+        the no-antibody condition.
+
+        Parameters
+        ----------
+        selections_df : pandas.DataFrame
+            How to pair samples. Should have columns 'library',
+            'antibody_sample', and 'no-antibody_sample' for each row.
+            The 'library' and 'antibody_sample' columns must be unique
+            for each row.
+        neut_standard_target : str
+            Name of target that is neutralization standard.
+        by : {'barcode', 'aa_substitutions', 'codon_substitutions'}
+            Compute for each barcode", set of amino-acid substitutions,
+            or set of codon substitutions. In the last two cases, all barcodes
+            with each set of substitutions are combined.
+        min_neut_standard_frac : float
+            Raise error if neutralization standard not at least
+            this fraction of the total counts for each library / sample.
+        min_neut_standard_count : int
+            Raise error if not at least this many counts for neutralization
+            standard for each library / sample.
+        ceil_n_aa_substitutions: int
+            When computing the returned `neutralization` data frame, group variants
+            with >= this many amino-acid substitutions.
+        drop_neut_standard_target : bool
+            Drop the neutralization standard variant-level results from the
+            returned data frames.
+
+        Returns
+        -------
+        (prob_escape, neut_standard_fracs, neutralization)
+            This tuple consists of three pandas data frames:
+
+            - `prob_escape`: gives the escape probabilities, and has the
+              following columns:
+
+                + 'library'
+                + 'antibody_sample'
+                + 'no-antibody_sample'
+                + as many of 'target', 'aa_substitutions', 'n_aa_substitutions',
+                  'codon_substitutions', and 'n_codon_substitutions' as
+                  makes sense to retain given value of `by`.
+                + 'prob_escape': censored to be between 0 and 1
+                + 'prob_escape_uncensored': not censoreed to be between 0 and 1
+                + 'antibody_count': counts for variant in antibody condition
+                + 'no-antibody_count': counts for variant no-antibody condition
+                + 'antibody_neut_standard_count': counts for neut standard
+                + 'no-antibody_neut_standard_count': counts for neut standard
+
+            - `neut_standard_fracs` : a version of `selections_df` that also
+              has columns `antibody_sample_frac`, `no-antibody_sample_frac`,
+              `antibody_sample_count`, `no-antibody_sample_count` giving
+              total counts and fraction of neutralization standard for each
+              row in `selections_df`.
+
+            - `neutralization` for each target and number
+              of amino-acid (up to `ceil_n_aa_substitutions`), gives the overall
+              probability escape in a column `prob_escape`.
+
+        """
+        # check validity of `selections_df`
+        req_cols = {"library", "antibody_sample", "no-antibody_sample"}
+        if not req_cols.issubset(selections_df.columns):
+            raise ValueError(f"`selections_df` lacks columns {req_cols}")
+        if len(selections_df) != len(
+            selections_df.groupby(["library", "antibody_sample"])
+        ):
+            raise ValueError("library/antibody_sample not unique in selection_df rows")
+        for col in ["antibody_sample", "no-antibody_sample"]:
+            invalid_samples = selections_df.assign(
+                invalid=lambda x: x.apply(
+                    lambda row: row[col] not in self.samples(row["library"]),
+                    axis=1,
+                )
+            )[["library", col, "invalid"]].query("invalid")
+            if len(invalid_samples):
+                raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
+
+        # get neut_standard fracs for each library / sample
+        fracs = (
+            self.n_variants_df(primary_target_only=False)
+            .assign(
+                n=lambda x: x.groupby(["library", "sample"])["count"].transform("sum"),
+                frac=lambda x: x["count"] / x["n"],
+            )
+            .query("target == @neut_standard_target")
+            .drop(columns=["target", "n"])
+        )
+        # merge neut_standard fracs into `selections_df`
+        neut_standard_fracs = selections_df
+        for stype in ["antibody", "no-antibody"]:
+            col_renames = {col: f"{stype}_{col}" for col in ["count", "frac"]}
+            neut_standard_fracs = (
+                neut_standard_fracs.merge(
+                    fracs,
+                    left_on=["library", f"{stype}_sample"],
+                    right_on=["library", "sample"],
+                    validate="many_to_one",
+                    how="left",
+                )
+                .drop(columns="sample")
+                .rename(columns=col_renames)
+            )
+            # check we have a neut standard to compute fracs
+            if neut_standard_fracs[list(col_renames.values())].isnull().any().any():
+                raise ValueError(f"no {neut_standard_target=} for some sample")
+            # check the neut standard fracs and counts sufficiently high
+            for var, threshold in [
+                ("count", min_neut_standard_count),
+                ("frac", min_neut_standard_frac),
+            ]:
+                too_low = neut_standard_fracs.assign(
+                    too_low=lambda x: x[col_renames[var]] < threshold
+                ).query("too_low")
+                if len(too_low):
+                    raise ValueError(f"neut standard {var} too low:\n{too_low}")
+
+        # get variant counts grouped by `by`
+        count_df = self.variant_count_df
+        group_cols = [
+            "codon_substitutions",
+            "n_codon_substitutions",
+            "aa_substitutions",
+            "n_aa_substitutions",
+        ]
+        if self.primary_target is not None:
+            group_cols.insert(0, "target")
+        if by in {"aa_substitutions", "codon_substitutions"}:
+            group_cols = group_cols[group_cols.index(by) :]
+            count_df = (
+                count_df.groupby(
+                    ["library", "sample", *group_cols], observed=True, sort=False
+                )
+                .aggregate({"count": "sum"})
+                .reset_index()
+            )
+        elif by == "barcode":
+            group_cols.append("barcode")
+        else:
+            raise ValueError(f"invalid `by` of {by}")
+
+        # compute prob_escape
+        prob_escape = (
+            neut_standard_fracs[
+                [
+                    "library",
+                    "antibody_sample",
+                    "antibody_count",
+                    "no-antibody_sample",
+                    "no-antibody_count",
+                ]
+            ]
+            .rename(
+                columns={
+                    "antibody_count": "antibody_neut_standard_count",
+                    "no-antibody_count": "no-antibody_neut_standard_count",
+                }
+            )
+            .merge(
+                count_df,
+                how="left",
+                left_on=["library", "antibody_sample"],
+                right_on=["library", "sample"],
+                validate="one_to_many",
+            )
+            .drop(columns="sample")
+            .rename(columns={"count": "antibody_count"})
+            .merge(
+                count_df,
+                how="left",
+                left_on=["library", "no-antibody_sample", *group_cols],
+                right_on=["library", "sample", *group_cols],
+            )
+            .rename(columns={"count": "no-antibody_count"})
+            .assign(
+                prob_escape_uncensored=lambda x: (
+                    (x["antibody_count"] / x["antibody_neut_standard_count"])
+                    / (x["no-antibody_count"] / x["no-antibody_neut_standard_count"])
+                ),
+                prob_escape=lambda x: x["prob_escape_uncensored"].clip(upper=1),
+            )[
+                [
+                    "library",
+                    "antibody_sample",
+                    "no-antibody_sample",
+                    *group_cols,
+                    "prob_escape",
+                    "prob_escape_uncensored",
+                    "antibody_count",
+                    "no-antibody_count",
+                    "antibody_neut_standard_count",
+                    "no-antibody_neut_standard_count",
+                ]
+            ]
+        )
+
+        # compute neutralization data frame to return
+        neutralization = (
+            prob_escape.assign(
+                n_aa_substitutions=lambda x: (
+                    x["n_aa_substitutions"].clip(upper=ceil_n_aa_substitutions)
+                )
+            )
+            .groupby(
+                [
+                    "library",
+                    "antibody_sample",
+                    "no-antibody_sample",
+                    "target",
+                    "n_aa_substitutions",
+                    "antibody_neut_standard_count",
+                    "no-antibody_neut_standard_count",
+                ],
+                as_index=False,
+            )
+            .aggregate({"antibody_count": "sum", "no-antibody_count": "sum"})
+            .assign(
+                prob_escape_uncensored=lambda x: (
+                    (x["antibody_count"] / x["antibody_neut_standard_count"])
+                    / (x["no-antibody_count"] / x["no-antibody_neut_standard_count"])
+                ),
+                prob_escape=lambda x: x["prob_escape_uncensored"].clip(upper=1),
+            )
+        )
+        if drop_neut_standard_target:
+            prob_escape = prob_escape.query("target != @neut_standard_target")
+            if prob_escape["target"].nunique() < 2:
+                prob_escape = prob_escape.drop(columns="target").reset_index(drop=True)
+            neutralization = neutralization.query("target != @neut_standard_target")
+            if neutralization["target"].nunique() < 2:
+                neutralization = neutralization.drop(columns="target").reset_index(
+                    drop=True
+                )
+
+        return prob_escape, neut_standard_fracs, neutralization
+
     def escape_scores(
         self,
         sample_df,
