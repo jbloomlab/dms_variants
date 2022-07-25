@@ -3134,6 +3134,7 @@ class NoEpistasisBottleneckLikelihood(NoEpistasis, BottleneckLikelihood):
 def fit_models(
     binarymap,
     likelihood,
+    ftol=1e-7,
     *,
     bottleneck=None,
     max_latent_phenotypes=1,
@@ -3173,6 +3174,9 @@ def fit_models(
     likelihood : {'Gaussian', 'Cauchy', 'Bottleneck'}
         Likelihood calculation method to use when fitting models. See
         :ref:`likelihood_calculation`.
+    ftol : float
+        Function convergence tolerance for optimization, used by
+        `scipy.optimize.minimize`.
     bottleneck : float or None
         Required if using 'Bottleneck' `likelihood`. In that case, is
         the experimentally estimated bottleneck between the pre-
@@ -3239,7 +3243,7 @@ def fit_models(
             **bottleneck_args,
         )
         start = time.time()
-        _ = model.fit()
+        _ = model.fit(ftol=ftol)
         return FitData(
             description=description,
             n_latent_phenotypes=model.n_latent_phenotypes,
