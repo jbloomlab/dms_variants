@@ -797,15 +797,19 @@ class CodonVariantTable:
             selections_df.groupby(["library", "antibody_sample"])
         ):
             raise ValueError("library/antibody_sample not unique in selection_df rows")
-        for col in ["antibody_sample", "no-antibody_sample"]:
-            invalid_samples = selections_df.assign(
-                invalid=lambda x: x.apply(
-                    lambda row: row[col] not in self.samples(row["library"]),
-                    axis=1,
-                )
-            )[["library", col, "invalid"]].query("invalid")
-            if len(invalid_samples):
-                raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
+        invalid_samples = selections_df.assign(
+            invalid=lambda x: x.apply(
+                lambda row: (
+                    (row["antibody_sample"] not in self.samples(row["library"]))
+                    | (row["no-antibody_sample"] not in self.samples(row["library"]))
+                ),
+                axis=1,
+            )
+        )[["library", "antibody-sample", "no-antibody_sample", "invalid"]].query(
+            "invalid"
+        )
+        if len(invalid_samples):
+            raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
 
         # get neut_standard fracs for each library / sample
         fracs = (
@@ -840,9 +844,9 @@ class CodonVariantTable:
                 ("count", min_neut_standard_count),
                 ("frac", min_neut_standard_frac),
             ]:
-                too_low = neut_standard_fracs.assign(
-                    too_low=lambda x: x[col_renames[var]] < threshold
-                ).query("too_low")
+                too_low = neut_standard_fracs[
+                    neut_standard_fracs[col_renames[var]] < threshold
+                ]
                 if len(too_low):
                     raise ValueError(f"neut standard {var} too low:\n{too_low}")
 
@@ -3816,7 +3820,7 @@ def filter_by_subs_observed(
             itertools.chain.from_iterable(df_to_count[subs_col].str.split())
         )
         subs_valid = {s for s, n in subs_counts.items() if n >= min_counts}
-        df[filter_col] = df[subs_col].map(lambda s: set(s.split()).issubset(subs_valid))
+        df[filter_col] = [set(s.split()).issubset(subs_valid) for s in df[subs_col]]
 
     return (
         df.query(

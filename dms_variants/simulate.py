@@ -587,33 +587,28 @@ def simulateSampleCounts(
         if set(sample_dict.keys()) != post_req_keys:
             raise ValueError(f"post_samples {sample} lacks {post_req_keys}")
 
-        lib_df = (
-            barcode_variant_df.query("library == @lib")
-            .assign(
-                sample=sample,
-                # simulated pre-selection freqs after bottleneck
-                bottleneck_freq=(
-                    lambda x: _bottleneck_freqs(x.pre_freq, sample_dict["bottleneck"])
-                ),
-                # post-selection freqs with noise
-                noise=lambda x: numpy.clip(
-                    [random.gauss(1, sample_dict["noise"]) for _ in range(len(x))],
-                    0,
-                    None,
-                ),
-                post_freq_nonorm=lambda x: (x.bottleneck_freq * x.phenotype * x.noise),
-                post_freq=lambda x: (x.post_freq_nonorm / x.post_freq_nonorm.sum()),
-                # post-selection counts simulated from frequencies
-                count=(
-                    lambda x: numpy.random.multinomial(
-                        sample_dict["total_count"], x.post_freq
-                    )
-                ),
-            )
-            .rename(columns={"post_counts": sample})[
-                ["library", "barcode", "sample", "count"]
-            ]
+        lib_df = barcode_variant_df.query("library == @lib").assign(sample=sample)
+        # simulated pre-selection freqs after bottleneck
+        lib_df["bottleneck_freq"] = _bottleneck_freqs(
+            lib_df["pre_freq"],
+            sample_dict["bottleneck"],
         )
+        lib_df["noise"] = numpy.clip(
+            [random.gauss(1, sample_dict["noise"]) for _ in range(len(lib_df))],
+            0,
+            None,
+        )
+        lib_df["post_freq_nonorm"] = (
+            lib_df["bottleneck_freq"] * lib_df["phenotype"] * lib_df["noise"]
+        )
+        lib_df["post_freq"] = (
+            lib_df["post_freq_nonorm"] / lib_df["post_freq_nonorm"].sum()
+        )
+        lib_df["count"] = numpy.random.multinomial(
+            sample_dict["total_count"], lib_df["post_freq"]
+        )
+        lib_df = lib_df.rename(columns={"post_counts": sample})
+        lib_df = lib_df[["library", "barcode", "sample", "count"]]
 
         df_list.append(lib_df)
 
