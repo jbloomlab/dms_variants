@@ -805,7 +805,7 @@ class CodonVariantTable:
                 ),
                 axis=1,
             )
-        )[["library", "antibody-sample", "no-antibody_sample", "invalid"]].query(
+        )[["library", "antibody_sample", "no-antibody_sample", "invalid"]].query(
             "invalid"
         )
         if len(invalid_samples):
