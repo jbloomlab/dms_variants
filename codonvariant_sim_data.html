@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 1.4.0 documentation</title>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 1.4.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
@@ -310,11 +310,11 @@ div.rendered_html tbody tr:hover {
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span>
+
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">from</span> <span class="nn">plotnine</span> <span class="kn">import</span> <span class="o">*</span>
-
-<span class="kn">import</span> <span class="nn">scipy</span>
 
 <span class="kn">import</span> <span class="nn">binarymap</span>
 
@@ -358,6 +358,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -685,7 +686,9 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotVariantSupportHistogram</span><span class="p">(</span><span class="n">max_support</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotVariantSupportHistogram</span><span class="p">(</span><span class="n">max_support</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
 <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
 </pre></div>
@@ -1294,7 +1297,7 @@ and then an observed phenotype that is a non-linear function of the latent pheno
     <span class="n">phenotype_func</span><span class="o">=</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">,</span>
     <span class="n">variant_error_rate</span><span class="o">=</span><span class="n">variant_error_rate</span><span class="p">,</span>
     <span class="n">pre_sample</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">&quot;total_count&quot;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
+        <span class="s2">&quot;total_count&quot;</span><span class="p">:</span> <span class="n">variants_per_lib</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
         <span class="s2">&quot;uniformity&quot;</span><span class="p">:</span> <span class="n">lib_uniformity</span><span class="p">,</span>
     <span class="p">},</span>
     <span class="n">pre_sample_name</span><span class="o">=</span><span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span>
@@ -1302,7 +1305,7 @@ and then an observed phenotype that is a non-linear function of the latent pheno
         <span class="n">name</span><span class="p">:</span> <span class="p">{</span>
             <span class="s2">&quot;noise&quot;</span><span class="p">:</span> <span class="n">noise</span><span class="p">,</span>
             <span class="s2">&quot;total_count&quot;</span><span class="p">:</span> <span class="n">variants_per_lib</span>
-            <span class="o">*</span> <span class="n">scipy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
+            <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">poisson</span><span class="p">(</span><span class="n">avgdepth_per_variant</span><span class="p">),</span>
             <span class="s2">&quot;bottleneck&quot;</span><span class="p">:</span> <span class="n">bottle</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">bottle</span> <span class="ow">in</span> <span class="n">bottlenecks</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
@@ -4385,7 +4388,9 @@ details. This is necessary since the preferences are normalized per site. If you
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">_</span> <span class="o">=</span> <span class="n">dmslogo</span><span class="o">.</span><span class="n">draw_logo</span><span class="p">(</span>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">_</span> <span class="o">=</span> <span class="n">dmslogo</span><span class="o">.</span><span class="n">draw_logo</span><span class="p">(</span>
     <span class="n">data</span><span class="o">=</span><span class="n">prefs_base10_tidy</span><span class="p">,</span>
     <span class="n">x_col</span><span class="o">=</span><span class="s2">&quot;site&quot;</span><span class="p">,</span>
     <span class="n">letter_col</span><span class="o">=</span><span class="s2">&quot;mutant&quot;</span><span class="p">,</span>
@@ -4408,7 +4413,9 @@ details. This is necessary since the preferences are normalized per site. If you
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">prefs_base100_tidy</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">prefs_base100_tidy</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span>
     <span class="n">phenotype</span><span class="o">=</span><span class="s2">&quot;latent&quot;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">returnformat</span><span class="o">=</span><span class="s2">&quot;tidy&quot;</span>
 <span class="p">)</span>
 
@@ -4438,7 +4445,9 @@ details. This is necessary since the preferences are normalized per site. If you
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">stringency_param</span> <span class="o">=</span> <span class="mi">2</span>
+<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">stringency_param</span> <span class="o">=</span> <span class="mi">2</span>
 
 <span class="n">prefs_base100_tidy_stringency</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span>
     <span class="n">phenotype</span><span class="o">=</span><span class="s2">&quot;latent&quot;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">returnformat</span><span class="o">=</span><span class="s2">&quot;tidy&quot;</span><span class="p">,</span> <span class="n">stringency_param</span><span class="o">=</span><span class="n">stringency_param</span>
