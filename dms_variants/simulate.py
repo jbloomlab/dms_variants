@@ -20,8 +20,6 @@ import pandas as pd
 
 import plotnine as p9
 
-import scipy
-
 import dms_variants.codonvarianttable
 from dms_variants.constants import (
     AAS_WITHSTOP,
@@ -245,7 +243,7 @@ def simulate_CodonVariantTable(
 
     """
     if seed is not None:
-        scipy.random.seed(seed)
+        numpy.random.seed(seed)
         random.seed(seed)
 
     if len(library_specs) < 1:
@@ -310,7 +308,7 @@ def simulate_CodonVariantTable(
         if allowed_aa_muts is None:
             return random.sample(sites, n)
         else:
-            return scipy.random.choice(sites, n, replace=False, p=p)
+            return numpy.random.choice(sites, n, replace=False, p=p)
 
     barcode_variant_dict = collections.defaultdict(list)
     for lib, specs_dict in sorted(library_specs.items()):
@@ -332,7 +330,7 @@ def simulate_CodonVariantTable(
 
             # get mutations
             substitutions = []
-            nmuts = min(len(allowed_sites), scipy.random.poisson(avgmuts))
+            nmuts = min(len(allowed_sites), numpy.random.poisson(avgmuts))
             for icodon in random_sample(allowed_sites, nmuts, ps):
                 wtcodon = geneseq[3 * (icodon - 1) : 3 * icodon]
                 mutcodon = random.choice(allowed_codons_at_site[icodon])
@@ -429,7 +427,7 @@ def simulateSampleCounts(
 
     """
     if seed is not None:
-        scipy.random.seed(seed)
+        numpy.random.seed(seed)
         random.seed(seed)
 
     if pre_sample_name in post_samples:
@@ -548,10 +546,10 @@ def simulateSampleCounts(
         pre_df_list = []
         for lib in libraries:  # noqa: B007
             df = barcode_variant_df.query("library == @lib").assign(
-                pre_freq=lambda x: scipy.random.dirichlet(
-                    pre_sample["uniformity"] * scipy.ones(len(x))
+                pre_freq=lambda x: numpy.random.dirichlet(
+                    pre_sample["uniformity"] * numpy.ones(len(x))
                 ),
-                count=lambda x: scipy.random.multinomial(
+                count=lambda x: numpy.random.multinomial(
                     pre_sample["total_count"], x.pre_freq
                 ),
                 sample=pre_sample_name,
@@ -579,7 +577,7 @@ def simulateSampleCounts(
         if bottleneck is None:
             return pre_freq
         else:
-            return scipy.random.multinomial(bottleneck, pre_freq) / bottleneck
+            return numpy.random.multinomial(bottleneck, pre_freq) / bottleneck
 
     post_req_keys = {"bottleneck", "noise", "total_count"}
     for lib, (sample, sample_dict) in itertools.product(  # noqa: B007
@@ -598,7 +596,7 @@ def simulateSampleCounts(
                     lambda x: _bottleneck_freqs(x.pre_freq, sample_dict["bottleneck"])
                 ),
                 # post-selection freqs with noise
-                noise=lambda x: scipy.clip(
+                noise=lambda x: numpy.clip(
                     [random.gauss(1, sample_dict["noise"]) for _ in range(len(x))],
                     0,
                     None,
@@ -607,7 +605,7 @@ def simulateSampleCounts(
                 post_freq=lambda x: (x.post_freq_nonorm / x.post_freq_nonorm.sum()),
                 # post-selection counts simulated from frequencies
                 count=(
-                    lambda x: scipy.random.multinomial(
+                    lambda x: numpy.random.multinomial(
                         sample_dict["total_count"], x.post_freq
                     )
                 ),
@@ -701,7 +699,7 @@ class SigmoidPhenotypeSimulator:
         if seed is not None:
             random.seed(seed)
         weights, means, sds = zip(*norm_weights)
-        cumweights = scipy.cumsum(weights)
+        cumweights = numpy.cumsum(weights)
         for icodon in range(len(geneseq) // 3):
             wt_aa = CODON_TO_AA[geneseq[3 * icodon : 3 * icodon + 3]]
             for mut_aa in AAS_WITHSTOP:
@@ -710,7 +708,7 @@ class SigmoidPhenotypeSimulator:
                         muteffect = stop_effect
                     else:
                         # choose Gaussian from compound normal
-                        i = scipy.argmin(cumweights < random.random())
+                        i = numpy.argmin(cumweights < random.random())
                         # draw mutational effect from chosen Gaussian
                         muteffect = random.gauss(means[i], sds[i])
                     self.muteffects[f"{wt_aa}{icodon + 1}{mut_aa}"] = muteffect
@@ -779,13 +777,13 @@ class SigmoidPhenotypeSimulator:
             The observed enrichment or phenotype.
 
         """
-        enrichment = (1 + scipy.exp(-self.wt_latent)) * (
+        enrichment = (1 + numpy.exp(-self.wt_latent)) * (
             1 - self.min_observed_enrichment
-        ) / (1 + scipy.exp(-latent)) + self.min_observed_enrichment
+        ) / (1 + numpy.exp(-latent)) + self.min_observed_enrichment
         if value == "enrichment":
             return enrichment
         elif value == "phenotype":
-            return scipy.log(enrichment) / scipy.log(2)
+            return numpy.log(enrichment) / numpy.log(2)
         else:
             raise ValueError(f"invalid `value` of {value}")
 
@@ -814,7 +812,7 @@ class SigmoidPhenotypeSimulator:
             phenotype.
 
         """
-        latent = scipy.linspace(latent_min, latent_max, npoints)
+        latent = numpy.linspace(latent_min, latent_max, npoints)
         observed = self.latentToObserved(latent, value)
 
         p = (
