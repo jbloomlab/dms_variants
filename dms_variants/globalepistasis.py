@@ -3134,10 +3134,10 @@ class NoEpistasisBottleneckLikelihood(NoEpistasis, BottleneckLikelihood):
 def fit_models(
     binarymap,
     likelihood,
-    ftol=1e-7,
     *,
     bottleneck=None,
     max_latent_phenotypes=1,
+    **kwargs,
 ):
     r"""Fit and compare global epistasis models.
 
@@ -3174,9 +3174,6 @@ def fit_models(
     likelihood : {'Gaussian', 'Cauchy', 'Bottleneck'}
         Likelihood calculation method to use when fitting models. See
         :ref:`likelihood_calculation`.
-    ftol : float
-        Function convergence tolerance for optimization, used by
-        `scipy.optimize.minimize`.
     bottleneck : float or None
         Required if using 'Bottleneck' `likelihood`. In that case, is
         the experimentally estimated bottleneck between the pre-
@@ -3184,6 +3181,8 @@ def fit_models(
     max_latent_phenotypes : int
         Maximum number of latent phenotypes that are potentially be fit.
         See the :math:`K` parameter in :ref:`multi_latent`.
+    **kwargs
+        Keyword args for :func:`AbstractEpistasis.fit`.
 
     Returns
     -------
@@ -3243,7 +3242,7 @@ def fit_models(
             **bottleneck_args,
         )
         start = time.time()
-        _ = model.fit(ftol=ftol)
+        _ = model.fit(**kwargs)
         return FitData(
             description=description,
             n_latent_phenotypes=model.n_latent_phenotypes,
