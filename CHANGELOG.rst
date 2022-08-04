@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.4.2
+------
+
+Added
++++++
+- Added ``**kwargs`` to ``fit_models`` to propagate arbitrary model fitting options.
+
 1.4.1
 -----
 

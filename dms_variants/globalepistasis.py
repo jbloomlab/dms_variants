@@ -3137,6 +3137,7 @@ def fit_models(
     *,
     bottleneck=None,
     max_latent_phenotypes=1,
+    **kwargs,
 ):
     r"""Fit and compare global epistasis models.
 
@@ -3180,6 +3181,8 @@ def fit_models(
     max_latent_phenotypes : int
         Maximum number of latent phenotypes that are potentially be fit.
         See the :math:`K` parameter in :ref:`multi_latent`.
+    **kwargs
+        Keyword args for :func:`AbstractEpistasis.fit`.
 
     Returns
     -------
@@ -3239,7 +3242,7 @@ def fit_models(
             **bottleneck_args,
         )
         start = time.time()
-        _ = model.fit()
+        _ = model.fit(**kwargs)
         return FitData(
             description=description,
             n_latent_phenotypes=model.n_latent_phenotypes,
