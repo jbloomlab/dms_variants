@@ -815,6 +815,10 @@ class CodonVariantTable:
         if len(invalid_samples):
             raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
 
+        valid_targets = self.barcode_variant_df["target"].unique()
+        if neut_standard_target not in valid_targets:
+            raise ValueError(f"{neut_standard_target=} not in targets {valid_targets}")
+
         # get neut_standard fracs for each library / sample
         fracs = self.n_variants_df(primary_target_only=False)
         if primary_target_only:
