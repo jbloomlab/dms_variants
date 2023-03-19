@@ -16,7 +16,6 @@ Added
 Changed
 +++++++
 - Use ``altair`` version 5.0.0rc1
-- Start testing on Python version 3.10
 
 1.4.2
 ------
