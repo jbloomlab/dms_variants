@@ -6,6 +6,18 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.4.3
+-----
+
+Added
+++++++
+- Added ``primary_target_only`` option ``prob_escape``.
+
+Changed
++++++++
+- Use ``altair`` version 5.0.0rc1
+- Start testing on Python version 3.11
+
 1.4.2
 ------
 
