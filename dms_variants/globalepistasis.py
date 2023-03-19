@@ -1017,9 +1017,7 @@ class AbstractEpistasis(abc.ABC):
                 assert latents.shape[0] == binary_variants.shape[1]
                 latent_phenos = binary_variants.dot(latents).transpose()
             else:
-                latents = self._latenteffects.transpose()[
-                    :-1,
-                ]
+                latents = self._latenteffects.transpose()[:-1,]
                 assert latents.shape[0] == binary_variants.shape[1]
                 latent_phenos = (
                     binary_variants.dot(latents)

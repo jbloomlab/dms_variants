@@ -228,7 +228,6 @@ class IlluminaBarcodeParser:
                 )
 
             for entry in iterator:
-
                 if r1only:
                     readlist = [entry[1]]
                     qlist = [entry[2]]

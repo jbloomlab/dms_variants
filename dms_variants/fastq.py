@@ -147,7 +147,6 @@ def iterate_fastq_pair(
     )
 
     for r1_entry, r2_entry in itertools.zip_longest(r1_iterator, r2_iterator):
-
         if (r1_entry is None) or (r2_entry is None):
             raise IOError(
                 f"{r1filename} and {r2filename} have unequal " "number of entries"
