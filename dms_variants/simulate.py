@@ -160,7 +160,7 @@ def codon_muts(codonseq, nmuts, nvariants):
     mutlist = []
     for _ in range(nvariants):
         sitemuts = []
-        for site, wt in sorted(random.sample(codons.items(), nmuts)):
+        for site, wt in sorted(random.sample(list(codons.items()), nmuts)):
             mut = random.choice([c for c in CODONS if c != wt])
             sitemuts.append(f"{wt}{site}{mut}")
         mutlist.append(" ".join(sitemuts))
@@ -312,7 +312,6 @@ def simulate_CodonVariantTable(
 
     barcode_variant_dict = collections.defaultdict(list)
     for lib, specs_dict in sorted(library_specs.items()):
-
         nvariants = specs_dict["nvariants"]
         avgmuts = specs_dict["avgmuts"]
         if 10 * nvariants > (len(NTS)) ** bclen:  # safety factor 10
@@ -320,7 +319,6 @@ def simulate_CodonVariantTable(
         existing_barcodes = set()
 
         for _ivariant in range(nvariants):
-
             barcode = "".join(random.choices(NTS, k=bclen))
             while barcode in existing_barcodes:
                 barcode = "".join(random.choices(NTS, k=bclen))
@@ -583,7 +581,6 @@ def simulateSampleCounts(
     for lib, (sample, sample_dict) in itertools.product(  # noqa: B007
         libraries, sorted(post_samples.items())
     ):
-
         if set(sample_dict.keys()) != post_req_keys:
             raise ValueError(f"post_samples {sample} lacks {post_req_keys}")
 

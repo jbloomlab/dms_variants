@@ -111,7 +111,6 @@ class test_count_codonvariants(unittest.TestCase):
         fates = []
         counts_df = []
         for (lib, sample), runs in samples.groupby(["library", "sample"]):
-
             # read barcodes for all runs for library / sample
             barcodes = []
             for run_tup in runs.itertuples(index=False):

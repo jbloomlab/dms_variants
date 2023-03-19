@@ -1017,9 +1017,7 @@ class AbstractEpistasis(abc.ABC):
                 assert latents.shape[0] == binary_variants.shape[1]
                 latent_phenos = binary_variants.dot(latents).transpose()
             else:
-                latents = self._latenteffects.transpose()[
-                    :-1,
-                ]
+                latents = self._latenteffects.transpose()[:-1,]
                 assert latents.shape[0] == binary_variants.shape[1]
                 latent_phenos = (
                     binary_variants.dot(latents)
@@ -2223,6 +2221,7 @@ class BottleneckLikelihood(AbstractEpistasis):
                     "increasing `pseudocount` if you have fitting "
                     "problems",
                     EpistasisFittingWarning,
+                    stacklevel=2,
                 )
             f.flags.writeable = False
             setattr(self, f"_f_{cond}", f)
@@ -2891,6 +2890,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                     f"({currentrange}); so cannot pre-scale. Just "
                     "setting all latent effects to zero",
                     EpistasisFittingWarning,
+                    stacklevel=2,
                 )
                 rescaled_latenteffects[ki] = 0
                 rescaled_latenteffects[ki] = numpy.append(
@@ -2964,6 +2964,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                     f"is nearly zero ({mean_abs_latent_effect}); "
                     "so cannot rescale",
                     EpistasisFittingWarning,
+                    stacklevel=2,
                 )
             else:
                 rescaled_latenteffects[ki] = (

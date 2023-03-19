@@ -357,7 +357,11 @@ def tidy_to_corr(
     if group_cols:
         df = df.groupby(group_cols)
 
-    corr = df.corr(method=method).dropna(how="all", axis="index").reset_index()
+    corr = (
+        df.corr(method=method, numeric_only=True)
+        .dropna(how="all", axis="index")
+        .reset_index()
+    )
 
     corr.columns.name = None  # remove name of columns index
 

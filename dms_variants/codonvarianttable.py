@@ -717,6 +717,7 @@ class CodonVariantTable:
         min_neut_standard_count=1e3,
         ceil_n_aa_substitutions=4,
         drop_neut_standard_target=True,
+        primary_target_only=False,
     ):
         r"""Compute probability of escape relative to a neutralization standard.
 
@@ -756,6 +757,9 @@ class CodonVariantTable:
         drop_neut_standard_target : bool
             Drop the neutralization standard variant-level results from the
             returned data frames.
+        primary_target_only : bool
+            Drop everything except the primary target and neutralization standard
+            target before beginning calculations.
 
         Returns
         -------
@@ -811,10 +815,18 @@ class CodonVariantTable:
         if len(invalid_samples):
             raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
 
+        valid_targets = self.barcode_variant_df["target"].unique()
+        if neut_standard_target not in valid_targets:
+            raise ValueError(f"{neut_standard_target=} not in targets {valid_targets}")
+
         # get neut_standard fracs for each library / sample
+        fracs = self.n_variants_df(primary_target_only=False)
+        if primary_target_only:
+            fracs = fracs.query(
+                "(target in [@self.primary_target, @neut_standard_target])"
+            )
         fracs = (
-            self.n_variants_df(primary_target_only=False)
-            .assign(
+            fracs.assign(
                 n=lambda x: x.groupby(["library", "sample"])["count"].transform("sum"),
                 frac=lambda x: x["count"] / x["n"],
             )
@@ -852,6 +864,10 @@ class CodonVariantTable:
 
         # get variant counts grouped by `by`
         count_df = self.variant_count_df
+        if primary_target_only:
+            count_df = count_df.query(
+                "(target in [@self.primary_target, @neut_standard_target])"
+            )
         group_cols = [
             "codon_substitutions",
             "n_codon_substitutions",
@@ -2146,7 +2162,7 @@ class CodonVariantTable:
             if not classifyVariants_kwargs:
                 kw_args = {}
             else:
-                kw_args = {k: v for k, v in classifyVariants_kwargs.items()}
+                kw_args = dict(classifyVariants_kwargs.items())
             if "primary_target" not in kw_args:
                 kw_args["primary_target"] = self.primary_target
             if "class_as_categorical" not in kw_args:
@@ -3025,7 +3041,6 @@ class CodonVariantTable:
         for lib, sample in itertools.product(
             df["library"].unique().tolist(), df["sample"].unique().tolist()
         ):
-
             i_df = df.query("library == @lib & sample == @sample")
             if len(i_df) == 0:
                 continue  # no data for this library and sample
