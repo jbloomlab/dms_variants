@@ -816,13 +816,13 @@ class CodonVariantTable:
             raise ValueError(f"invalid samples in selections_df\n{invalid_samples}")
 
         # get neut_standard fracs for each library / sample
-        fracs = (
-            self.n_variants_df(primary_target_only=False)
-            .query(
-                "(not @primary_target_only) "
-                "or (target in [@self.primary_target, @neut_standard_target])"
+        fracs = self.n_variants_df(primary_target_only=False)
+        if primary_target_only:
+            fracs = fracs.query(
+                "(target in [@self.primary_target, @neut_standard_target])"
             )
-            .assign(
+        fracs = (
+            fracs.assign(
                 n=lambda x: x.groupby(["library", "sample"])["count"].transform("sum"),
                 frac=lambda x: x["count"] / x["n"],
             )
@@ -859,10 +859,11 @@ class CodonVariantTable:
                     raise ValueError(f"neut standard {var} too low:\n{too_low}")
 
         # get variant counts grouped by `by`
-        count_df = self.variant_count_df.query(
-            "(not @primary_target_only) "
-            "or (target in [@self.primary_target, @neut_standard_target])"
-        )
+        count_df = self.variant_count_df
+        if primary_target_only:
+            count_df = count_df.query(
+                "(target in [@self.primary_target, @neut_standard_target])"
+            )
         group_cols = [
             "codon_substitutions",
             "n_codon_substitutions",
