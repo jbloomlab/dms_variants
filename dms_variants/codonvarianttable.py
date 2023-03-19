@@ -2162,7 +2162,7 @@ class CodonVariantTable:
             if not classifyVariants_kwargs:
                 kw_args = {}
             else:
-                kw_args = {k: v for k, v in classifyVariants_kwargs.items()}
+                kw_args = dict(classifyVariants_kwargs.items())
             if "primary_target" not in kw_args:
                 kw_args["primary_target"] = self.primary_target
             if "class_as_categorical" not in kw_args:

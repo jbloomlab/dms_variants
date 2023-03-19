@@ -2221,6 +2221,7 @@ class BottleneckLikelihood(AbstractEpistasis):
                     "increasing `pseudocount` if you have fitting "
                     "problems",
                     EpistasisFittingWarning,
+                    stacklevel=2,
                 )
             f.flags.writeable = False
             setattr(self, f"_f_{cond}", f)
@@ -2889,6 +2890,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                     f"({currentrange}); so cannot pre-scale. Just "
                     "setting all latent effects to zero",
                     EpistasisFittingWarning,
+                    stacklevel=2,
                 )
                 rescaled_latenteffects[ki] = 0
                 rescaled_latenteffects[ki] = numpy.append(
@@ -2962,6 +2964,7 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
                     f"is nearly zero ({mean_abs_latent_effect}); "
                     "so cannot rescale",
                     EpistasisFittingWarning,
+                    stacklevel=2,
                 )
             else:
                 rescaled_latenteffects[ki] = (
