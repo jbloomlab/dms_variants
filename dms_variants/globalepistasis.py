@@ -909,7 +909,7 @@ class AbstractEpistasis(abc.ABC):
             is just one latent phenotype, can also be `None`.
 
         Returns
-        ---------
+        -------
         float
             Wildtype latent phenotype, which is :math:`\beta_{\rm{wt}}` in
             Eq. :eq:`latent_phenotype` or :math:`\beta_{\rm{wt}}^k` in
@@ -989,7 +989,7 @@ class AbstractEpistasis(abc.ABC):
             if `phenotype` is 'observed'.
 
         Returns
-        --------
+        -------
         numpy.ndarray
             Latent phenotypes calculated using Eq. :eq:`latent_phenotype` or
             observed phenotypes calculated using Eq. :eq:`observed_phenotype`
@@ -1307,7 +1307,7 @@ class AbstractEpistasis(abc.ABC):
         reported only for mutations present in `AbstractEpistasis.binarymap`.
 
         Parameters
-        -----------
+        ----------
         phenotype : {'latent', 'observed'}
             Get effect on this phenotype. If there are multiple latent
             phenotypes, you must also set `k`.
@@ -1563,7 +1563,7 @@ class AbstractEpistasis(abc.ABC):
             optimize.
 
         Returns
-        --------
+        -------
         numpy.ndarray
             (Negative) derivative of log likelihood with respect to
             :meth:`AbstractEpistasis._allparams`.
@@ -1659,7 +1659,7 @@ class AbstractEpistasis(abc.ABC):
         """Latent phenotypes.
 
         Parameters
-        -----------
+        ----------
         k : int or None
             Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`),
             or can be `None` if just one latent phenotype.
@@ -1695,7 +1695,7 @@ class AbstractEpistasis(abc.ABC):
             :math:`k` values listed here.
 
         Returns
-        --------
+        -------
         numpy.ndarray
             Observed phenotypes.
 
@@ -1834,7 +1834,7 @@ class AbstractEpistasis(abc.ABC):
         """The :ref:`global_epistasis_function` :math:`g`.
 
         Parameters
-        -----------
+        ----------
         latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
         k : int or None
@@ -1856,7 +1856,7 @@ class AbstractEpistasis(abc.ABC):
         """Derivative of epistasis function by latent phenotype.
 
         Parameters
-        -----------
+        ----------
         latent_phenotype : numpy.ndarray
             Latent phenotype(s) of one or more variants.
         k : int or None
@@ -1932,7 +1932,7 @@ class AbstractEpistasis(abc.ABC):
         for `_epistasis_func_params`.
 
         Parameters
-        -----------
+        ----------
         k : int
             Latent phenotype number (1 <= `k` <= `n_latent_phenotypes`).
         g_k_range : tuple
@@ -2670,14 +2670,14 @@ class MonotonicSplineEpistasis(AbstractEpistasis):
         """I-splines for global epistasis function.
 
         Parameters
-        -----------
+        ----------
         k : int or None
             Which global epistasis function to get I-splines for (1 <= k <=
             :attr:`AbstractEpistasis.n_latent_phenotypes`). If there
             is just one latent phenotype, can also be `None`.
 
         Returns
-        --------
+        -------
         :class:`dms_variants.ispline.Isplines_total`
             The I-spline family defined with the current values of
             the latent phenotypes as `x`.

@@ -10,6 +10,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 -----
 - Remove use of deprecated ``scipy`` functions like ``flip`` to use ``numpy`` alternatives instead (fixes [this issue](https://github.com/jbloomlab/dms_variants/issues/86)).
 - Re-format code with latest version of ``black``.
+- Lint with ``ruff`` rather than ``flake8``
 
 1.4.3
 -----

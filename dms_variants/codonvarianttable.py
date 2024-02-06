@@ -222,12 +222,12 @@ class CodonVariantTable:
             if "target" in set(df.columns):
                 raise ValueError('primary_target is None but "target" col')
 
-        if not set(req_cols).issubset((df.columns)):
+        if not set(req_cols).issubset(df.columns):
             raise ValueError(
                 f"{variant_count_df_file} lacks required "
                 f"columns {req_cols}. It has: {set(df.columns)}"
             )
-        if extra_cols and not set(extra_cols).issubset((df.columns)):
+        if extra_cols and not set(extra_cols).issubset(df.columns):
             raise ValueError(
                 f"{variant_count_df_file} lacks `extra_cols` "
                 f"columns {extra_cols}. Has: {set(df.columns)}"
@@ -1101,7 +1101,7 @@ class CodonVariantTable:
         or :math:`B_v`.
 
         Parameters
-        -----------
+        ----------
         sample_df : pandas.DataFrame
             Comparisons we use to compute the functional scores. Should have
             these columns: 'pre_sample' (pre-selection sample), 'post_sample'
@@ -2090,7 +2090,7 @@ class CodonVariantTable:
         """Plot variant index versus counts (or frac counts).
 
         Parameters
-        -----------
+        ----------
         ystat : {'frac_counts', 'count'}
             Is y-axis counts from variant, or fraction of counts in
             library / sample from variant?
