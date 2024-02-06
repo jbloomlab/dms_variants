@@ -10,7 +10,6 @@ https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html
 
 """
 
-
 import plotnine as p9
 
 

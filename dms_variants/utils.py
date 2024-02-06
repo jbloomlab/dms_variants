@@ -7,7 +7,6 @@ Miscellaneous utility functions.
 
 """
 
-
 import re
 
 import matplotlib.ticker

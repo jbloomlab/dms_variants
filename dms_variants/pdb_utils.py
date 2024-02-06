@@ -7,7 +7,6 @@ Functions to manipulate `PDB <https://www.rcsb.org/>`_ files.
 
 """
 
-
 import collections  # noqa: F401
 import os  # noqa: F401
 import tempfile  # noqa: F401

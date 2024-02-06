@@ -16,7 +16,6 @@ by `Ramsay (1988)`_.
 
 """
 
-
 import numpy
 
 

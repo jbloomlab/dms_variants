@@ -7,7 +7,6 @@ Defines constants used by package.
 
 """
 
-
 import Bio.Data.IUPACData
 import Bio.Seq
 

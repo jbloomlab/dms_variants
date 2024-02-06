@@ -603,7 +603,6 @@ Detailed documentation of models
 
 """
 
-
 import abc
 import collections
 import re
@@ -742,9 +741,9 @@ class AbstractEpistasis(abc.ABC):
         for k in range(1, self.n_latent_phenotypes):
             ki = k - 1
             new_latenteffects[ki] = model_one_less_latent._latenteffects[ki]
-            new_epistasis_func_params[
-                ki
-            ] = model_one_less_latent._epistasis_func_params[ki]
+            new_epistasis_func_params[ki] = (
+                model_one_less_latent._epistasis_func_params[ki]
+            )
         self._latenteffects = new_latenteffects
         self._epistasis_func_params = new_epistasis_func_params
 
@@ -2495,9 +2494,7 @@ class GaussianLikelihood(AbstractEpistasis):
             self._cache[key] = numpy.array(
                 [
                     0.5
-                    * (
-                        self._dloglik_dobserved_phenotype**2 - 1 / self._variances
-                    ).sum()
+                    * (self._dloglik_dobserved_phenotype**2 - 1 / self._variances).sum()
                 ]
             )
             self._cache[key].flags.writeable = False

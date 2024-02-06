@@ -1,6 +1,5 @@
 """Setup script for ``dms_variants``."""
 
-
 import platform
 import re
 import sys

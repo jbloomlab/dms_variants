@@ -7,7 +7,6 @@ Tools for processing FASTQ files.
 
 """
 
-
 import collections
 import gzip
 import itertools
