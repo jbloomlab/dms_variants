@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 
+1.5.0
+-----
+- Remove use of deprecated ``scipy`` functions like ``flip`` to use ``numpy`` alternatives instead (fixes [this issue](https://github.com/jbloomlab/dms_variants/issues/86)).
+
 1.4.3
 -----
 
