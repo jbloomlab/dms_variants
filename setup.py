@@ -52,6 +52,7 @@ setup(
         "biopython>=1.73",
         "matplotlib>=3.1",
         "pandas>=1.2",
+        "pyarrow",
         "plotnine>0.7.0",
         "regex>=2.4.153",
         "requests",
