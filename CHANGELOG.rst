@@ -13,6 +13,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 - Lint with ``ruff`` rather than ``flake8``
 - Add ``pyarrow`` as dependency as required by ``pandas``.
 - Tweaks to work with new versions of ``pandas`` and ``plotnine``
+- Test with GitHub Actions rather than Travis CI
 
 1.4.3
 -----
