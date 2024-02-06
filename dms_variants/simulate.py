@@ -504,7 +504,7 @@ def simulateSampleCounts(
         secondary_df = secondary_df.assign(
             phenotype=lambda x: x["target"].map(secondary_target_phenotypes)
         )[["library", "barcode", "phenotype"]]
-        barcode_variant_df = primary_df.append(secondary_df)
+        barcode_variant_df = pd.concat([primary_df, secondary_df])
     else:
         barcode_variant_df = primary_df
 

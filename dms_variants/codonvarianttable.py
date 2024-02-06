@@ -827,7 +827,9 @@ class CodonVariantTable:
             )
         fracs = (
             fracs.assign(
-                n=lambda x: x.groupby(["library", "sample"])["count"].transform("sum"),
+                n=lambda x: x.groupby(["library", "sample"], observed=False)[
+                    "count"
+                ].transform("sum"),
                 frac=lambda x: x["count"] / x["n"],
             )
             .query("target == @neut_standard_target")
@@ -2610,7 +2612,7 @@ class CodonVariantTable:
             )
             + p9.theme(
                 figure_size=(width, height),
-                axis_title_x=p9.element_blank(),
+                axis_title_x=None,
                 axis_text_x=p9.element_text(angle=90),
                 legend_position="none",
             )

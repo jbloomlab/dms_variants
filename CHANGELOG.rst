@@ -12,6 +12,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 - Re-format code with latest version of ``black``.
 - Lint with ``ruff`` rather than ``flake8``
 - Add ``pyarrow`` as dependency as required by ``pandas``.
+- Tweaks to work with new versions of ``pandas`` and ``plotnine``
 
 1.4.3
 -----
