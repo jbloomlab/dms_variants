@@ -7,7 +7,6 @@ Tools for processing FASTQ files.
 
 """
 
-
 import collections
 import gzip
 import itertools
@@ -148,12 +147,12 @@ def iterate_fastq_pair(
 
     for r1_entry, r2_entry in itertools.zip_longest(r1_iterator, r2_iterator):
         if (r1_entry is None) or (r2_entry is None):
-            raise IOError(
+            raise OSError(
                 f"{r1filename} and {r2filename} have unequal " "number of entries"
             )
 
         if r1_entry[0] != r2_entry[0]:
-            raise IOError(
+            raise OSError(
                 f"{r1filename} and {r2filename} specify different "
                 f"read IDs:\n{r1_entry[0]}\n{r2_entry[0]}"
             )
@@ -255,7 +254,7 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format="str"):
             raise ValueError(f"invalid `check_pair` of {check_pair}")
 
     if not os.path.isfile(filename):
-        raise IOError(f"no FASTQ file {filename}")
+        raise OSError(f"no FASTQ file {filename}")
 
     if qual_format == "array":
         qual_to_array = True
@@ -273,7 +272,7 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format="str"):
         head = f.readline()
         while head:
             if head[0] != "@":
-                raise IOError(f"id starts with {head[0]}, not @:\n{head}")
+                raise OSError(f"id starts with {head[0]}, not @:\n{head}")
             else:
                 head = head.rstrip()
                 headspl = head[1:].split()
@@ -282,7 +281,7 @@ def iterate_fastq(filename, *, trim=None, check_pair=None, qual_format="str"):
             plusline = f.readline().rstrip()
             qs = f.readline().rstrip()
             if (not seq) or (len(seq) != len(qs)) or (plusline != "+"):
-                raise IOError(
+                raise OSError(
                     f"invalid entry for {read_id} in {filename}:\n"
                     f"{head}\n{seq}\n{plusline}\n{qs}"
                 )

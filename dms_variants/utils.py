@@ -7,7 +7,6 @@ Miscellaneous utility functions.
 
 """
 
-
 import re
 
 import matplotlib.ticker
@@ -97,7 +96,7 @@ def latex_sci_not(xs):
         Formatted strings for numbers.
 
     Examples
-    ----------
+    --------
     >>> latex_sci_not([0, 3, 3120, -0.0000927])
     ['$0$', '$3$', '$3.1 \\times 10^{3}$', '$-9.3 \\times 10^{-5}$']
 

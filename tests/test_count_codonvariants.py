@@ -11,7 +11,6 @@ Essentially, it tests `CodonVariantTable` and `IlluminBarcodeParser`.
 Written by Jesse Bloom.
 """
 
-
 import itertools
 import os
 import unittest

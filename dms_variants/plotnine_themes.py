@@ -10,7 +10,6 @@ https://plotnine.readthedocs.io/en/stable/generated/plotnine.themes.theme.html
 
 """
 
-
 import plotnine as p9
 
 
@@ -32,17 +31,17 @@ class theme_graygrid(p9.themes.theme_matplotlib):
        ...      geom_point(size=3, color='orange') +
        ...      theme(figure_size=(2, 2))
        ...      )
-       >>> _ = p.draw()
+       >>> _ = p.draw(show=True)
 
        Get rid of the vertical grid lines:
 
        >>> p_novertgrid = p + theme(panel_grid_major_x=element_blank())
-       >>> _ = p_novertgrid.draw()
+       >>> _ = p_novertgrid.draw(show=True)
 
        Get rid of the axes border:
 
        >>> p_noborder = p + theme(panel_border=element_blank())
-       >>> _ = p_noborder.draw()
+       >>> _ = p_noborder.draw(show=True)
 
     """
 
@@ -62,7 +61,6 @@ class theme_graygrid(p9.themes.theme_matplotlib):
                 panel_grid_minor=p9.element_blank(),
                 panel_ontop=True,  # plot panel on top of grid
             ),
-            inplace=True,
         )
 
 

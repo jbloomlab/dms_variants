@@ -185,7 +185,7 @@ def simulate_CodonVariantTable(
     use :func:`simulateSampleCounts`.
 
     Parameters
-    -----------
+    ----------
     geneseq : str
         Sequence of wildtype protein-coding gene.
     bclen : int
@@ -504,7 +504,7 @@ def simulateSampleCounts(
         secondary_df = secondary_df.assign(
             phenotype=lambda x: x["target"].map(secondary_target_phenotypes)
         )[["library", "barcode", "phenotype"]]
-        barcode_variant_df = primary_df.append(secondary_df)
+        barcode_variant_df = pd.concat([primary_df, secondary_df])
     else:
         barcode_variant_df = primary_df
 
@@ -874,7 +874,7 @@ class MultiLatentSigmoidPhenotypeSimulator:
     r"""Simulate phenotype that derives from several latent phenotypes.
 
     Note
-    -----
+    ----
     The observed phenotype is the sum of several sigmoid-transformed latent
     phenotypes. Specifically, let there be :math:`k = 1, \ldots, K` latent
     phenotypes, each of which is transformed into an observed phenotype
@@ -892,7 +892,7 @@ class MultiLatentSigmoidPhenotypeSimulator:
        E_{\rm{observed}} = 2^{p_{\rm{observed}}}.
 
     Parameters
-    -----------
+    ----------
     sigmoid_phenotype_simulators : list
         A list of :class:`SigmoidPhenotypeSimulator` objects, each of which
         transforms one of the latent phenotypes to a component of the

@@ -1,0 +1,27 @@
+lint.select = [
+  "E",   # pycodestyle
+  "F",   # pyflakes
+  "UP",  # pyupgrade
+  "D",   # pydocstyle
+]
+line-length = 89
+extend-exclude = [
+    "build",
+    "dist",
+    "docs/_build",
+    "notebooks/.*",
+    "notebooks",
+    "optimization_benchmarks",
+    ".*",
+]
+lint.ignore = [
+    "D203",
+    "D205",
+    "D212",
+    "D213",
+    "D400",
+    "D401",
+    "D415",
+    "D416",
+    "D417",
+]

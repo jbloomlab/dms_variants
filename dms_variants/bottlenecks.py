@@ -7,7 +7,6 @@ Estimation of bottlenecks during experiments.
 
 """
 
-
 import numpy
 
 import scipy.optimize

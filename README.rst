@@ -5,8 +5,14 @@ dms_variants
 .. image:: https://img.shields.io/pypi/v/dms_variants.svg
         :target: https://pypi.python.org/pypi/dms_variants
 
-.. image:: https://app.travis-ci.com/jbloomlab/dms_variants.svg
-        :target: https://app.travis-ci.com/github/jbloomlab/dms_variants
+.. image:: https://github.com/jbloomlab/dms_variants/actions/workflows/test.yaml/badge.svg
+        :target: https://github.com/jbloomlab/dms_variants/actions/workflows/test.yaml
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+        :target: https://github.com/psf/black
+
+.. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json
+        :target: https://github.com/astral-sh/ruff
 
 .. image:: https://mybinder.org/badge_logo.svg
         :target: https://mybinder.org/v2/gh/jbloomlab/dms_variants/master?filepath=notebooks

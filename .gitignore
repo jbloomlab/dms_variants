@@ -4,6 +4,7 @@
 _*
 
 !.gitignore
+!.github
 !.travis.yml
 !.flake8
 !.nojekyll

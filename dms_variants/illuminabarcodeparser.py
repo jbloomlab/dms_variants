@@ -9,11 +9,11 @@ Defines :class:`IlluminaBarcodeParser` to parse barcodes from Illumina reads.
 
 import collections
 
+import numpy
+
 import pandas as pd
 
 import regex
-
-import scipy
 
 from dms_variants.fastq import (
     iterate_fastq,
@@ -290,11 +290,11 @@ class IlluminaBarcodeParser:
                     if self.bc_orientation == "R1":
                         if not r1only:
                             bc["R2"] = reverse_complement(bc["R2"])
-                            bc_q["R2"] = scipy.flip(bc_q["R2"], axis=0)
+                            bc_q["R2"] = numpy.flip(bc_q["R2"], axis=0)
                     else:
                         assert self.bc_orientation == "R2"
                         bc["R1"] = reverse_complement(bc["R1"])
-                        bc_q["R1"] = scipy.flip(bc_q["R1"], axis=0)
+                        bc_q["R1"] = numpy.flip(bc_q["R1"], axis=0)
                     if r1only:
                         if (bc_q["R1"] >= self.minq).all():
                             if self.valid_barcodes and (
@@ -313,7 +313,7 @@ class IlluminaBarcodeParser:
                             ):
                                 fates["invalid barcode"] += 1
                             elif (
-                                scipy.maximum(bc_q["R1"], bc_q["R2"]) >= self.minq
+                                numpy.maximum(bc_q["R1"], bc_q["R2"]) >= self.minq
                             ).all():
                                 barcodes[bc["R1"]] += 1
                                 fates["valid barcode"] += 1
