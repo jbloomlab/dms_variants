@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Parse barcodes &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>Parse barcodes &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Fitting gobal epistasis models with experimental “noise”" href="narrow_bottleneck.html" />
@@ -24,8 +23,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -37,267 +37,18 @@
 
           <div class="body" role="main">
             
-  
-<style>
-/* CSS for nbsphinx extension */
-
-/* remove conflicting styling from Sphinx themes */
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt *,
-div.nbinput.container div.input_area pre,
-div.nboutput.container div.output_area pre,
-div.nbinput.container div.input_area .highlight,
-div.nboutput.container div.output_area .highlight {
-    border: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-}
-
-div.nbinput.container > div[class*=highlight],
-div.nboutput.container > div[class*=highlight] {
-    margin: 0;
-}
-
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt * {
-    background: none;
-}
-
-div.nboutput.container div.output_area .highlight,
-div.nboutput.container div.output_area pre {
-    background: unset;
-}
-
-div.nboutput.container div.output_area div.highlight {
-    color: unset;  /* override Pygments text color */
-}
-
-/* avoid gaps between output lines */
-div.nboutput.container div[class*=highlight] pre {
-    line-height: normal;
-}
-
-/* input/output containers */
-div.nbinput.container,
-div.nboutput.container {
-    display: -webkit-flex;
-    display: flex;
-    align-items: flex-start;
-    margin: 0;
-    width: 100%;
-}
-@media (max-width: 540px) {
-    div.nbinput.container,
-    div.nboutput.container {
-        flex-direction: column;
-    }
-}
-
-/* input container */
-div.nbinput.container {
-    padding-top: 5px;
-}
-
-/* last container */
-div.nblast.container {
-    padding-bottom: 5px;
-}
-
-/* input prompt */
-div.nbinput.container div.prompt pre {
-    color: #307FC1;
-}
-
-/* output prompt */
-div.nboutput.container div.prompt pre {
-    color: #BF5B3D;
-}
-
-/* all prompts */
-div.nbinput.container div.prompt,
-div.nboutput.container div.prompt {
-    width: 4.5ex;
-    padding-top: 5px;
-    position: relative;
-    user-select: none;
-}
-
-div.nbinput.container div.prompt > div,
-div.nboutput.container div.prompt > div {
-    position: absolute;
-    right: 0;
-    margin-right: 0.3ex;
-}
-
-@media (max-width: 540px) {
-    div.nbinput.container div.prompt,
-    div.nboutput.container div.prompt {
-        width: unset;
-        text-align: left;
-        padding: 0.4em;
-    }
-    div.nboutput.container div.prompt.empty {
-        padding: 0;
-    }
-
-    div.nbinput.container div.prompt > div,
-    div.nboutput.container div.prompt > div {
-        position: unset;
-    }
-}
-
-/* disable scrollbars on prompts */
-div.nbinput.container div.prompt pre,
-div.nboutput.container div.prompt pre {
-    overflow: hidden;
-}
-
-/* input/output area */
-div.nbinput.container div.input_area,
-div.nboutput.container div.output_area {
-    -webkit-flex: 1;
-    flex: 1;
-    overflow: auto;
-}
-@media (max-width: 540px) {
-    div.nbinput.container div.input_area,
-    div.nboutput.container div.output_area {
-        width: 100%;
-    }
-}
-
-/* input area */
-div.nbinput.container div.input_area {
-    border: 1px solid #e0e0e0;
-    border-radius: 2px;
-    /*background: #f5f5f5;*/
-}
-
-/* override MathJax center alignment in output cells */
-div.nboutput.container div[class*=MathJax] {
-    text-align: left !important;
-}
-
-/* override sphinx.ext.imgmath center alignment in output cells */
-div.nboutput.container div.math p {
-    text-align: left;
-}
-
-/* standard error */
-div.nboutput.container div.output_area.stderr {
-    background: #fdd;
-}
-
-/* ANSI colors */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-default-inverse-fg { color: #FFFFFF; }
-.ansi-default-inverse-bg { background-color: #000000; }
-
-.ansi-bold { font-weight: bold; }
-.ansi-underline { text-decoration: underline; }
-
-
-div.nbinput.container div.input_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight].math,
-div.nboutput.container div.output_area.rendered_html,
-div.nboutput.container div.output_area > div.output_javascript,
-div.nboutput.container div.output_area:not(.rendered_html) > img{
-    padding: 5px;
-    margin: 0;
-}
-
-/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
-div.nbinput.container div.input_area > div[class^='highlight'],
-div.nboutput.container div.output_area > div[class^='highlight']{
-    overflow-y: hidden;
-}
-
-/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
-    display: none;
-}
-
-/* Some additional styling taken form the Jupyter notebook CSS */
-div.rendered_html table {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-  color: black;
-  font-size: 12px;
-  table-layout: fixed;
-}
-div.rendered_html thead {
-  border-bottom: 1px solid black;
-  vertical-align: bottom;
-}
-div.rendered_html tr,
-div.rendered_html th,
-div.rendered_html td {
-  text-align: right;
-  vertical-align: middle;
-  padding: 0.5em 0.5em;
-  line-height: normal;
-  white-space: normal;
-  max-width: none;
-  border: none;
-}
-div.rendered_html th {
-  font-weight: bold;
-}
-div.rendered_html tbody tr:nth-child(odd) {
-  background: #f5f5f5;
-}
-div.rendered_html tbody tr:hover {
-  background: rgba(66, 165, 245, 0.2);
-}
-</style>
-<section id="Parse-barcodes">
-<h1>Parse barcodes<a class="headerlink" href="#Parse-barcodes" title="Permalink to this headline">¶</a></h1>
+  <section id="Parse-barcodes">
+<h1>Parse barcodes<a class="headerlink" href="#Parse-barcodes" title="Link to this heading">¶</a></h1>
 <p>Simulate some Illumina reads giving barcode counts of variants, parse them from the simulated FASTQ files, and add them to a variant table. Primarily designed to illustrate how to use an <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a> to parse barcode counts and add them to a
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>.</p>
 <section id="Setup-for-analysis">
-<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
+<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Link to this heading">¶</a></h2>
 <p>Import Python modules / packages. We use <a class="reference external" href="https://plotnine.readthedocs.io">plotnine</a> for ggplot2-like plotting:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">random</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
@@ -319,8 +70,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -329,8 +79,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -339,21 +88,19 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Create-small-variant-table">
-<h2>Create small variant table<a class="headerlink" href="#Create-small-variant-table" title="Permalink to this headline">¶</a></h2>
+<h2>Create small variant table<a class="headerlink" href="#Create-small-variant-table" title="Link to this heading">¶</a></h2>
 <p>We simulate a small <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> for one libraries with three variants, with short 8-nucleotide barcodes. We simulate the table using using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable">simulate_CodonVariantTable</a>:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">bclen</span> <span class="o">=</span> <span class="mi">8</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">bclen</span> <span class="o">=</span> <span class="mi">8</span>
 
 <span class="n">variants</span> <span class="o">=</span> <span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
     <span class="n">geneseq</span><span class="o">=</span><span class="n">rand_seq</span><span class="p">(</span><span class="mi">30</span><span class="p">),</span>
@@ -369,8 +116,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span>
 </pre></div>
 </div>
 </div>
@@ -443,7 +189,7 @@ div.rendered_html tbody tr:hover {
 </div>
 </section>
 <section id="Simulate-barcode-reads">
-<h2>Simulate barcode reads<a class="headerlink" href="#Simulate-barcode-reads" title="Permalink to this headline">¶</a></h2>
+<h2>Simulate barcode reads<a class="headerlink" href="#Simulate-barcode-reads" title="Link to this heading">¶</a></h2>
 <p>We are now going to simulate barcode reads that we will then parse with the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a>. This parser is designed to parse reads that have this structure:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>5&#39;-[R2_start]-upstream-barcode-downstream-[R1_start]-3&#39;
 </pre></div>
@@ -454,8 +200,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">upstream</span> <span class="o">=</span> <span class="n">rand_seq</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">upstream</span> <span class="o">=</span> <span class="n">rand_seq</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">upstream_rc</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">upstream</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`upstream` sequence is </span><span class="si">{</span><span class="n">upstream</span><span class="si">}</span><span class="s2">; reverse complement is </span><span class="si">{</span><span class="n">upstream_rc</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
@@ -474,8 +219,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">simulated_barcode_counts</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">[[</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;barcode&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">simulated_barcode_counts</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">[[</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;barcode&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
     <span class="n">count</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">[</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))]</span>
 <span class="p">)</span>
 
@@ -539,8 +283,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">barcode_seqs</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">barcode_seqs</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">simulated_barcode_counts</span><span class="o">.</span><span class="n">itertuples</span><span class="p">():</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">tup</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
         <span class="n">barcode_seqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tup</span><span class="o">.</span><span class="n">barcode</span> <span class="o">+</span> <span class="n">mutate_seq</span><span class="p">(</span><span class="n">upstream_rc</span><span class="p">,</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
@@ -552,8 +295,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">n_invalid</span> <span class="o">=</span> <span class="mi">3</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_invalid</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">valid_barcodes</span> <span class="o">=</span> <span class="n">simulated_barcode_counts</span><span class="p">[</span><span class="s2">&quot;barcode&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_invalid</span><span class="p">):</span>
     <span class="n">barcode_seqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rand_seq</span><span class="p">(</span><span class="n">bclen</span><span class="p">,</span> <span class="n">exclude</span><span class="o">=</span><span class="n">valid_barcodes</span><span class="p">)</span> <span class="o">+</span> <span class="n">upstream_rc</span><span class="p">)</span>
@@ -565,8 +307,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">n_unparseable</span> <span class="o">=</span> <span class="mi">2</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_unparseable</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_unparseable</span><span class="p">):</span>
     <span class="n">barcode_seqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">valid_barcodes</span><span class="p">)</span> <span class="o">+</span> <span class="n">mutate_seq</span><span class="p">(</span><span class="n">upstream_rc</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
 </pre></div>
@@ -577,8 +318,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">minq</span> <span class="o">=</span> <span class="mi">20</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">minq</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">minq_char</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">minq</span> <span class="o">+</span> <span class="mi">33</span><span class="p">)</span>  <span class="c1"># corresponding character for Q score</span>
 </pre></div>
 </div>
@@ -588,8 +328,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">barcode_seqs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">seq</span><span class="p">,</span> <span class="n">minq_char</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">barcode_seqs</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">barcode_seqs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">seq</span><span class="p">,</span> <span class="n">minq_char</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">barcode_seqs</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -598,8 +337,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">lowq_char</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">minq</span> <span class="o">+</span> <span class="mi">33</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># low-quality Q-score</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">lowq_char</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">minq</span> <span class="o">+</span> <span class="mi">33</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># low-quality Q-score</span>
 <span class="n">n_low_quality</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="k">for</span> <span class="n">seq</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">barcode_seqs</span><span class="p">[:</span><span class="n">n_low_quality</span><span class="p">]:</span>
     <span class="n">barcode_seqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">seq</span><span class="p">,</span> <span class="n">lowq_char</span> <span class="o">+</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
@@ -611,9 +349,8 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fastq_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-    <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;@read</span><span class="si">{</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">seq</span><span class="si">}</span><span class="se">\n</span><span class="s2">+</span><span class="se">\n</span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">barcode_seqs</span><span class="p">)]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fastq_text</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;@read</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="se">\n</span><span class="si">{</span><span class="n">seq</span><span class="si">}</span><span class="se">\n</span><span class="s2">+</span><span class="se">\n</span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">barcode_seqs</span><span class="p">)]</span>
 <span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Here is the simulated FASTQ file:</span><span class="se">\n</span><span class="s2">-------------</span><span class="se">\n</span><span class="si">{</span><span class="n">fastq_text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -675,15 +412,14 @@ ATTCCCGTTCGTATCATG
 </div>
 </section>
 <section id="Parse-barcode-reads">
-<h2>Parse barcode reads<a class="headerlink" href="#Parse-barcode-reads" title="Permalink to this headline">¶</a></h2>
+<h2>Parse barcode reads<a class="headerlink" href="#Parse-barcode-reads" title="Link to this heading">¶</a></h2>
 <p>Now we initialize a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">IlluminaBarcodeParser</a> to parse the barcodes, allowing one mismatch in the upstream sequence (note if we had a <em>downstream</em> sequence we could specify it too). We specify the set of valid barcodes, which we get using the
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes">CodonVariantTable.valid_barcodes</a> method of our variant table. Note that if we had multiple libraries, we’d need a different parser for each one as each would have it’s own set of valid barcodes:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">parser</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">illuminabarcodeparser</span><span class="o">.</span><span class="n">IlluminaBarcodeParser</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parser</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">illuminabarcodeparser</span><span class="o">.</span><span class="n">IlluminaBarcodeParser</span><span class="p">(</span>
     <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
     <span class="n">valid_barcodes</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="s2">&quot;lib_1&quot;</span><span class="p">),</span>
     <span class="n">upstream</span><span class="o">=</span><span class="n">upstream</span><span class="p">,</span>
@@ -698,8 +434,7 @@ ATTCCCGTTCGTATCATG
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s2">&quot;r+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fastq</span><span class="p">:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="s2">&quot;r+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fastq</span><span class="p">:</span>
     <span class="n">fastq</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fastq_text</span><span class="p">)</span>
     <span class="n">fastq</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="n">counts</span><span class="p">,</span> <span class="n">fates</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
@@ -714,8 +449,7 @@ ATTCCCGTTCGTATCATG
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">counts</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span>
 </pre></div>
 </div>
 </div>
@@ -779,8 +513,7 @@ ATTCCCGTTCGTATCATG
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fates</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fates</span>
 </pre></div>
 </div>
 </div>
@@ -855,14 +588,13 @@ ATTCCCGTTCGTATCATG
 </div>
 </section>
 <section id="Add-barcodes-to-variant-table">
-<h2>Add barcodes to variant table<a class="headerlink" href="#Add-barcodes-to-variant-table" title="Permalink to this headline">¶</a></h2>
+<h2>Add barcodes to variant table<a class="headerlink" href="#Add-barcodes-to-variant-table" title="Link to this heading">¶</a></h2>
 <p>We add the barcodes <code class="docutils literal notranslate"><span class="pre">count</span></code> data frame to the variant table using <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df">CodonVariantTable.add_sample_counts_df</a>:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Here are the counts added to the variant table:&quot;</span><span class="p">)</span>
 <span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span>
@@ -957,8 +689,7 @@ Here are the counts added to the variant table:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span>
     <span class="n">simulated_barcode_counts</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="s2">&quot;barcode&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
     <span class="p">(</span>
         <span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span><span class="p">[[</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;barcode&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">]]</span>
@@ -971,14 +702,13 @@ Here are the counts added to the variant table:
 </div>
 </section>
 <section id="Look-at-the-barcode-read-fates">
-<h2>Look at the barcode-read fates<a class="headerlink" href="#Look-at-the-barcode-read-fates" title="Permalink to this headline">¶</a></h2>
+<h2>Look at the barcode-read fates<a class="headerlink" href="#Look-at-the-barcode-read-fates" title="Link to this heading">¶</a></h2>
 <p>Now we look in more detail at the barcode-read <code class="docutils literal notranslate"><span class="pre">fates</span></code> data frame that tells what happened to the barcode reads. First, we make sure the correct number of reads fall in each category based on the simulation parameters:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_frame_equal</span><span class="p">(</span>
     <span class="n">fates</span><span class="p">[[</span><span class="s2">&quot;fate&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">]],</span>
     <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
         <span class="p">[</span>
@@ -999,8 +729,7 @@ Here are the counts added to the variant table:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">barcode_fate_plot</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span>
@@ -1030,7 +759,7 @@ Here are the counts added to the variant table:
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">barcode_fate_plot</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">barcode_fate_plot</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1053,7 +782,7 @@ Here are the counts added to the variant table:
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -1117,7 +846,7 @@ Here are the counts added to the variant table:
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -1131,11 +860,11 @@ Here are the counts added to the variant table:
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/parsebarcodes_sim_data.nblink.txt"
@@ -1144,7 +873,7 @@ Here are the counts added to the variant table:
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

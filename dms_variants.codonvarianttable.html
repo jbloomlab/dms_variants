@@ -1,22 +1,20 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>codonvarianttable &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>codonvarianttable &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="constants" href="dms_variants.constants.html" />
@@ -24,8 +22,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -37,17 +36,18 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="module-dms_variants.codonvarianttable"></span><section id="codonvarianttable">
-<h1>codonvarianttable<a class="headerlink" href="#codonvarianttable" title="Permalink to this headline">¶</a></h1>
+  <section id="codonvarianttable">
+<span id="module-dms_variants.codonvarianttable"></span><h1>codonvarianttable<a class="headerlink" href="#codonvarianttable" title="Link to this heading">¶</a></h1>
 <p>Defines <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> objects for storing and
 handling codon variants of a gene.</p>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">dms_variants.codonvarianttable.</span></span><span class="sig-name descname"><span class="pre">CodonVariantTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcode_variant_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowgaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substitutions_are_codon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substitutions_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'substitutions'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">dms_variants.codonvarianttable.</span></span><span class="sig-name descname"><span class="pre">CodonVariantTable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcode_variant_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowgaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substitutions_are_codon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">substitutions_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'substitutions'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Store and handle counts of barcoded codon variants of a gene.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>barcode_variant_file</strong> (<em>str</em>) – CSV file giving barcodes and variants. Must have columns “library”,
 “barcode”, “substitutions” (nucleotide mutations in 1, …, numbering
@@ -77,10 +77,10 @@ should be empty or just have the name of the secondary target.</p></li>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.geneseq">
-<span class="sig-name descname"><span class="pre">geneseq</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.geneseq" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">geneseq</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.geneseq" title="Link to this definition">¶</a></dt>
 <dd><p>Wild-type sequence passed at initialization.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -88,10 +88,10 @@ should be empty or just have the name of the secondary target.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.sites">
-<span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.sites" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sites</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.sites" title="Link to this definition">¶</a></dt>
 <dd><p>List of all codon sites in 1, 2, … numbering.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -99,10 +99,10 @@ should be empty or just have the name of the secondary target.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.codons">
-<span class="sig-name descname"><span class="pre">codons</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.codons" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">codons</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.codons" title="Link to this definition">¶</a></dt>
 <dd><p><cite>codons[r]</cite> is wildtype codon at site <cite>r</cite>, ordered by sites.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>collections.OrderedDict</p>
 </dd>
 </dl>
@@ -110,10 +110,10 @@ should be empty or just have the name of the secondary target.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.aas">
-<span class="sig-name descname"><span class="pre">aas</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.aas" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">aas</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.aas" title="Link to this definition">¶</a></dt>
 <dd><p><cite>aas[r]</cite> is wildtype amino acid at site <cite>r</cite>, ordered by sites.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>collections.OrderedDict</p>
 </dd>
 </dl>
@@ -121,10 +121,10 @@ should be empty or just have the name of the secondary target.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.libraries">
-<span class="sig-name descname"><span class="pre">libraries</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.libraries" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">libraries</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.libraries" title="Link to this definition">¶</a></dt>
 <dd><p>List of libraries in <cite>barcode_variant_file</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -132,12 +132,12 @@ should be empty or just have the name of the secondary target.</p></li>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.barcode_variant_df">
-<span class="sig-name descname"><span class="pre">barcode_variant_df</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.barcode_variant_df" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">barcode_variant_df</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.barcode_variant_df" title="Link to this definition">¶</a></dt>
 <dd><p>Info about codon mutations parsed from <cite>barcode_variant_file</cite>.
 For non-primary targets, the mutations column just hold the
 target name.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -145,14 +145,14 @@ target name.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.variant_count_df">
-<span class="sig-name descname"><span class="pre">variant_count_df</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.variant_count_df" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">variant_count_df</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.variant_count_df" title="Link to this definition">¶</a></dt>
 <dd><p>Initially <cite>None</cite>, but after data added with
 <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts" title="dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.addSampleCounts</span></code></a>, holds counts of
 each variant for each sample. Differs from <cite>barcode_variant_df</cite>
 in that the former just holds barcode-variant definitions,
 whereas <cite>variant_count_df</cite> has counts for each sample.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame or None</p>
 </dd>
 </dl>
@@ -160,11 +160,11 @@ whereas <cite>variant_count_df</cite> has counts for each sample.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.primary_target">
-<span class="sig-name descname"><span class="pre">primary_target</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.primary_target" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">primary_target</span></span><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.primary_target" title="Link to this definition">¶</a></dt>
 <dd><p>If multiple targets, name of the main target for which we are
 calling variants.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Type</dt>
+<dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str or None</p>
 </dd>
 </dl>
@@ -172,22 +172,22 @@ calling variants.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">addMergedLibraries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_lib</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all</span> <span class="pre">libraries'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.addMergedLibraries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">addMergedLibraries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_lib</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all</span> <span class="pre">libraries'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.addMergedLibraries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries" title="Link to this definition">¶</a></dt>
 <dd><p>Add data to <cite>df</cite> for all libraries merged.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame that includes columns named ‘library’ and ‘barcode’.</p></li>
 <li><p><strong>all_lib</strong> (<em>str</em>) – Name given to library that is merge of all other libraries.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>If <cite>df</cite> only has data for one library, just returns <cite>df</cite>. Otherwise
 returns copy of <cite>df</cite> with new library with name given by <cite>all_lib</cite>
 that contains data for all individual libraries with the ‘barcode’
 column giving library name followed by a hyphen and barcode.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -195,7 +195,7 @@ column giving library name followed by a hyphen and barcode.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts">
-<span class="sig-name descname"><span class="pre">addSampleCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodecounts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.addSampleCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">addSampleCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodecounts</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.addSampleCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts" title="Link to this definition">¶</a></dt>
 <dd><p>Add variant counts for a sample to <cite>variant_count_df</cite>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -204,7 +204,7 @@ column giving library name followed by a hyphen and barcode.</p>
 repeatedly calling this method.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>library</strong> (<em>str</em>) – Valid <cite>library</cite> for the <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p></li>
 <li><p><strong>sample</strong> (<em>str</em>) – Sample name, must <strong>not</strong> already be in
@@ -221,18 +221,18 @@ data frames are returned by
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.add_frac_counts">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">add_frac_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_count_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_frac_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_frac_counts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">add_frac_counts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_count_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_frac_counts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_frac_counts" title="Link to this definition">¶</a></dt>
 <dd><p>Add fraction of counts from each variant in library/sample.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>variant_count_df</strong> (<em>pandas.DataFrame</em>) – Same format as <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A copy of <cite>variant_count_df</cite> with added column ‘frac_counts’
 that gives fraction of all counts in that library / sample for
 that variant.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -261,10 +261,10 @@ that variant.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs">
-<span class="sig-name descname"><span class="pre">add_full_seqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aa_seq_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa_sequence'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codon_seq_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'codon_sequence'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_full_seqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_full_seqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aa_seq_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa_sequence'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codon_seq_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'codon_sequence'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_full_seqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs" title="Link to this definition">¶</a></dt>
 <dd><p>Add full sequences to data frame, for primary target only.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame that specifies substitutions. Might be the
 <cite>barcode_variant_df</cite> or <cite>variant_count_df</cite> attributes,
@@ -275,12 +275,12 @@ or the result of calling <a class="reference internal" href="#dms_variants.codon
 <cite>df</cite> must have column named ‘codon_substitutions’.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Copy of <cite>df</cite> with columns <cite>aa_seq_col</cite> and/or <cite>codon_seq_col</cite>,
 and only the primary target retained if there is a ‘target’
 column in <cite>df</cite>.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -288,10 +288,10 @@ column in <cite>df</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df">
-<span class="sig-name descname"><span class="pre">add_sample_counts_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">counts_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_sample_counts_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_sample_counts_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">counts_df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.add_sample_counts_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df" title="Link to this definition">¶</a></dt>
 <dd><p>Add variant counts for several samples to <cite>variant_count_df</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>counts_df</strong> (<em>pandas.DataFrame</em>) – Must have columns ‘library’, ‘sample’, ‘barcode’, and ‘count’.
 The sample must <strong>not</strong> already be in <cite>CodonVariantTable.samples</cite>
 for that library. The barcode columns must have all barcodes for
@@ -302,10 +302,10 @@ that library including zero-count ones.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant">
-<span class="sig-name descname"><span class="pre">avgCountsPerVariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.avgCountsPerVariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">avgCountsPerVariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.avgCountsPerVariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant" title="Link to this definition">¶</a></dt>
 <dd><p>Get average counts per variant.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>libraries</strong> (<em>{'all'</em><em>, </em><em>'all_only'</em><em>, </em><em>list}</em>) – Include all libraries including a merge, only a merge of all
 libraries, or a list of libraries.</p></li>
@@ -316,11 +316,11 @@ as value.</p></li>
 <li><p><strong>by_target</strong> (<em>bool</em>) – If <cite>True</cite>, also group counts by target if multiple targets.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Average counts per variant for each library and sample, and
 possibly target.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -328,10 +328,10 @@ possibly target.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.classifyVariants">
-<em class="property"><span class="pre">static</span> </em><span class="sig-name descname"><span class="pre">classifyVariants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_class_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'variant_class'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_aa</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syn_as_wt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_primary_target_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'secondary</span> <span class="pre">target'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_as_categorical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.classifyVariants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">classifyVariants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_class_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'variant_class'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_aa</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syn_as_wt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_primary_target_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'secondary</span> <span class="pre">target'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">class_as_categorical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.classifyVariants"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants" title="Link to this definition">¶</a></dt>
 <dd><p>Classifies codon variants in <cite>df</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Must have columns named ‘aa_substitutions’, ‘n_aa_substitutions’,
 and ‘n_codon_substitutions’. Such a data frame can be obtained via
@@ -353,7 +353,7 @@ Variants not from primary target are classified as
 reasonable ordering.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>Copy of <cite>df</cite> with column specified by <cite>variant_class_col</cite> as:</dt><dd><ul class="simple">
 <li><p>’wildtype’: no codon mutations</p></li>
@@ -367,7 +367,7 @@ mutations, or is ‘&gt;{max_aa}’ if more than <cite>max_aa</cite>.</p></li>
 </dl>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -417,7 +417,7 @@ mutations, or is ‘&gt;{max_aa}’ if more than <cite>max_aa</cite>.</p></li>
 <span class="gp">&gt;&gt;&gt; </span><span class="p">(</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 <span class="gp">... </span> <span class="p">[[</span><span class="s1">&#39;target&#39;</span><span class="p">,</span> <span class="s1">&#39;barcode&#39;</span><span class="p">,</span> <span class="s1">&#39;variant_class&#39;</span><span class="p">]])</span>
 <span class="gt">Traceback (most recent call last):</span>
-    <span class="o">...</span>
+<span class="w">    </span><span class="o">...</span>
 <span class="gr">ValueError</span>: <span class="n">`df` has &quot;target&quot; so give `primary_target`</span>
 </pre></div>
 </div>
@@ -441,19 +441,19 @@ mutations, or is ‘&gt;{max_aa}’ if more than <cite>max_aa</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">codonToAAMuts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codon_mut_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowgaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.codonToAAMuts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">codonToAAMuts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">codon_mut_str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowgaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.codonToAAMuts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts" title="Link to this definition">¶</a></dt>
 <dd><p>Convert string of codon mutations to amino-acid mutations.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>codon_mut_str</strong> (<em>str</em>) – Codon mutations, delimited by a space and in 1, … numbering.</p></li>
 <li><p><strong>allowgaps</strong> (<em>bool</em>) – Allow gap codon (<code class="docutils literal notranslate"><span class="pre">---</span></code>) translated to gap amino acid (<code class="docutils literal notranslate"><span class="pre">--</span></code>).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Amino acid mutations in 1, … numbering.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -466,7 +466,7 @@ mutations, or is ‘&gt;{max_aa}’ if more than <cite>max_aa</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.escape_scores">
-<span class="sig-name descname"><span class="pre">escape_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logbase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floor_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floor_E</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil_E</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.escape_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.escape_scores" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">escape_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logbase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floor_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">floor_E</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil_B</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil_E</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.escape_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.escape_scores" title="Link to this definition">¶</a></dt>
 <dd><p>Compute a score that represents escape from binding.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -551,7 +551,7 @@ analytical calculations are confounded by the floors on <span class="math notran
 or <span class="math notranslate nohighlight">\(B_v\)</span>.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sample_df</strong> (<em>pandas.DataFrame</em>) – Comparisons we use to compute the functional scores. Should have
 these columns: ‘pre_sample’ (pre-selection sample), ‘post_sample’
@@ -573,7 +573,7 @@ if <cite>score_type</cite> is ‘frac_escape’ or ‘log_escape’.</p></li>
 <li><p><strong>ceil_E</strong> (<em>float</em><em> or </em><em>None</em>) – Ceiling assigned to <span class="math notranslate nohighlight">\(E_v\)</span>, or <cite>None</cite> if no ceiling.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>Has the following columns:</dt><dd><ul class="simple">
 <li><p>’name’: specified in <cite>sample_df</cite></p></li>
@@ -593,7 +593,7 @@ makes sense to retain given value of <cite>by</cite>.</p></li>
 </dl>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -601,7 +601,7 @@ makes sense to retain given value of <cite>by</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df">
-<em class="property"><span class="pre">classmethod</span> </em><span class="sig-name descname"><span class="pre">from_variant_count_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_count_df_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_all_libs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowgaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.from_variant_count_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_variant_count_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_count_df_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geneseq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_all_libs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allowgaps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.from_variant_count_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df" title="Link to this definition">¶</a></dt>
 <dd><p><a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> from CSV of <cite>variant_count_df</cite>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -609,7 +609,7 @@ makes sense to retain given value of <cite>by</cite>.</p></li>
 attribute of a <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>, and wish to re-initialize.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_count_df_file</strong> (<em>str</em>) – Name of CSV file containing the <cite>variant_count_df</cite>. Must have
 following columns: “barcode”, “library”, “variant_call_support”,
@@ -623,18 +623,15 @@ duplicates information for the individual libraries.</p></li>
 <li><p><strong>extra_cols</strong> (<em>list</em>) – Meaning described in main <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> doc string.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a></p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.func_scores">
-<span class="sig-name descname"><span class="pre">func_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preselection</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syn_as_wt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logbase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permit_zero_wt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permit_self_comp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.func_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.func_scores" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">func_scores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preselection</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">syn_as_wt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logbase</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permit_zero_wt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permit_self_comp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.func_scores"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.func_scores" title="Link to this definition">¶</a></dt>
 <dd><p>Get data frame with functional scores for variants.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -664,7 +661,7 @@ how this is defined).</p>
 targets are relative to the wildtype of the primary target.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>preselection</strong> (<em>str</em><em> or </em><em>dict</em>) – Pre-selection sample. If the same for all post-selection then
 provide the name as str. If it differs among post-selection
@@ -689,7 +686,7 @@ or permit the calculation to proceed just using pseudocount?</p></li>
 <li><p><strong>permit_self_comp</strong> (<em>bool</em>) – Permit comparisons for sample pre- and post-selection?</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><dl class="simple">
 <dt>Has the following columns:</dt><dd><ul class="simple">
 <li><p>”library”: the library</p></li>
@@ -711,7 +708,7 @@ as can be retained given value of <cite>by</cite>.</p></li>
 </dl>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -719,22 +716,22 @@ as can be retained given value of <cite>by</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.mutCounts">
-<span class="sig-name descname"><span class="pre">mutCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.mutCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.mutCounts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">mutCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.mutCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.mutCounts" title="Link to this definition">¶</a></dt>
 <dd><p>Get counts of each individual mutations (only in primary target).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include just single mutants, or all mutants?</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Tidy data frame with columns named “library”, “sample”,
 “mutation”, “count”, “mutation_type”, and “site”. If there
 are multiple targets, only returns counts for the primary
 target.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -742,10 +739,10 @@ target.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.n_variants_df">
-<span class="sig-name descname"><span class="pre">n_variants_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">n_variants_df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.n_variants_df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df" title="Link to this definition">¶</a></dt>
 <dd><p>Get number variants per library / sample (and target if specified).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include all variants or just those with &lt;= 1 <cite>mut_type</cite> mutation.</p></li>
 <li><p><strong>mut_type</strong> (<em>{'aa'</em><em>, </em><em>'codon'</em><em>, </em><em>None}</em>) – If <cite>variant_type</cite> is ‘single’, indicate what type of single
@@ -754,28 +751,25 @@ mutants we are filtering for.</p></li>
 <li><p><strong>args</strong> (<em>All other</em>) – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType">
-<span class="sig-name descname"><span class="pre">numCodonMutsByType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.numCodonMutsByType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">numCodonMutsByType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.numCodonMutsByType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType" title="Link to this definition">¶</a></dt>
 <dd><p>Get average nonsynonymous, synonymous, stop mutations per variant.</p>
 <p>These statistics are only for the primary target.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>all_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumCodonMutsByType()</span></code></a>.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Data frame with average mutations of each type per variant.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -783,10 +777,10 @@ mutants we are filtering for.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant">
-<span class="sig-name descname"><span class="pre">plotAvgCountsPerVariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotAvgCountsPerVariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotAvgCountsPerVariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotAvgCountsPerVariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant" title="Link to this definition">¶</a></dt>
 <dd><p>Plot average counts per variant.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>libraries</strong> (<em>{'all'</em><em>, </em><em>'all_only'</em><em>, </em><em>list}</em>) – Include all libraries including a merge, only a merge of all
 libraries, or a list of libraries.</p></li>
@@ -795,21 +789,18 @@ libraries, or a list of libraries.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotCountsPerVariant">
-<span class="sig-name descname"><span class="pre">plotCountsPerVariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ystat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frac_counts'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_variant_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifyVariants_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCountsPerVariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCountsPerVariant" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotCountsPerVariant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ystat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frac_counts'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by_variant_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classifyVariants_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCountsPerVariant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCountsPerVariant" title="Link to this definition">¶</a></dt>
 <dd><p>Plot variant index versus counts (or frac counts).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ystat</strong> (<em>{'frac_counts'</em><em>, </em><em>'count'}</em>) – Is y-axis counts from variant, or fraction of counts in
 library / sample from variant?</p></li>
@@ -819,21 +810,18 @@ is drawn to indicate that points below it are not observed.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts" title="dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulVariantCounts()</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage">
-<span class="sig-name descname"><span class="pre">plotCumulMutCoverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulMutCoverage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotCumulMutCoverage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulMutCoverage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="Link to this definition">¶</a></dt>
 <dd><p>Frac mutations seen &lt;= some number of times (primary target only).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include all variants or just those with &lt;=1 <cite>mut_type</cite> mutation.</p></li>
 <li><p><strong>max_count</strong> (<em>None</em><em> or </em><em>int</em>) – Plot cumulative fraction plot out to this number of observations.
@@ -841,21 +829,18 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts">
-<span class="sig-name descname"><span class="pre">plotCumulVariantCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tot_variants_hline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulVariantCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotCumulVariantCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variant_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tot_variants_hline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotCumulVariantCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts" title="Link to this definition">¶</a></dt>
 <dd><p>Plot number variants with &gt;= that each number of counts.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include all variants or just those with &lt;=1 <cite>mut_type</cite> mutation.</p></li>
 <li><p><strong>tot_variants_hline</strong> (<em>bool</em>) – Include dotted horizontal line indicating total number of variants.</p></li>
@@ -863,80 +848,68 @@ If <cite>None</cite>, a reasonable value is automatically determined.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram()</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs">
-<span class="sig-name descname"><span class="pre">plotMutFreqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotMutFreqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotMutFreqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotMutFreqs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs" title="Link to this definition">¶</a></dt>
 <dd><p>Mutation frequency along length of gene (primary target only).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>parameters</strong> (<em>All</em>) – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap">
-<span class="sig-name descname"><span class="pre">plotMutHeatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_or_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frequency'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotMutHeatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotMutHeatmap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_or_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frequency'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotMutHeatmap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap" title="Link to this definition">¶</a></dt>
 <dd><p>Heatmap of mutation counts or frequencies (for primary target only).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>count_or_frequency</strong> (<em>{'count'</em><em>, </em><em>'frequency'}</em>) – Plot mutation counts or frequencies?</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage" title="dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">
-<span class="sig-name descname"><span class="pre">plotNumCodonMutsByType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotNumCodonMutsByType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotNumCodonMutsByType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variant_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotNumCodonMutsByType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType" title="Link to this definition">¶</a></dt>
 <dd><p>Plot average nonsynonymous, synonymous, stop mutations per variant.</p>
 <p>These statistics are only for the primary target.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variant_type</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – Include all variants or just those with &lt;=1 codon mutation.</p></li>
 <li><p><strong>ylabel</strong> (<em>None</em><em> or </em><em>str</em>) – If not <cite>None</cite>, specify y-axis label (otherwise it is autoset).</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">
-<span class="sig-name descname"><span class="pre">plotNumMutsHistogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_muts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotNumMutsHistogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotNumMutsHistogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mut_type</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_muts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotNumMutsHistogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="Link to this definition">¶</a></dt>
 <dd><p>Plot histogram of num mutations per variant (primary target only).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>mut_type</strong> (<em>{'codon'</em><em> or </em><em>'aa'}</em>) – Mutation type.</p></li>
 <li><p><strong>libraries</strong> (<em>{'all'</em><em>, </em><em>'all_only'</em><em>, </em><em>list}</em>) – Include all libraries including a merge, only a merge of all
@@ -954,39 +927,33 @@ as value.</p></li>
 <li><p><strong>one_lib_facet</strong> (<em>bool</em>) – Plot library facet title even if just one library.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram">
-<span class="sig-name descname"><span class="pre">plotVariantSupportHistogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotVariantSupportHistogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plotVariantSupportHistogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">libraries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'all'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plotfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orientation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'h'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widthscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">heightscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_support</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_rename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">one_lib_facet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.plotVariantSupportHistogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram" title="Link to this definition">¶</a></dt>
 <dd><p>Plot histogram of variant call support for variants.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>max_support</strong> (<em>int</em><em> or </em><em>None</em>) – Group together all variants with &gt;= this support.</p></li>
 <li><p><strong>other_parameters</strong> – Same as for <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram" title="dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram</span></code></a>.</p></li>
 <li><p><strong>primary_target_only</strong> (<em>bool</em>) – Only include variants that are of the primary target.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>plotnine.ggplot.ggplot</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>plotnine.ggplot.ggplot</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.prob_escape">
-<span class="sig-name descname"><span class="pre">prob_escape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selections_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neut_standard_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'neut_standard'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_neut_standard_frac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_neut_standard_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil_n_aa_substitutions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_neut_standard_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.prob_escape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.prob_escape" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">prob_escape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selections_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">neut_standard_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'neut_standard'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_neut_standard_frac</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_neut_standard_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ceil_n_aa_substitutions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_neut_standard_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primary_target_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.prob_escape"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.prob_escape" title="Link to this definition">¶</a></dt>
 <dd><p>Compute probability of escape relative to a neutralization standard.</p>
 <p>Assumes one of the targets is the neutralization standard and is
 unaffected by antibody selection. Then computes escape probability
@@ -999,7 +966,7 @@ of the neutralization standard in the selected condition, and
 <span class="math notranslate nohighlight">\(S^0\)</span> is the total counts of the neutralization standard in
 the no-antibody condition.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>selections_df</strong> (<em>pandas.DataFrame</em>) – How to pair samples. Should have columns ‘library’,
 ‘antibody_sample’, and ‘no-antibody_sample’ for each row.
@@ -1017,9 +984,11 @@ standard for each library / sample.</p></li>
 with &gt;= this many amino-acid substitutions.</p></li>
 <li><p><strong>drop_neut_standard_target</strong> (<em>bool</em>) – Drop the neutralization standard variant-level results from the
 returned data frames.</p></li>
+<li><p><strong>primary_target_only</strong> (<em>bool</em>) – Drop everything except the primary target and neutralization standard
+target before beginning calculations.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p>This tuple consists of three pandas data frames:</p>
 <ul>
 <li><p><cite>prob_escape</cite>: gives the escape probabilities, and has the
@@ -1052,7 +1021,7 @@ probability escape in a column <cite>prob_escape</cite>.</p></li>
 </ul>
 </p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>(prob_escape, neut_standard_fracs, neutralization)</p>
 </dd>
 </dl>
@@ -1060,16 +1029,16 @@ probability escape in a column <cite>prob_escape</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.samples">
-<span class="sig-name descname"><span class="pre">samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.samples" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.samples" title="Link to this definition">¶</a></dt>
 <dd><p>List of all samples for <cite>library</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>library</strong> (<em>str</em>) – Valid <cite>library</cite> for the <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a>.</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>All samples for which barcode counts have been added.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 </dl>
@@ -1077,20 +1046,20 @@ probability escape in a column <cite>prob_escape</cite>.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.subs_to_seq">
-<span class="sig-name descname"><span class="pre">subs_to_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'codon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.subs_to_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.subs_to_seq" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">subs_to_seq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'codon'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.subs_to_seq"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.subs_to_seq" title="Link to this definition">¶</a></dt>
 <dd><p>Convert substitutions to full sequence.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>subs</strong> (<em>str</em>) – Space delimited substitutions in 1, … numbering.</p></li>
 <li><p><strong>subs_type</strong> (<em>{'codon'</em><em>, </em><em>'aa'}</em>) – Are substitutions codon or amino acid?</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Sequence created by these mutations, either codon or
 amino acid depending on value of <cite>subs_type</cite>.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>str</p>
 </dd>
 </dl>
@@ -1114,24 +1083,21 @@ amino acid depending on value of <cite>subs_type</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes">
-<span class="sig-name descname"><span class="pre">valid_barcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.valid_barcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">valid_barcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.valid_barcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes" title="Link to this definition">¶</a></dt>
 <dd><p>Set of valid barcodes for <cite>library</cite>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>library</strong> (<em>str</em>) – Name of a valid library.</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>set</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>set</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts">
-<span class="sig-name descname"><span class="pre">writeCodonCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">single_or_all</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_libs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.writeCodonCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">writeCodonCounts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">single_or_all</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_all_libs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#CodonVariantTable.writeCodonCounts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts" title="Link to this definition">¶</a></dt>
 <dd><p>Write codon counts files for all libraries and samples.</p>
 <p>Only writes the counts for the primary target.</p>
 <div class="admonition note">
@@ -1141,7 +1107,7 @@ amino acid depending on value of <cite>subs_type</cite>.</p>
 <a class="reference external" href="https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html#counts-file">https://jbloomlab.github.io/dms_tools2/dms2_bcsubamp.html#counts-file</a></p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>single_or_all</strong> (<em>{'single'</em><em>, </em><em>'all'}</em>) – If ‘single’, then counts just from single-codon mutants and
 wildtype, and count all wildtype codons and just mutated codons
@@ -1157,12 +1123,12 @@ Use <cite>None</cite> to write to current directory.</p></li>
 summmed data for all individual libraries if multiple libraries.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Gives names of created files. Has columns “library”, “sample”,
 and “countfile”. The “countfile” columns gives name of the
 created CSV file, <code class="docutils literal notranslate"><span class="pre">&lt;library&gt;_&lt;sample&gt;_codoncounts.csv</span></code>.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -1172,13 +1138,13 @@ created CSV file, <code class="docutils literal notranslate"><span class="pre">&
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dms_variants.codonvarianttable.filter_by_subs_observed">
-<span class="sig-prename descclassname"><span class="pre">dms_variants.codonvarianttable.</span></span><span class="sig-name descname"><span class="pre">filter_by_subs_observed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_single_counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_any_counts</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">and_vs_or</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'and'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa_substitutions'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_subs_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_aa_substitutions'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#filter_by_subs_observed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.filter_by_subs_observed" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dms_variants.codonvarianttable.</span></span><span class="sig-name descname"><span class="pre">filter_by_subs_observed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_single_counts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_any_counts</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">and_vs_or</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'and'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subs_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'aa_substitutions'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_subs_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_aa_substitutions'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/codonvarianttable.html#filter_by_subs_observed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.codonvarianttable.filter_by_subs_observed" title="Link to this definition">¶</a></dt>
 <dd><p>Filter for variants by observations substitutions in entire data frame.</p>
 <p>Filter data frames of the type returned by <a class="reference internal" href="#dms_variants.codonvarianttable.CodonVariantTable" title="dms_variants.codonvarianttable.CodonVariantTable"><code class="xref py py-class docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a> to
 get just variants that have substitutions that are observed in some other
 number of variants.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame containing variants as rows.</p></li>
 <li><p><strong>min_single_counts</strong> (<em>int</em>) – Only keep variants with substitutions that are observed as single-
@@ -1192,10 +1158,10 @@ other.</p></li>
 <li><p><strong>n_subs_col</strong> (<em>'n_aa_substitutions'</em>) – Column in <cite>df</cite> with the number of substitutions per variant.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A copy of <cite>df</cite> that only contains the variants that pass the filters.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -1271,7 +1237,6 @@ in both single- and multi-substitution contexts:</p>
 </div>
 </dd></dl>
 
-</section>
 
 
           </div>
@@ -1282,7 +1247,7 @@ in both single- and multi-substitution contexts:</p>
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -1341,7 +1306,7 @@ in both single- and multi-substitution contexts:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -1355,11 +1320,11 @@ in both single- and multi-substitution contexts:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/dms_variants.codonvarianttable.rst.txt"
@@ -1368,7 +1333,7 @@ in both single- and multi-substitution contexts:</p>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

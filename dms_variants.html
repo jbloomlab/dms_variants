@@ -1,19 +1,17 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>dms_variants package &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>dms_variants package &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -22,8 +20,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -36,21 +35,84 @@
           <div class="body" role="main">
             
   <section id="module-dms_variants">
-<span id="dms-variants-package"></span><h1>dms_variants package<a class="headerlink" href="#module-dms_variants" title="Permalink to this headline">¶</a></h1>
+<span id="dms-variants-package"></span><h1>dms_variants package<a class="headerlink" href="#module-dms_variants" title="Link to this heading">¶</a></h1>
 <section id="dms-variants">
-<h2>dms_variants<a class="headerlink" href="#dms-variants" title="Permalink to this headline">¶</a></h2>
+<h2>dms_variants<a class="headerlink" href="#dms-variants" title="Link to this heading">¶</a></h2>
 <p>Python package for analyzing deep mutational scanning of barcoded
 variants of genes.</p>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.barcodes.html">barcodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.barcodes.html#dms_variants.barcodes.inverse_simpson_index"><code class="docutils literal notranslate"><span class="pre">inverse_simpson_index()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.barcodes.html#dms_variants.barcodes.rarefyBarcodes"><code class="docutils literal notranslate"><span class="pre">rarefyBarcodes()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.bottlenecks.html">bottlenecks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.bottlenecks.html#dms_variants.bottlenecks.estimateBottleneck"><code class="docutils literal notranslate"><span class="pre">estimateBottleneck()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.codonvarianttable.html">codonvarianttable</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.geneseq"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.geneseq</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.sites"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.sites</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.codons"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.codons</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.aas"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.aas</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.libraries"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.libraries</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.barcode_variant_df"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.barcode_variant_df</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.variant_count_df"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.variant_count_df</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.primary_target"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.primary_target</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.addMergedLibraries()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.addSampleCounts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_frac_counts"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.add_frac_counts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.add_full_seqs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.add_sample_counts_df()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.avgCountsPerVariant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.classifyVariants()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.codonToAAMuts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.escape_scores"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.escape_scores()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.from_variant_count_df()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.func_scores()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.mutCounts"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.mutCounts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.n_variants_df()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.numCodonMutsByType()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotAvgCountsPerVariant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCountsPerVariant"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotCountsPerVariant()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulMutCoverage()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotCumulVariantCounts()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotMutFreqs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotMutHeatmap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumCodonMutsByType()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotNumMutsHistogram()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.plotVariantSupportHistogram()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.prob_escape"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.prob_escape()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.samples"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.samples()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.subs_to_seq"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.subs_to_seq()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.valid_barcodes()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts"><code class="docutils literal notranslate"><span class="pre">CodonVariantTable.writeCodonCounts()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.filter_by_subs_observed"><code class="docutils literal notranslate"><span class="pre">filter_by_subs_observed()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html">constants</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.AAS_NOSTOP"><code class="docutils literal notranslate"><span class="pre">AAS_NOSTOP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.AAS_WITHSTOP"><code class="docutils literal notranslate"><span class="pre">AAS_WITHSTOP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.AAS_WITHSTOP_WITHGAP"><code class="docutils literal notranslate"><span class="pre">AAS_WITHSTOP_WITHGAP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.AA_TO_CODONS"><code class="docutils literal notranslate"><span class="pre">AA_TO_CODONS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.AA_TO_CODONS_WITHGAP"><code class="docutils literal notranslate"><span class="pre">AA_TO_CODONS_WITHGAP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.CBPALETTE"><code class="docutils literal notranslate"><span class="pre">CBPALETTE</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.CODONS"><code class="docutils literal notranslate"><span class="pre">CODONS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.CODONS_NOSTOP"><code class="docutils literal notranslate"><span class="pre">CODONS_NOSTOP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.CODONS_WITHGAP"><code class="docutils literal notranslate"><span class="pre">CODONS_WITHGAP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.CODON_TO_AA"><code class="docutils literal notranslate"><span class="pre">CODON_TO_AA</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.CODON_TO_AA_WITHGAP"><code class="docutils literal notranslate"><span class="pre">CODON_TO_AA_WITHGAP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.NTS"><code class="docutils literal notranslate"><span class="pre">NTS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.NTS_AMBIGUOUS"><code class="docutils literal notranslate"><span class="pre">NTS_AMBIGUOUS</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.NTS_WITHGAP"><code class="docutils literal notranslate"><span class="pre">NTS_WITHGAP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.NT_COMPLEMENT"><code class="docutils literal notranslate"><span class="pre">NT_COMPLEMENT</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.NT_TO_REGEXP"><code class="docutils literal notranslate"><span class="pre">NT_TO_REGEXP</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.constants.html#dms_variants.constants.SINGLE_NT_AA_MUTS"><code class="docutils literal notranslate"><span class="pre">SINGLE_NT_AA_MUTS</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.fastq.html">fastq</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.fastq.html#dms_variants.fastq.iterate_fastq"><code class="docutils literal notranslate"><span class="pre">iterate_fastq()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.fastq.html#dms_variants.fastq.iterate_fastq_pair"><code class="docutils literal notranslate"><span class="pre">iterate_fastq_pair()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.fastq.html#dms_variants.fastq.qual_str_to_array"><code class="docutils literal notranslate"><span class="pre">qual_str_to_array()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html">globalepistasis</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#global-epistasis-function">Global epistasis function</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="dms_variants.globalepistasis.html#no-epistasis-function">No epistasis function</a></li>
@@ -77,12 +139,153 @@ variants of genes.</p>
 <li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#detailed-documentation-of-models">Detailed documentation of models</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.add_phenotypes_to_df"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.add_phenotypes_to_df()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.aic"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.aic</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.binarymap"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.binarymap</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.enrichments"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.enrichments()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.epistasis_func_params_dict"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.epistasis_func_params_dict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.fit"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.fit()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.latent_effects_df"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.latent_effects_df</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.latent_phenotype_wt"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.latent_phenotype_wt()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.likelihood_calc_params_dict"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.likelihood_calc_params_dict</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.loglik"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.loglik</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.n_latent_phenotypes"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.n_latent_phenotypes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.nparams"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.nparams</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.phenotypes_df"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.phenotypes_df</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.phenotypes_frombinary"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.phenotypes_frombinary()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.preferences"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.preferences()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.single_mut_effects"><code class="docutils literal notranslate"><span class="pre">AbstractEpistasis.single_mut_effects()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.BottleneckLikelihood"><code class="docutils literal notranslate"><span class="pre">BottleneckLikelihood</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.BottleneckLikelihood.bottleneck"><code class="docutils literal notranslate"><span class="pre">BottleneckLikelihood.bottleneck</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.BottleneckLikelihood.f_post"><code class="docutils literal notranslate"><span class="pre">BottleneckLikelihood.f_post</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.BottleneckLikelihood.f_pre"><code class="docutils literal notranslate"><span class="pre">BottleneckLikelihood.f_pre</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.BottleneckLikelihood.loglik"><code class="docutils literal notranslate"><span class="pre">BottleneckLikelihood.loglik</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.CauchyLikelihood"><code class="docutils literal notranslate"><span class="pre">CauchyLikelihood</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.CauchyLikelihood.loglik"><code class="docutils literal notranslate"><span class="pre">CauchyLikelihood.loglik</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.EpistasisFittingError"><code class="docutils literal notranslate"><span class="pre">EpistasisFittingError</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.EpistasisFittingWarning"><code class="docutils literal notranslate"><span class="pre">EpistasisFittingWarning</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.GaussianLikelihood"><code class="docutils literal notranslate"><span class="pre">GaussianLikelihood</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.GaussianLikelihood.loglik"><code class="docutils literal notranslate"><span class="pre">GaussianLikelihood.loglik</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis.alpha_ms"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis.alpha_ms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis.c_alpha"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis.c_alpha()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis.epistasis_func"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasis.epistasis_func()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisBottleneckLikelihood"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasisBottleneckLikelihood</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisCauchyLikelihood"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasisCauchyLikelihood</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood"><code class="docutils literal notranslate"><span class="pre">MonotonicSplineEpistasisGaussianLikelihood</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis"><code class="docutils literal notranslate"><span class="pre">NoEpistasis</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis.epistasis_func"><code class="docutils literal notranslate"><span class="pre">NoEpistasis.epistasis_func()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisBottleneckLikelihood"><code class="docutils literal notranslate"><span class="pre">NoEpistasisBottleneckLikelihood</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisCauchyLikelihood"><code class="docutils literal notranslate"><span class="pre">NoEpistasisCauchyLikelihood</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood"><code class="docutils literal notranslate"><span class="pre">NoEpistasisGaussianLikelihood</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.globalepistasis.html#dms_variants.globalepistasis.fit_models"><code class="docutils literal notranslate"><span class="pre">fit_models()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html">illuminabarcodeparser</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bclen"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.bclen</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.upstream</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.downstream</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.upstream_mismatch"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.upstream_mismatch</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.downstream_mismatch"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.downstream_mismatch</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.valid_barcodes"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.valid_barcodes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.bc_orientation"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.bc_orientation</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.minq"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.minq</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.chastity_filter"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.chastity_filter</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.list_all_valid_barcodes"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.list_all_valid_barcodes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.VALID_NTS"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.VALID_NTS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse"><code class="docutils literal notranslate"><span class="pre">IlluminaBarcodeParser.parse()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.ispline.html">ispline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines"><code class="docutils literal notranslate"><span class="pre">Isplines</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.order"><code class="docutils literal notranslate"><span class="pre">Isplines.order</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.mesh"><code class="docutils literal notranslate"><span class="pre">Isplines.mesh</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.n"><code class="docutils literal notranslate"><span class="pre">Isplines.n</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.lower"><code class="docutils literal notranslate"><span class="pre">Isplines.lower</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.upper"><code class="docutils literal notranslate"><span class="pre">Isplines.upper</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.I"><code class="docutils literal notranslate"><span class="pre">Isplines.I()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.dI_dx"><code class="docutils literal notranslate"><span class="pre">Isplines.dI_dx()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.j"><code class="docutils literal notranslate"><span class="pre">Isplines.j</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines.x"><code class="docutils literal notranslate"><span class="pre">Isplines.x</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total"><code class="docutils literal notranslate"><span class="pre">Isplines_total</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.order"><code class="docutils literal notranslate"><span class="pre">Isplines_total.order</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.mesh"><code class="docutils literal notranslate"><span class="pre">Isplines_total.mesh</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.n"><code class="docutils literal notranslate"><span class="pre">Isplines_total.n</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.lower"><code class="docutils literal notranslate"><span class="pre">Isplines_total.lower</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.upper"><code class="docutils literal notranslate"><span class="pre">Isplines_total.upper</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.Itotal"><code class="docutils literal notranslate"><span class="pre">Isplines_total.Itotal()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dw_lower"><code class="docutils literal notranslate"><span class="pre">Isplines_total.dItotal_dw_lower()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dweights"><code class="docutils literal notranslate"><span class="pre">Isplines_total.dItotal_dweights()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dx"><code class="docutils literal notranslate"><span class="pre">Isplines_total.dItotal_dx()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Isplines_total.x"><code class="docutils literal notranslate"><span class="pre">Isplines_total.x</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines"><code class="docutils literal notranslate"><span class="pre">Msplines</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.order"><code class="docutils literal notranslate"><span class="pre">Msplines.order</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.mesh"><code class="docutils literal notranslate"><span class="pre">Msplines.mesh</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.n"><code class="docutils literal notranslate"><span class="pre">Msplines.n</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.knots"><code class="docutils literal notranslate"><span class="pre">Msplines.knots</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.lower"><code class="docutils literal notranslate"><span class="pre">Msplines.lower</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.upper"><code class="docutils literal notranslate"><span class="pre">Msplines.upper</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.M"><code class="docutils literal notranslate"><span class="pre">Msplines.M()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.dM_dx"><code class="docutils literal notranslate"><span class="pre">Msplines.dM_dx()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.ispline.html#dms_variants.ispline.Msplines.x"><code class="docutils literal notranslate"><span class="pre">Msplines.x</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.pdb_utils.html">pdb_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.pdb_utils.html#dms_variants.pdb_utils.reassign_b_factor"><code class="docutils literal notranslate"><span class="pre">reassign_b_factor()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.plotnine_themes.html">plotnine_themes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.plotnine_themes.html#dms_variants.plotnine_themes.theme_graygrid"><code class="docutils literal notranslate"><span class="pre">theme_graygrid</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html">simulate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator"><code class="docutils literal notranslate"><span class="pre">MultiLatentSigmoidPhenotypeSimulator</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes"><code class="docutils literal notranslate"><span class="pre">MultiLatentSigmoidPhenotypeSimulator.n_latent_phenotypes</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.latentPhenotype"><code class="docutils literal notranslate"><span class="pre">MultiLatentSigmoidPhenotypeSimulator.latentPhenotype()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedEnrichment"><code class="docutils literal notranslate"><span class="pre">MultiLatentSigmoidPhenotypeSimulator.observedEnrichment()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.observedPhenotype"><code class="docutils literal notranslate"><span class="pre">MultiLatentSigmoidPhenotypeSimulator.observedPhenotype()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram"><code class="docutils literal notranslate"><span class="pre">MultiLatentSigmoidPhenotypeSimulator.plotMutsHistogram()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.wt_latent"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.wt_latent</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.muteffects"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.muteffects</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.latentPhenotype"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.latentPhenotype()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.latentToObserved"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.latentToObserved()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.observedEnrichment"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedEnrichment()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.observedPhenotype"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.observedPhenotype()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.plotLatentVsObserved"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.plotLatentVsObserved()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator.plotMutsHistogram"><code class="docutils literal notranslate"><span class="pre">SigmoidPhenotypeSimulator.plotMutsHistogram()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.codon_muts"><code class="docutils literal notranslate"><span class="pre">codon_muts()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.mutate_seq"><code class="docutils literal notranslate"><span class="pre">mutate_seq()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.rand_seq"><code class="docutils literal notranslate"><span class="pre">rand_seq()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.simulateSampleCounts"><code class="docutils literal notranslate"><span class="pre">simulateSampleCounts()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.simulate.html#dms_variants.simulate.simulate_CodonVariantTable"><code class="docutils literal notranslate"><span class="pre">simulate_CodonVariantTable()</span></code></a></li>
 <li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.cumul_rows_by_count"><code class="docutils literal notranslate"><span class="pre">cumul_rows_by_count()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.integer_breaks"><code class="docutils literal notranslate"><span class="pre">integer_breaks()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.latex_sci_not"><code class="docutils literal notranslate"><span class="pre">latex_sci_not()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.reverse_complement"><code class="docutils literal notranslate"><span class="pre">reverse_complement()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.scores_to_prefs"><code class="docutils literal notranslate"><span class="pre">scores_to_prefs()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.single_nt_accessible"><code class="docutils literal notranslate"><span class="pre">single_nt_accessible()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.tidy_split"><code class="docutils literal notranslate"><span class="pre">tidy_split()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.tidy_to_corr"><code class="docutils literal notranslate"><span class="pre">tidy_to_corr()</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="dms_variants.utils.html#dms_variants.utils.translate"><code class="docutils literal notranslate"><span class="pre">translate()</span></code></a></li>
 </ul>
 </div>
 </section>
@@ -97,7 +300,7 @@ variants of genes.</p>
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -154,7 +357,7 @@ variants of genes.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -168,11 +371,11 @@ variants of genes.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/dms_variants.rst.txt"
@@ -181,7 +384,7 @@ variants of genes.</p>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

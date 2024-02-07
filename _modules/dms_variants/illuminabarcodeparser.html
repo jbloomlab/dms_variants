@@ -1,26 +1,25 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.illuminabarcodeparser &#8212; dms_variants 1.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <title>dms_variants.illuminabarcodeparser &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=e0a75244"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -44,11 +43,11 @@
 
 <span class="kn">import</span> <span class="nn">collections</span>
 
+<span class="kn">import</span> <span class="nn">numpy</span>
+
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">import</span> <span class="nn">regex</span>
-
-<span class="kn">import</span> <span class="nn">scipy</span>
 
 <span class="kn">from</span> <span class="nn">dms_variants.fastq</span> <span class="kn">import</span> <span class="p">(</span>
     <span class="n">iterate_fastq</span><span class="p">,</span>
@@ -58,8 +57,10 @@
 <span class="kn">from</span> <span class="nn">dms_variants.utils</span> <span class="kn">import</span> <span class="n">reverse_complement</span>
 
 
-<div class="viewcode-block" id="IlluminaBarcodeParser"><a class="viewcode-back" href="../../dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">[docs]</a><span class="k">class</span> <span class="nc">IlluminaBarcodeParser</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Parser for Illumina barcodes.</span>
+<div class="viewcode-block" id="IlluminaBarcodeParser">
+<a class="viewcode-back" href="../../dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser">[docs]</a>
+<span class="k">class</span> <span class="nc">IlluminaBarcodeParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parser for Illumina barcodes.</span>
 
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -129,7 +130,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">VALID_NTS</span> <span class="o">=</span> <span class="s2">&quot;ACGTN&quot;</span>
-    <span class="sd">&quot;&quot;&quot;str : Valid nucleotide characters in FASTQ files.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;str : Valid nucleotide characters in FASTQ files.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -145,7 +146,7 @@
         <span class="n">chastity_filter</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">list_all_valid_barcodes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bclen</span> <span class="o">=</span> <span class="n">bclen</span>
         <span class="k">if</span> <span class="n">regex</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;^[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VALID_NTS</span><span class="si">}</span><span class="s2">]*$&quot;</span><span class="p">,</span> <span class="n">upstream</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">upstream</span> <span class="o">=</span> <span class="n">upstream</span>
@@ -185,8 +186,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_rcupstream</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_matches</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;R1&quot;</span><span class="p">:</span> <span class="p">{},</span> <span class="s2">&quot;R2&quot;</span><span class="p">:</span> <span class="p">{}}</span>  <span class="c1"># match objects by read length</span>
 
-<div class="viewcode-block" id="IlluminaBarcodeParser.parse"><a class="viewcode-back" href="../../dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r1files</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">r2files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Parse barcodes from files.</span>
+<div class="viewcode-block" id="IlluminaBarcodeParser.parse">
+<a class="viewcode-back" href="../../dms_variants.illuminabarcodeparser.html#dms_variants.illuminabarcodeparser.IlluminaBarcodeParser.parse">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r1files</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">r2files</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Parse barcodes from files.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -263,7 +266,6 @@
                 <span class="p">)</span>
 
             <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
-
                 <span class="k">if</span> <span class="n">r1only</span><span class="p">:</span>
                     <span class="n">readlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
                     <span class="n">qlist</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]]</span>
@@ -294,7 +296,7 @@
                                 <span class="sa">f</span><span class="s2">&quot;^(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcdownstream</span><span class="si">}</span><span class="s2">)&quot;</span>
                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">s&lt;=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream_mismatch</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
                                 <span class="sa">f</span><span class="s2">&quot;(?P&lt;bc&gt;[ACTG]</span><span class="se">{{</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bclen</span><span class="si">}</span><span class="se">}}</span><span class="s2">)&quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcupstream</span><span class="p">[:</span> <span class="n">len_past_bc</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+                                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_rcupstream</span><span class="p">[:</span><span class="w"> </span><span class="n">len_past_bc</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">s&lt;=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream_mismatch</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
                             <span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
@@ -303,7 +305,7 @@
                                 <span class="sa">f</span><span class="s2">&quot;^(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream</span><span class="si">}</span><span class="s2">)&quot;</span>
                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">s&lt;=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">upstream_mismatch</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
                                 <span class="sa">f</span><span class="s2">&quot;(?P&lt;bc&gt;[ACTG]</span><span class="se">{{</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">bclen</span><span class="si">}</span><span class="se">}}</span><span class="s2">)&quot;</span>
-                                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream</span><span class="p">[:</span> <span class="n">len_past_bc</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
+                                <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream</span><span class="p">[:</span><span class="w"> </span><span class="n">len_past_bc</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span>
                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">s&lt;=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">downstream_mismatch</span><span class="si">}</span><span class="se">}}</span><span class="s2">&quot;</span>
                             <span class="p">)</span>
                         <span class="n">matcher</span> <span class="o">=</span> <span class="n">regex</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">match_str</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">regex</span><span class="o">.</span><span class="n">BESTMATCH</span><span class="p">)</span>
@@ -326,11 +328,11 @@
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc_orientation</span> <span class="o">==</span> <span class="s2">&quot;R1&quot;</span><span class="p">:</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">r1only</span><span class="p">:</span>
                             <span class="n">bc</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">bc</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">])</span>
-                            <span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                            <span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">bc_orientation</span> <span class="o">==</span> <span class="s2">&quot;R2&quot;</span>
                         <span class="n">bc</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reverse_complement</span><span class="p">(</span><span class="n">bc</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">])</span>
-                        <span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">r1only</span><span class="p">:</span>
                         <span class="k">if</span> <span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minq</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valid_barcodes</span> <span class="ow">and</span> <span class="p">(</span>
@@ -349,7 +351,7 @@
                             <span class="p">):</span>
                                 <span class="n">fates</span><span class="p">[</span><span class="s2">&quot;invalid barcode&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
                             <span class="k">elif</span> <span class="p">(</span>
-                                <span class="n">scipy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">],</span> <span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minq</span>
+                                <span class="n">numpy</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">],</span> <span class="n">bc_q</span><span class="p">[</span><span class="s2">&quot;R2&quot;</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minq</span>
                             <span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                                 <span class="n">barcodes</span><span class="p">[</span><span class="n">bc</span><span class="p">[</span><span class="s2">&quot;R1&quot;</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span>
                                 <span class="n">fates</span><span class="p">[</span><span class="s2">&quot;valid barcode&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -381,7 +383,9 @@
             <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">fates</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="p">(</span><span class="n">barcodes</span><span class="p">,</span> <span class="n">fates</span><span class="p">)</span></div>
+</div>
+
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
@@ -398,7 +402,7 @@
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../index.html">
-    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -451,7 +455,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -465,17 +469,17 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2021.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Analyze simulated library of codon variants &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>Analyze simulated library of codon variants &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Variants with deletion mutations" href="codonvariant_sim_data_w_gaps.html" />
@@ -24,8 +23,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -37,256 +37,8 @@
 
           <div class="body" role="main">
             
-  
-<style>
-/* CSS for nbsphinx extension */
-
-/* remove conflicting styling from Sphinx themes */
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt *,
-div.nbinput.container div.input_area pre,
-div.nboutput.container div.output_area pre,
-div.nbinput.container div.input_area .highlight,
-div.nboutput.container div.output_area .highlight {
-    border: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-}
-
-div.nbinput.container > div[class*=highlight],
-div.nboutput.container > div[class*=highlight] {
-    margin: 0;
-}
-
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt * {
-    background: none;
-}
-
-div.nboutput.container div.output_area .highlight,
-div.nboutput.container div.output_area pre {
-    background: unset;
-}
-
-div.nboutput.container div.output_area div.highlight {
-    color: unset;  /* override Pygments text color */
-}
-
-/* avoid gaps between output lines */
-div.nboutput.container div[class*=highlight] pre {
-    line-height: normal;
-}
-
-/* input/output containers */
-div.nbinput.container,
-div.nboutput.container {
-    display: -webkit-flex;
-    display: flex;
-    align-items: flex-start;
-    margin: 0;
-    width: 100%;
-}
-@media (max-width: 540px) {
-    div.nbinput.container,
-    div.nboutput.container {
-        flex-direction: column;
-    }
-}
-
-/* input container */
-div.nbinput.container {
-    padding-top: 5px;
-}
-
-/* last container */
-div.nblast.container {
-    padding-bottom: 5px;
-}
-
-/* input prompt */
-div.nbinput.container div.prompt pre {
-    color: #307FC1;
-}
-
-/* output prompt */
-div.nboutput.container div.prompt pre {
-    color: #BF5B3D;
-}
-
-/* all prompts */
-div.nbinput.container div.prompt,
-div.nboutput.container div.prompt {
-    width: 4.5ex;
-    padding-top: 5px;
-    position: relative;
-    user-select: none;
-}
-
-div.nbinput.container div.prompt > div,
-div.nboutput.container div.prompt > div {
-    position: absolute;
-    right: 0;
-    margin-right: 0.3ex;
-}
-
-@media (max-width: 540px) {
-    div.nbinput.container div.prompt,
-    div.nboutput.container div.prompt {
-        width: unset;
-        text-align: left;
-        padding: 0.4em;
-    }
-    div.nboutput.container div.prompt.empty {
-        padding: 0;
-    }
-
-    div.nbinput.container div.prompt > div,
-    div.nboutput.container div.prompt > div {
-        position: unset;
-    }
-}
-
-/* disable scrollbars on prompts */
-div.nbinput.container div.prompt pre,
-div.nboutput.container div.prompt pre {
-    overflow: hidden;
-}
-
-/* input/output area */
-div.nbinput.container div.input_area,
-div.nboutput.container div.output_area {
-    -webkit-flex: 1;
-    flex: 1;
-    overflow: auto;
-}
-@media (max-width: 540px) {
-    div.nbinput.container div.input_area,
-    div.nboutput.container div.output_area {
-        width: 100%;
-    }
-}
-
-/* input area */
-div.nbinput.container div.input_area {
-    border: 1px solid #e0e0e0;
-    border-radius: 2px;
-    /*background: #f5f5f5;*/
-}
-
-/* override MathJax center alignment in output cells */
-div.nboutput.container div[class*=MathJax] {
-    text-align: left !important;
-}
-
-/* override sphinx.ext.imgmath center alignment in output cells */
-div.nboutput.container div.math p {
-    text-align: left;
-}
-
-/* standard error */
-div.nboutput.container div.output_area.stderr {
-    background: #fdd;
-}
-
-/* ANSI colors */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-default-inverse-fg { color: #FFFFFF; }
-.ansi-default-inverse-bg { background-color: #000000; }
-
-.ansi-bold { font-weight: bold; }
-.ansi-underline { text-decoration: underline; }
-
-
-div.nbinput.container div.input_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight].math,
-div.nboutput.container div.output_area.rendered_html,
-div.nboutput.container div.output_area > div.output_javascript,
-div.nboutput.container div.output_area:not(.rendered_html) > img{
-    padding: 5px;
-    margin: 0;
-}
-
-/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
-div.nbinput.container div.input_area > div[class^='highlight'],
-div.nboutput.container div.output_area > div[class^='highlight']{
-    overflow-y: hidden;
-}
-
-/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
-    display: none;
-}
-
-/* Some additional styling taken form the Jupyter notebook CSS */
-div.rendered_html table {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-  color: black;
-  font-size: 12px;
-  table-layout: fixed;
-}
-div.rendered_html thead {
-  border-bottom: 1px solid black;
-  vertical-align: bottom;
-}
-div.rendered_html tr,
-div.rendered_html th,
-div.rendered_html td {
-  text-align: right;
-  vertical-align: middle;
-  padding: 0.5em 0.5em;
-  line-height: normal;
-  white-space: normal;
-  max-width: none;
-  border: none;
-}
-div.rendered_html th {
-  font-weight: bold;
-}
-div.rendered_html tbody tr:nth-child(odd) {
-  background: #f5f5f5;
-}
-div.rendered_html tbody tr:hover {
-  background: rgba(66, 165, 245, 0.2);
-}
-</style>
-<section id="Analyze-simulated-library-of-codon-variants">
-<h1>Analyze simulated library of codon variants<a class="headerlink" href="#Analyze-simulated-library-of-codon-variants" title="Permalink to this headline">¶</a></h1>
+  <section id="Analyze-simulated-library-of-codon-variants">
+<h1>Analyze simulated library of codon variants<a class="headerlink" href="#Analyze-simulated-library-of-codon-variants" title="Link to this heading">¶</a></h1>
 <p>This example does the following three major things:</p>
 <ol class="arabic simple">
 <li><p>Simulates a deep mutational scanning experiment on a “plausible” data set of barcoded codon variants.</p></li>
@@ -294,14 +46,13 @@ div.rendered_html tbody tr:hover {
 <li><p>Fits global epistasis models.</p></li>
 </ol>
 <section id="Setup-for-analysis">
-<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
+<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Link to this heading">¶</a></h2>
 <p>Import Python modules / packages:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
@@ -333,8 +84,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
 <span class="n">genelength</span> <span class="o">=</span> <span class="mi">30</span>  <span class="c1"># gene length in codons</span>
 <span class="n">libs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lib_1&quot;</span><span class="p">,</span> <span class="s2">&quot;lib_2&quot;</span><span class="p">]</span>  <span class="c1"># distinct libraries of gene</span>
 <span class="n">variants_per_lib</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">genelength</span>  <span class="c1"># variants per library</span>
@@ -356,8 +106,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -367,8 +116,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_columns&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_columns&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.width&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -378,8 +126,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -388,21 +135,19 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Simulate-library-of-variants">
-<h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Link to this heading">¶</a></h2>
 <p>Simulate wildtype gene sequence:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{</span><span class="n">genelength</span><span class="si">}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{</span><span class="n">geneseq</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -421,8 +166,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
     <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
     <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
     <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span>
@@ -438,8 +182,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -456,8 +199,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">codons</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -474,8 +216,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">aas</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">aas</span><span class="p">[</span><span class="n">r</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">variants</span><span class="o">.</span><span class="n">sites</span><span class="p">[:</span><span class="mi">5</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -493,8 +234,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span>
 </pre></div>
 </div>
 </div>
@@ -512,8 +252,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -616,7 +355,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 </div>
 </section>
 <section id="Analyze-library-composition">
-<h2>Analyze library composition<a class="headerlink" href="#Analyze-library-composition" title="Permalink to this headline">¶</a></h2>
+<h2>Analyze library composition<a class="headerlink" href="#Analyze-library-composition" title="Link to this heading">¶</a></h2>
 <p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> has methods for summarizing and plotting properties of the barcoded variants. These methods can be used to analyze the barcoded variants themselves, or to analyze the frequency (or counts) of variants in the library in samples that have undergone some type of selection.</p>
 <p>We have not yet added counts of the variants in any specific samples, so we just analyze the composition of the variant library itself. This is done by setting <code class="docutils literal notranslate"><span class="pre">samples=None</span></code> in the method calls below.</p>
 <p>Number of variants in each library:</p>
@@ -624,8 +363,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -685,12 +423,11 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotVariantSupportHistogram</span><span class="p">(</span><span class="n">max_support</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -706,8 +443,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libs</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;First few barcodes for library </span><span class="si">{</span><span class="n">lib</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">variants</span><span class="o">.</span><span class="n">valid_barcodes</span><span class="p">(</span><span class="n">lib</span><span class="p">))[:</span><span class="mi">3</span><span class="p">])</span>
 </pre></div>
@@ -729,10 +465,11 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -748,10 +485,11 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;codon&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;codon&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -767,11 +505,12 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">mut_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">mut_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">mut_type</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -794,8 +533,7 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -920,8 +658,7 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1047,10 +784,11 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1073,8 +811,7 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">mutCounts</span><span class="p">(</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1164,10 +901,11 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutFreqs</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="s2">&quot;codon&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1190,9 +928,10 @@ First few barcodes for library lib_2:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutHeatmap</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutHeatmap</span><span class="p">(</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1205,12 +944,12 @@ First few barcodes for library lib_2:
 </div>
 </section>
 <section id="Simulate-counts-for-samples">
-<h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Permalink to this headline">¶</a></h2>
+<h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Link to this heading">¶</a></h2>
 <p>An experiment involves subjecting the library to different selections and looking at how the frequencies of the variants changes by using sequencing to count the barcodes in each condition.</p>
 <p>Here, we simulate an experiment by simulating variant counts for samples that have undergone various selections.</p>
 <p>For these simulations, we first need to define a “phenotype” for each variant. The phenotype represents how much the frequency of the variant is expected to increase or decrease after selection.</p>
 <section id="Define-phenotype-function">
-<h3>Define phenotype function<a class="headerlink" href="#Define-phenotype-function" title="Permalink to this headline">¶</a></h3>
+<h3>Define phenotype function<a class="headerlink" href="#Define-phenotype-function" title="Link to this heading">¶</a></h3>
 <p>First, we define a “phenotype” function. We will do this using a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, which follow the “global epistasis” concepts of <a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and <a class="reference external" href="https://doi.org/10.1534/genetics.116.195214">Sailer and Harms</a> to define the phenotype in two steps: an underlying latent phenotype that mutations affect additively,
 and then an observed phenotype that is a non-linear function of the latent phenotype. The variants are then simulated according to their observed enrichments, which are the exponentials of the observed phenotypes.</p>
 <p>First, we initialize the simulator:</p>
@@ -1218,8 +957,7 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span><span class="n">geneseq</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span><span class="n">geneseq</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1228,10 +966,11 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;enrichment&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;enrichment&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotLatentVsObserved</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1254,10 +993,11 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;latentPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedEnrichment&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;latentPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedEnrichment&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotMutsHistogram</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1284,15 +1024,14 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 </div>
 </section>
 <section id="Simulate-variant-counts">
-<h3>Simulate variant counts<a class="headerlink" href="#Simulate-variant-counts" title="Permalink to this headline">¶</a></h3>
+<h3>Simulate variant counts<a class="headerlink" href="#Simulate-variant-counts" title="Link to this heading">¶</a></h3>
 <p>Now we use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.simulateSampleCounts">simulateSampleCounts</a> to simulate counts of variants when selection on each variant is proportional to its observed enrichment. In these simulations, we can fine-tune the simulations to reflect real experiments, such as by setting the error-rate in variant calling, bottlenecks when going from the pre- to post-selection samples, and non-uniformity in library composition.</p>
 <p>Here we simulate using several bottlenecks in the library going from the pre- to post-selection samples, since in real experiments this seems to be the biggest source of noise / error:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
     <span class="n">variants</span><span class="o">=</span><span class="n">variants</span><span class="p">,</span>
     <span class="n">phenotype_func</span><span class="o">=</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">,</span>
     <span class="n">variant_error_rate</span><span class="o">=</span><span class="n">variant_error_rate</span><span class="p">,</span>
@@ -1320,8 +1059,7 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">counts</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1396,14 +1134,13 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 </div>
 </section>
 <section id="Add-counts-to-variant-table">
-<h3>Add counts to variant table<a class="headerlink" href="#Add-counts-to-variant-table" title="Permalink to this headline">¶</a></h3>
+<h3>Add counts to variant table<a class="headerlink" href="#Add-counts-to-variant-table" title="Link to this heading">¶</a></h3>
 <p>Now add the simulated counts for each library / sample to the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a>:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1412,8 +1149,7 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1507,7 +1243,7 @@ and then an observed phenotype that is a non-linear function of the latent pheno
 </section>
 </section>
 <section id="Analyze-sample-variant-counts">
-<h2>Analyze sample variant counts<a class="headerlink" href="#Analyze-sample-variant-counts" title="Permalink to this headline">¶</a></h2>
+<h2>Analyze sample variant counts<a class="headerlink" href="#Analyze-sample-variant-counts" title="Link to this heading">¶</a></h2>
 <p>A <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">CodonVariantTable</a> has methods for summarizing and plotting the variant counts for different samples. These methods are mostly the same as we used above to analyze the variant composition of the libraries themselves, but now we set <code class="docutils literal notranslate"><span class="pre">samples</span></code> to the samples that we want to analyze (typically <code class="docutils literal notranslate"><span class="pre">'all'</span></code>). Therefore, rather than each variant always counting once,
 each variant is counted in each sample in proportion to how many counts it has.</p>
 <p>In the rawest form, we can directly access a data frame giving the counts of each variant in each sample:</p>
@@ -1515,8 +1251,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">variant_count_df</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1624,8 +1359,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">()</span><span class="o">.</span><span class="n">convert_dtypes</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">avgCountsPerVariant</span><span class="p">()</span><span class="o">.</span><span class="n">convert_dtypes</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1721,10 +1455,11 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotAvgCountsPerVariant</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotAvgCountsPerVariant</span><span class="p">()</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1740,9 +1475,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">()</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1759,9 +1495,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1777,9 +1514,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span> <span class="n">by_variant_class</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span> <span class="n">by_variant_class</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1795,9 +1533,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span> <span class="n">ystat</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span> <span class="n">ystat</span><span class="o">=</span><span class="s2">&quot;count&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1813,9 +1552,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span> <span class="n">logy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCountsPerVariant</span><span class="p">(</span><span class="n">libraries</span><span class="o">=</span><span class="n">variants</span><span class="o">.</span><span class="n">libraries</span><span class="p">,</span> <span class="n">logy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1831,10 +1571,11 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1850,11 +1591,12 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[42]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="p">)</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1877,8 +1619,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[43]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">variants</span><span class="o">.</span><span class="n">numCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
@@ -2087,9 +1828,10 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[44]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutFreqs</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;codon&quot;</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotMutFreqs</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;codon&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2105,10 +1847,11 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[45]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2128,15 +1871,14 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 </section>
 <section id="Functional-scores-for-variants">
-<h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Link to this heading">¶</a></h2>
 <p>The <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">CodonVariantTable.func_scores</a> method calculates a functional score for each variant based on its change in frequency from pre- to post-selection.</p>
 <p>To calculate these scores, we need to pair each post-selection sample with a pre-selection one. In this case, the pre-selection sample is named ‘pre-selection’ for all post-selection samples:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[46]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2145,8 +1887,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[47]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">func_scores</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">func_scores</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2290,8 +2031,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[48]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">aa_func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aa_func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span>
     <span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">&quot;aa_substitutions&quot;</span><span class="p">,</span> <span class="n">syn_as_wt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span>
 <span class="p">)</span>
 <span class="n">aa_func_scores</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
@@ -2420,8 +2160,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[49]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span>
     <span class="n">func_scores</span>
 <span class="p">)</span>
 
@@ -2497,8 +2236,9 @@ each variant is counted in each sample in proportion to how many counts it has.<
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[50]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span><span class="n">func_scores</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s2">&quot;variant_class&quot;</span><span class="p">,</span> <span class="s2">&quot;func_score&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">geom_violin</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;variant_class&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="s2">&quot;functional score&quot;</span><span class="p">)</span>
@@ -2511,7 +2251,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
     <span class="p">)</span>
     <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">guide</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2524,7 +2264,7 @@ each variant is counted in each sample in proportion to how many counts it has.<
 </div>
 </section>
 <section id="Fit-global-epistasis-models">
-<h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
+<h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Link to this heading">¶</a></h2>
 <p>We now fit global epistasis models to the functional scores from each simulated experiment. For background on these models, see <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. The models we fits are implemented in <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a>, which has extensive documentation.</p>
 <p>The primary model of interest is <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasisGaussianLikelihood">MonotonicSplineEpistasisGaussianLikelihood</a>, which assumes that the observed phenotype is a monotonic non-linear function of an underlying additive latent phenotype. As a control, we also fit a
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasisGaussianLikelihood">NoEpistasisGaussianLikelihood</a> model, which assumes that mutations simply contribute additively to the observed phenotype. Note that for both models we are using the Gaussian-likelihood calculation method to determine model fit (see <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">dms_variants.globalepistasis</a> for details)–as
@@ -2534,13 +2274,11 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[51]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">models</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># store models, keyed by `(modeltype, sample, lib)`</span>
 
 <span class="k">for</span> <span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">),</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">func_scores</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;post_sample&quot;</span><span class="p">,</span> <span class="s2">&quot;library&quot;</span><span class="p">]):</span>
-
     <span class="n">bmap</span> <span class="o">=</span> <span class="n">binarymap</span><span class="o">.</span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">modeltype</span><span class="p">,</span> <span class="n">EpistasisModel</span> <span class="ow">in</span> <span class="p">[</span>
@@ -2555,7 +2293,7 @@ described in a later example, you might want to use a Bottleneck- or Cauchy-like
         <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">EpistasisModel</span><span class="p">(</span><span class="n">bmap</span><span class="p">)</span>
         <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> sec.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fitting took </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">start</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> sec.&quot;</span><span class="p">)</span>
         <span class="n">models</span><span class="p">[(</span><span class="n">modeltype</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">)]</span> <span class="o">=</span> <span class="n">model</span>
 </pre></div>
 </div>
@@ -2581,8 +2319,7 @@ much better:</p>
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[52]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">logliks_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_records</span><span class="p">(</span>
     <span class="p">[</span>
@@ -2704,8 +2441,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[54]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">variants_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
     <span class="p">[</span>
@@ -2830,8 +2566,9 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[55]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span>
     <span class="p">[</span><span class="s2">&quot;latent_phenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observed_phenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;func_score&quot;</span><span class="p">],</span> <span class="mi">2</span>
 <span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
@@ -2845,7 +2582,7 @@ model-predicted enrichments for each variant (recall that the functional score /
             <span class="p">),</span>
         <span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2872,14 +2609,13 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div>
 </section>
 <section id="Model-vs-measurements-vs-truth-for-all-variants">
-<h2>Model vs measurements vs truth for all variants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-all-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Model vs measurements vs truth for all variants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-all-variants" title="Link to this heading">¶</a></h2>
 <p>Because we simulated the variants, we can also use the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a> used in these simulations to get the <strong>true</strong> phenotype of each variant. (Obviously in real non-simulated experiments the true phenotypes are unknown.) We get the true latent phenotype, the true observed phenotype (which corresponds to the functional score), and true enrichment:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[56]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">variants_df</span> <span class="o">=</span> <span class="n">variants_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
     <span class="n">true_latent_phenotype</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;aa_substitutions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
@@ -3019,8 +2755,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[57]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">enrichments_corr</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">variants_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -3114,8 +2849,9 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[59]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span>
         <span class="n">variants_df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span>
             <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;true_enrichment&quot;</span><span class="p">],</span>
@@ -3135,7 +2871,7 @@ model-predicted enrichments for each variant (recall that the functional score /
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -3149,15 +2885,14 @@ model-predicted enrichments for each variant (recall that the functional score /
 <p>These results show that the model predictions are closer to the true values than the actual measurements, which is great! This could be because modeling the data helps extract more signal from multiple mutants–but it could also be for the trivial reason that the model effectively averages over multiple variants with the same mutations, which could be more accurate than the individual measurements. Therefore, in the next section we look at this issue…</p>
 </section>
 <section id="Model-vs-measurements-vs-truth-for-amino-acid-variants">
-<h2>Model vs measurements vs truth for amino-acid variants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-amino-acid-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Model vs measurements vs truth for amino-acid variants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-amino-acid-variants" title="Link to this heading">¶</a></h2>
 <p>We want to see if the model still outperforms the experiments if look at the level of <strong>amino-acid</strong> variants (meaning we pool the counts for all variants with the same amino-acid substitutions together before calculating the functional scores). Recall that above we already got such functional scores into the variable <code class="docutils literal notranslate"><span class="pre">aa_func_scores</span></code>:</p>
 <p>First we get a data frame of simulated functional scores calculated at the level of amino-acid variants (pooling all barcoded variants with the same amino-acid mutations):</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[60]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_func_scores</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;post_sample&quot;</span><span class="p">:</span> <span class="s2">&quot;sample&quot;</span><span class="p">})[</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_func_scores</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;post_sample&quot;</span><span class="p">:</span> <span class="s2">&quot;sample&quot;</span><span class="p">})[</span>
     <span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;aa_substitutions&quot;</span><span class="p">,</span> <span class="s2">&quot;n_aa_substitutions&quot;</span><span class="p">,</span> <span class="s2">&quot;func_score&quot;</span><span class="p">]</span>
 <span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">measured_enrichment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;func_score&quot;</span><span class="p">])</span>
 
@@ -3251,8 +2986,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[61]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">df_list</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">lib</span><span class="p">),</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;library&quot;</span><span class="p">]):</span>
@@ -3372,8 +3106,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[62]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
     <span class="n">true_latent_phenotype</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;aa_substitutions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
@@ -3513,8 +3246,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[63]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">enrichments_corr</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -3607,8 +3339,9 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[65]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span>
         <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span>
             <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;true_enrichment&quot;</span><span class="p">],</span>
@@ -3628,7 +3361,7 @@ model-predicted enrichments for each variant (recall that the functional score /
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -3642,15 +3375,14 @@ model-predicted enrichments for each variant (recall that the functional score /
 <p>The results above show that the model still outperforms the direct measurements even when the measurements are aggregated at the level of amino-acid variants.</p>
 </section>
 <section id="Model-vs-measurements-vs-truth-for-single-mutants">
-<h2>Model vs measurements vs truth for single mutants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-single-mutants" title="Permalink to this headline">¶</a></h2>
+<h2>Model vs measurements vs truth for single mutants<a class="headerlink" href="#Model-vs-measurements-vs-truth-for-single-mutants" title="Link to this heading">¶</a></h2>
 <p>Now we repeat the above analysis for just <strong>single</strong> amino-acid mutants.</p>
 <p>First, get the single amino-acid mutant variants:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[66]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">single_aa_variants_df</span> <span class="o">=</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;n_aa_substitutions == 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
     <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
@@ -3782,8 +3514,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[68]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">enrichments_corr</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">single_aa_variants_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -3876,8 +3607,9 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[70]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span>
         <span class="n">single_aa_variants_df</span><span class="o">.</span><span class="n">melt</span><span class="p">(</span>
             <span class="n">id_vars</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;true_enrichment&quot;</span><span class="p">],</span>
@@ -3897,7 +3629,7 @@ model-predicted enrichments for each variant (recall that the functional score /
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -3911,7 +3643,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <p>We see that even for single mutants, fitting the global epistasis model leads to more accurate measurements of the effects of mutations. Presumably this is because these models are able to effectively extract information from the multiple mutants.</p>
 </section>
 <section id="Effects-of-mutations">
-<h2>Effects of mutations<a class="headerlink" href="#Effects-of-mutations" title="Permalink to this headline">¶</a></h2>
+<h2>Effects of mutations<a class="headerlink" href="#Effects-of-mutations" title="Link to this heading">¶</a></h2>
 <p>It’s often useful to try to summarize the effects of individual mutations with a single value. These values can then be nicely displayed in logo plots using programs like:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="http://jbloomlab.github.io/dms_tools2/dms2_logoplot.html">dms2_logoplot</a></p></li>
@@ -3920,7 +3652,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 </ul>
 <p>Here we will make some plots of mutational effects of various types using <a class="reference external" href="https://jbloomlab.github.io/dmslogo">dmslogo</a>. Do keep in mind, however, that the whole point of the epistasis models is that it isn’t possible to summarize everything about a mutation with a single value–so use such plots as they are very informative ways to look at the data, but also recognize they are summarizing the impacts of mutations down to one value.</p>
 <section id="Mutational-effects-on-phenotype">
-<h3>Mutational effects on phenotype<a class="headerlink" href="#Mutational-effects-on-phenotype" title="Permalink to this headline">¶</a></h3>
+<h3>Mutational effects on phenotype<a class="headerlink" href="#Mutational-effects-on-phenotype" title="Link to this heading">¶</a></h3>
 <p>One useful measure of the effects of mutations is simply how the single mutation changes the latent or observed phenotype (note that while the effect on the latent phenotype should be “universal”, that on the observed phenotype depends on the wildtype sequence).</p>
 <p>The epistasis models have a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.AbstractEpistasis.single_mut_effects">single_mut_effects</a> method to get these mutational effects. By default, this method scales the effects so that their mean absolute value is one.</p>
 <p>Mutational effects on the latent phenotype:</p>
@@ -3928,8 +3660,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[71]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">latenteffects_df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">single_mut_effects</span><span class="p">(</span><span class="s2">&quot;latent&quot;</span><span class="p">)</span>
 
@@ -4017,8 +3748,7 @@ model-predicted enrichments for each variant (recall that the functional score /
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[72]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">observedeffects_df</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">single_mut_effects</span><span class="p">(</span><span class="s2">&quot;observed&quot;</span><span class="p">)</span>
 
@@ -4102,8 +3832,8 @@ model-predicted enrichments for each variant (recall that the functional score /
 </div></div>
 </div>
 </section>
-<section id="Phenotypic-mutational-effects-to-“preferences”">
-<h3>Phenotypic mutational effects to “preferences”<a class="headerlink" href="#Phenotypic-mutational-effects-to-“preferences”" title="Permalink to this headline">¶</a></h3>
+<section id="Phenotypic-mutational-effects-to-%22preferences%22">
+<h3>Phenotypic mutational effects to “preferences”<a class="headerlink" href="#Phenotypic-mutational-effects-to-%22preferences%22" title="Link to this heading">¶</a></h3>
 <p>It is sometimes useful to convert mutational effects to “preferences.” Essentially, the preferences are the exponential of the mutational effects re-scaled to sum to one at each site. In other words, the preference <span class="math notranslate nohighlight">\(\pi_{r,a}\)</span> of site <span class="math notranslate nohighlight">\(r\)</span> for character (e.g., amino acid) <span class="math notranslate nohighlight">\(a\)</span> is simply:</p>
 <div class="math notranslate nohighlight">
 \[\pi_{r,a} = \frac{b^{p_{r,a}}}{\sum_{a'} b^{p_{r,a'}}}\]</div>
@@ -4118,8 +3848,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[73]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">prefs_base10</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span><span class="n">phenotype</span><span class="o">=</span><span class="s2">&quot;latent&quot;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 
@@ -4304,8 +4033,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[74]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">prefs_base10_tidy</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span><span class="n">phenotype</span><span class="o">=</span><span class="s2">&quot;latent&quot;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">returnformat</span><span class="o">=</span><span class="s2">&quot;tidy&quot;</span><span class="p">)</span>
 
@@ -4387,8 +4115,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[75]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">_</span> <span class="o">=</span> <span class="n">dmslogo</span><span class="o">.</span><span class="n">draw_logo</span><span class="p">(</span>
     <span class="n">data</span><span class="o">=</span><span class="n">prefs_base10_tidy</span><span class="p">,</span>
@@ -4412,8 +4139,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[76]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">prefs_base100_tidy</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">preferences</span><span class="p">(</span>
     <span class="n">phenotype</span><span class="o">=</span><span class="s2">&quot;latent&quot;</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">returnformat</span><span class="o">=</span><span class="s2">&quot;tidy&quot;</span>
@@ -4444,8 +4170,7 @@ details. This is necessary since the preferences are normalized per site. If you
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[77]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">stringency_param</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -4483,7 +4208,7 @@ details. This is necessary since the preferences are normalized per site. If you
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -4547,7 +4272,7 @@ details. This is necessary since the preferences are normalized per site. If you
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -4561,11 +4286,11 @@ details. This is necessary since the preferences are normalized per site. If you
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/codonvariant_sim_data.nblink.txt"
@@ -4574,7 +4299,7 @@ details. This is necessary since the preferences are normalized per site. If you
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

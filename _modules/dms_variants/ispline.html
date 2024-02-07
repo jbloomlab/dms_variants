@@ -1,26 +1,25 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.ispline &#8212; dms_variants 1.3.0 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <title>dms_variants.ispline &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=e0a75244"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -51,12 +50,13 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-
 <span class="kn">import</span> <span class="nn">numpy</span>
 
 
-<div class="viewcode-block" id="Isplines_total"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total">[docs]</a><span class="k">class</span> <span class="nc">Isplines_total</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate the weighted sum of an I-spline family (see `Ramsay (1988)`_).</span>
+<div class="viewcode-block" id="Isplines_total">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total">[docs]</a>
+<span class="k">class</span> <span class="nc">Isplines_total</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate the weighted sum of an I-spline family (see `Ramsay (1988)`_).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -210,7 +210,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
@@ -256,11 +256,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
-<div class="viewcode-block" id="Isplines_total.Itotal"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.Itotal">[docs]</a>    <span class="k">def</span> <span class="nf">Itotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Weighted sum of spline family at points :attr:`Isplines_total.x`.</span>
+<div class="viewcode-block" id="Isplines_total.Itotal">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.Itotal">[docs]</a>
+    <span class="k">def</span> <span class="nf">Itotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Weighted sum of spline family at points :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -284,8 +286,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
+
     <span class="k">def</span> <span class="nf">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.Itotal` or derivatives.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.Itotal` or derivatives.</span>
 
 <span class="sd">        Parameters have same meaning as for :meth:`Isplines.Itotal`</span>
 <span class="sd">        except for `quantity`, which should be</span>
@@ -383,8 +386,10 @@
         <span class="n">returnval</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">returnval</span>
 
-<div class="viewcode-block" id="Isplines_total.dItotal_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv :meth:`Isplines_total.Itotal` by :attr:`Isplines_total.x`.</span>
+<div class="viewcode-block" id="Isplines_total.dItotal_dx">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dx">[docs]</a>
+    <span class="k">def</span> <span class="nf">dItotal_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv :meth:`Isplines_total.Itotal` by :attr:`Isplines_total.x`.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -440,8 +445,11 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_Itotal_or_dItotal</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Isplines_total.dItotal_dweights"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dweights">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dweights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines_total.Itotal` by :math:`w_i`.</span>
+
+<div class="viewcode-block" id="Isplines_total.dItotal_dweights">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dweights">[docs]</a>
+    <span class="k">def</span> <span class="nf">dItotal_dweights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">w_lower</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines_total.Itotal` by :math:`w_i`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -488,8 +496,11 @@
             <span class="nb">tuple</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">w_lower</span><span class="p">,</span> <span class="s2">&quot;dItotal_dweights&quot;</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="Isplines_total.dItotal_dw_lower"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dw_lower">[docs]</a>    <span class="k">def</span> <span class="nf">dItotal_dw_lower</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv of :meth:`Isplines_total.Itotal` by :math:`w_{\rm{lower}}`.</span>
+
+<div class="viewcode-block" id="Isplines_total.dItotal_dw_lower">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines_total.dItotal_dw_lower">[docs]</a>
+    <span class="k">def</span> <span class="nf">dItotal_dw_lower</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Deriv of :meth:`Isplines_total.Itotal` by :math:`w_{\rm{lower}}`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -500,11 +511,15 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">)</span>
         <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="n">res</span></div></div>
+        <span class="k">return</span> <span class="n">res</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Isplines"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines">[docs]</a><span class="k">class</span> <span class="nc">Isplines</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements I-splines (see `Ramsay (1988)`_).</span>
+
+<div class="viewcode-block" id="Isplines">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines">[docs]</a>
+<span class="k">class</span> <span class="nc">Isplines</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements I-splines (see `Ramsay (1988)`_).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -606,7 +621,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
@@ -639,11 +654,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
-<div class="viewcode-block" id="Isplines.I"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines.I">[docs]</a>    <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>  <span class="c1"># noqa: E743,E741</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`I_i` at point(s) :attr:`Isplines.x`.</span>
+<div class="viewcode-block" id="Isplines.I">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines.I">[docs]</a>
+    <span class="k">def</span> <span class="nf">I</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>  <span class="c1"># noqa: E743,E741</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`I_i` at point(s) :attr:`Isplines.x`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -690,9 +707,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
+
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">j</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: :math:`j` as defined in :meth:`Isplines.I`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;numpy.ndarray: :math:`j` as defined in :meth:`Isplines.I`.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_j&quot;</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">)</span>
             <span class="k">assert</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_j</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_j</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msplines</span><span class="o">.</span><span class="n">knots</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -701,7 +719,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_sum_terms_I</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: sum terms for :meth:`Isplines.I`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;numpy.ndarray: sum terms for :meth:`Isplines.I`.</span>
 
 <span class="sd">        Row `m - 1` has summation term for `m`.</span>
 
@@ -721,7 +739,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">_sum_terms_dI_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: sum terms for :meth:`Isplines.dI_dx`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;numpy.ndarray: sum terms for :meth:`Isplines.dI_dx`.</span>
 
 <span class="sd">        Row `m - 1` has summation term for `m`.</span>
 
@@ -740,7 +758,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum_terms_dI_dx_val</span>
 
     <span class="k">def</span> <span class="nf">_calculate_I_or_dI</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate :meth:`Isplines.I` or :meth:`Isplines.dI_dx`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -795,8 +813,10 @@
         <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">return</span> <span class="n">res</span>
 
-<div class="viewcode-block" id="Isplines.dI_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines.dI_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dI_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines.I` by :attr:`Isplines.x`.</span>
+<div class="viewcode-block" id="Isplines.dI_dx">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Isplines.dI_dx">[docs]</a>
+    <span class="k">def</span> <span class="nf">dI_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Isplines.I` by :attr:`Isplines.x`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -830,11 +850,15 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_I_or_dI</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
+</div>
 
 
-<div class="viewcode-block" id="Msplines"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines">[docs]</a><span class="k">class</span> <span class="nc">Msplines</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements M-splines (see `Ramsay (1988)`_).</span>
+
+<div class="viewcode-block" id="Msplines">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines">[docs]</a>
+<span class="k">class</span> <span class="nc">Msplines</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements M-splines (see `Ramsay (1988)`_).</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -941,7 +965,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;See main class docstring.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">order</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;`order` not int &gt;= 1: </span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">order</span> <span class="o">=</span> <span class="n">order</span>
@@ -982,7 +1006,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_cache_size</span> <span class="o">=</span> <span class="mi">100</span>
 
     <span class="k">def</span> <span class="nf">_ti_le_x_lt_tiplusk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ti</span><span class="p">,</span> <span class="n">tiplusk</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Indices where :math:`t_i \le x \le t_{i+k}`.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Indices where :math:`t_i \le x \le t_{i+k}`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1010,11 +1034,13 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;numpy.ndarray: Points at which spline is evaluated.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
-<div class="viewcode-block" id="Msplines.M"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.M">[docs]</a>    <span class="k">def</span> <span class="nf">M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.</span>
+<div class="viewcode-block" id="Msplines.M">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.M">[docs]</a>
+    <span class="k">def</span> <span class="nf">M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Evaluate spline :math:`M_i` at point(s) :attr:`Msplines.x`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1062,8 +1088,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_M</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_M_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
+
     <span class="k">def</span> <span class="nf">_calculate_M</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.M` with result caching.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.M` with result caching.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1103,8 +1130,10 @@
             <span class="n">res</span><span class="o">.</span><span class="n">flags</span><span class="o">.</span><span class="n">writeable</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="n">res</span>
 
-<div class="viewcode-block" id="Msplines.dM_dx"><a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.dM_dx">[docs]</a>    <span class="k">def</span> <span class="nf">dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.</span>
+<div class="viewcode-block" id="Msplines.dM_dx">
+<a class="viewcode-back" href="../../dms_variants.ispline.html#dms_variants.ispline.Msplines.dM_dx">[docs]</a>
+    <span class="k">def</span> <span class="nf">dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">invalid_i</span><span class="o">=</span><span class="s2">&quot;raise&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Derivative of :meth:`Msplines.M` by to :attr:`Msplines.x`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1155,8 +1184,9 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_dM_dx</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dM_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span></div>
 
+
     <span class="k">def</span> <span class="nf">_calculate_dM_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">invalid_i</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.dM_dx` with results caching.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate :meth:`Msplines.dM_dx` with results caching.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">invalid_i</span> <span class="o">==</span> <span class="s2">&quot;raise&quot;</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid spline member `i` of </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1195,6 +1225,7 @@
             <span class="k">return</span> <span class="n">res</span></div>
 
 
+
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">doctest</span>
 
@@ -1209,7 +1240,7 @@
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../index.html">
-    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -1262,7 +1293,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -1276,17 +1307,17 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2021.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

@@ -1,19 +1,17 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>barcodes &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>barcodes &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -22,8 +20,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -35,15 +34,16 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="module-dms_variants.barcodes"></span><section id="barcodes">
-<h1>barcodes<a class="headerlink" href="#barcodes" title="Permalink to this headline">¶</a></h1>
+  <section id="barcodes">
+<span id="module-dms_variants.barcodes"></span><h1>barcodes<a class="headerlink" href="#barcodes" title="Link to this heading">¶</a></h1>
 <p>Utility functions to process and analyze barcodes.</p>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="dms_variants.barcodes.inverse_simpson_index">
-<span class="sig-prename descclassname"><span class="pre">dms_variants.barcodes.</span></span><span class="sig-name descname"><span class="pre">inverse_simpson_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">barcodecounts</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodecol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">countcol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'library'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/barcodes.html#inverse_simpson_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.barcodes.inverse_simpson_index" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dms_variants.barcodes.</span></span><span class="sig-name descname"><span class="pre">inverse_simpson_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">barcodecounts</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodecol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">countcol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groupcols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'library'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/barcodes.html#inverse_simpson_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.barcodes.inverse_simpson_index" title="Link to this definition">¶</a></dt>
 <dd><p>Inverse Simpson index (reciprocal probability two barcodes are same).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>barcodecounts</strong> (<em>pandas.DataFrame</em>) – Data frame with barcode counts</p></li>
 <li><p><strong>barcodecol</strong> (<em>str</em>) – Column in <code class="docutils literal notranslate"><span class="pre">barcodecounts</span></code> listing all unique barcodes.</p></li>
@@ -51,11 +51,8 @@
 <li><p><strong>groupcols</strong> (<em>str</em><em>, </em><em>list</em><em>, or </em><em>None</em>) – Columns in <code class="docutils literal notranslate"><span class="pre">barcodecounts</span></code> by which we group for calculations.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>pandas.DataFrame</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -75,7 +72,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="dms_variants.barcodes.rarefyBarcodes">
-<span class="sig-prename descclassname"><span class="pre">dms_variants.barcodes.</span></span><span class="sig-name descname"><span class="pre">rarefyBarcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">barcodecounts</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodecol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">countcol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/barcodes.html#rarefyBarcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.barcodes.rarefyBarcodes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dms_variants.barcodes.</span></span><span class="sig-name descname"><span class="pre">rarefyBarcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">barcodecounts</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodecol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'barcode'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">countcol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'count'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logspace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/barcodes.html#rarefyBarcodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.barcodes.rarefyBarcodes" title="Link to this definition">¶</a></dt>
 <dd><p>Rarefaction curve of barcode observations.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -83,7 +80,7 @@
 <a class="reference external" href="https://en.wikipedia.org/wiki/Rarefaction_(ecology">https://en.wikipedia.org/wiki/Rarefaction_(ecology</a>)#Derivation</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>barcodecounts</strong> (<em>pandas.DataFrame</em>) – Data frame with counts to rarefy.</p></li>
 <li><p><strong>barcodecol</strong> (<em>str</em>) – Column in <cite>barcodecounts</cite> listing all unique barcodes.</p></li>
@@ -93,11 +90,11 @@ is that it is costly to calculate the curve for many points.</p></li>
 <li><p><strong>logspace</strong> (<em>bool</em>) – Logarithmically space the points. If <cite>False</cite>, space linearly.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A data frame with columns ‘ncounts’ and ‘nbarcodes’ giving number
 of unique barcodes observed for each total number of observed counts.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>pandas.DataFrame</p>
 </dd>
 </dl>
@@ -135,7 +132,6 @@ of unique barcodes observed for each total number of observed counts.</p>
 </div>
 </dd></dl>
 
-</section>
 
 
           </div>
@@ -146,7 +142,7 @@ of unique barcodes observed for each total number of observed counts.</p>
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -205,7 +201,7 @@ of unique barcodes observed for each total number of observed counts.</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -219,11 +215,11 @@ of unique barcodes observed for each total number of observed counts.</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/dms_variants.barcodes.rst.txt"
@@ -232,7 +228,7 @@ of unique barcodes observed for each total number of observed counts.</p>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

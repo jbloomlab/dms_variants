@@ -1,22 +1,21 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Fitting gobal epistasis models with experimental “noise” &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>Fitting gobal epistasis models with experimental “noise” &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Formatting CodonVariantTable plots" href="codonvariant_plot_formatting.html" />
@@ -24,8 +23,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -37,256 +37,8 @@
 
           <div class="body" role="main">
             
-  
-<style>
-/* CSS for nbsphinx extension */
-
-/* remove conflicting styling from Sphinx themes */
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt *,
-div.nbinput.container div.input_area pre,
-div.nboutput.container div.output_area pre,
-div.nbinput.container div.input_area .highlight,
-div.nboutput.container div.output_area .highlight {
-    border: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-}
-
-div.nbinput.container > div[class*=highlight],
-div.nboutput.container > div[class*=highlight] {
-    margin: 0;
-}
-
-div.nbinput.container div.prompt *,
-div.nboutput.container div.prompt * {
-    background: none;
-}
-
-div.nboutput.container div.output_area .highlight,
-div.nboutput.container div.output_area pre {
-    background: unset;
-}
-
-div.nboutput.container div.output_area div.highlight {
-    color: unset;  /* override Pygments text color */
-}
-
-/* avoid gaps between output lines */
-div.nboutput.container div[class*=highlight] pre {
-    line-height: normal;
-}
-
-/* input/output containers */
-div.nbinput.container,
-div.nboutput.container {
-    display: -webkit-flex;
-    display: flex;
-    align-items: flex-start;
-    margin: 0;
-    width: 100%;
-}
-@media (max-width: 540px) {
-    div.nbinput.container,
-    div.nboutput.container {
-        flex-direction: column;
-    }
-}
-
-/* input container */
-div.nbinput.container {
-    padding-top: 5px;
-}
-
-/* last container */
-div.nblast.container {
-    padding-bottom: 5px;
-}
-
-/* input prompt */
-div.nbinput.container div.prompt pre {
-    color: #307FC1;
-}
-
-/* output prompt */
-div.nboutput.container div.prompt pre {
-    color: #BF5B3D;
-}
-
-/* all prompts */
-div.nbinput.container div.prompt,
-div.nboutput.container div.prompt {
-    width: 4.5ex;
-    padding-top: 5px;
-    position: relative;
-    user-select: none;
-}
-
-div.nbinput.container div.prompt > div,
-div.nboutput.container div.prompt > div {
-    position: absolute;
-    right: 0;
-    margin-right: 0.3ex;
-}
-
-@media (max-width: 540px) {
-    div.nbinput.container div.prompt,
-    div.nboutput.container div.prompt {
-        width: unset;
-        text-align: left;
-        padding: 0.4em;
-    }
-    div.nboutput.container div.prompt.empty {
-        padding: 0;
-    }
-
-    div.nbinput.container div.prompt > div,
-    div.nboutput.container div.prompt > div {
-        position: unset;
-    }
-}
-
-/* disable scrollbars on prompts */
-div.nbinput.container div.prompt pre,
-div.nboutput.container div.prompt pre {
-    overflow: hidden;
-}
-
-/* input/output area */
-div.nbinput.container div.input_area,
-div.nboutput.container div.output_area {
-    -webkit-flex: 1;
-    flex: 1;
-    overflow: auto;
-}
-@media (max-width: 540px) {
-    div.nbinput.container div.input_area,
-    div.nboutput.container div.output_area {
-        width: 100%;
-    }
-}
-
-/* input area */
-div.nbinput.container div.input_area {
-    border: 1px solid #e0e0e0;
-    border-radius: 2px;
-    /*background: #f5f5f5;*/
-}
-
-/* override MathJax center alignment in output cells */
-div.nboutput.container div[class*=MathJax] {
-    text-align: left !important;
-}
-
-/* override sphinx.ext.imgmath center alignment in output cells */
-div.nboutput.container div.math p {
-    text-align: left;
-}
-
-/* standard error */
-div.nboutput.container div.output_area.stderr {
-    background: #fdd;
-}
-
-/* ANSI colors */
-.ansi-black-fg { color: #3E424D; }
-.ansi-black-bg { background-color: #3E424D; }
-.ansi-black-intense-fg { color: #282C36; }
-.ansi-black-intense-bg { background-color: #282C36; }
-.ansi-red-fg { color: #E75C58; }
-.ansi-red-bg { background-color: #E75C58; }
-.ansi-red-intense-fg { color: #B22B31; }
-.ansi-red-intense-bg { background-color: #B22B31; }
-.ansi-green-fg { color: #00A250; }
-.ansi-green-bg { background-color: #00A250; }
-.ansi-green-intense-fg { color: #007427; }
-.ansi-green-intense-bg { background-color: #007427; }
-.ansi-yellow-fg { color: #DDB62B; }
-.ansi-yellow-bg { background-color: #DDB62B; }
-.ansi-yellow-intense-fg { color: #B27D12; }
-.ansi-yellow-intense-bg { background-color: #B27D12; }
-.ansi-blue-fg { color: #208FFB; }
-.ansi-blue-bg { background-color: #208FFB; }
-.ansi-blue-intense-fg { color: #0065CA; }
-.ansi-blue-intense-bg { background-color: #0065CA; }
-.ansi-magenta-fg { color: #D160C4; }
-.ansi-magenta-bg { background-color: #D160C4; }
-.ansi-magenta-intense-fg { color: #A03196; }
-.ansi-magenta-intense-bg { background-color: #A03196; }
-.ansi-cyan-fg { color: #60C6C8; }
-.ansi-cyan-bg { background-color: #60C6C8; }
-.ansi-cyan-intense-fg { color: #258F8F; }
-.ansi-cyan-intense-bg { background-color: #258F8F; }
-.ansi-white-fg { color: #C5C1B4; }
-.ansi-white-bg { background-color: #C5C1B4; }
-.ansi-white-intense-fg { color: #A1A6B2; }
-.ansi-white-intense-bg { background-color: #A1A6B2; }
-
-.ansi-default-inverse-fg { color: #FFFFFF; }
-.ansi-default-inverse-bg { background-color: #000000; }
-
-.ansi-bold { font-weight: bold; }
-.ansi-underline { text-decoration: underline; }
-
-
-div.nbinput.container div.input_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight] > pre,
-div.nboutput.container div.output_area div[class*=highlight].math,
-div.nboutput.container div.output_area.rendered_html,
-div.nboutput.container div.output_area > div.output_javascript,
-div.nboutput.container div.output_area:not(.rendered_html) > img{
-    padding: 5px;
-    margin: 0;
-}
-
-/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
-div.nbinput.container div.input_area > div[class^='highlight'],
-div.nboutput.container div.output_area > div[class^='highlight']{
-    overflow-y: hidden;
-}
-
-/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
-    display: none;
-}
-
-/* Some additional styling taken form the Jupyter notebook CSS */
-div.rendered_html table {
-  border: none;
-  border-collapse: collapse;
-  border-spacing: 0;
-  color: black;
-  font-size: 12px;
-  table-layout: fixed;
-}
-div.rendered_html thead {
-  border-bottom: 1px solid black;
-  vertical-align: bottom;
-}
-div.rendered_html tr,
-div.rendered_html th,
-div.rendered_html td {
-  text-align: right;
-  vertical-align: middle;
-  padding: 0.5em 0.5em;
-  line-height: normal;
-  white-space: normal;
-  max-width: none;
-  border: none;
-}
-div.rendered_html th {
-  font-weight: bold;
-}
-div.rendered_html tbody tr:nth-child(odd) {
-  background: #f5f5f5;
-}
-div.rendered_html tbody tr:hover {
-  background: rgba(66, 165, 245, 0.2);
-}
-</style>
-<section id="Fitting-gobal-epistasis-models-with-experimental-“noise”">
-<h1>Fitting gobal epistasis models with experimental “noise”<a class="headerlink" href="#Fitting-gobal-epistasis-models-with-experimental-“noise”" title="Permalink to this headline">¶</a></h1>
+  <section id="Fitting-gobal-epistasis-models-with-experimental-%22noise%22">
+<h1>Fitting gobal epistasis models with experimental “noise”<a class="headerlink" href="#Fitting-gobal-epistasis-models-with-experimental-%22noise%22" title="Link to this heading">¶</a></h1>
 <p>The global epistasis models described by <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a> fits experimentally measured functional scores for the variants using a Gaussian-likelihood function that assumes that deviations from the models are normally distributed (see the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html">globalepistasis module documentation</a> for more details). Those models also accommodate estimates of the noise for each
 functional score measurement, which are easy to make if the noise is due to statistical processes that are simple to model (such as finite sequencing depth leading to sampling statistics in the deep sequencing counts).</p>
 <p>But often real deep mutational scanning experiments have other sources of experimental “noise.” For instance, the sequencing used to determine the mutations present in a variant might occassionally wrong, leading to mis-calling of variant sequences. Or (more commonly in <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pubmed/27271655">Bloom lab influenza virus experiments</a>) there may be experimental bottlenecks in the number of variants that are passaged from the pre-selection to post-selection conditions. In
@@ -298,14 +50,13 @@ this last case, the noise occurs when the bottleneck randomly influences which p
 </ol>
 <p>Below, we demonstrate these different likelihood calculation methods on simulated data.</p>
 <section id="Setup-for-analysis">
-<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Permalink to this headline">¶</a></h2>
+<h2>Setup for analysis<a class="headerlink" href="#Setup-for-analysis" title="Link to this heading">¶</a></h2>
 <p>Import Python modules / packages:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">collections</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">random</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
@@ -336,8 +87,7 @@ bottlenecking. - A <em>mid bottleneck</em>: there is a moderate bottleneck in tr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># random number seed</span>
 <span class="n">genelength</span> <span class="o">=</span> <span class="mi">40</span>  <span class="c1"># gene length in codons</span>
 <span class="n">libs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;lib_1&quot;</span><span class="p">]</span>  <span class="c1"># distinct libraries of gene</span>
 <span class="n">variants_per_lib</span> <span class="o">=</span> <span class="mi">500</span> <span class="o">*</span> <span class="n">genelength</span>  <span class="c1"># variants per library</span>
@@ -360,8 +110,7 @@ bottlenecking. - A <em>mid bottleneck</em>: there is a moderate bottleneck in tr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -370,8 +119,7 @@ bottlenecking. - A <em>mid bottleneck</em>: there is a moderate bottleneck in tr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_columns&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.max_columns&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s2">&quot;display.width&quot;</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -381,8 +129,7 @@ bottlenecking. - A <em>mid bottleneck</em>: there is a moderate bottleneck in tr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -391,22 +138,20 @@ bottlenecking. - A <em>mid bottleneck</em>: there is a moderate bottleneck in tr
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">theme_set</span><span class="p">(</span><span class="n">dms_variants</span><span class="o">.</span><span class="n">plotnine_themes</span><span class="o">.</span><span class="n">theme_graygrid</span><span class="p">())</span>
 </pre></div>
 </div>
 </div>
 </section>
 <section id="Simulate-library-of-variants">
-<h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Simulate library of variants<a class="headerlink" href="#Simulate-library-of-variants" title="Link to this heading">¶</a></h2>
 <p>Simulate a library of codon variants of the gene.</p>
 <p>Simulate wildtype gene sequence:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">geneseq</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">CODONS_NOSTOP</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">genelength</span><span class="p">))</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wildtype gene of </span><span class="si">{</span><span class="n">genelength</span><span class="si">}</span><span class="s2"> codons:</span><span class="se">\n</span><span class="si">{</span><span class="n">geneseq</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -425,8 +170,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulate_CodonVariantTable</span><span class="p">(</span>
     <span class="n">geneseq</span><span class="o">=</span><span class="n">geneseq</span><span class="p">,</span>
     <span class="n">bclen</span><span class="o">=</span><span class="n">bclen</span><span class="p">,</span>
     <span class="n">library_specs</span><span class="o">=</span><span class="p">{</span>
@@ -442,10 +186,9 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -461,10 +204,9 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -480,10 +222,9 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">variant_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;single&quot;</span><span class="p">,</span> <span class="s2">&quot;all&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulMutCoverage</span><span class="p">(</span><span class="n">variant_type</span><span class="p">,</span> <span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">samples</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -503,7 +244,7 @@ AGATCCGTGATTCTGCGTGCTTACACCAACTCACGGGTGAAACGTGTAATCTTATGCAACAACGACTTACCTATCCGCAA
 </div>
 </section>
 <section id="Simulate-counts-for-samples">
-<h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Permalink to this headline">¶</a></h2>
+<h2>Simulate counts for samples<a class="headerlink" href="#Simulate-counts-for-samples" title="Link to this heading">¶</a></h2>
 <p>Now we simulate the counts of each variant after selection.</p>
 <p>First, we define a “phenotype” function using a <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a>, which follow the “global epistasis” concepts of <a class="reference external" href="https://doi.org/10.1073/pnas.1804015115">Otwinoski et al</a> and <a class="reference external" href="https://doi.org/10.1534/genetics.116.195214">Sailer and Harms</a> to define the phenotype in two steps: an underlying latent phenotype that mutations affect additively, and then an
 observed phenotype that is a non-linear function of the latent phenotype. The variants are then simulated according to their observed enrichments, which are the exponentials of the observed phenotypes:</p>
@@ -511,8 +252,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span><span class="n">geneseq</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">phenosimulator</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">SigmoidPhenotypeSimulator</span><span class="p">(</span><span class="n">geneseq</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -521,10 +261,9 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;enrichment&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;enrichment&quot;</span><span class="p">,</span> <span class="s2">&quot;phenotype&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotLatentVsObserved</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -547,10 +286,9 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;latentPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedEnrichment&quot;</span><span class="p">]:</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;latentPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedPhenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observedEnrichment&quot;</span><span class="p">]:</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">phenosimulator</span><span class="o">.</span><span class="n">plotMutsHistogram</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -580,8 +318,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">counts</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">simulate</span><span class="o">.</span><span class="n">simulateSampleCounts</span><span class="p">(</span>
     <span class="n">variants</span><span class="o">=</span><span class="n">variants</span><span class="p">,</span>
     <span class="n">phenotype_func</span><span class="o">=</span><span class="n">phenosimulator</span><span class="o">.</span><span class="n">observedEnrichment</span><span class="p">,</span>
     <span class="n">variant_error_rate</span><span class="o">=</span><span class="n">variant_error_rate</span><span class="p">,</span>
@@ -608,8 +345,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants</span><span class="o">.</span><span class="n">add_sample_counts_df</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -618,9 +354,8 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotCumulVariantCounts</span><span class="p">(</span><span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -636,10 +371,9 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumMutsHistogram</span><span class="p">(</span><span class="n">mut_type</span><span class="o">=</span><span class="s2">&quot;aa&quot;</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -655,10 +389,9 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">plotNumCodonMutsByType</span><span class="p">(</span><span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span> <span class="n">orientation</span><span class="o">=</span><span class="s2">&quot;v&quot;</span><span class="p">)</span>
 <span class="n">p</span> <span class="o">=</span> <span class="n">p</span> <span class="o">+</span> <span class="n">theme</span><span class="p">(</span><span class="n">panel_grid_major_x</span><span class="o">=</span><span class="n">element_blank</span><span class="p">())</span>  <span class="c1"># no vertical grid lines</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -671,14 +404,13 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 </div>
 </section>
 <section id="Functional-scores-for-variants">
-<h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Functional scores for variants<a class="headerlink" href="#Functional-scores-for-variants" title="Link to this heading">¶</a></h2>
 <p>Use <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">CodonVariantTable.func_scores</a> to calculates a functional score for each variant based on its change in frequency from pre- to post-selection:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span><span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -687,8 +419,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">aa_func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aa_func_scores</span> <span class="o">=</span> <span class="n">variants</span><span class="o">.</span><span class="n">func_scores</span><span class="p">(</span>
     <span class="s2">&quot;pre-selection&quot;</span><span class="p">,</span> <span class="n">by</span><span class="o">=</span><span class="s2">&quot;aa_substitutions&quot;</span><span class="p">,</span> <span class="n">syn_as_wt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">libraries</span><span class="o">=</span><span class="n">libs</span>
 <span class="p">)</span>
 </pre></div>
@@ -699,8 +430,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">func_scores</span> <span class="o">=</span> <span class="n">dms_variants</span><span class="o">.</span><span class="n">codonvarianttable</span><span class="o">.</span><span class="n">CodonVariantTable</span><span class="o">.</span><span class="n">classifyVariants</span><span class="p">(</span>
     <span class="n">func_scores</span>
 <span class="p">)</span>
 </pre></div>
@@ -711,8 +441,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span><span class="n">func_scores</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s2">&quot;variant_class&quot;</span><span class="p">,</span> <span class="s2">&quot;func_score&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">geom_violin</span><span class="p">(</span><span class="n">aes</span><span class="p">(</span><span class="n">fill</span><span class="o">=</span><span class="s2">&quot;variant_class&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">ylab</span><span class="p">(</span><span class="s2">&quot;functional score&quot;</span><span class="p">)</span>
@@ -725,7 +454,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
     <span class="p">)</span>
     <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="n">CBPALETTE</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">guide</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -738,7 +467,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 </div>
 </section>
 <section id="Estimate-bottleneck-sizes">
-<h2>Estimate bottleneck sizes<a class="headerlink" href="#Estimate-bottleneck-sizes" title="Permalink to this headline">¶</a></h2>
+<h2>Estimate bottleneck sizes<a class="headerlink" href="#Estimate-bottleneck-sizes" title="Link to this heading">¶</a></h2>
 <p>In order to use the bottleneck-based likelihood, we need to know the size of the bottleneck going from the pre- to post-selection conditions. In this simulation, we know the true simulated bottleneck for each sample–but in a real experiment, we may not know the bottleneck. Therefore, we need to estimate it from the data.</p>
 <p>We can do that if we examine just the fluctuations in frequency of the wildtype variants. The basic idea is that if there is no bottleneck, then the relative frequencies of the different wildtype variants should remain unchanged–but if there is a bottleneck then some wildtype variants will randomly go up and down in frequency compared to others. The actual calculation is implemented in the
 <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.bottlenecks.html#dms_variants.bottlenecks.estimateBottleneck">bottlenecks.estimateBottleneck</a> function.</p>
@@ -747,8 +476,7 @@ observed phenotype that is a non-linear function of the latent phenotype. The va
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">estimated_bottleneck</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -829,8 +557,7 @@ Estimated and actual bottleneck per variant:
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
     <span class="n">estimates_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;actual &lt; 10&quot;</span><span class="p">)[</span><span class="s2">&quot;actual&quot;</span><span class="p">],</span>
     <span class="n">estimates_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;actual &lt; 10&quot;</span><span class="p">)[</span><span class="s2">&quot;estimated&quot;</span><span class="p">],</span>
     <span class="n">rtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
@@ -840,7 +567,7 @@ Estimated and actual bottleneck per variant:
 </div>
 </section>
 <section id="Fit-global-epistasis-models">
-<h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Permalink to this headline">¶</a></h2>
+<h2>Fit global epistasis models<a class="headerlink" href="#Fit-global-epistasis-models" title="Link to this heading">¶</a></h2>
 <p>Now we fit global epistasis models using the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.fit_models">fit_models</a> function.</p>
 <p>The two types of models are: - <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.MonotonicSplineEpistasis">MonotonicSplineEpistasis</a> models, which model global epistasis in the way described in <a class="reference external" href="https://www.pnas.org/content/115/32/E7550">Otwinoski et al (2018)</a>. - <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.globalepistasis.html#dms_variants.globalepistasis.NoEpistasis">NoEpistasis</a> models, which assume mutations
 contribute additively to the functional scores.</p>
@@ -850,11 +577,9 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">fit_df_list</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fit_df_list</span> <span class="o">=</span> <span class="p">[]</span>
 
 <span class="k">for</span> <span class="n">sample</span><span class="p">,</span> <span class="n">scores</span> <span class="ow">in</span> <span class="n">func_scores</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;post_sample&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-
     <span class="n">bmap</span> <span class="o">=</span> <span class="n">binarymap</span><span class="o">.</span><span class="n">BinaryMap</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
 
     <span class="k">for</span> <span class="n">likelihood</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Gaussian&quot;</span><span class="p">,</span> <span class="s2">&quot;Cauchy&quot;</span><span class="p">,</span> <span class="s2">&quot;Bottleneck&quot;</span><span class="p">]:</span>
@@ -875,8 +600,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="p">(</span>
     <span class="n">fit_df</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
@@ -980,8 +704,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">aic_df</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">fit_df</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span>
@@ -1078,8 +801,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">assert</span> <span class="p">(</span><span class="n">aic_df</span><span class="p">[</span><span class="s2">&quot;deltaAIC&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">assert</span> <span class="p">(</span><span class="n">aic_df</span><span class="p">[</span><span class="s2">&quot;deltaAIC&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
@@ -1089,8 +811,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">variants_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">variants_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
     <span class="p">[</span>
         <span class="n">tup</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">phenotypes_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">tup</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">likelihood</span><span class="o">=</span><span class="n">tup</span><span class="o">.</span><span class="n">likelihood</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="n">fit_df</span><span class="o">.</span><span class="n">itertuples</span><span class="p">()</span>
@@ -1107,8 +828,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span><span class="n">variants_df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s2">&quot;latent_phenotype&quot;</span><span class="p">,</span> <span class="s2">&quot;observed_phenotype&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
     <span class="o">+</span> <span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;sample ~ likelihood&quot;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">)</span>
@@ -1119,7 +839,7 @@ that is less sensitive to measurements that have large deviations from the model
         <span class="p">),</span>
     <span class="p">)</span>
 <span class="p">)</span>
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1132,7 +852,7 @@ that is less sensitive to measurements that have large deviations from the model
 </div>
 </section>
 <section id="Model-vs-truth-for-amino-acid-variants">
-<h2>Model vs truth for amino-acid variants<a class="headerlink" href="#Model-vs-truth-for-amino-acid-variants" title="Permalink to this headline">¶</a></h2>
+<h2>Model vs truth for amino-acid variants<a class="headerlink" href="#Model-vs-truth-for-amino-acid-variants" title="Link to this heading">¶</a></h2>
 <p>Because we simulated the variants, we can also use the <a class="reference external" href="https://jbloomlab.github.io/dms_variants/dms_variants.simulate.html#dms_variants.simulate.SigmoidPhenotypeSimulator">SigmoidPhenotypeSimulator</a> to get the <strong>true</strong> phenotype of each variant. (Obviously in real non-simulated experiments the true phenotypes are unknown.)</p>
 <p>We want to see if the model outperforms the experiments if look at the level of <strong>amino-acid</strong> variants (meaning we pool the counts for all variants with the same amino-acid substitutions together before calculating the functional scores). Recall that above we already got such functional scores into the variable <code class="docutils literal notranslate"><span class="pre">aa_func_scores</span></code>:</p>
 <p>First we get a data frame of measured functional scores (in the simulated experiment) calculated at the level of amino-acid variants (pooling all barcoded variants with the same amino-acid mutations):</p>
@@ -1140,8 +860,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_func_scores</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;post_sample&quot;</span><span class="p">:</span> <span class="s2">&quot;sample&quot;</span><span class="p">})[</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_func_scores</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;post_sample&quot;</span><span class="p">:</span> <span class="s2">&quot;sample&quot;</span><span class="p">})[</span>
     <span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;aa_substitutions&quot;</span><span class="p">,</span> <span class="s2">&quot;n_aa_substitutions&quot;</span><span class="p">,</span> <span class="s2">&quot;func_score&quot;</span><span class="p">]</span>
 <span class="p">]</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">measured_enrichment</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">2</span> <span class="o">**</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;func_score&quot;</span><span class="p">])</span>
 </pre></div>
@@ -1152,8 +871,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">df_list</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_list</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">sample</span><span class="p">,</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="n">observed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">likelihood</span> <span class="ow">in</span> <span class="n">fit_df</span><span class="p">[</span><span class="s2">&quot;likelihood&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
         <span class="n">model</span> <span class="o">=</span> <span class="n">fit_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
@@ -1176,8 +894,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">aa_variants_df</span> <span class="o">=</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
     <span class="n">true_latent_phenotype</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;aa_substitutions&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
         <span class="n">phenosimulator</span><span class="o">.</span><span class="n">latentPhenotype</span>
     <span class="p">),</span>
@@ -1196,8 +913,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">enrichments_corr</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -1318,8 +1034,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span><span class="n">aa_variants_df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s2">&quot;true_enrichment&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_enrichment&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
     <span class="o">+</span> <span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;sample ~ likelihood&quot;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">)</span>
@@ -1331,7 +1046,7 @@ that is less sensitive to measurements that have large deviations from the model
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1344,15 +1059,14 @@ that is less sensitive to measurements that have large deviations from the model
 </div>
 </section>
 <section id="Model-vs-truth-for-single-mutants">
-<h2>Model vs truth for single mutants<a class="headerlink" href="#Model-vs-truth-for-single-mutants" title="Permalink to this headline">¶</a></h2>
+<h2>Model vs truth for single mutants<a class="headerlink" href="#Model-vs-truth-for-single-mutants" title="Link to this heading">¶</a></h2>
 <p>Now we repeat the above analysis for just <strong>single</strong> amino-acid mutants.</p>
 <p>First, get the single amino-acid mutant variants:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">single_aa_variants_df</span> <span class="o">=</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;n_aa_substitutions == 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">single_aa_variants_df</span> <span class="o">=</span> <span class="n">aa_variants_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;n_aa_substitutions == 1&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span>
     <span class="n">drop</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
 </pre></div>
@@ -1363,8 +1077,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># NBVAL_IGNORE_OUTPUT</span>
 
 <span class="n">enrichments_corr</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">single_aa_variants_df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span>
@@ -1485,8 +1198,7 @@ that is less sensitive to measurements that have large deviations from the model
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">ggplot</span><span class="p">(</span><span class="n">single_aa_variants_df</span><span class="p">,</span> <span class="n">aes</span><span class="p">(</span><span class="s2">&quot;true_enrichment&quot;</span><span class="p">,</span> <span class="s2">&quot;predicted_enrichment&quot;</span><span class="p">))</span>
     <span class="o">+</span> <span class="n">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
     <span class="o">+</span> <span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;sample ~ likelihood&quot;</span><span class="p">,</span> <span class="n">scales</span><span class="o">=</span><span class="s2">&quot;free&quot;</span><span class="p">)</span>
@@ -1498,7 +1210,7 @@ that is less sensitive to measurements that have large deviations from the model
     <span class="p">)</span>
 <span class="p">)</span>
 
-<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1521,7 +1233,7 @@ that is less sensitive to measurements that have large deviations from the model
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -1585,7 +1297,7 @@ that is less sensitive to measurements that have large deviations from the model
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -1599,11 +1311,11 @@ that is less sensitive to measurements that have large deviations from the model
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/narrow_bottleneck.nblink.txt"
@@ -1612,7 +1324,7 @@ that is less sensitive to measurements that have large deviations from the model
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

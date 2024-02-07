@@ -1,22 +1,20 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>bottlenecks &#8212; dms_variants 1.4.2 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+    <title>bottlenecks &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
+    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="codonvarianttable" href="dms_variants.codonvarianttable.html" />
@@ -24,8 +22,9 @@
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -37,12 +36,13 @@
 
           <div class="body" role="main">
             
-  <span class="target" id="module-dms_variants.bottlenecks"></span><section id="bottlenecks">
-<h1>bottlenecks<a class="headerlink" href="#bottlenecks" title="Permalink to this headline">¶</a></h1>
+  <section id="bottlenecks">
+<span id="module-dms_variants.bottlenecks"></span><h1>bottlenecks<a class="headerlink" href="#bottlenecks" title="Link to this heading">¶</a></h1>
 <p>Estimation of bottlenecks during experiments.</p>
+</section>
 <dl class="py function">
 <dt class="sig sig-object py" id="dms_variants.bottlenecks.estimateBottleneck">
-<span class="sig-prename descclassname"><span class="pre">dms_variants.bottlenecks.</span></span><span class="sig-name descname"><span class="pre">estimateBottleneck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pre_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_pre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_post_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_post'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_variants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/bottlenecks.html#estimateBottleneck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.bottlenecks.estimateBottleneck" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">dms_variants.bottlenecks.</span></span><span class="sig-name descname"><span class="pre">estimateBottleneck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_pre_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_pre'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_post_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'n_post'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pseudocount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_variants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dms_variants/bottlenecks.html#estimateBottleneck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#dms_variants.bottlenecks.estimateBottleneck" title="Link to this definition">¶</a></dt>
 <dd><p>Estimate <strong>neutral</strong> bottleneck from pre- and post-selection counts.</p>
 <p>This function estimates a bottleneck between a pre- and post-selection
 condition based on changes in frequencies of variants that are all
@@ -82,7 +82,7 @@ bottleneck <span class="math notranslate nohighlight">\(N\)</span> divided by th
 reason we return the bottleneck per-variant is that you may have subsetted
 on just some variants (i.e., wildtype ones) to estimate the bottleneck.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – Data frame with counts. Each row gives counts for a different variant.</p></li>
 <li><p><strong>n_pre_col</strong> (<em>str</em>) – Column in <cite>df</cite> with pre-selection counts.</p></li>
@@ -92,11 +92,11 @@ on just some variants (i.e., wildtype ones) to estimate the bottleneck.</p>
 <cite>df</cite>. Raise an error if fewer than this many variants.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The estimated bottleneck per variant, which is the mean number of
 copies of each variant that survives the bottleneck.</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>float</p>
 </dd>
 </dl>
@@ -176,36 +176,35 @@ value:</p>
 <figure class="align-default" id="id1">
 <img alt="_images/dms_variants-bottlenecks-1_00.png" class="plot-directive" src="_images/dms_variants-bottlenecks-1_00.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_00.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_00.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_00.pdf">pdf</a>)</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="_downloads/dad844a85a603fb5c4c29c24db7e14da/dms_variants-bottlenecks-1_00.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="_downloads/926fb004a2986928e4f3f837429fe776/dms_variants-bottlenecks-1_00.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="_downloads/e01e45b082305d8ad7e43a9977968d82/dms_variants-bottlenecks-1_00.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id2">
 <img alt="_images/dms_variants-bottlenecks-1_01.png" class="plot-directive" src="_images/dms_variants-bottlenecks-1_01.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_01.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_01.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_01.pdf">pdf</a>)</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="_downloads/5cfc40b5105f4166e879fd83e5bee194/dms_variants-bottlenecks-1_01.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="_downloads/2a8bb28e997e024d216d40c487b084bb/dms_variants-bottlenecks-1_01.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="_downloads/5305ad7bd2b05d63cf89fefa387a1192/dms_variants-bottlenecks-1_01.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id3">
 <img alt="_images/dms_variants-bottlenecks-1_02.png" class="plot-directive" src="_images/dms_variants-bottlenecks-1_02.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_02.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_02.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_02.pdf">pdf</a>)</span><a class="headerlink" href="#id3" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="_downloads/74efed63966f37f098c029206b84543d/dms_variants-bottlenecks-1_02.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="_downloads/447163a308a5707a055587321f7c193f/dms_variants-bottlenecks-1_02.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="_downloads/a4b253c085e7af86a358ac4d72d7a4c7/dms_variants-bottlenecks-1_02.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id4">
 <img alt="_images/dms_variants-bottlenecks-1_03.png" class="plot-directive" src="_images/dms_variants-bottlenecks-1_03.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_03.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_03.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_03.pdf">pdf</a>)</span><a class="headerlink" href="#id4" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="_downloads/ae59c76965cf4d6cb432d37fa199941d/dms_variants-bottlenecks-1_03.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="_downloads/c9f51331fe510c22926fdd983c9100c9/dms_variants-bottlenecks-1_03.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="_downloads/26faced7918800814e512777373f198c/dms_variants-bottlenecks-1_03.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id5">
 <img alt="_images/dms_variants-bottlenecks-1_04.png" class="plot-directive" src="_images/dms_variants-bottlenecks-1_04.png" />
 <figcaption>
-<p><span class="caption-text">(<a class="reference external" href=".//dms_variants-bottlenecks-1_04.png">png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_04.hires.png">hires.png</a>, <a class="reference external" href=".//dms_variants-bottlenecks-1_04.pdf">pdf</a>)</span><a class="headerlink" href="#id5" title="Permalink to this image">¶</a></p>
+<p><span class="caption-text">(<a class="reference download internal" download="" href="_downloads/bf85e22dc8eb92e859ff5bbc56aa78e5/dms_variants-bottlenecks-1_04.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="_downloads/25f6066082fa3b215f58ffd6f56a0fd9/dms_variants-bottlenecks-1_04.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="_downloads/3c741edd023768e510fa94bc58244952/dms_variants-bottlenecks-1_04.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</span><a class="headerlink" href="#id5" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 </dd></dl>
 
-</section>
 
 
           </div>
@@ -216,7 +215,7 @@ value:</p>
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="index.html">
-    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -275,7 +274,7 @@ value:</p>
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -289,11 +288,11 @@ value:</p>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
       |
       <a href="_sources/dms_variants.bottlenecks.rst.txt"
@@ -302,7 +301,7 @@ value:</p>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 

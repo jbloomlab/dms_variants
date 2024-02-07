@@ -1,26 +1,25 @@
-
 <!DOCTYPE html>
 
-<html>
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 1.4.1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/doctools.js"></script>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 1.5.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=420b4293" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <script src="../../_static/documentation_options.js?v=e0a75244"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
   <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
+
   
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+  
 
   </head><body>
   
@@ -73,8 +72,10 @@
 <span class="p">)</span>
 
 
-<div class="viewcode-block" id="CodonVariantTable"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">[docs]</a><span class="k">class</span> <span class="nc">CodonVariantTable</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;Store and handle counts of barcoded codon variants of a gene.</span>
+<div class="viewcode-block" id="CodonVariantTable">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable">[docs]</a>
+<span class="k">class</span> <span class="nc">CodonVariantTable</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store and handle counts of barcoded codon variants of a gene.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -150,7 +151,7 @@
     <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_set_alphabets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allowgaps</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set class variables representing alphabets.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set class variables representing alphabets.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_CODONS</span> <span class="o">=</span> <span class="n">CODONS_WITHGAP</span> <span class="k">if</span> <span class="n">allowgaps</span> <span class="k">else</span> <span class="n">CODONS</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_NTS</span> <span class="o">=</span> <span class="n">NTS_WITHGAP</span> <span class="k">if</span> <span class="n">allowgaps</span> <span class="k">else</span> <span class="n">NTS</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_AAS</span> <span class="o">=</span> <span class="n">AAS_WITHSTOP_WITHGAP</span> <span class="k">if</span> <span class="n">allowgaps</span> <span class="k">else</span> <span class="n">AAS_WITHSTOP</span>
@@ -179,7 +180,7 @@
         <span class="p">)</span>
 
     <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Test if equal to object `other`.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test if equal to object `other`.&quot;&quot;&quot;</span>
         <span class="c1"># following here: https://stackoverflow.com/a/390640</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">other</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">False</span>
@@ -196,7 +197,9 @@
                         <span class="k">return</span> <span class="kc">False</span>
             <span class="k">return</span> <span class="kc">True</span>
 
-<div class="viewcode-block" id="CodonVariantTable.from_variant_count_df"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CodonVariantTable.from_variant_count_df">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.from_variant_count_df">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">from_variant_count_df</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -207,7 +210,7 @@
         <span class="n">primary_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">extra_cols</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;:class:`CodonVariantTable` from CSV of `variant_count_df`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;:class:`CodonVariantTable` from CSV of `variant_count_df`.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -257,12 +260,12 @@
             <span class="k">if</span> <span class="s2">&quot;target&quot;</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;primary_target is None but &quot;target&quot; col&#39;</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">((</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">req_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variant_count_df_file</span><span class="si">}</span><span class="s2"> lacks required &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;columns </span><span class="si">{</span><span class="n">req_cols</span><span class="si">}</span><span class="s2">. It has: </span><span class="si">{</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="k">if</span> <span class="n">extra_cols</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">extra_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">((</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">extra_cols</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="n">extra_cols</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">variant_count_df_file</span><span class="si">}</span><span class="s2"> lacks `extra_cols` &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;columns </span><span class="si">{</span><span class="n">extra_cols</span><span class="si">}</span><span class="s2">. Has: </span><span class="si">{</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -299,6 +302,7 @@
 
         <span class="k">return</span> <span class="n">cvt</span></div>
 
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -310,7 +314,7 @@
         <span class="n">substitutions_col</span><span class="o">=</span><span class="s2">&quot;substitutions&quot;</span><span class="p">,</span>
         <span class="n">primary_target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;See main class doc string.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_alphabets</span><span class="p">(</span><span class="n">allowgaps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span> <span class="o">=</span> <span class="n">geneseq</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">NTS</span><span class="p">)</span><span class="si">}</span><span class="s2">]+&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">):</span>
@@ -479,9 +483,11 @@
                     <span class="n">primary</span><span class="p">,</span> <span class="n">targets</span>
                 <span class="p">)</span>
 
-<div class="viewcode-block" id="CodonVariantTable.add_frac_counts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_frac_counts">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CodonVariantTable.add_frac_counts">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_frac_counts">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">add_frac_counts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variant_count_df</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add fraction of counts from each variant in library/sample.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add fraction of counts from each variant in library/sample.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -528,8 +534,11 @@
             <span class="p">)</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.samples"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.samples">[docs]</a>    <span class="k">def</span> <span class="nf">samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;List of all samples for `library`.</span>
+
+<div class="viewcode-block" id="CodonVariantTable.samples">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.samples">[docs]</a>
+    <span class="k">def</span> <span class="nf">samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;List of all samples for `library`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -547,8 +556,11 @@
         <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid `library` </span><span class="si">{</span><span class="n">library</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.addSampleCounts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts">[docs]</a>    <span class="k">def</span> <span class="nf">addSampleCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">barcodecounts</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add variant counts for a sample to `variant_count_df`.</span>
+
+<div class="viewcode-block" id="CodonVariantTable.addSampleCounts">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addSampleCounts">[docs]</a>
+    <span class="k">def</span> <span class="nf">addSampleCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">barcodecounts</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add variant counts for a sample to `variant_count_df`.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -640,8 +652,11 @@
             <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">order_cols</span><span class="p">]</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.add_sample_counts_df"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df">[docs]</a>    <span class="k">def</span> <span class="nf">add_sample_counts_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts_df</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add variant counts for several samples to `variant_count_df`.</span>
+
+<div class="viewcode-block" id="CodonVariantTable.add_sample_counts_df">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_sample_counts_df">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_sample_counts_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">counts_df</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add variant counts for several samples to `variant_count_df`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -722,8 +737,11 @@
             <span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="n">order_cols</span><span class="p">]</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.valid_barcodes"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes">[docs]</a>    <span class="k">def</span> <span class="nf">valid_barcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set of valid barcodes for `library`.</span>
+
+<div class="viewcode-block" id="CodonVariantTable.valid_barcodes">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.valid_barcodes">[docs]</a>
+    <span class="k">def</span> <span class="nf">valid_barcodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">library</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set of valid barcodes for `library`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -742,7 +760,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valid_barcodes</span><span class="p">[</span><span class="n">library</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.prob_escape"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.prob_escape">[docs]</a>    <span class="k">def</span> <span class="nf">prob_escape</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.prob_escape">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.prob_escape">[docs]</a>
+    <span class="k">def</span> <span class="nf">prob_escape</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">selections_df</span><span class="p">,</span>
@@ -752,8 +773,9 @@
         <span class="n">min_neut_standard_count</span><span class="o">=</span><span class="mf">1e3</span><span class="p">,</span>
         <span class="n">ceil_n_aa_substitutions</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
         <span class="n">drop_neut_standard_target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute probability of escape relative to a neutralization standard.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute probability of escape relative to a neutralization standard.</span>
 
 <span class="sd">        Assumes one of the targets is the neutralization standard and is</span>
 <span class="sd">        unaffected by antibody selection. Then computes escape probability</span>
@@ -791,6 +813,9 @@
 <span class="sd">        drop_neut_standard_target : bool</span>
 <span class="sd">            Drop the neutralization standard variant-level results from the</span>
 <span class="sd">            returned data frames.</span>
+<span class="sd">        primary_target_only : bool</span>
+<span class="sd">            Drop everything except the primary target and neutralization standard</span>
+<span class="sd">            target before beginning calculations.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -846,11 +871,21 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">invalid_samples</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid samples in selections_df</span><span class="se">\n</span><span class="si">{</span><span class="n">invalid_samples</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
+        <span class="n">valid_targets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">barcode_variant_df</span><span class="p">[</span><span class="s2">&quot;target&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">neut_standard_target</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_targets</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">neut_standard_target</span><span class="si">=}</span><span class="s2"> not in targets </span><span class="si">{</span><span class="n">valid_targets</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
         <span class="c1"># get neut_standard fracs for each library / sample</span>
+        <span class="n">fracs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">primary_target_only</span><span class="p">:</span>
+            <span class="n">fracs</span> <span class="o">=</span> <span class="n">fracs</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="s2">&quot;(target in [@self.primary_target, @neut_standard_target])&quot;</span>
+            <span class="p">)</span>
         <span class="n">fracs</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_variants_df</span><span class="p">(</span><span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-            <span class="o">.</span><span class="n">assign</span><span class="p">(</span>
-                <span class="n">n</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">])[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">),</span>
+            <span class="n">fracs</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span>
+                <span class="n">n</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span>
+                    <span class="s2">&quot;count&quot;</span>
+                <span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">),</span>
                 <span class="n">frac</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">x</span><span class="p">[</span><span class="s2">&quot;n&quot;</span><span class="p">],</span>
             <span class="p">)</span>
             <span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;target == @neut_standard_target&quot;</span><span class="p">)</span>
@@ -887,6 +922,10 @@
 
         <span class="c1"># get variant counts grouped by `by`</span>
         <span class="n">count_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variant_count_df</span>
+        <span class="k">if</span> <span class="n">primary_target_only</span><span class="p">:</span>
+            <span class="n">count_df</span> <span class="o">=</span> <span class="n">count_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span>
+                <span class="s2">&quot;(target in [@self.primary_target, @neut_standard_target])&quot;</span>
+            <span class="p">)</span>
         <span class="n">group_cols</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;codon_substitutions&quot;</span><span class="p">,</span>
             <span class="s2">&quot;n_codon_substitutions&quot;</span><span class="p">,</span>
@@ -1004,7 +1043,10 @@
 
         <span class="k">return</span> <span class="n">prob_escape</span><span class="p">,</span> <span class="n">neut_standard_fracs</span><span class="p">,</span> <span class="n">neutralization</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.escape_scores"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.escape_scores">[docs]</a>    <span class="k">def</span> <span class="nf">escape_scores</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.escape_scores">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.escape_scores">[docs]</a>
+    <span class="k">def</span> <span class="nf">escape_scores</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">sample_df</span><span class="p">,</span>
         <span class="n">score_type</span><span class="p">,</span>
@@ -1017,7 +1059,7 @@
         <span class="n">ceil_B</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="n">ceil_E</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute a score that represents escape from binding.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute a score that represents escape from binding.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -1120,7 +1162,7 @@
 <span class="sd">        or :math:`B_v`.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        sample_df : pandas.DataFrame</span>
 <span class="sd">            Comparisons we use to compute the functional scores. Should have</span>
 <span class="sd">            these columns: &#39;pre_sample&#39; (pre-selection sample), &#39;post_sample&#39;</span>
@@ -1359,7 +1401,10 @@
 
         <span class="k">return</span> <span class="n">df_scores</span><span class="p">[</span><span class="n">col_order</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.func_scores"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">[docs]</a>    <span class="k">def</span> <span class="nf">func_scores</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.func_scores">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.func_scores">[docs]</a>
+    <span class="k">def</span> <span class="nf">func_scores</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">preselection</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -1371,7 +1416,7 @@
         <span class="n">permit_zero_wt</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">permit_self_comp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get data frame with functional scores for variants.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Get data frame with functional scores for variants.</span>
 
 <span class="sd">        Note</span>
 <span class="sd">        ----</span>
@@ -1619,7 +1664,10 @@
 
         <span class="k">return</span> <span class="n">df_func_scores</span><span class="p">[</span><span class="n">col_order</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.n_variants_df"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df">[docs]</a>    <span class="k">def</span> <span class="nf">n_variants_df</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.n_variants_df">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.n_variants_df">[docs]</a>
+    <span class="k">def</span> <span class="nf">n_variants_df</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">libraries</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
@@ -1630,7 +1678,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get number variants per library / sample (and target if specified).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get number variants per library / sample (and target if specified).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1678,7 +1726,10 @@
             <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.mutCounts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.mutCounts">[docs]</a>    <span class="k">def</span> <span class="nf">mutCounts</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.mutCounts">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.mutCounts">[docs]</a>
+    <span class="k">def</span> <span class="nf">mutCounts</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="p">,</span>
         <span class="n">mut_type</span><span class="p">,</span>
@@ -1688,7 +1739,7 @@
         <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get counts of each individual mutations (only in primary target).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get counts of each individual mutations (only in primary target).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1824,7 +1875,10 @@
 
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotMutHeatmap"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap">[docs]</a>    <span class="k">def</span> <span class="nf">plotMutHeatmap</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotMutHeatmap">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutHeatmap">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotMutHeatmap</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="p">,</span>
         <span class="n">mut_type</span><span class="p">,</span>
@@ -1840,7 +1894,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Heatmap of mutation counts or frequencies (for primary target only).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Heatmap of mutation counts or frequencies (for primary target only).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1967,7 +2021,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotMutFreqs"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs">[docs]</a>    <span class="k">def</span> <span class="nf">plotMutFreqs</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotMutFreqs">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotMutFreqs">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotMutFreqs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="p">,</span>
         <span class="n">mut_type</span><span class="p">,</span>
@@ -1982,7 +2039,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Mutation frequency along length of gene (primary target only).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mutation frequency along length of gene (primary target only).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2086,7 +2143,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotCountsPerVariant"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCountsPerVariant">[docs]</a>    <span class="k">def</span> <span class="nf">plotCountsPerVariant</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotCountsPerVariant">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCountsPerVariant">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotCountsPerVariant</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">ystat</span><span class="o">=</span><span class="s2">&quot;frac_counts&quot;</span><span class="p">,</span>
@@ -2106,10 +2166,10 @@
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot variant index versus counts (or frac counts).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot variant index versus counts (or frac counts).</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        ystat : {&#39;frac_counts&#39;, &#39;count&#39;}</span>
 <span class="sd">            Is y-axis counts from variant, or fraction of counts in</span>
 <span class="sd">            library / sample from variant?</span>
@@ -2181,7 +2241,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">classifyVariants_kwargs</span><span class="p">:</span>
                 <span class="n">kw_args</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">kw_args</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">classifyVariants_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="n">kw_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">classifyVariants_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
             <span class="k">if</span> <span class="s2">&quot;primary_target&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kw_args</span><span class="p">:</span>
                 <span class="n">kw_args</span><span class="p">[</span><span class="s2">&quot;primary_target&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">primary_target</span>
             <span class="k">if</span> <span class="s2">&quot;class_as_categorical&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kw_args</span><span class="p">:</span>
@@ -2234,7 +2294,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotCumulVariantCounts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts">[docs]</a>    <span class="k">def</span> <span class="nf">plotCumulVariantCounts</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotCumulVariantCounts">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulVariantCounts">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotCumulVariantCounts</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
@@ -2251,7 +2314,7 @@
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot number variants with &gt;= that each number of counts.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot number variants with &gt;= that each number of counts.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2346,7 +2409,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotCumulMutCoverage"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage">[docs]</a>    <span class="k">def</span> <span class="nf">plotCumulMutCoverage</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotCumulMutCoverage">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotCumulMutCoverage">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotCumulMutCoverage</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="p">,</span>
         <span class="n">mut_type</span><span class="p">,</span>
@@ -2362,7 +2428,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Frac mutations seen &lt;= some number of times (primary target only).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Frac mutations seen &lt;= some number of times (primary target only).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2464,7 +2530,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.numCodonMutsByType"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType">[docs]</a>    <span class="k">def</span> <span class="nf">numCodonMutsByType</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.numCodonMutsByType">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.numCodonMutsByType">[docs]</a>
+    <span class="k">def</span> <span class="nf">numCodonMutsByType</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -2473,7 +2542,7 @@
         <span class="n">min_support</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get average nonsynonymous, synonymous, stop mutations per variant.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get average nonsynonymous, synonymous, stop mutations per variant.</span>
 
 <span class="sd">        These statistics are only for the primary target.</span>
 
@@ -2540,7 +2609,10 @@
 
         <span class="k">return</span> <span class="n">df</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotNumCodonMutsByType"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumCodonMutsByType</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotNumCodonMutsByType">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumCodonMutsByType">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotNumCodonMutsByType</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">variant_type</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -2555,7 +2627,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot average nonsynonymous, synonymous, stop mutations per variant.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot average nonsynonymous, synonymous, stop mutations per variant.</span>
 
 <span class="sd">        These statistics are only for the primary target.</span>
 
@@ -2629,7 +2701,7 @@
             <span class="p">)</span>
             <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">theme</span><span class="p">(</span>
                 <span class="n">figure_size</span><span class="o">=</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">),</span>
-                <span class="n">axis_title_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_blank</span><span class="p">(),</span>
+                <span class="n">axis_title_x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">axis_text_x</span><span class="o">=</span><span class="n">p9</span><span class="o">.</span><span class="n">element_text</span><span class="p">(</span><span class="n">angle</span><span class="o">=</span><span class="mi">90</span><span class="p">),</span>
                 <span class="n">legend_position</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
             <span class="p">)</span>
@@ -2648,7 +2720,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotVariantSupportHistogram"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram">[docs]</a>    <span class="k">def</span> <span class="nf">plotVariantSupportHistogram</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotVariantSupportHistogram">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotVariantSupportHistogram">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotVariantSupportHistogram</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">libraries</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
@@ -2661,7 +2736,7 @@
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">primary_target_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot histogram of variant call support for variants.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot histogram of variant call support for variants.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2727,7 +2802,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.avgCountsPerVariant"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant">[docs]</a>    <span class="k">def</span> <span class="nf">avgCountsPerVariant</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.avgCountsPerVariant">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.avgCountsPerVariant">[docs]</a>
+    <span class="k">def</span> <span class="nf">avgCountsPerVariant</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">libraries</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
@@ -2736,7 +2814,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">by_target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get average counts per variant.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get average counts per variant.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2786,7 +2864,10 @@
             <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotAvgCountsPerVariant"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant">[docs]</a>    <span class="k">def</span> <span class="nf">plotAvgCountsPerVariant</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotAvgCountsPerVariant">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotAvgCountsPerVariant">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotAvgCountsPerVariant</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">libraries</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">,</span>
@@ -2800,7 +2881,7 @@
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">by_target</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot average counts per variant.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot average counts per variant.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2872,7 +2953,10 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.plotNumMutsHistogram"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">[docs]</a>    <span class="k">def</span> <span class="nf">plotNumMutsHistogram</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.plotNumMutsHistogram">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.plotNumMutsHistogram">[docs]</a>
+    <span class="k">def</span> <span class="nf">plotNumMutsHistogram</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mut_type</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -2887,7 +2971,7 @@
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">one_lib_facet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot histogram of num mutations per variant (primary target only).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot histogram of num mutations per variant (primary target only).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2989,8 +3073,11 @@
 
         <span class="k">return</span> <span class="n">p</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.writeCodonCounts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts">[docs]</a>    <span class="k">def</span> <span class="nf">writeCodonCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_or_all</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_all_libs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Write codon counts files for all libraries and samples.</span>
+
+<div class="viewcode-block" id="CodonVariantTable.writeCodonCounts">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.writeCodonCounts">[docs]</a>
+    <span class="k">def</span> <span class="nf">writeCodonCounts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">single_or_all</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">outdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">include_all_libs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write codon counts files for all libraries and samples.</span>
 
 <span class="sd">        Only writes the counts for the primary target.</span>
 
@@ -3060,7 +3147,6 @@
         <span class="k">for</span> <span class="n">lib</span><span class="p">,</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span>
             <span class="n">df</span><span class="p">[</span><span class="s2">&quot;library&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">df</span><span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="p">):</span>
-
             <span class="n">i_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;library == @lib &amp; sample == @sample&quot;</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_df</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">continue</span>  <span class="c1"># no data for this library and sample</span>
@@ -3114,7 +3200,10 @@
             <span class="p">{</span><span class="s2">&quot;library&quot;</span><span class="p">:</span> <span class="n">liblist</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">:</span> <span class="n">samplelist</span><span class="p">,</span> <span class="s2">&quot;countfile&quot;</span><span class="p">:</span> <span class="n">countfiles</span><span class="p">}</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.classifyVariants"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="CodonVariantTable.classifyVariants">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.classifyVariants">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">classifyVariants</span><span class="p">(</span>
         <span class="n">df</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -3125,7 +3214,7 @@
         <span class="n">non_primary_target_class</span><span class="o">=</span><span class="s2">&quot;secondary target&quot;</span><span class="p">,</span>
         <span class="n">class_as_categorical</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Classifies codon variants in `df`.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Classifies codon variants in `df`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3243,7 +3332,7 @@
             <span class="s2">&quot;wildtype&quot;</span><span class="p">,</span>
             <span class="s2">&quot;synonymous&quot;</span><span class="p">,</span>
             <span class="o">*</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> nonsynonymous&quot;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_aa</span><span class="p">)],</span>
-            <span class="sa">f</span><span class="s2">&quot;&gt;</span><span class="si">{</span><span class="n">max_aa</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> nonsynonymous&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;&gt;</span><span class="si">{</span><span class="n">max_aa</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> nonsynonymous&quot;</span><span class="p">,</span>
             <span class="s2">&quot;stop&quot;</span><span class="p">,</span>
             <span class="s2">&quot;deletion&quot;</span><span class="p">,</span>
         <span class="p">]</span>
@@ -3279,7 +3368,7 @@
             <span class="k">elif</span> <span class="n">row</span><span class="p">[</span><span class="s2">&quot;n_aa_substitutions&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_aa</span><span class="p">:</span>
                 <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;n_aa_substitutions&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> nonsynonymous&quot;</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&gt;</span><span class="si">{</span><span class="n">max_aa</span> <span class="o">-</span> <span class="mi">1</span><span class="si">}</span><span class="s2"> nonsynonymous&quot;</span>
+                <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&gt;</span><span class="si">{</span><span class="n">max_aa</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2"> nonsynonymous&quot;</span>
 
         <span class="c1"># to speed up, if variants present multiple times just classify</span>
         <span class="c1"># once and then merge into overall data frame.</span>
@@ -3299,9 +3388,12 @@
             <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
         <span class="p">)</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.addMergedLibraries"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries">[docs]</a>    <span class="nd">@staticmethod</span>
+
+<div class="viewcode-block" id="CodonVariantTable.addMergedLibraries">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.addMergedLibraries">[docs]</a>
+    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">addMergedLibraries</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">all_lib</span><span class="o">=</span><span class="s2">&quot;all libraries&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add data to `df` for all libraries merged.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add data to `df` for all libraries merged.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3346,6 +3438,7 @@
 
         <span class="k">return</span> <span class="n">df</span></div>
 
+
     <span class="k">def</span> <span class="nf">_getPlotData</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">libraries</span><span class="p">,</span>
@@ -3355,7 +3448,7 @@
         <span class="o">*</span><span class="p">,</span>
         <span class="n">sample_rename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get data to plot from library and sample filters.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get data to plot from library and sample filters.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3445,9 +3538,11 @@
 
         <span class="k">return</span> <span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">nlibraries</span><span class="p">,</span> <span class="n">nsamples</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CodonVariantTable.codonToAAMuts"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CodonVariantTable.codonToAAMuts">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.codonToAAMuts">[docs]</a>
+    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">codonToAAMuts</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">codon_mut_str</span><span class="p">,</span> <span class="n">allowgaps</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert string of codon mutations to amino-acid mutations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert string of codon mutations to amino-acid mutations.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3487,8 +3582,9 @@
 
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">mut_str</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">mut_str</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">aa_muts</span><span class="o">.</span><span class="n">items</span><span class="p">())])</span></div>
 
+
     <span class="k">def</span> <span class="nf">_sortCodonMuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mut_str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Sort space-delimited codon mutations and make uppercase.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sort space-delimited codon mutations and make uppercase.</span>
 
 <span class="sd">        Example</span>
 <span class="sd">        -------</span>
@@ -3525,7 +3621,7 @@
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mut</span> <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">mut</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">muts</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
 
     <span class="k">def</span> <span class="nf">_ntToCodonMuts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt_mut_str</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert string of nucleotide mutations to codon mutations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert string of nucleotide mutations to codon mutations.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3573,7 +3669,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">wt_nt</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;nucleotide </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> should be &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="n">wt_nt</span><span class="si">}</span><span class="s2"> in &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">geneseq</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> not </span><span class="si">{</span><span class="n">wt_nt</span><span class="si">}</span><span class="s2"> in &quot;</span>
                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">nt_mut_str</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="p">)</span>
             <span class="n">icodon</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span>
@@ -3599,8 +3695,10 @@
 
         <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">codon_mut_list</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CodonVariantTable.subs_to_seq"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.subs_to_seq">[docs]</a>    <span class="k">def</span> <span class="nf">subs_to_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subs</span><span class="p">,</span> <span class="n">subs_type</span><span class="o">=</span><span class="s2">&quot;codon&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert substitutions to full sequence.</span>
+<div class="viewcode-block" id="CodonVariantTable.subs_to_seq">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.subs_to_seq">[docs]</a>
+    <span class="k">def</span> <span class="nf">subs_to_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">subs</span><span class="p">,</span> <span class="n">subs_type</span><span class="o">=</span><span class="s2">&quot;codon&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert substitutions to full sequence.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3656,14 +3754,17 @@
 
         <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seqdict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
 
-<div class="viewcode-block" id="CodonVariantTable.add_full_seqs"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs">[docs]</a>    <span class="k">def</span> <span class="nf">add_full_seqs</span><span class="p">(</span>
+
+<div class="viewcode-block" id="CodonVariantTable.add_full_seqs">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.CodonVariantTable.add_full_seqs">[docs]</a>
+    <span class="k">def</span> <span class="nf">add_full_seqs</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">df</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">aa_seq_col</span><span class="o">=</span><span class="s2">&quot;aa_sequence&quot;</span><span class="p">,</span>
         <span class="n">codon_seq_col</span><span class="o">=</span><span class="s2">&quot;codon_sequence&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add full sequences to data frame, for primary target only.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add full sequences to data frame, for primary target only.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -3718,10 +3819,14 @@
             <span class="p">):</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;codon seqs != translated amino-acid seqs&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">df</span></div></div>
+        <span class="k">return</span> <span class="n">df</span></div>
+</div>
 
 
-<div class="viewcode-block" id="filter_by_subs_observed"><a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.filter_by_subs_observed">[docs]</a><span class="k">def</span> <span class="nf">filter_by_subs_observed</span><span class="p">(</span>
+
+<div class="viewcode-block" id="filter_by_subs_observed">
+<a class="viewcode-back" href="../../dms_variants.codonvarianttable.html#dms_variants.codonvarianttable.filter_by_subs_observed">[docs]</a>
+<span class="k">def</span> <span class="nf">filter_by_subs_observed</span><span class="p">(</span>
     <span class="n">df</span><span class="p">,</span>
     <span class="n">min_single_counts</span><span class="p">,</span>
     <span class="n">min_any_counts</span><span class="p">,</span>
@@ -3730,7 +3835,7 @@
     <span class="n">subs_col</span><span class="o">=</span><span class="s2">&quot;aa_substitutions&quot;</span><span class="p">,</span>
     <span class="n">n_subs_col</span><span class="o">=</span><span class="s2">&quot;n_aa_substitutions&quot;</span><span class="p">,</span>
 <span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Filter for variants by observations substitutions in entire data frame.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter for variants by observations substitutions in entire data frame.</span>
 
 <span class="sd">    Filter data frames of the type returned by :class:`CodonVariantTable` to</span>
 <span class="sd">    get just variants that have substitutions that are observed in some other</span>
@@ -3866,8 +3971,9 @@
     <span class="p">)</span></div>
 
 
+
 <span class="k">class</span> <span class="nc">_dict_missing_is_key</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;dict that returns key as value for missing keys.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict that returns key as value for missing keys.</span>
 
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -3893,7 +3999,7 @@
         <div class="sphinxsidebarwrapper">
 <p class="logo">
   <a href="../../index.html">
-    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo"/>
+    <img class="logo" src="../../_static/BloomLogo.jpg" alt="Logo" />
     
     <h1 class="logo logo-name">dms_variants</h1>
     
@@ -3946,7 +4052,7 @@
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
 
 
 
@@ -3960,17 +4066,17 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019--2022.
+      &#169;2019--2024.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.2.6</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
       
     </div>
 
     
     <a href="https://github.com/jbloomlab/dms_variants" class="github">
-        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github.blog/wp-content/uploads/2008/12/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
     </a>
     
 
