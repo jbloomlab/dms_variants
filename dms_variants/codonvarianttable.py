@@ -1934,7 +1934,6 @@ class CodonVariantTable:
                 expand=(0, 0),
             )
             + p9.ylab(mut_desc)
-            + p9.scale_fill_cmap("gnuplot")
         )
 
         if samples is None:

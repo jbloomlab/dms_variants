@@ -9,7 +9,7 @@ The format is based on `Keep a Changelog <https://keepachangelog.com>`_.
 1.6.0
 -----
 - Added ability to parse second upstream / downstream region in ``IlluminaBarcodeParser`` by adding ``upstream2`` and ``downstream2`` parameters. Also modified ``IlluminaBarcodeParser`` so that reads will only be parsed if they are long enough to fully cover the region containing the barcodes and specified upstream / downstream sequences. Based on docs, this is how it was supposed to function before but did not. Additionally, this adds another row ("reads too short") to the fates from the barcode parser, as well as the ``outer_flank_fates`` option to report just failing the additional upstream and downstream regions.
-
+- Change default color of heatmaps made by ``CodonVariantTable`` due to current one being obsolete.
 - Remove obsolete ``guide=False`` from some ``plotnine`` plots in examples / tests (this was removed in ``plotnine`` version 0.13).
 
 1.5.0
