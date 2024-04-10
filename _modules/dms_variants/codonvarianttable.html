@@ -4,11 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>dms_variants.codonvarianttable &#8212; dms_variants 1.5.0 documentation</title>
+    <title>dms_variants.codonvarianttable &#8212; dms_variants 1.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css?v=420b4293" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
-    <script src="../../_static/documentation_options.js?v=e0a75244"></script>
+    <script src="../../_static/documentation_options.js?v=72d88caf"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -2005,7 +2005,6 @@
                 <span class="n">expand</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
             <span class="p">)</span>
             <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">ylab</span><span class="p">(</span><span class="n">mut_desc</span><span class="p">)</span>
-            <span class="o">+</span> <span class="n">p9</span><span class="o">.</span><span class="n">scale_fill_cmap</span><span class="p">(</span><span class="s2">&quot;gnuplot&quot;</span><span class="p">)</span>
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2073,7 +2072,7 @@
         <span class="k">assert</span> <span class="s2">&quot;target&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">n_variants</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
 
         <span class="n">df</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;mutation_type&quot;</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">])</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;mutation_type&quot;</span><span class="p">,</span> <span class="s2">&quot;site&quot;</span><span class="p">],</span> <span class="n">observed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="o">.</span><span class="n">aggregate</span><span class="p">({</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="s2">&quot;sum&quot;</span><span class="p">})</span>
             <span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
             <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">n_variants</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;library&quot;</span><span class="p">,</span> <span class="s2">&quot;sample&quot;</span><span class="p">])</span>

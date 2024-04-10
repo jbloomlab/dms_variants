@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Parse barcodes &#8212; dms_variants 1.5.0 documentation</title>
+    <title>Parse barcodes &#8212; dms_variants 1.6.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=420b4293" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
-    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
-    <script src="_static/documentation_options.js?v=e0a75244"></script>
+    <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css?v=2aa19091" />
+    <script src="_static/documentation_options.js?v=72d88caf"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -582,6 +582,13 @@ ATTCCCGTTCGTATCATG
       <td>lib_1</td>
       <td>sample_1</td>
     </tr>
+    <tr>
+      <th>5</th>
+      <td>read too short</td>
+      <td>0</td>
+      <td>lib_1</td>
+      <td>sample_1</td>
+    </tr>
   </tbody>
 </table>
 </div></div>
@@ -717,6 +724,7 @@ Here are the counts added to the variant table:
             <span class="p">(</span><span class="s2">&quot;unparseable barcode&quot;</span><span class="p">,</span> <span class="n">n_unparseable</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;low quality barcode&quot;</span><span class="p">,</span> <span class="n">n_low_quality</span><span class="p">),</span>
             <span class="p">(</span><span class="s2">&quot;failed chastity filter&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+            <span class="p">(</span><span class="s2">&quot;read too short&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
         <span class="p">],</span>
         <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;fate&quot;</span><span class="p">,</span> <span class="s2">&quot;count&quot;</span><span class="p">],</span>
     <span class="p">),</span>
@@ -745,7 +753,7 @@ Here are the counts added to the variant table:
     <span class="o">+</span> <span class="n">geom_bar</span><span class="p">(</span><span class="n">stat</span><span class="o">=</span><span class="s2">&quot;identity&quot;</span><span class="p">)</span>
     <span class="o">+</span> <span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;sample ~ library&quot;</span><span class="p">)</span>
     <span class="o">+</span> <span class="n">facet_grid</span><span class="p">(</span><span class="s2">&quot;sample ~ library&quot;</span><span class="p">)</span>
-    <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">CBPALETTE</span><span class="p">,</span> <span class="n">guide</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="o">+</span> <span class="n">scale_fill_manual</span><span class="p">(</span><span class="n">CBPALETTE</span><span class="p">)</span>
     <span class="o">+</span> <span class="n">theme</span><span class="p">(</span>
         <span class="n">figure_size</span><span class="o">=</span><span class="p">(</span>
             <span class="mf">1.4</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">fates</span><span class="p">[</span><span class="s2">&quot;library&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())),</span>
@@ -767,7 +775,7 @@ Here are the counts added to the variant table:
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/parsebarcodes_sim_data_47_0.png" src="_images/parsebarcodes_sim_data_47_0.png" />
+<img alt="_images/parsebarcodes_sim_data_47_0.png" class="no-scaled-link" src="_images/parsebarcodes_sim_data_47_0.png" style="width: 280px; height: 308px;" />
 </div>
 </div>
 </section>
