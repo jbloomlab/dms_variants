@@ -1999,7 +1999,7 @@ class CodonVariantTable:
         assert "target" not in set(df.columns).union(set(n_variants.columns))
 
         df = (
-            df.groupby(["library", "sample", "mutation_type", "site"])
+            df.groupby(["library", "sample", "mutation_type", "site"], observed=False)
             .aggregate({"count": "sum"})
             .reset_index()
             .merge(n_variants, on=["library", "sample"])
