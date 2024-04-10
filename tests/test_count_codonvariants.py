@@ -155,6 +155,7 @@ class test_count_codonvariants(unittest.TestCase):
         )
 
         fatesfile = os.path.join(indir, "fates.csv")
+        print(fates)
         assert_frame_equal(fates, pd.read_csv(fatesfile))
 
         libs_to_analyze = ["library-1"]

@@ -30,7 +30,7 @@ class IlluminaBarcodeParser:
     ----
     Barcodes should be read by R1 and optionally R2. Expected arrangement is
 
-        5'-[R2_start]-upstream-barcode-downstream-[R1_start]-3'
+        5'-[R2_start]-upstream2-upstream-barcode-downstream-downstream2-[R1_start]-3'
 
     R1 anneals downstream of barcode and reads backwards. If R2 is used,
     it anneals upstream of barcode and reads forward. There can be sequences
@@ -72,12 +72,20 @@ class IlluminaBarcodeParser:
         Length of barcodes.
     upstream : str
         Sequence upstream of barcode.
+    upstream2 : str
+        Second sequence upstream of barcode.
     downstream : str
         Sequence downstream of barcode.
+    downstream2 : str
+        Second sequence downstream of barcode
     upstream_mismatch : int
         Max number of mismatches allowed in `upstream`.
+    upstream2_mismatch : int
+        Max number of mismatches allowed in `upstream2`.
     downstream_mismatch : int
         Max number of mismatches allowed in `downstream`.
+    downstream2_mismatch : int
+        Max number of mismatches allowed in `downstream2`.
     valid_barcodes : None or set
         If not `None`, set of barcodes to retain.
     bc_orientation : {'R1', 'R2'}
@@ -101,9 +109,13 @@ class IlluminaBarcodeParser:
         *,
         bclen=None,
         upstream="",
+        upstream2="",
         downstream="",
+        downstream2="",
         upstream_mismatch=0,
+        upstream2_mismatch=0,
         downstream_mismatch=0,
+        downstream2_mismatch=0,
         valid_barcodes=None,
         bc_orientation="R1",
         minq=20,
@@ -112,16 +124,20 @@ class IlluminaBarcodeParser:
     ):
         """See main class doc string."""
         self.bclen = bclen
-        if regex.match(f"^[{self.VALID_NTS}]*$", upstream):
-            self.upstream = upstream
-        else:
-            raise ValueError(f"invalid chars in upstream {upstream}")
-        if regex.match(f"^[{self.VALID_NTS}]*$", downstream):
-            self.downstream = downstream
-        else:
-            raise ValueError(f"invalid chars in downstream {downstream}")
+        for param_name, param_val in [
+            ("upstream", upstream),
+            ("downstream", downstream),
+            ("upstream2", upstream2),
+            ("downstream2", downstream2),
+        ]:
+            if regex.match(f"^[{self.VALID_NTS}]*$", param_val):
+                setattr(self, param_name, param_val)
+            else:
+                raise ValueError(f"invalid chars in {param_name} {param_val}")
         self.upstream_mismatch = upstream_mismatch
         self.downstream_mismatch = downstream_mismatch
+        self.upstream2_mismatch = upstream2_mismatch
+        self.downstream2_mismatch = downstream2_mismatch
         self.valid_barcodes = valid_barcodes
         if self.valid_barcodes is not None:
             self.valid_barcodes = set(self.valid_barcodes)
@@ -142,13 +158,36 @@ class IlluminaBarcodeParser:
         self.list_all_valid_barcodes = list_all_valid_barcodes
 
         # specify information about R1 / R2 matches
-        self._bcend = {
-            "R1": self.bclen + len(self.downstream),
-            "R2": self.bclen + len(self.upstream),
-        }
         self._rcdownstream = reverse_complement(self.downstream)
         self._rcupstream = reverse_complement(self.upstream)
-        self._matches = {"R1": {}, "R2": {}}  # match objects by read length
+        self._rcdownstream2 = reverse_complement(self.downstream2)
+        self._rcupstream2 = reverse_complement(self.upstream2)
+
+        # build the regex read matches
+        self._matchers = {
+            "R1": regex.compile(
+                f"({self._rcdownstream2})"
+                + f"{{s<={self.downstream2_mismatch}}}"
+                + f"({self._rcdownstream})"
+                + f"{{s<={self.downstream_mismatch}}}"
+                + f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                + f"({self._rcupstream})"
+                + f"{{s<={self.upstream_mismatch}}}"
+                + f"({self._rcupstream2})"
+                + f"{{s<={self.upstream2_mismatch}}}"
+            ),
+            "R2": regex.compile(
+                f"({self.upstream2})"
+                + f"{{s<={self.upstream2_mismatch}}}"
+                + f"^({self.upstream})"
+                + f"{{s<={self.upstream_mismatch}}}"
+                + f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                + f"({self.downstream})"
+                + f"{{s<={self.downstream_mismatch}}}"
+                + f"({self.downstream2})"
+                + f"{{s<={self.downstream2_mismatch}}}"
+            ),
+        }
 
     def parse(self, r1files, *, r2files=None, add_cols=None):
         """Parse barcodes from files.
@@ -210,21 +249,28 @@ class IlluminaBarcodeParser:
             "low quality barcode": 0,
             "invalid barcode": 0,
             "valid barcode": 0,
+            "read too short": 0,
         }
         if not r1only:
             fates["R1 / R2 disagree"] = 0
 
-        # max length of interest for reads
-        max_len = self.bclen + len(self.upstream) + len(self.downstream)
+        # min length of interest for reads
+        minlen = (
+            self.bclen
+            + len(self.upstream)
+            + len(self.downstream)
+            + len(self.upstream2)
+            + len(self.downstream2)
+        )
 
         for filetup in zip(*fileslist):
             if r1only:
                 assert len(filetup) == 1
-                iterator = iterate_fastq(filetup[0], check_pair=1, trim=max_len)
+                iterator = iterate_fastq(filetup[0], check_pair=1, trim=minlen)
             else:
                 assert len(filetup) == 2, f"{filetup}\n{fileslist}"
                 iterator = iterate_fastq_pair(
-                    filetup[0], filetup[1], r1trim=max_len, r2trim=max_len
+                    filetup[0], filetup[1], r1trim=minlen, r2trim=minlen
                 )
 
             for entry in iterator:
@@ -242,44 +288,18 @@ class IlluminaBarcodeParser:
                     fates["failed chastity filter"] += 1
                     continue
 
-                matches = {}
-                for read, r in zip(reads, readlist):
-                    rlen = len(r)
+                if any(len(r) < minlen for r in readlist):
+                    fates["read too short"] += 1
+                    continue
 
-                    # get or build matcher for read of this length
-                    len_past_bc = rlen - self._bcend[read]
-                    if len_past_bc < 0:
-                        raise ValueError(f"{read} too short: {rlen}")
-                    elif rlen in self._matches[read]:
-                        matcher = self._matches[read][rlen]
-                    else:
-                        if read == "R1":
-                            match_str = (
-                                f"^({self._rcdownstream})"
-                                f"{{s<={self.downstream_mismatch}}}"
-                                f"(?P<bc>[ACTG]{{{self.bclen}}})"
-                                f"({self._rcupstream[: len_past_bc]})"
-                                f"{{s<={self.upstream_mismatch}}}"
-                            )
-                        else:
-                            assert read == "R2"
-                            match_str = (
-                                f"^({self.upstream})"
-                                f"{{s<={self.upstream_mismatch}}}"
-                                f"(?P<bc>[ACTG]{{{self.bclen}}})"
-                                f"({self.downstream[: len_past_bc]})"
-                                f"{{s<={self.downstream_mismatch}}}"
-                            )
-                        matcher = regex.compile(match_str, flags=regex.BESTMATCH)
-                        self._matches[read][rlen] = matcher
+                assert all(len(r) == minlen for r in readlist)
 
-                    m = matcher.match(r)
-                    if m:
-                        matches[read] = m
-                    else:
-                        break
+                matches = {
+                    read: self._matchers[read].fullmatch(r)
+                    for (read, r) in zip(reads, readlist)
+                }
 
-                if len(matches) == len(reads):
+                if all(m is not None for m in matches.values()):
                     bc = {}
                     bc_q = {}
                     for read, q in zip(reads, qlist):
