@@ -38,7 +38,11 @@ class IlluminaBarcodeParser:
     must fully cover region between R1 start and barcode, and if using R2
     then `upstream` must fully cover region between R2 start and barcode.
     However, it is fine if R1 reads backwards past `upstream`, and if `R2`
-    reads forward past `downstream`.
+    reads forward past `downstream`. The `upstream2` and `downstream2`
+    can be used to require additional flanking sequences. Normally these
+    would just be rolled into `upstream` and `downstream`, but you might
+    specify separately if you are actually using these to parse additional
+    indices that you might want to set different mismatch criteria for.
 
     Parameters
     ----------
@@ -179,7 +183,7 @@ class IlluminaBarcodeParser:
             "R2": regex.compile(
                 f"({self.upstream2})"
                 + f"{{s<={self.upstream2_mismatch}}}"
-                + f"^({self.upstream})"
+                + f"({self.upstream})"
                 + f"{{s<={self.upstream_mismatch}}}"
                 + f"(?P<bc>[ACTG]{{{self.bclen}}})"
                 + f"({self.downstream})"
@@ -189,7 +193,30 @@ class IlluminaBarcodeParser:
             ),
         }
 
-    def parse(self, r1files, *, r2files=None, add_cols=None):
+        # build matchers that do not have upstream2 or downstream2 if needed
+        self._has_flank2 = (len(self.upstream2) > 0) or (len(self.downstream2) > 0)
+        self._matchers_no_flank2 = {
+            "R1": regex.compile(
+                f"[{self.VALID_NTS}]{{{len(self.downstream2)}}}"
+                + f"({self._rcdownstream})"
+                + f"{{s<={self.downstream_mismatch}}}"
+                + f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                + f"({self._rcupstream})"
+                + f"{{s<={self.upstream_mismatch}}}"
+                + f"[{self.VALID_NTS}]{{{len(self.upstream2)}}}"
+            ),
+            "R2": regex.compile(
+                f"[{self.VALID_NTS}]{{{len(self.upstream2)}}}"
+                + f"^({self.upstream})"
+                + f"{{s<={self.upstream_mismatch}}}"
+                + f"(?P<bc>[ACTG]{{{self.bclen}}})"
+                + f"({self.downstream})"
+                + f"{{s<={self.downstream_mismatch}}}"
+                + f"[{self.VALID_NTS}]{{{len(self.downstream2)}}}"
+            ),
+        }
+
+    def parse(self, r1files, *, r2files=None, add_cols=None, outer_flank_fates=False):
         """Parse barcodes from files.
 
         Parameters
@@ -201,6 +228,11 @@ class IlluminaBarcodeParser:
         add_cols : None or dict
             If dict, specify names and values (i.e., sample or library names)
             to be aded to returned data frames.
+        outer_flank_fates : bool
+            If `True`, if using outer flanking regions then in the output fates
+            specify reads that fail just the outer flanking regions (`upstream2` or
+            `downstream2`). Otherwise, such failures will be grouped with the
+            "unparseable barcode" fate.
 
         Returns
         -------
@@ -216,6 +248,9 @@ class IlluminaBarcodeParser:
                   - "R1 / R2 disagree" (if using `r2files`)
                   - "low quality barcode": sequencing quality low
                   - "unparseable barcode": invalid flank sequence, N in barcode
+                  - "read too short": read is too short to cover specified region
+                  - "invalid outer flank" : if using `outer_flank_fates` and
+                    `upstream2` or `downstream2` fails.
 
             Note that these data frames also include any columns specified by
             `add_cols`.
@@ -253,6 +288,8 @@ class IlluminaBarcodeParser:
         }
         if not r1only:
             fates["R1 / R2 disagree"] = 0
+        if outer_flank_fates and self._has_flank2:
+            fates["invalid outer flank"] = 0
 
         # min length of interest for reads
         minlen = (
@@ -341,6 +378,15 @@ class IlluminaBarcodeParser:
                                 fates["low quality barcode"] += 1
                         else:
                             fates["R1 / R2 disagree"] += 1
+                elif (
+                    outer_flank_fates
+                    and self._has_flank2
+                    and all(
+                        self._matchers_no_flank2[read].fullmatch(r) is not None
+                        for (read, r) in zip(reads, readlist)
+                    )
+                ):
+                    fates["invalid outer flank"] += 1
                 else:
                     # invalid flanking sequence or N in barcode
                     fates["unparseable barcode"] += 1
